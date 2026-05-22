@@ -20,7 +20,6 @@ import { lazyWithRetry } from './utils/lazyWithRetry';
 import { logger } from './utils/logger';
 import { useRouterSync } from './hooks/useRouterSync';
 import { isSupabaseAvailable } from './services/supabaseService';
-import { OnboardingGuide } from './components/onboarding/OnboardingGuide';
 import { ProjectsDashboardSkeleton } from './components/projectsDashboard/ProjectsDashboardSkeleton';
 import { useAriaLive } from './hooks/useAriaLive';
 
@@ -379,7 +378,6 @@ const App: React.FC = () => {
     <ErrorBoundary>
       <div className="min-h-screen bg-base-100 font-body text-base-content">
         <div id="aria-live-region" className="sr-only" aria-live="polite" aria-atomic="true" />
-        <OnboardingGuide />
         <Toaster
           position={isMobile ? 'top-center' : 'top-right'}
           toastOptions={{

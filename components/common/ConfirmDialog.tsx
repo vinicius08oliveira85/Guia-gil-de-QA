@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal } from './Modal';
 import { cn } from '../../utils/cn';
-import { outlineActionBtn, primaryActionBtn } from './viewUi';
+import { leveSettingsMutedTextClass, leveViewOutlineBtnClass, leveViewPrimaryBtnClass } from './projectCardUi';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -31,20 +31,21 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   };
 
   const confirmVariantClass = {
-    danger: 'btn-error border-transparent',
-    warning: 'btn-warning border-transparent',
-    info: 'btn-info border-transparent',
+    danger: '!bg-[#e54b4f] !shadow-[0_2px_8px_rgba(229,75,79,0.25)] hover:brightness-105',
+    warning:
+      '!bg-[color-mix(in_srgb,#f59e0b_90%,var(--leve-header-accent))] hover:brightness-105',
+    info: '',
   } as const;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
       <div className="space-y-4">
-        <p className="app-element-typography text-[var(--brand-text-muted)]">{message}</p>
-        <div className="flex gap-3 justify-end pt-4">
+        <p className={leveSettingsMutedTextClass}>{message}</p>
+        <div className="flex justify-end gap-3 pt-4">
           <button
             onClick={onClose}
             disabled={isLoading}
-            className={cn(outlineActionBtn, 'min-h-10')}
+            className={cn(leveViewOutlineBtnClass, 'min-h-10')}
             type="button"
           >
             {cancelText}
@@ -52,12 +53,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           <button
             onClick={handleConfirm}
             disabled={isLoading}
-            className={cn(
-              primaryActionBtn,
-              'btn min-h-10',
-              confirmVariantClass[variant],
-              variant === 'danger' && '!bg-[var(--destructive)] !border-[var(--destructive)]'
-            )}
+            className={cn(leveViewPrimaryBtnClass, 'min-h-10', confirmVariantClass[variant])}
             type="button"
           >
             {isLoading ? 'Processando...' : confirmText}

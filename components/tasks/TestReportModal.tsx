@@ -11,17 +11,20 @@ import { downloadFile } from '../../utils/exportService';
 import { logger } from '../../utils/logger';
 import { summarizeTestReport } from '../../services/ai/testReportSummaryService';
 import { Modal } from '../common/Modal';
-import { Button } from '../common/Button';
 import { TestReportExecutionPanel } from './TestReportExecutionPanel';
 import { TestReportTextPreview } from './TestReportTextPreview';
 import { cn } from '../../utils/cn';
 import {
-  taskLabelMutedClass,
-  taskModalSectionAccentClass,
-  taskModalSectionClass,
-  taskPanelBorderClass,
-  taskTextStrongClass,
-} from './taskActionLayout';
+  leveSettingsHeadingXsClass,
+  leveSettingsMutedTextClass,
+  leveSettingsMutedTextXsClass,
+  leveTaskModalFormatOptionIdleClass,
+  leveTaskModalInsetClass,
+  leveTaskModalSectionAccentClass,
+  leveTaskModalSectionClass,
+  leveViewOutlineBtnClass,
+  leveViewPrimaryBtnClass,
+} from '../common/projectCardUi';
 
 type ReportFormatOption = 'text' | 'resumido';
 type CopyVariant = 'full' | 'summary' | 'results' | null;
@@ -177,113 +180,109 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
   const currentFormatLabel = format === 'resumido' ? 'Resumido' : 'Texto estruturado';
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Registro de Testes Realizados" size="4xl">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Registro de Testes Realizados"
+      size="7xl"
+      maxHeight="92vh"
+    >
       <div className="h-full flex flex-col min-h-0 space-y-5">
         <div className="flex-shrink-0">
-          <div className={cn(taskModalSectionClass, 'flex flex-col gap-3 p-4 shadow-sm')}>
+          <div className={cn(leveTaskModalSectionClass, 'flex flex-col gap-3 p-4')}>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
-                <p className={cn('text-sm font-semibold', taskTextStrongClass)}>Saídas prontas para uso</p>
-                <p className={cn('text-sm', taskLabelMutedClass)}>
+                <p className={leveSettingsHeadingXsClass}>Saídas prontas para uso</p>
+                <p className={leveSettingsMutedTextClass}>
                   Copie o registro completo ou use atalhos mais enxutos conforme a plataforma.
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-2 lg:justify-end">
-                <Button
+                <button
                   type="button"
-                  variant="brandOutline"
-                  size="panelXs"
                   onClick={handleSummarizeWithAI}
                   disabled={summarizing || !reportText.trim()}
                   aria-label="Resumir relatório com IA"
-                  className="justify-start"
+                  className={cn(leveViewOutlineBtnClass, 'gap-1.5 px-3 py-1.5 text-xs')}
                 >
-                  <Sparkles className="w-3.5 h-3.5" aria-hidden />
+                  <Sparkles className="h-3.5 w-3.5" aria-hidden />
                   {summarizing ? 'Resumindo…' : 'Resumir com IA'}
-                </Button>
-                <Button
+                </button>
+                <button
                   type="button"
-                  variant="brandOutline"
-                  size="panelXs"
                   onClick={handleDownload}
                   aria-label="Baixar relatório em .txt"
-                  className="justify-start"
+                  className={cn(leveViewOutlineBtnClass, 'gap-1.5 px-3 py-1.5 text-xs')}
                 >
-                  <Download className="w-3.5 h-3.5" aria-hidden />
+                  <Download className="h-3.5 w-3.5" aria-hidden />
                   Baixar .txt
-                </Button>
-                <Button
+                </button>
+                <button
                   type="button"
-                  variant={copiedVariant === 'full' ? 'default' : 'brand'}
-                  size="panelXs"
                   onClick={handleCopy}
                   aria-label={copiedVariant === 'full' ? 'Registro copiado' : 'Copiar registro completo'}
-                  className="justify-start"
+                  className={cn(leveViewPrimaryBtnClass, 'gap-1.5 px-3 py-1.5 text-xs')}
                 >
                   {copiedVariant === 'full' ? (
-                    <Check className="w-3.5 h-3.5" aria-hidden />
+                    <Check className="h-3.5 w-3.5" aria-hidden />
                   ) : (
-                    <Copy className="w-3.5 h-3.5" aria-hidden />
+                    <Copy className="h-3.5 w-3.5" aria-hidden />
                   )}
                   {copiedVariant === 'full' ? 'Copiado!' : 'Copiar registro'}
-                </Button>
+                </button>
               </div>
             </div>
 
             <div
               className={cn(
-                taskPanelBorderClass,
-                'flex flex-col gap-2 bg-[var(--brand-chip)] px-3 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between'
+                leveTaskModalInsetClass,
+                'flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between'
               )}
             >
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--leve-header-text-muted)]">
                   Atalhos de cópia
                 </p>
-                <p className="text-xs text-base-content/70">
+                <p className={leveSettingsMutedTextXsClass}>
                   Versões curtas para comentário, evidência rápida ou status executivo.
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-2 sm:justify-end">
-                <Button
+                <button
                   type="button"
-                  variant="brandOutline"
-                  size="panelXs"
                   onClick={handleCopyExecutiveSummary}
                   aria-label="Copiar resumo executivo"
-                  className="justify-start"
+                  className={cn(leveViewOutlineBtnClass, 'gap-1.5 px-3 py-1.5 text-xs')}
                 >
                   {copiedVariant === 'summary' ? (
-                    <Check className="w-3.5 h-3.5" aria-hidden />
+                    <Check className="h-3.5 w-3.5" aria-hidden />
                   ) : (
-                    <Copy className="w-3.5 h-3.5" aria-hidden />
+                    <Copy className="h-3.5 w-3.5" aria-hidden />
                   )}
                   {copiedVariant === 'summary' ? 'Resumo copiado!' : 'Copiar resumo'}
-                </Button>
-                <Button
+                </button>
+                <button
                   type="button"
-                  variant="brandOutline"
-                  size="panelXs"
                   onClick={handleCopyResultsOnly}
                   aria-label="Copiar somente resultados"
-                  className="justify-start"
+                  className={cn(leveViewOutlineBtnClass, 'gap-1.5 px-3 py-1.5 text-xs')}
                 >
                   {copiedVariant === 'results' ? (
-                    <Check className="w-3.5 h-3.5" aria-hidden />
+                    <Check className="h-3.5 w-3.5" aria-hidden />
                   ) : (
-                    <Copy className="w-3.5 h-3.5" aria-hidden />
+                    <Copy className="h-3.5 w-3.5" aria-hidden />
                   )}
                   {copiedVariant === 'results' ? 'Resultados copiados!' : 'Copiar resultados'}
-                </Button>
+                </button>
               </div>
             </div>
           </div>
         </div>
 
         <div className="flex-shrink-0 flex flex-col gap-3">
-          <p className="text-sm font-semibold text-base-content">Formato do relatório</p>
+          <p className={leveSettingsHeadingXsClass}>Formato do relatório</p>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {formatOptions.map(option => {
               const isSelected = format === option.value;
@@ -299,33 +298,28 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
                   aria-pressed={isSelected}
                   aria-label={`${option.label}: ${option.description}`}
                   className={cn(
-                    'flex items-start gap-2 p-4 text-left transition-all duration-200 rounded-[var(--radius)]',
-                    isSelected
-                      ? cn(
-                          taskModalSectionAccentClass,
-                          'border-2 border-[var(--brand-cta)] ring-2 ring-[color-mix(in_srgb,var(--brand-cta)_22%,transparent)] text-[var(--brand-text-strong)]'
-                        )
-                      : cn(
-                          taskPanelBorderClass,
-                          'text-[var(--brand-text-muted)] hover:border-[var(--brand-surface-border)] hover:bg-[var(--brand-chip-hover)] hover:text-[var(--brand-text-strong)]'
-                        )
+                    'flex items-start gap-2',
+                    isSelected ? cn(leveTaskModalSectionAccentClass, 'p-4') : leveTaskModalFormatOptionIdleClass
                   )}
                 >
                   <div
                     className={cn(
                       'mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2',
                       isSelected
-                        ? 'border-[var(--brand-cta)] bg-[var(--brand-surface-strong)]'
-                        : 'border-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)]'
+                        ? 'border-[var(--leve-header-accent)] bg-white'
+                        : 'border-[var(--leve-header-border)] bg-[var(--leve-header-bg)]'
                     )}
                   >
                     {isSelected ? (
-                      <div className="h-2.5 w-2.5 rounded-full bg-[var(--brand-cta)]" aria-hidden />
+                      <div
+                        className="h-2.5 w-2.5 rounded-full bg-[var(--leve-header-accent)]"
+                        aria-hidden
+                      />
                     ) : null}
                   </div>
                   <div className="min-w-0">
-                    <p className="font-medium">{option.label}</p>
-                    <p className="mt-1 text-sm text-base-content/70">{option.description}</p>
+                    <p className="font-medium text-[var(--leve-header-text)]">{option.label}</p>
+                    <p className={cn('mt-1', leveSettingsMutedTextClass)}>{option.description}</p>
                   </div>
                 </button>
               );
@@ -333,7 +327,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
           </div>
         </div>
 
-        <div className="grid flex-1 min-h-0 gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+        <div className="grid min-h-0 flex-1 gap-5 lg:grid-cols-2 lg:gap-6">
           <TestReportExecutionPanel executedTestCases={executedTestCases} visualStats={visualStats} />
 
           <div className="min-h-0">
@@ -345,16 +339,10 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
           </div>
         </div>
 
-        <div className="flex flex-shrink-0 justify-end border-t border-base-200 pt-4">
-          <Button
-            type="button"
-            variant="brandOutline"
-            size="panel"
-            onClick={onClose}
-            aria-label="Fechar modal"
-          >
+        <div className="flex flex-shrink-0 justify-end border-t border-[var(--leve-header-border)] pt-4">
+          <button type="button" onClick={onClose} aria-label="Fechar modal" className={leveViewOutlineBtnClass}>
             Fechar
-          </Button>
+          </button>
         </div>
       </div>
     </Modal>

@@ -17,7 +17,24 @@ import { Modal } from '../common/Modal';
 import { Spinner } from '../common/Spinner';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { StatusBadge } from './StatusBadge';
-import { primaryActionBtn, projectViewCard } from '../common/viewUi';
+import {
+  leveSettingsCardClass,
+  leveSettingsInsetPanelClass,
+  leveSettingsLinkClass,
+  leveSettingsListClass,
+  leveSettingsMutedTextClass,
+  leveSettingsMutedTextXsClass,
+  leveSettingsOutlineBtnClass,
+  leveSettingsPrimaryBtnFullClass,
+  leveSettingsSectionIconWrapClass,
+  leveSettingsSectionMainClass,
+  leveSettingsSectionRowClass,
+  leveSettingsSectionSubtitleClass,
+  leveSettingsSectionTitleClass,
+  leveSettingsSelectClass,
+  leveSettingsStrongTextClass,
+  leveViewPrimaryBtnClass,
+} from '../common/projectCardUi';
 import { Input } from '../common/Input';
 import { logger } from '../../utils/logger';
 import { cn } from '../../utils/cn';
@@ -267,14 +284,14 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
   return (
     <div className="space-y-6">
       {/* Header da seção */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-4 flex-1 min-w-0">
-          <div className="shrink-0 h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Link className="h-6 w-6 text-primary" aria-hidden="true" />
+      <div className={leveSettingsSectionRowClass}>
+        <div className={leveSettingsSectionMainClass}>
+          <div className={leveSettingsSectionIconWrapClass}>
+            <Link className="h-6 w-6" aria-hidden="true" />
           </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-xl font-bold text-base-content mb-2">Integração com Jira</h3>
-            <p className="text-base-content/70 text-sm leading-relaxed">
+          <div className="min-w-0 flex-1">
+            <h3 className={leveSettingsSectionTitleClass}>Integração com Jira</h3>
+            <p className={leveSettingsSectionSubtitleClass}>
               Importe projetos existentes do Jira para o aplicativo
             </p>
           </div>
@@ -287,47 +304,48 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
       </div>
 
       {!isConnected ? (
-        <div className={projectViewCard}>
+        <div className={leveSettingsInsetPanelClass}>
           <div className="space-y-4">
-            <p className="text-base-content/70 text-sm leading-relaxed">
+            <p className={leveSettingsMutedTextClass}>
               Configure sua conexão com o Jira para importar projetos. Você precisará de:
             </p>
-            <ul className="list-disc list-inside text-base-content/70 text-sm space-y-2 ml-4">
+            <ul className={leveSettingsListClass}>
               <li>URL do seu Jira (ex: https://seu-dominio.atlassian.net)</li>
               <li>Email da sua conta Atlassian</li>
               <li>API Token (gerado em: Account Settings → Security → API tokens)</li>
             </ul>
             <button
+              type="button"
               onClick={() => setShowConfigModal(true)}
-              className="btn btn-primary w-full mt-4"
+              className={leveSettingsPrimaryBtnFullClass}
             >
-              <Link className="h-4 w-4 mr-2" />
+              <Link className="h-4 w-4" aria-hidden />
               Configurar Conexão
             </button>
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className={cn(projectViewCard, 'lg:col-span-2')}>
+          <div className={cn(leveSettingsCardClass, 'lg:col-span-2')}>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="space-y-1">
-                <p className="text-base-content/70 text-sm">
-                  Conectado como: <strong className="text-base-content">{config.email}</strong>
+                <p className="text-[var(--leve-header-text-muted)] text-sm">
+                  Conectado como: <strong className="text-[var(--leve-header-text)]">{config.email}</strong>
                 </p>
-                <p className="text-base-content/70 text-xs font-mono break-all">
+                <p className="text-[var(--leve-header-text-muted)] text-xs font-mono break-all">
                   URL: {config.url}
                 </p>
               </div>
               <div className="flex gap-2 shrink-0">
                 <button
                   onClick={() => setShowConfigModal(true)}
-                  className="btn btn-secondary text-sm"
+                  className={cn(leveSettingsOutlineBtnClass, 'text-sm')}
                 >
                   Editar
                 </button>
                 <button
                   onClick={handleDisconnect}
-                  className="btn btn-secondary text-sm hover:bg-red-500/20 hover:border-red-500/30"
+                  className={cn(leveSettingsOutlineBtnClass, 'text-sm text-[#e54b4f] hover:border-[color-mix(in_srgb,#e54b4f_35%,transparent)]')}
                 >
                   Desconectar
                 </button>
@@ -336,21 +354,21 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
           </div>
 
           {isLoadingProjects ? (
-            <div className={cn(projectViewCard, 'py-8')}>
+            <div className={cn(leveSettingsCardClass, 'py-8')}>
               <div className="flex flex-col items-center gap-3">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                <p className="text-base-content/70 text-sm font-medium">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--leve-header-accent)]"></div>
+                <p className="text-[var(--leve-header-text-muted)] text-sm font-medium">
                   Carregando projetos do Jira...
                 </p>
-                <p className="text-base-content/70 text-xs">Isso pode levar alguns segundos</p>
+                <p className="text-[var(--leve-header-text-muted)] text-xs">Isso pode levar alguns segundos</p>
               </div>
             </div>
           ) : jiraProjects.length > 0 ? (
             <>
-              <div className={projectViewCard}>
+              <div className={leveSettingsCardClass}>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <label className="block text-sm font-medium text-base-content">
+                    <label className="block text-sm font-medium text-[var(--leve-header-text)]">
                       Selecione o projeto para importar:
                     </label>
                     <button
@@ -377,7 +395,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
                   <select
                     value={selectedProjectKey}
                     onChange={e => setSelectedProjectKey(e.target.value)}
-                    className="select select-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:border-primary"
+                    className={leveSettingsSelectClass}
                   >
                     <option value="">Selecione um projeto...</option>
                     {Array.isArray(jiraProjects) &&
@@ -390,7 +408,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
                   <button
                     onClick={handleImport}
                     disabled={!selectedProjectKey || isImporting}
-                    className="btn btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={cn(leveViewPrimaryBtnClass, 'w-full disabled:cursor-not-allowed disabled:opacity-50')}
                   >
                     {isImporting ? (
                       <>
@@ -415,12 +433,17 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
               </div>
 
               {isImporting && (
-                <div className={cn(projectViewCard, 'mt-4 border-[color-mix(in_srgb,var(--brand-cta)_25%,transparent)]')}>
+                <div
+                  className={cn(
+                    leveSettingsCardClass,
+                    'mt-4 border-[color-mix(in_srgb,var(--leve-header-accent)_25%,transparent)]'
+                  )}
+                >
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium text-base-content">
+                    <span className="text-sm font-medium text-[var(--leve-header-text)]">
                       Importando tarefas do Jira...
                     </span>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--leve-header-accent)]"></div>
                   </div>
                   <div className="w-full bg-base-200 rounded-full h-2.5 mb-2">
                     <div
@@ -432,7 +455,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
                       }}
                     />
                   </div>
-                  <div className="space-y-1 text-xs text-base-content/70">
+                  <div className="space-y-1 text-xs text-[var(--leve-header-text-muted)]">
                     <p>
                       <strong>Aguarde...</strong> Projetos grandes podem levar vários minutos.
                     </p>
@@ -445,9 +468,9 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
               )}
             </>
           ) : (
-            <div className={cn(projectViewCard, 'py-8')}>
+            <div className={cn(leveSettingsCardClass, 'py-8')}>
               <div className="text-center">
-                <p className="text-base-content/70 text-sm">
+                <p className="text-[var(--leve-header-text-muted)] text-sm">
                   Nenhum projeto encontrado. Verifique suas permissões no Jira.
                 </p>
               </div>
@@ -514,25 +537,26 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
             leftIcon={<KeyRound className="w-4 h-4" />}
             helperText=""
           />
-          <p className="text-xs text-base-content/70 -mt-3">
+          <p className="text-xs text-[var(--leve-header-text-muted)] -mt-3">
             <a
               href="https://id.atlassian.com/manage-profile/security/api-tokens"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary hover:underline"
+              className={leveSettingsLinkClass}
             >
               Como gerar um API Token?
             </a>
           </p>
 
-          <div className="flex flex-wrap justify-end gap-2 pt-4 border-t border-base-300 mt-6">
-            <button onClick={() => setShowConfigModal(false)} className="btn btn-ghost">
+          <div className="mt-6 flex flex-wrap justify-end gap-2 border-t border-[color-mix(in_srgb,var(--leve-header-text)_12%,transparent)] pt-4">
+            <button type="button" onClick={() => setShowConfigModal(false)} className={leveSettingsOutlineBtnClass}>
               Cancelar
             </button>
             <button
+              type="button"
               onClick={handleTestOnly}
               disabled={isTesting || isSavingOnly}
-              className="btn btn-outline btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              className={cn(leveSettingsOutlineBtnClass, 'disabled:cursor-not-allowed disabled:opacity-50')}
             >
               {isTesting ? (
                 <>
@@ -544,9 +568,10 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
               )}
             </button>
             <button
+              type="button"
               onClick={handleSaveConfig}
               disabled={isTesting || isSavingOnly}
-              className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              className={cn(leveViewPrimaryBtnClass, 'disabled:cursor-not-allowed disabled:opacity-50')}
             >
               {isSavingOnly ? (
                 <>

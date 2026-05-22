@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { projectViewCard } from '../common/viewUi';
+import {
+  leveSettingsHeadingSmClass,
+  leveSettingsInsetPanelClass,
+  leveSettingsMutedTextClass,
+  leveSettingsToggleTrackClass,
+} from '../common/projectCardUi';
 import {
   getNotificationPreferences,
   updateNotificationPreferences,
@@ -63,36 +68,34 @@ export const NotificationPreferences: React.FC = () => {
   ];
 
   return (
-    <div className={projectViewCard}>
+    <div className={leveSettingsInsetPanelClass}>
       <div className="space-y-6">
         <div>
-          <h4 className="text-lg font-semibold text-base-content mb-2">
-            Preferências de Notificações
-          </h4>
-          <p className="text-sm text-base-content/70 leading-relaxed">
+          <h4 className={leveSettingsHeadingSmClass}>Preferências de Notificações</h4>
+          <p className={leveSettingsMutedTextClass}>
             Escolha quais tipos de notificações você deseja receber
           </p>
         </div>
 
-        <div className="divide-y divide-base-300">
+        <div className="divide-y divide-[color-mix(in_srgb,var(--leve-header-text)_12%,transparent)]">
           {notificationTypes.map(type => (
             <div
               key={type.key}
               className="flex items-start justify-between gap-4 py-4 first:pt-0 last:pb-0"
             >
               <div className="flex-1 space-y-1">
-                <h5 className="font-medium text-base-content">{type.label}</h5>
-                <p className="text-sm text-base-content/70 leading-relaxed">{type.description}</p>
+                <h5 className="font-medium text-[var(--leve-header-text)]">{type.label}</h5>
+                <p className={leveSettingsMutedTextClass}>{type.description}</p>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer shrink-0">
+              <label className="relative inline-flex shrink-0 cursor-pointer items-center">
                 <input
                   type="checkbox"
                   checked={preferences[type.key]}
                   onChange={() => handleToggle(type.key)}
-                  className="sr-only peer"
+                  className="peer sr-only"
                   aria-label={`${type.label}: ${preferences[type.key] ? 'ativado' : 'desativado'}`}
                 />
-                <div className="w-11 h-6 bg-base-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/40 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-primary/25 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-base-100 after:border-base-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                <div className={leveSettingsToggleTrackClass} />
               </label>
             </div>
           ))}

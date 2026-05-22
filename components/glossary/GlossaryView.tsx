@@ -7,9 +7,51 @@ import {
 } from '../../utils/glossaryTerms';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Modal } from '../common/Modal';
-import { SectionHeader } from '../common/SectionHeader';
-import { filterPillClass, projectViewPanel, projectViewShell, searchInputClass } from '../common/viewUi';
+import {
+  leveGlossaryCardClass,
+  leveGlossaryCardDescClass,
+  leveGlossaryCardFooterClass,
+  leveGlossaryCardTitleClass,
+  leveGlossaryCategoryBadgeBaseClass,
+  leveGlossaryHashtagClass,
+  leveGlossaryRelatedTermClass,
+  leveGlossaryShellClass,
+  leveGlossaryStatsItemClass,
+  leveGlossaryStatsPanelClass,
+  leveGlossaryToolbarClass,
+  leveSettingsHeadingSmClass,
+  leveSettingsMutedTextClass,
+  leveViewFilterPillClass,
+  leveViewPageSubtitleClass,
+  leveViewPageTitleClass,
+  leveViewPrimaryBtnClass,
+  leveViewSearchInputClass,
+  workspaceDaisyStatLabelClass,
+  workspaceDaisyStatValueClass,
+} from '../common/projectCardUi';
 import { cn } from '../../utils/cn';
+
+const categoryBadgeTone: Record<GlossaryTerm['category'], string> = {
+  Geral:
+    'border-[color-mix(in_srgb,var(--leve-header-text)_22%,transparent)] bg-[color-mix(in_srgb,var(--leve-header-text)_8%,var(--leve-header-bg))] text-[var(--leve-header-text)]',
+  Testes:
+    'border-[color-mix(in_srgb,#22c55e_28%,transparent)] bg-[color-mix(in_srgb,#22c55e_10%,var(--leve-header-bg))] text-[#166534]',
+  Metodologias:
+    'border-[color-mix(in_srgb,var(--leve-header-text)_18%,transparent)] bg-[color-mix(in_srgb,var(--leve-header-text)_6%,var(--leve-header-cream))] text-[var(--leve-header-text)]',
+  Ferramentas:
+    'border-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] bg-[color-mix(in_srgb,var(--leve-header-accent)_10%,var(--leve-header-bg))] text-[var(--leve-header-accent)]',
+  Métricas:
+    'border-[color-mix(in_srgb,#3b82f6_28%,transparent)] bg-[color-mix(in_srgb,#3b82f6_10%,var(--leve-header-bg))] text-[#1d4ed8]',
+  Processos:
+    'border-[color-mix(in_srgb,var(--leve-header-accent)_30%,transparent)] bg-[color-mix(in_srgb,var(--leve-header-accent)_8%,var(--leve-header-cream))] text-[#9a3412]',
+  Técnicas:
+    'border-[color-mix(in_srgb,#78716c_25%,transparent)] bg-[color-mix(in_srgb,#78716c_8%,var(--leve-header-bg))] text-[#44403c]',
+  Padrões:
+    'border-[color-mix(in_srgb,var(--leve-header-text)_25%,transparent)] bg-[color-mix(in_srgb,var(--leve-header-text)_12%,var(--leve-header-cream))] text-[var(--leve-header-text)]',
+};
+
+const categoryBadgeClass = (category: GlossaryTerm['category']) =>
+  cn(leveGlossaryCategoryBadgeBaseClass, categoryBadgeTone[category]);
 
 export const GlossaryView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -32,12 +74,10 @@ export const GlossaryView: React.FC = () => {
   const filteredTerms = useMemo(() => {
     let terms = glossaryTerms;
 
-    // Filtrar por categoria
     if (selectedCategory !== 'Todos') {
       terms = getTermsByCategory(selectedCategory);
     }
 
-    // Filtrar por busca
     if (searchQuery.trim()) {
       terms = searchGlossaryTerms(searchQuery).filter(
         term => selectedCategory === 'Todos' || term.category === selectedCategory
@@ -47,53 +87,19 @@ export const GlossaryView: React.FC = () => {
     return terms.sort((a, b) => a.term.localeCompare(b.term));
   }, [searchQuery, selectedCategory]);
 
-  const categoryBadgeClass = (category: GlossaryTerm['category']): string => {
-    const map: Record<GlossaryTerm['category'], string> = {
-      Geral: 'badge-primary badge-outline',
-      Testes: 'badge-success badge-outline',
-      Metodologias: 'badge-secondary badge-outline',
-      Ferramentas: 'badge-accent badge-outline',
-      Métricas: 'badge-info badge-outline',
-      Processos: 'badge-warning badge-outline',
-      Técnicas: 'badge-neutral badge-outline',
-      Padrões: 'badge-error badge-outline',
-    };
-    return map[category] ?? 'badge-ghost badge-outline border-base-300';
-  };
-
-  const categoryGradientClass = (category: GlossaryTerm['category']): string => {
-    const map: Record<GlossaryTerm['category'], string> = {
-      Geral: 'from-primary/15 via-primary/5 to-transparent',
-      Testes: 'from-success/15 via-success/5 to-transparent',
-      Metodologias: 'from-secondary/15 via-secondary/5 to-transparent',
-      Ferramentas: 'from-accent/15 via-accent/5 to-transparent',
-      Métricas: 'from-info/15 via-info/5 to-transparent',
-      Processos: 'from-warning/15 via-warning/5 to-transparent',
-      Técnicas: 'from-neutral/15 via-neutral/5 to-transparent',
-      Padrões: 'from-error/15 via-error/5 to-transparent',
-    };
-    return map[category] ?? 'from-base-300/30 to-transparent';
-  };
-
   return (
-    <div className={cn(projectViewShell, 'py-4 sm:py-6')}>
-      <div className={cn(projectViewPanel, 'mb-4 flex flex-col gap-5 sm:mb-6')}>
-        <SectionHeader
-          as="h1"
-          align="left"
-          fullWidth
-          titleSize="page"
-          density="dense"
-          title="Glossário de Termos de QA"
-          description={
-            <>
-              Explore mais de{' '}
-              <strong className="text-primary">{glossaryTerms.length} termos</strong> relacionados a
-              Quality Assurance, testes de software, metodologias ágeis e muito mais.
-            </>
-          }
-          className="max-w-2xl"
-        />
+    <div className={leveGlossaryShellClass}>
+      <div className={leveGlossaryToolbarClass}>
+        <div className="max-w-2xl">
+          <h2 className={leveViewPageTitleClass}>Glossário de Termos de QA</h2>
+          <p className={cn(leveViewPageSubtitleClass, 'mt-2')}>
+            Explore mais de{' '}
+            <strong className="font-semibold text-[var(--leve-header-accent)]">
+              {glossaryTerms.length} termos
+            </strong>{' '}
+            relacionados a Quality Assurance, testes de software, metodologias ágeis e muito mais.
+          </p>
+        </div>
 
         <div>
           <input
@@ -101,7 +107,8 @@ export const GlossaryView: React.FC = () => {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Buscar termos…"
-            className={searchInputClass}
+            className={cn(leveViewSearchInputClass, 'pl-4')}
+            aria-label="Buscar termos no glossário"
           />
         </div>
 
@@ -109,7 +116,7 @@ export const GlossaryView: React.FC = () => {
           <button
             type="button"
             onClick={() => setSelectedCategory('Todos')}
-            className={filterPillClass(selectedCategory === 'Todos')}
+            className={leveViewFilterPillClass(selectedCategory === 'Todos')}
           >
             Todos ({glossaryTerms.length})
           </button>
@@ -120,7 +127,7 @@ export const GlossaryView: React.FC = () => {
                 key={category}
                 type="button"
                 onClick={() => setSelectedCategory(category)}
-                className={filterPillClass(selectedCategory === category)}
+                className={leveViewFilterPillClass(selectedCategory === category)}
               >
                 {category} ({count})
               </button>
@@ -131,7 +138,6 @@ export const GlossaryView: React.FC = () => {
 
       <motion.div
         className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
-        style={{ gap: '1rem' }}
         initial="hidden"
         animate="visible"
         variants={{
@@ -148,7 +154,7 @@ export const GlossaryView: React.FC = () => {
               <motion.div
                 key={`${term.term}-${index}`}
                 onClick={() => setSelectedTerm(term)}
-                className="group relative cursor-pointer overflow-hidden rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-100 p-5 soft-shadow transition-[transform,box-shadow] duration-200 hover:ring-2 hover:ring-[color-mix(in_srgb,var(--brand-cta)_22%,transparent)]"
+                className={leveGlossaryCardClass}
                 variants={{
                   hidden: { opacity: 0, y: 20, scale: 0.98 },
                   visible: {
@@ -166,49 +172,34 @@ export const GlossaryView: React.FC = () => {
                   transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] },
                 }}
               >
-                <div
-                  className={`pointer-events-none absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 ${categoryGradientClass(term.category)}`}
-                />
-
-                <div className="relative z-10">
-                  <div className="flex items-start justify-between mb-3">
-                    <h3 className="text-lg font-semibold text-base-content flex-1 group-hover:text-primary">
-                      {term.term}
-                    </h3>
-                    <span className={`badge badge-sm ${categoryBadgeClass(term.category)}`}>
-                      {term.category}
-                    </span>
-                  </div>
-                  <p className="text-base-content/70 text-sm line-clamp-2 leading-relaxed mb-3">
-                    {term.definition}
-                  </p>
-                  {term.relatedTerms && term.relatedTerms.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-1.5 pt-3 border-t border-base-300/50">
-                      {term.relatedTerms.slice(0, 3).map((related, idx) => (
-                        <span
-                          key={idx}
-                          className="text-xs text-primary font-medium hover:text-primary-focus"
-                        >
-                          #{related}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <h3 className={leveGlossaryCardTitleClass}>{term.term}</h3>
+                  <span className={categoryBadgeClass(term.category)}>{term.category}</span>
                 </div>
+                <p className={leveGlossaryCardDescClass}>{term.definition}</p>
+                {term.relatedTerms && term.relatedTerms.length > 0 && (
+                  <div className={leveGlossaryCardFooterClass}>
+                    {term.relatedTerms.slice(0, 3).map((related, idx) => (
+                      <span key={idx} className={leveGlossaryHashtagClass}>
+                        #{related}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </motion.div>
             ))
           ) : (
             <motion.div
-              className="col-span-2 text-center py-12"
+              className="col-span-full py-12 text-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-xl font-semibold text-base-content mb-2">
-                Nenhum termo encontrado
-              </h3>
-              <p className="text-base-content/70">
+              <div className="mb-4 text-6xl" aria-hidden>
+                🔍
+              </div>
+              <h3 className={leveSettingsHeadingSmClass}>Nenhum termo encontrado</h3>
+              <p className={leveSettingsMutedTextClass}>
                 Tente buscar com outras palavras ou selecione uma categoria diferente.
               </p>
             </motion.div>
@@ -216,15 +207,16 @@ export const GlossaryView: React.FC = () => {
         </AnimatePresence>
       </motion.div>
 
-      {/* Modal de detalhes */}
       <Modal
         isOpen={!!selectedTerm}
         onClose={() => setSelectedTerm(null)}
         title={
           selectedTerm ? (
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold text-base-content mb-2">{selectedTerm.term}</h2>
-              <span className={`badge ${categoryBadgeClass(selectedTerm.category)}`}>
+            <div className="flex flex-wrap items-center gap-3">
+              <h2 className="font-sans text-2xl font-bold text-[var(--leve-header-text)]">
+                {selectedTerm.term}
+              </h2>
+              <span className={categoryBadgeClass(selectedTerm.category)}>
                 {selectedTerm.category}
               </span>
             </div>
@@ -235,33 +227,30 @@ export const GlossaryView: React.FC = () => {
         size="6xl"
         footer={
           <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setSelectedTerm(null)}
-              className="btn btn-primary rounded-[var(--radius)] px-6"
-            >
+            <button type="button" onClick={() => setSelectedTerm(null)} className={leveViewPrimaryBtnClass}>
               Fechar
             </button>
           </div>
         }
       >
         {selectedTerm && (
-          <div className="prose max-w-none">
-            <h3 className="text-sm font-semibold text-base-content/70 mb-2 uppercase tracking-wider">
+          <div className="max-w-none font-sans">
+            <h3 className="mb-2 font-sans text-xs font-semibold uppercase tracking-wider text-[var(--leve-header-text-muted)]">
               Definição
             </h3>
-            <p className="text-base-content leading-relaxed">{selectedTerm.definition}</p>
+            <p className="leading-relaxed text-[var(--leve-header-text)]">{selectedTerm.definition}</p>
 
             {selectedTerm.relatedTerms && selectedTerm.relatedTerms.length > 0 && (
               <div className="mt-6">
-                <h3 className="text-sm font-semibold text-base-content/70 mb-2 uppercase tracking-wider">
+                <h3 className="mb-2 font-sans text-xs font-semibold uppercase tracking-wider text-[var(--leve-header-text-muted)]">
                   Termos Relacionados
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {selectedTerm.relatedTerms.map((related, idx) => (
-                    <span
+                    <button
                       key={idx}
-                      className="badge badge-outline badge-sm text-primary hover:bg-primary/10 cursor-pointer transition-colors"
+                      type="button"
+                      className={leveGlossaryRelatedTermClass}
                       onClick={() => {
                         const relatedTerm = glossaryTerms.find(
                           t => (t.term || '').toLowerCase() === (related || '').toLowerCase()
@@ -270,7 +259,7 @@ export const GlossaryView: React.FC = () => {
                       }}
                     >
                       {related}
-                    </span>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -279,20 +268,18 @@ export const GlossaryView: React.FC = () => {
         )}
       </Modal>
 
-      {/* Estatísticas */}
       <motion.div
-        className="mt-8 rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-100 p-6 soft-shadow transition-shadow duration-200 hover:ring-2 hover:ring-[color-mix(in_srgb,var(--brand-cta)_18%,transparent)]"
+        className={leveGlossaryStatsPanelClass}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <h3 className="text-lg font-semibold text-base-content mb-5 flex items-center gap-2">
-          <span>📊</span>
+        <h3 className={cn(leveSettingsHeadingSmClass, 'mb-5 flex items-center gap-2')}>
+          <span aria-hidden>📊</span>
           Estatísticas do Glossário
         </h3>
         <motion.div
-          className="grid grid-cols-2 md:grid-cols-4"
-          style={{ gap: '1rem' }}
+          className="grid grid-cols-2 gap-4 md:grid-cols-4"
           initial="hidden"
           animate="visible"
           variants={{
@@ -308,16 +295,14 @@ export const GlossaryView: React.FC = () => {
             return (
               <motion.div
                 key={category}
-                className="group text-center rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-base-200/50 p-4 soft-shadow transition-transform duration-200 hover:scale-105 hover:brightness-[1.06] hover:ring-2 hover:ring-[color-mix(in_srgb,var(--brand-cta)_20%,transparent)]"
+                className={leveGlossaryStatsItemClass}
                 variants={{
                   hidden: { opacity: 0, scale: 0.9 },
                   visible: { opacity: 1, scale: 1 },
                 }}
               >
-                <div className="text-3xl font-bold text-primary mb-1">{count}</div>
-                <div className="text-sm font-medium text-base-content/70 uppercase tracking-wider">
-                  {category}
-                </div>
+                <div className={workspaceDaisyStatValueClass}>{count}</div>
+                <div className={workspaceDaisyStatLabelClass}>{category}</div>
               </motion.div>
             );
           })}

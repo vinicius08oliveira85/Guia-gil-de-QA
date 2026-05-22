@@ -1,5 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { projectViewCard } from '../common/viewUi';
+import {
+  leveSettingsCheckboxPanelClass,
+  leveSettingsHeadingSmClass,
+  leveSettingsHeadingXsClass,
+  leveSettingsInsetPanelClass,
+  leveSettingsInputClass,
+  leveSettingsMutedTextClass,
+  leveSettingsSelectClass,
+  leveSettingsStrongTextClass,
+  leveSettingsToggleTrackClass,
+  leveViewFilterPillClass,
+  leveViewPrimaryBtnClass,
+} from '../common/projectCardUi';
+import { cn } from '../../utils/cn';
 import { getExportPreferences, updateExportPreferences } from '../../utils/preferencesService';
 import type {
   ExportPreferences as ExportPreferencesType,
@@ -82,30 +95,24 @@ export const ExportPreferences: React.FC = () => {
   };
 
   return (
-    <div className={projectViewCard}>
+    <div className={leveSettingsInsetPanelClass}>
       <div className="space-y-6">
         <div>
-          <h4 className="text-lg font-semibold text-base-content mb-2">
-            Preferências de Exportação
-          </h4>
-          <p className="text-sm text-base-content/70 leading-relaxed">
+          <h4 className={leveSettingsHeadingSmClass}>Preferências de Exportação</h4>
+          <p className={leveSettingsMutedTextClass}>
             Configure as opções padrão de exportação e agendamento automático
           </p>
         </div>
 
         {/* Formato Padrão */}
         <div className="space-y-4">
-          <h5 className="font-semibold text-base-content">Formato Padrão</h5>
+          <h5 className={leveSettingsHeadingXsClass}>Formato Padrão</h5>
           <div className="flex flex-wrap gap-2">
             {(['json', 'csv', 'markdown'] as const).map(format => (
               <button
                 key={format}
                 onClick={() => handleDefaultFormatChange(format)}
-                className={`px-4 py-2 rounded transition-colors ${
-                  preferences.defaultFormat === format
-                    ? 'bg-primary text-primary-content'
-                    : 'bg-base-200 text-base-content hover:bg-base-300'
-                }`}
+                className={leveViewFilterPillClass(preferences.defaultFormat === format)}
               >
                 {format.toUpperCase()}
               </button>
@@ -115,7 +122,7 @@ export const ExportPreferences: React.FC = () => {
 
         {/* Opções Padrão de Inclusão */}
         <div className="space-y-4">
-          <h5 className="font-semibold text-base-content">Opções Padrão de Inclusão</h5>
+          <h5 className={leveSettingsHeadingXsClass}>Opções Padrão de Inclusão</h5>
           <div className="space-y-3">
             {[
               { key: 'defaultIncludeMetrics' as const, label: 'Incluir Métricas' },
@@ -129,7 +136,7 @@ export const ExportPreferences: React.FC = () => {
                   onChange={e => handleDefaultIncludeChange(option.key, e.target.checked)}
                   className="w-4 h-4 text-primary rounded focus:ring-primary/40"
                 />
-                <span className="text-sm text-base-content">{option.label}</span>
+                <span className="text-sm text-[var(--leve-header-text)]">{option.label}</span>
               </label>
             ))}
           </div>
@@ -137,20 +144,20 @@ export const ExportPreferences: React.FC = () => {
 
         {/* Templates de Exportação */}
         <div className="space-y-4">
-          <h5 className="font-semibold text-base-content">Templates Salvos</h5>
+          <h5 className={leveSettingsHeadingXsClass}>Templates Salvos</h5>
           <div className="flex gap-2 mb-4">
             <input
               type="text"
               value={newTemplateName}
               onChange={e => setNewTemplateName(e.target.value)}
               placeholder="Nome do template..."
-              className="flex-1 input input-bordered bg-base-100 border-base-300 text-base-content"
+              className={cn(leveSettingsInputClass, 'flex-1')}
               onKeyPress={e => e.key === 'Enter' && handleSaveTemplate()}
             />
             <button
               onClick={handleSaveTemplate}
               disabled={!newTemplateName.trim()}
-              className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              className={cn(leveViewPrimaryBtnClass, 'disabled:cursor-not-allowed disabled:opacity-50')}
             >
               Salvar Template
             </button>
@@ -160,11 +167,11 @@ export const ExportPreferences: React.FC = () => {
               {preferences.templates.map(template => (
                 <div
                   key={template.id}
-                  className="flex items-center justify-between p-3 bg-base-200 border border-base-300 rounded"
+                  className="flex items-center justify-between rounded-lg border border-[color-mix(in_srgb,var(--leve-header-text)_12%,transparent)] bg-[var(--leve-header-bg)] p-3"
                 >
                   <div>
-                    <p className="font-semibold text-base-content">{template.name}</p>
-                    <p className="text-xs text-base-content/70">
+                    <p className={leveSettingsStrongTextClass}>{template.name}</p>
+                    <p className="text-xs text-[var(--leve-header-text-muted)]">
                       {template.format.toUpperCase()} •{' '}
                       {[
                         template.includeMetrics && 'Métricas',
@@ -185,16 +192,16 @@ export const ExportPreferences: React.FC = () => {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-base-content/70">Nenhum template salvo</p>
+            <p className={leveSettingsMutedTextClass}>Nenhum template salvo</p>
           )}
         </div>
 
         {/* Agendamento Automático */}
-        <div className="space-y-4 pt-4 border-t border-base-300">
+        <div className="space-y-4 border-t border-[color-mix(in_srgb,var(--leve-header-text)_12%,transparent)] pt-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h5 className="font-semibold text-base-content">Agendamento Automático</h5>
-              <p className="text-sm text-base-content/70 leading-relaxed">
+              <h5 className={leveSettingsHeadingXsClass}>Agendamento Automático</h5>
+              <p className={leveSettingsMutedTextClass}>
                 Configure exportações automáticas periódicas
               </p>
             </div>
@@ -218,15 +225,15 @@ export const ExportPreferences: React.FC = () => {
                 className="sr-only peer"
                 aria-label="Habilitar agendamento automático"
               />
-              <div className="w-11 h-6 bg-base-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/40 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-primary/25 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-base-100 after:border-base-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+              <div className={leveSettingsToggleTrackClass} />
             </label>
           </div>
 
           {preferences.schedule?.enabled && (
-            <div className="space-y-4 p-4 bg-base-200 border border-base-300 rounded">
+            <div className={cn(leveSettingsCheckboxPanelClass, 'space-y-4')}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-base-content/70 mb-2">Frequência</label>
+                  <label className="mb-2 block text-sm text-[var(--leve-header-text-muted)]">Frequência</label>
                   <select
                     value={preferences.schedule?.frequency || 'daily'}
                     onChange={e =>
@@ -234,7 +241,7 @@ export const ExportPreferences: React.FC = () => {
                         frequency: e.target.value as 'daily' | 'weekly' | 'monthly',
                       })
                     }
-                    className="w-full input input-bordered bg-base-100 border-base-300 text-base-content"
+                    className={cn(leveSettingsSelectClass, 'w-full')}
                   >
                     <option value="daily">Diária</option>
                     <option value="weekly">Semanal</option>
@@ -242,27 +249,24 @@ export const ExportPreferences: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-base-content/70 mb-2">Horário</label>
+                  <label className="mb-2 block text-sm text-[var(--leve-header-text-muted)]">Horário</label>
                   <input
                     type="time"
                     value={preferences.schedule?.time || '09:00'}
                     onChange={e => handleScheduleChange({ time: e.target.value })}
-                    className="w-full input input-bordered bg-base-100 border-base-300 text-base-content"
+                    className={cn(leveSettingsInputClass, 'w-full')}
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm text-base-content/70 mb-2">Formato</label>
+                <label className="mb-2 block text-sm text-[var(--leve-header-text-muted)]">Formato</label>
                 <div className="flex flex-wrap gap-2">
                   {(['json', 'csv', 'markdown'] as const).map(format => (
                     <button
                       key={format}
+                      type="button"
                       onClick={() => handleScheduleChange({ format })}
-                      className={`px-3 py-1 rounded text-sm transition-colors ${
-                        preferences.schedule?.format === format
-                          ? 'bg-primary text-primary-content'
-                          : 'bg-base-100 text-base-content hover:bg-base-200'
-                      }`}
+                      className={leveViewFilterPillClass(preferences.schedule?.format === format)}
                     >
                       {format.toUpperCase()}
                     </button>
@@ -270,17 +274,14 @@ export const ExportPreferences: React.FC = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-sm text-base-content/70 mb-2">Destino</label>
+                <label className="mb-2 block text-sm text-[var(--leve-header-text-muted)]">Destino</label>
                 <div className="flex flex-wrap gap-2">
                   {(['download', 'supabase'] as const).map(dest => (
                     <button
                       key={dest}
+                      type="button"
                       onClick={() => handleScheduleChange({ destination: dest })}
-                      className={`px-3 py-1 rounded text-sm transition-colors ${
-                        preferences.schedule?.destination === dest
-                          ? 'bg-primary text-primary-content'
-                          : 'bg-base-100 text-base-content hover:bg-base-200'
-                      }`}
+                      className={leveViewFilterPillClass(preferences.schedule?.destination === dest)}
                     >
                       {dest === 'download' ? 'Download' : 'Supabase'}
                     </button>
@@ -294,7 +295,7 @@ export const ExportPreferences: React.FC = () => {
                   onChange={e => handleScheduleChange({ notifyOnComplete: e.target.checked })}
                   className="w-4 h-4 text-primary rounded focus:ring-primary/40"
                 />
-                <span className="text-sm text-base-content">
+                <span className="text-sm text-[var(--leve-header-text)]">
                   Notificar quando exportação for concluída
                 </span>
               </label>

@@ -87,6 +87,7 @@ import {
 import { testCaseLooksAutomated } from '../../utils/testCaseMigration';
 import { VirtualizedTaskRootList, shouldVirtualizeTaskRoots } from './VirtualizedTaskRootList';
 import { outlineActionBtn, projectViewPanel, projectViewShell } from '../common/viewUi';
+import { leveViewPagePanelClass, leveViewPageSectionDividerClass } from '../common/projectCardUi';
 import {
   applyBacklogSecondaryFilters,
   BACKLOG_SECONDARY_FILTER_DEFAULTS,
@@ -1770,7 +1771,7 @@ export const TasksView: React.FC<{
       {
         label: 'Total de Tarefas',
         value: stats.total,
-        modifier: '+0%',
+        modifier: 'no escopo',
         icon: ClipboardList,
         colorTheme: 'primary' as const,
       },
@@ -2196,57 +2197,54 @@ export const TasksView: React.FC<{
             : 'Tarefas e casos de teste do projeto'
         }
       >
-        <section className={projectViewPanel}>
-          <TasksViewHeader
-            jiraProjectKey={jiraProjectKey}
-            onAddTask={() => openTaskFormForNew()}
-            onOpenFilters={() => setIsFiltersModalOpen(true)}
-            onAnalyze={handleGeneralIAAnalysis}
-            isRunningGeneralAnalysis={isRunningGeneralAnalysis}
-            analysisProgress={analysisProgress}
-            activeFiltersCount={activeFiltersCount}
+        <TasksViewHeader
+          jiraProjectKey={jiraProjectKey}
+          onAddTask={() => openTaskFormForNew()}
+          onOpenFilters={() => setIsFiltersModalOpen(true)}
+          onAnalyze={handleGeneralIAAnalysis}
+          isRunningGeneralAnalysis={isRunningGeneralAnalysis}
+          analysisProgress={analysisProgress}
+          activeFiltersCount={activeFiltersCount}
+        />
+
+        {!backlogOnly ? (
+          <section aria-label="Indicadores principais de tarefas">
+            <GlassIndicatorCards items={indicatorItems} columns={5} />
+          </section>
+        ) : null}
+
+        <section
+          className={leveViewPagePanelClass}
+          aria-label="Filtros e busca de tarefas"
+        >
+          <TasksViewListModeToggle
+            mode={listModeProp}
+            onModeChange={onListModeChange ?? (() => undefined)}
+            backlogCount={backlogTaskCount}
+            totalCount={project.tasks.length}
+            backlogSortBy={backlogSortBy}
+            onBacklogSortChange={setBacklogSortBy}
+            backlogSprintFilter={backlogSprintFilter}
+            backlogSprintFilterOptions={backlogSprintFilterOptions}
+            onBacklogSprintFilterChange={setBacklogSprintFilter}
+            backlogItemFilter={backlogItemFilter}
+            onBacklogItemFilterChange={setBacklogItemFilter}
+            backlogTypeFilter={backlogTypeFilter}
+            onBacklogTypeFilterChange={setBacklogTypeFilter}
+            backlogPriorityFilter={backlogPriorityFilter}
+            onBacklogPriorityFilterChange={setBacklogPriorityFilter}
+            backlogStoryPointsFilter={backlogStoryPointsFilter}
+            onBacklogStoryPointsFilterChange={setBacklogStoryPointsFilter}
+            onClearBacklogSecondaryFilters={clearBacklogSecondaryFilters}
+            disabled={isRunningGeneralAnalysis || !onListModeChange}
           />
 
-          <div className="mt-4 border-t border-[var(--brand-surface-border)] pt-4">
-            <TasksViewListModeToggle
-              mode={listModeProp}
-              onModeChange={onListModeChange ?? (() => undefined)}
-              backlogCount={backlogTaskCount}
-              totalCount={project.tasks.length}
-              backlogSortBy={backlogSortBy}
-              onBacklogSortChange={setBacklogSortBy}
-              backlogSprintFilter={backlogSprintFilter}
-              backlogSprintFilterOptions={backlogSprintFilterOptions}
-              onBacklogSprintFilterChange={setBacklogSprintFilter}
-              backlogItemFilter={backlogItemFilter}
-              onBacklogItemFilterChange={setBacklogItemFilter}
-              backlogTypeFilter={backlogTypeFilter}
-              onBacklogTypeFilterChange={setBacklogTypeFilter}
-              backlogPriorityFilter={backlogPriorityFilter}
-              onBacklogPriorityFilterChange={setBacklogPriorityFilter}
-              backlogStoryPointsFilter={backlogStoryPointsFilter}
-              onBacklogStoryPointsFilterChange={setBacklogStoryPointsFilter}
-              onClearBacklogSecondaryFilters={clearBacklogSecondaryFilters}
-              disabled={isRunningGeneralAnalysis || !onListModeChange}
-            />
-          </div>
-
-          <div className="mt-4 space-y-4 border-t border-base-300/50 pt-4">
+          <div className={leveViewPageSectionDividerClass}>
             <TasksViewSearch
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
               searchInputRef={searchInputRef}
             />
-
-            {!backlogOnly && (
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25 }}
-              >
-                <GlassIndicatorCards items={indicatorItems} />
-              </motion.div>
-            )}
           </div>
         </section>
 

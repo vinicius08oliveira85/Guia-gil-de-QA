@@ -1,50 +1,32 @@
 import React from 'react';
 import { cn } from '../../utils/cn';
 
-/**
- * Variantes de status para o badge
- */
 export type StatusVariant = 'connected' | 'disconnected' | 'configured' | 'warning';
 
-/**
- * Props do componente StatusBadge
- */
 interface StatusBadgeProps {
-  /** Variante do status */
   variant: StatusVariant;
-  /** Conteúdo do badge */
   children: React.ReactNode;
-  /** Classes CSS adicionais */
   className?: string;
 }
 
-/**
- * Estilos para cada variante
- */
 const variantStyles: Record<StatusVariant, string> = {
   connected:
-    'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-500/20',
+    'border-[color-mix(in_srgb,#10b981_35%,transparent)] bg-[color-mix(in_srgb,#10b981_10%,var(--leve-header-cream))] text-[#0d7a4f]',
   disconnected:
-    'bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive-foreground border-destructive/20',
+    'border-[var(--leve-header-border)] bg-[var(--leve-header-cream)] text-[var(--leve-header-text-muted)]',
   configured:
-    'bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 border-blue-500/20',
+    'border-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] bg-[color-mix(in_srgb,var(--leve-header-accent)_10%,var(--leve-header-cream))] text-[var(--leve-header-accent)]',
   warning:
-    'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 border-amber-500/20',
+    'border-[color-mix(in_srgb,var(--leve-header-accent)_30%,transparent)] bg-[color-mix(in_srgb,var(--leve-header-accent)_8%,var(--leve-header-cream))] text-[var(--leve-header-accent)]',
 };
 
-/**
- * Estilos para o dot indicador
- */
 const dotStyles: Record<StatusVariant, string> = {
-  connected: 'bg-emerald-600 dark:bg-emerald-400',
-  disconnected: 'bg-destructive dark:bg-destructive-foreground',
-  configured: 'bg-blue-600 dark:bg-blue-400',
-  warning: 'bg-amber-600 dark:bg-amber-400',
+  connected: 'bg-[#10b981]',
+  disconnected: 'bg-[var(--leve-header-text-muted)]',
+  configured: 'bg-[var(--leve-header-accent)]',
+  warning: 'bg-[var(--leve-header-accent)]',
 };
 
-/**
- * Labels acessíveis para cada variante
- */
 const ariaLabels: Record<StatusVariant, string> = {
   connected: 'Conectado',
   disconnected: 'Desconectado',
@@ -52,33 +34,20 @@ const ariaLabels: Record<StatusVariant, string> = {
   warning: 'Aviso',
 };
 
-/**
- * Componente StatusBadge com indicador visual (dot)
- *
- * Exibe um badge de status com um indicador circular colorido antes do texto.
- * Suporta diferentes variantes semânticas e dark mode.
- *
- * @example
- * ```tsx
- * <StatusBadge variant="connected">Conectado</StatusBadge>
- * <StatusBadge variant="disconnected">Desconectado</StatusBadge>
- * <StatusBadge variant="configured">Configurado</StatusBadge>
- * ```
- */
 export const StatusBadge = React.memo<StatusBadgeProps>(({ variant, children, className }) => {
   const label = typeof children === 'string' ? children : ariaLabels[variant];
 
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border',
+        'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 font-sans text-xs font-semibold',
         variantStyles[variant],
         className
       )}
       aria-label={`Status: ${label}`}
       role="status"
     >
-      <span className={cn('h-1.5 w-1.5 rounded-full', dotStyles[variant])} aria-hidden="true" />
+      <span className={cn('h-1.5 w-1.5 rounded-full', dotStyles[variant])} aria-hidden />
       {children}
     </span>
   );

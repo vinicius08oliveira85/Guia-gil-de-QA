@@ -24,19 +24,21 @@ import { DocumentCard } from './documents/DocumentCard';
 import { Search, Upload, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Button } from './common/Button';
 import { cn } from '../utils/cn';
+import { documentCardGrid, projectViewPanel, projectViewShell } from './common/viewUi';
 import {
-  filterPillClass,
-  outlineActionBtn,
-  primaryActionBtn,
-  projectViewPanel,
-  documentCardGrid,
-  pageSubtitleClass,
-  pageTitleClass,
-  contextBadgeClass,
-  projectViewShell,
-  searchInputClass,
-} from './common/viewUi';
-import { workspacePanelShellClass, workspacePanelSectionTitleClass } from './common/projectCardUi';
+  leveViewFilterPillClass,
+  leveViewOutlineBtnClass,
+  leveViewPageHeaderShellClass,
+  leveViewPageJiraBadgeClass,
+  leveViewPageMutedClass,
+  leveViewPagePanelClass,
+  leveViewPageSubtitleClass,
+  leveViewPageTitleClass,
+  leveViewPrimaryBtnClass,
+  leveViewSearchInputClass,
+  workspacePanelShellClass,
+  workspacePanelSectionTitleClass,
+} from './common/projectCardUi';
 import { DocumentAnalysisBody } from './documents/DocumentAnalysisBody';
 
 interface DocumentWithMetadata extends ProjectDocument {
@@ -354,11 +356,11 @@ export const DocumentsView: React.FC<{
   const documentsDescription = (
     <>
       Gerencie e analise documentos do projeto.{' '}
-      <span className="font-medium text-[var(--brand-text-strong)]">
+      <span className="font-medium text-[var(--leve-header-text)]">
         {stats.total} documento{stats.total !== 1 ? 's' : ''} • {formatFileSize(stats.totalSize)}
       </span>
       {lastUpdatedText ? (
-        <span className="text-xs text-[var(--brand-text-muted)]" title="Última alteração do projeto">
+        <span className={cn(leveViewPageMutedClass, 'text-xs')} title="Última alteração do projeto">
           {' '}
           — Atualizado {lastUpdatedText}
         </span>
@@ -370,85 +372,91 @@ export const DocumentsView: React.FC<{
 
   return (
     <div className={projectViewShell} role="main" aria-label="Documentos do projeto">
-      <section className={projectViewPanel}>
-        <header className="flex flex-col gap-2 border-b border-[var(--brand-surface-border)] pb-3 sm:gap-3 sm:pb-4">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-            <div className="min-w-0">
-              <div className="mb-1 flex flex-wrap items-center gap-2">
-                <h1 id="documents-section-heading" className={pageTitleClass}>
-                  Documentos
-                </h1>
-                {jiraProjectKey && (
-                  <span className={contextBadgeClass}>Jira: {jiraProjectKey}</span>
-                )}
-              </div>
-              <p className={pageSubtitleClass}>
-                {documentsDescription}
-              </p>
+      <header className={leveViewPageHeaderShellClass}>
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0">
+            <div className="mb-1 flex flex-wrap items-center gap-2">
+              <h1 id="documents-section-heading" className={leveViewPageTitleClass}>
+                Documentos
+              </h1>
+              {jiraProjectKey ? (
+                <span className={leveViewPageJiraBadgeClass}>Jira: {jiraProjectKey}</span>
+              ) : null}
             </div>
-            <label className={cn(primaryActionBtn, 'cursor-pointer shrink-0')}>
-              <Upload className="h-4 w-4 shrink-0" aria-hidden />
-              Carregar
-              <input
-                ref={uploadInputRef}
-                type="file"
-                accept=".txt,.md,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.json,.csv,.xml,.jpg,.jpeg,.png,.gif,.webp,.svg"
-                onChange={handleFileUpload}
-                className="hidden"
-                aria-label="Carregar documento"
-              />
-            </label>
+            <p className={leveViewPageSubtitleClass}>{documentsDescription}</p>
           </div>
-        </header>
-        <div className="mt-3 border-t border-[var(--brand-surface-border)] pt-3">
-          <SpecificationDocumentProcessor project={project} onUpdateProject={onUpdateProject} />
+          <label className={cn(leveViewPrimaryBtnClass, 'shrink-0 cursor-pointer')}>
+            <Upload className="h-4 w-4 shrink-0" aria-hidden />
+            Carregar
+            <input
+              ref={uploadInputRef}
+              type="file"
+              accept=".txt,.md,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.json,.csv,.xml,.jpg,.jpeg,.png,.gif,.webp,.svg"
+              onChange={handleFileUpload}
+              className="hidden"
+              aria-label="Carregar documento"
+            />
+          </label>
         </div>
+      </header>
+
+      <section aria-label="Indicadores de documentos por categoria">
+        <DocumentStatsCards
+          categoryCounts={stats.categoryCounts}
+          totalDocuments={stats.total}
+          selectedCategory={selectedCategory}
+          onCategorySelect={setSelectedCategory}
+        />
       </section>
 
-      <section className={cn(projectViewPanel, 'space-y-3 sm:space-y-4')}>
+      <section aria-label="Documento de especificação para contexto de IA">
+        <SpecificationDocumentProcessor project={project} onUpdateProject={onUpdateProject} />
+      </section>
 
-        {stats.total > 0 && (
+      <section className={leveViewPagePanelClass} aria-label="Filtros e busca de documentos">
+        {stats.total > 0 ? (
           <div
             className={cn(
               workspacePanelShellClass,
-              'flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-2.5 sm:px-3.5'
+              'mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-2.5 sm:px-3.5'
             )}
           >
             <span className={workspacePanelSectionTitleClass}>Resumo</span>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--brand-text-muted)]">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-sans text-sm text-[var(--workspace-panel-text-muted)]">
               <span className="inline-flex items-center gap-1.5">
-                <FileText className="h-4 w-4 text-[var(--brand-cta)]" aria-hidden />
-                <strong className="text-[var(--brand-text-strong)]">{stats.total}</strong> documento
+                <FileText className="h-4 w-4 text-[var(--workspace-panel-accent)]" aria-hidden />
+                <strong className="text-[var(--workspace-panel-text)]">{stats.total}</strong> documento
                 {stats.total !== 1 ? 's' : ''}
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <CheckCircle2 className="h-4 w-4 text-success" aria-hidden />
-                <strong className="text-[var(--brand-text-strong)]">{stats.withAnalysisCount}</strong> com análise
+                <strong className="text-[var(--workspace-panel-text)]">{stats.withAnalysisCount}</strong>{' '}
+                com análise
               </span>
-              {stats.withoutAnalysisCount > 0 && (
+              {stats.withoutAnalysisCount > 0 ? (
                 <span className="inline-flex items-center gap-1.5">
-                  <AlertCircle className="h-4 w-4 text-warning" aria-hidden />
-                  <strong className="text-[var(--brand-text-strong)]">{stats.withoutAnalysisCount}</strong> sem análise
+                  <AlertCircle className="h-4 w-4 text-[var(--workspace-panel-accent)]" aria-hidden />
+                  <strong className="text-[var(--workspace-panel-text)]">
+                    {stats.withoutAnalysisCount}
+                  </strong>{' '}
+                  sem análise
                 </span>
-              )}
+              ) : null}
               <span>
-                Total: <strong className="text-[var(--brand-text-strong)]">{formatFileSize(stats.totalSize)}</strong>
+                Total:{' '}
+                <strong className="text-[var(--workspace-panel-text)]">
+                  {formatFileSize(stats.totalSize)}
+                </strong>
               </span>
             </div>
           </div>
-        )}
+        ) : null}
 
-        <DocumentStatsCards
-              categoryCounts={stats.categoryCounts}
-              totalDocuments={stats.total}
-              selectedCategory={selectedCategory}
-              onCategorySelect={setSelectedCategory}
-            />
-            {stats.total > 0 && (
+        {stats.total > 0 ? (
           <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
             <div className="relative min-w-0 flex-1 sm:min-w-[240px]">
               <Search
-                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--brand-text-muted)]"
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--leve-header-text-muted)]"
                 aria-hidden
               />
               <input
@@ -456,7 +464,7 @@ export const DocumentsView: React.FC<{
                 placeholder="Buscar documentos..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className={cn(searchInputClass, 'min-w-[200px] flex-1')}
+                className={cn(leveViewSearchInputClass, 'min-w-[200px] flex-1')}
                 aria-label="Buscar documentos"
               />
             </div>
@@ -464,7 +472,7 @@ export const DocumentsView: React.FC<{
               <button
                 type="button"
                 onClick={() => setSelectedCategory('all')}
-                className={filterPillClass(selectedCategory === 'all')}
+                className={leveViewFilterPillClass(selectedCategory === 'all')}
                 aria-pressed={selectedCategory === 'all'}
                 aria-label={`Filtrar: todas, ${stats.total} documento(s)`}
               >
@@ -478,7 +486,7 @@ export const DocumentsView: React.FC<{
                     key={cat.id}
                     type="button"
                     onClick={() => setSelectedCategory(cat.id)}
-                    className={filterPillClass(isSelected)}
+                    className={leveViewFilterPillClass(isSelected)}
                     aria-pressed={isSelected}
                     aria-label={`Filtrar por ${label}, ${stats.categoryCounts[cat.id] || 0} documento(s)`}
                   >
@@ -490,10 +498,7 @@ export const DocumentsView: React.FC<{
                 <button
                   type="button"
                   onClick={() => setOnlyWithoutAnalysis(prev => !prev)}
-                  className={cn(
-                    filterPillClass(onlyWithoutAnalysis),
-                    !onlyWithoutAnalysis && 'text-warning'
-                  )}
+                  className={leveViewFilterPillClass(onlyWithoutAnalysis)}
                   aria-pressed={onlyWithoutAnalysis}
                   aria-label={
                     onlyWithoutAnalysis
@@ -512,7 +517,7 @@ export const DocumentsView: React.FC<{
                     setSelectedCategory('all');
                     setOnlyWithoutAnalysis(false);
                   }}
-                  className={outlineActionBtn}
+                  className={leveViewOutlineBtnClass}
                   aria-label="Limpar filtros"
                 >
                   Limpar filtros
@@ -520,8 +525,10 @@ export const DocumentsView: React.FC<{
               )}
             </div>
           </div>
-        )}
+        ) : null}
+      </section>
 
+      <section className={projectViewPanel}>
         <div className="flex flex-col gap-3">
         {filteredDocuments.length > 0 ? (
           <div

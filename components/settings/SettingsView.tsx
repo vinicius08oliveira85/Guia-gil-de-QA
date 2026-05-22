@@ -6,19 +6,27 @@ import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { Project } from '../../types';
 import { cn } from '../../utils/cn';
-import { appNavPillTabClass, pageSubtitleClass, settingsContentShell } from '../common/viewUi';
+import {
+  leveSettingsContentAreaClass,
+  leveSettingsHeaderStickyClass,
+  leveSettingsPageClass,
+  leveSettingsPanelClass,
+  leveSettingsTabClass,
+  leveSettingsTabsNavClass,
+  leveViewPageSubtitleClass,
+  leveViewPageTitleClass,
+} from '../common/projectCardUi';
+import { settingsContentShell } from '../common/viewUi';
 
-// Lazy load das tabs com tratamento de erro
 const lazyLoadTab = (importFn: () => Promise<any>, name: string) => {
   return React.lazy(() =>
     importFn().catch(error => {
       console.error(`Erro ao carregar ${name}:`, error);
-      // Retornar um componente de fallback em caso de erro
       return {
         default: () => (
           <div className="p-6">
-            <div className="alert alert-error">
-              <span>Erro ao carregar {name}. Por favor, recarregue a página.</span>
+            <div className="rounded-[var(--leve-header-radius)] border border-[color-mix(in_srgb,#e54b4f_30%,transparent)] bg-[color-mix(in_srgb,#e54b4f_8%,var(--leve-header-bg))] px-4 py-3 font-sans text-sm text-[#e54b4f]">
+              Erro ao carregar {name}. Por favor, recarregue a página.
             </div>
           </div>
         ),
@@ -57,7 +65,6 @@ const tabs: { id: TabType; label: string; icon: React.ComponentType<{ className?
 interface SettingsViewProps {
   onClose: () => void;
   onProjectImported?: (project: Project) => void;
-  /** Após importar backup JSON do IndexedDB, recarregar projetos no store. */
   onLocalBackupRestored?: () => void | Promise<void>;
 }
 
@@ -102,32 +109,27 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-base-100">
-      {/* Header melhorado */}
-      <div className="sticky top-0 z-20 border-b border-base-300/60 bg-base-100 soft-shadow">
+    <div className={leveSettingsPageClass}>
+      <div className={leveSettingsHeaderStickyClass}>
         <div className={cn(settingsContentShell, 'py-5 sm:py-6')}>
           <div className="flex flex-col gap-6">
-            {/* Header com título e subtítulo */}
             <div className="flex items-start gap-4">
               <BackButton
-                className="shrink-0 mt-1 self-start"
+                className="mt-1 shrink-0 self-start text-[var(--leve-header-text-muted)] hover:text-[var(--leve-header-accent)]"
                 onClick={handleClose}
                 title="Voltar"
                 aria-label="Voltar"
               />
-              <div className="flex-1 min-w-0">
-                <h1 className="app-element-typography font-heading text-2xl font-bold tracking-tight text-[var(--brand-text-strong)] sm:text-3xl">
-                  Configurações
-                </h1>
-                <p className={cn(pageSubtitleClass, 'mt-2')}>
+              <div className="min-w-0 flex-1">
+                <h1 className={cn(leveViewPageTitleClass, 'sm:text-3xl')}>Configurações</h1>
+                <p className={cn(leveViewPageSubtitleClass, 'mt-2')}>
                   Gerencie suas integrações, preferências e configurações do projeto
                 </p>
               </div>
             </div>
 
-            {/* Tab Navigation melhorada */}
             <nav
-              className="no-scrollbar flex gap-4 overflow-x-auto border-b border-base-300/70 sm:gap-6"
+              className={leveSettingsTabsNavClass}
               role="tablist"
               aria-label="Abas de configurações"
             >
@@ -140,18 +142,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     onKeyDown={handleTabKeyDown}
-                    className={cn(
-                      appNavPillTabClass,
-                      'inline-flex items-center gap-2',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] focus-visible:ring-offset-2'
-                    )}
+                    className={leveSettingsTabClass}
                     data-active={isActive ? 'true' : undefined}
                     role="tab"
                     aria-selected={isActive}
                     aria-controls={`tab-panel-${tab.id}`}
                     type="button"
                   >
-                    <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <Icon className="h-4 w-4 shrink-0" aria-hidden />
                     {tab.label}
                   </button>
                 );
@@ -161,15 +159,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </div>
       </div>
 
-      {/* Tab Content */}
-      <div className="flex-1 overflow-y-auto bg-base-200/30">
+      <div className={leveSettingsContentAreaClass}>
         <div className={cn(settingsContentShell, 'py-6')}>
           <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
             <div
               id={`tab-panel-${activeTab}`}
               role="tabpanel"
               aria-labelledby={`tab-${activeTab}`}
-              className="app-panel p-4 soft-shadow sm:p-5"
+              className={leveSettingsPanelClass}
             >
               {activeTab === 'jira' && (
                 <JiraSettingsTab

@@ -1,53 +1,28 @@
 import React from 'react';
 import { Settings, ChevronRight } from 'lucide-react';
-import { projectViewCard } from '../common/viewUi';
+import {
+  leveSettingsCardClass,
+  leveSettingsMutedTextClass,
+  leveSettingsSectionIconWrapClass,
+  leveSettingsSectionTitleClass,
+  leveViewOutlineBtnClass,
+  leveViewPrimaryBtnClass,
+} from '../common/projectCardUi';
 import { StatusBadge, type StatusVariant } from './StatusBadge';
-import { Button } from '../common/Button';
 import { cn } from '../../utils/cn';
 
-/**
- * Props do componente IntegrationCard
- */
 interface IntegrationCardProps {
-  /** Nome da integração */
   name: string;
-  /** Descrição da integração */
   description: string;
-  /** Ícone da integração (ReactNode) */
   icon: React.ReactNode;
-  /** Variante de status */
   status: StatusVariant;
-  /** Label do status */
   statusLabel: string;
-  /** Callback quando clicar em conectar */
   onConnect?: () => void;
-  /** Callback quando clicar em configurar */
   onConfigure?: () => void;
-  /** Callback quando clicar em desconectar */
   onDisconnect?: () => void;
-  /** Classes CSS adicionais */
   className?: string;
 }
 
-/**
- * Componente IntegrationCard - Card reutilizável para exibir integrações
- *
- * Exibe informações sobre uma integração (Jira, Supabase, etc.) com status,
- * ícone, descrição e botões de ação.
- *
- * @example
- * ```tsx
- * <IntegrationCard
- *   name="Jira"
- *   description="Conecte seu workspace Jira"
- *   icon={<JiraIcon />}
- *   status="connected"
- *   statusLabel="Conectado"
- *   onConfigure={() => {}}
- *   onDisconnect={() => {}}
- * />
- * ```
- */
 export const IntegrationCard = React.memo<IntegrationCardProps>(
   ({
     name,
@@ -65,52 +40,45 @@ export const IntegrationCard = React.memo<IntegrationCardProps>(
     return (
       <div
         className={cn(
-          projectViewCard,
-          'transition-colors hover:border-[color-mix(in_srgb,var(--brand-cta)_25%,transparent)]',
+          leveSettingsCardClass,
+          'transition-colors hover:border-[color-mix(in_srgb,var(--leve-header-accent)_25%,transparent)]',
           className
         )}
       >
         <div className="flex items-start gap-4">
-          {/* Ícone da integração */}
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[var(--radius)] bg-[color-mix(in_srgb,var(--brand-cta)_12%,transparent)]">
-            {icon}
-          </div>
+          <div className={leveSettingsSectionIconWrapClass}>{icon}</div>
 
-          {/* Conteúdo principal */}
-          <div className="flex-1 min-w-0">
-            {/* Header com nome e status */}
-            <div className="flex items-start justify-between gap-4 mb-2">
-              <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-semibold text-base-content">{name}</h3>
-                <p className="text-sm text-base-content/70 mt-1 leading-relaxed">{description}</p>
+          <div className="min-w-0 flex-1">
+            <div className="mb-2 flex items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <h3 className={cn(leveSettingsSectionTitleClass, 'text-lg')}>{name}</h3>
+                <p className={cn(leveSettingsMutedTextClass, 'mt-1')}>{description}</p>
               </div>
               <StatusBadge variant={status}>{statusLabel}</StatusBadge>
             </div>
 
-            {/* Botões de ação */}
-            <div className="flex items-center gap-2 mt-4 flex-wrap">
+            <div className="mt-4 flex flex-wrap items-center gap-2">
               {!isConnected ? (
-                <Button onClick={onConnect} size="sm" className="flex items-center gap-1">
+                <button type="button" onClick={onConnect} className={cn(leveViewPrimaryBtnClass, 'gap-1 text-sm')}>
                   Conectar
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+                  <ChevronRight className="h-4 w-4" aria-hidden />
+                </button>
               ) : (
                 <>
                   {onConfigure && (
-                    <Button
+                    <button
+                      type="button"
                       onClick={onConfigure}
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-2"
+                      className={cn(leveViewOutlineBtnClass, 'gap-2 text-sm')}
                     >
-                      <Settings className="h-4 w-4" />
+                      <Settings className="h-4 w-4" aria-hidden />
                       Configurar
-                    </Button>
+                    </button>
                   )}
                   {onDisconnect && (
-                    <Button onClick={onDisconnect} variant="ghost" size="sm">
+                    <button type="button" onClick={onDisconnect} className={cn(leveViewOutlineBtnClass, 'text-sm')}>
                       Desconectar
-                    </Button>
+                    </button>
                   )}
                 </>
               )}

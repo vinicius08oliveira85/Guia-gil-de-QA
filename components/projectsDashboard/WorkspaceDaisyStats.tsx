@@ -2,9 +2,11 @@ import React from 'react';
 import { FolderKanban, CircleCheck, ListTodo, Cloud, CloudOff, AlertTriangle } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import {
-  workspaceStatCardClass,
-  workspaceStatLabelClass,
-  workspaceStatValueClass,
+  formatWorkspaceStatCount,
+  formatWorkspaceStatPercent,
+  workspaceDaisyStatCardClass,
+  workspaceDaisyStatLabelClass,
+  workspaceDaisyStatValueClass,
 } from '../common/projectCardUi';
 
 export interface WorkspaceDaisyStatsProps {
@@ -18,6 +20,8 @@ export interface WorkspaceDaisyStatsProps {
   className?: string;
 }
 
+const iconClass = 'h-3.5 w-3.5 shrink-0 text-[var(--workspace-stat-accent)] sm:h-4 sm:w-4';
+
 export const WorkspaceDaisyStats: React.FC<WorkspaceDaisyStatsProps> = ({
   projectCount,
   testSuccessPercent,
@@ -29,51 +33,54 @@ export const WorkspaceDaisyStats: React.FC<WorkspaceDaisyStatsProps> = ({
 }) => {
   let cloudValue: string;
   let cloudIcon: React.ReactNode;
-  let cloudValueClass = 'text-[var(--brand-text-strong)]';
+  let cloudValueClass = workspaceDaisyStatValueClass;
 
   if (!supabaseAvailable) {
     cloudValue = '—';
-    cloudIcon = <CloudOff className="h-3.5 w-3.5 text-[var(--brand-text-muted)]" aria-hidden />;
-    cloudValueClass = 'text-[var(--brand-text-muted)]';
+    cloudIcon = (
+      <CloudOff className="h-3.5 w-3.5 shrink-0 text-[var(--workspace-stat-text)] opacity-50 sm:h-4 sm:w-4" strokeWidth={1.75} aria-hidden />
+    );
+    cloudValueClass = 'font-sans text-xl font-extrabold tabular-nums leading-none text-[var(--workspace-stat-text)] opacity-50 sm:text-2xl';
   } else if (supabaseLoadFailed) {
     cloudValue = 'Indisponível';
-    cloudIcon = <AlertTriangle className="h-3.5 w-3.5 text-warning" aria-hidden />;
-    cloudValueClass = 'text-warning';
+    cloudIcon = <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-warning sm:h-4 sm:w-4" strokeWidth={1.75} aria-hidden />;
+    cloudValueClass = 'font-sans text-lg font-extrabold tabular-nums leading-none text-warning sm:text-xl';
   } else if (lastSaveToSupabase === true) {
     cloudValue = 'OK';
-    cloudIcon = <Cloud className="h-3.5 w-3.5 text-success" aria-hidden />;
-    cloudValueClass = 'text-success';
+    cloudIcon = <Cloud className={iconClass} strokeWidth={1.75} aria-hidden />;
   } else if (lastSaveToSupabase === false) {
     cloudValue = 'Local';
-    cloudIcon = <CloudOff className="h-3.5 w-3.5 text-warning" aria-hidden />;
-    cloudValueClass = 'text-warning';
+    cloudIcon = <CloudOff className="h-3.5 w-3.5 shrink-0 text-warning sm:h-4 sm:w-4" strokeWidth={1.75} aria-hidden />;
+    cloudValueClass = 'font-sans text-xl font-extrabold tabular-nums leading-none text-warning sm:text-2xl';
   } else {
     cloudValue = '—';
-    cloudIcon = <Cloud className="h-3.5 w-3.5 text-[var(--brand-text-muted)]" aria-hidden />;
-    cloudValueClass = 'text-[var(--brand-text-muted)]';
+    cloudIcon = (
+      <Cloud className="h-3.5 w-3.5 shrink-0 text-[var(--workspace-stat-text)] opacity-50 sm:h-4 sm:w-4" strokeWidth={1.75} aria-hidden />
+    );
+    cloudValueClass = 'font-sans text-xl font-extrabold tabular-nums leading-none text-[var(--workspace-stat-text)] opacity-50 sm:text-2xl';
   }
 
   const items = [
     {
       key: 'projects',
-      icon: <FolderKanban className="h-3.5 w-3.5 text-[var(--brand-cta)] sm:h-4 sm:w-4" aria-hidden />,
+      icon: <FolderKanban className={iconClass} strokeWidth={1.75} aria-hidden />,
       label: 'Projetos',
-      value: String(projectCount),
-      valueClass: 'text-[var(--brand-text-strong)]',
+      value: formatWorkspaceStatCount(projectCount),
+      valueClass: workspaceDaisyStatValueClass,
     },
     {
       key: 'success',
-      icon: <CircleCheck className="h-3.5 w-3.5 text-success sm:h-4 sm:w-4" aria-hidden />,
+      icon: <CircleCheck className={iconClass} strokeWidth={1.75} aria-hidden />,
       label: 'Sucesso testes',
-      value: `${testSuccessPercent}%`,
-      valueClass: 'text-success',
+      value: formatWorkspaceStatPercent(testSuccessPercent),
+      valueClass: workspaceDaisyStatValueClass,
     },
     {
       key: 'progress',
-      icon: <ListTodo className="h-3.5 w-3.5 text-[var(--brand-cta)] sm:h-4 sm:w-4" aria-hidden />,
+      icon: <ListTodo className={iconClass} strokeWidth={1.75} aria-hidden />,
       label: 'Progresso',
-      value: `${taskDonePercent}%`,
-      valueClass: 'text-[var(--brand-cta)]',
+      value: formatWorkspaceStatPercent(taskDonePercent),
+      valueClass: workspaceDaisyStatValueClass,
     },
     {
       key: 'cloud',
@@ -93,12 +100,12 @@ export const WorkspaceDaisyStats: React.FC<WorkspaceDaisyStatsProps> = ({
       aria-label={isContents ? undefined : 'Indicadores do workspace'}
     >
       {items.map(item => (
-        <div key={item.key} className={workspaceStatCardClass} title={item.label}>
-          <div className="flex items-center gap-1">
+        <div key={item.key} className={workspaceDaisyStatCardClass} title={item.label}>
+          <div className="flex items-center justify-center gap-1.5">
             {item.icon}
-            <span className={workspaceStatLabelClass}>{item.label}</span>
+            <span className={workspaceDaisyStatLabelClass}>{item.label}</span>
           </div>
-          <span className={cn(workspaceStatValueClass, item.valueClass)}>{item.value}</span>
+          <span className={cn(item.valueClass)}>{item.value}</span>
         </div>
       ))}
     </div>

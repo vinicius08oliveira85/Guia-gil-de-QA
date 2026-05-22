@@ -4,11 +4,11 @@ import { getTestCaseListTitle } from '../../utils/testCaseActionDisplay';
 import { Badge } from '../common/Badge';
 import { cn } from '../../utils/cn';
 import {
-  taskCardSectionTitleClass,
-  taskLabelMutedClass,
-  taskModalSectionClass,
-  taskTextStrongClass,
-} from './taskActionLayout';
+  leveSettingsHeadingXsClass,
+  leveSettingsMutedTextClass,
+  leveSettingsMutedTextXsClass,
+  leveTaskModalSectionClass,
+} from '../common/projectCardUi';
 
 interface TestReportExecutionPanelProps {
   executedTestCases: TestCase[];
@@ -60,15 +60,15 @@ export const TestReportExecutionPanel: React.FC<TestReportExecutionPanelProps> =
 }) => {
   return (
     <div className="min-h-0 space-y-4">
-      <div className={cn(taskModalSectionClass, 'p-4 shadow-sm')}>
+      <div className={cn(leveTaskModalSectionClass, 'p-4')}>
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <p className={cn('text-sm font-semibold', taskTextStrongClass)}>Painel da execução</p>
-            <p className={cn('text-xs', taskLabelMutedClass)}>
+            <p className={leveSettingsHeadingXsClass}>Painel da execução</p>
+            <p className={leveSettingsMutedTextXsClass}>
               Indicadores rápidos para leitura do resultado.
             </p>
           </div>
-          <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-base-content/70 sm:justify-end">
+          <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-[var(--leve-header-text-muted)] sm:justify-end">
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-success" aria-hidden />
               <span className="whitespace-nowrap">Aprovado</span>
@@ -85,31 +85,29 @@ export const TestReportExecutionPanel: React.FC<TestReportExecutionPanelProps> =
         </div>
 
         <div className="mt-4 grid grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-3">
-          <div className="rounded-[var(--radius)] border border-success/30 bg-success/10 px-4 py-3">
+          <div className="rounded-[var(--leve-header-radius)] border border-success/30 bg-success/10 px-4 py-3">
             <p className="text-xs font-semibold leading-tight text-success break-words">Aprovados</p>
             <p className="mt-2 text-2xl font-bold text-success">{visualStats.approved}</p>
           </div>
-          <div className="rounded-[var(--radius)] border border-error/30 bg-error/10 px-4 py-3">
+          <div className="rounded-[var(--leve-header-radius)] border border-error/30 bg-error/10 px-4 py-3">
             <p className="text-xs font-semibold leading-tight text-error break-words">Reprovados</p>
             <p className="mt-2 text-2xl font-bold text-error">{visualStats.failed}</p>
           </div>
-          <div className="rounded-[var(--radius)] border border-warning/30 bg-warning/10 px-4 py-3">
+          <div className="rounded-[var(--leve-header-radius)] border border-warning/30 bg-warning/10 px-4 py-3">
             <p className="text-xs font-semibold leading-tight text-warning break-words">Bloqueados</p>
             <p className="mt-2 text-2xl font-bold text-warning">{visualStats.blocked}</p>
           </div>
         </div>
       </div>
 
-      <div className={cn(taskModalSectionClass, 'flex min-h-0 flex-1 flex-col overflow-hidden shadow-sm')}>
-        <div className="border-b border-[var(--brand-surface-border)] px-4 py-3">
-          <p className={cn('text-sm font-semibold', taskTextStrongClass)}>Casos executados</p>
-          <p className={cn('text-xs', taskLabelMutedClass)}>
-            Visão resumida dos cenários já validados.
-          </p>
+      <div className={cn(leveTaskModalSectionClass, 'flex min-h-0 flex-1 flex-col overflow-hidden')}>
+        <div className="border-b border-[var(--leve-header-border)] px-4 py-3">
+          <p className={leveSettingsHeadingXsClass}>Casos executados</p>
+          <p className={leveSettingsMutedTextXsClass}>Visão resumida dos cenários já validados.</p>
         </div>
 
         {executedTestCases.length > 0 ? (
-          <div className="custom-scrollbar max-h-[360px] overflow-y-auto divide-y divide-base-200">
+          <div className="custom-scrollbar max-h-[360px] overflow-y-auto divide-y divide-[var(--leve-header-border)]">
             {executedTestCases.map((testCase, index) => {
               const statusData = getStatusBadge(testCase.status);
               return (
@@ -119,7 +117,7 @@ export const TestReportExecutionPanel: React.FC<TestReportExecutionPanelProps> =
                 >
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-base-content whitespace-pre-wrap break-words">
+                      <p className="whitespace-pre-wrap break-words text-sm font-medium text-[var(--leve-header-text)]">
                         {getTestCaseHeadline(testCase, index)}
                       </p>
                     </div>
@@ -135,7 +133,7 @@ export const TestReportExecutionPanel: React.FC<TestReportExecutionPanelProps> =
 
                   {testCase.observedResult && testCase.observedResult.trim() && (
                     <div className="mt-2">
-                      <p className="text-xs font-medium text-base-content/70 mb-0.5">
+                      <p className="mb-0.5 text-xs font-medium text-[var(--leve-header-text-muted)]">
                         Resultado Obtido:
                       </p>
                       <p className={`text-xs whitespace-pre-wrap break-words ${statusData.textClass}`}>
@@ -148,7 +146,7 @@ export const TestReportExecutionPanel: React.FC<TestReportExecutionPanelProps> =
             })}
           </div>
         ) : (
-          <div className="px-4 py-6 text-sm text-base-content/70">
+          <div className={cn('px-4 py-6', leveSettingsMutedTextClass)}>
             Nenhum teste executado até o momento.
           </div>
         )}

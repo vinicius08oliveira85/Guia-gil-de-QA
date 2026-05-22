@@ -3,6 +3,11 @@ import { Bell, Keyboard, Upload } from 'lucide-react';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { cn } from '../../utils/cn';
 import { lazyWithRetry } from '../../utils/lazyWithRetry';
+import {
+  leveSettingsSectionSubtitleClass,
+  leveSettingsSectionTitleClass,
+  leveSettingsSubTabClass,
+} from '../common/projectCardUi';
 
 const NotificationPreferences = lazyWithRetry(() =>
   import('./NotificationPreferences').then(m => ({ default: m.NotificationPreferences }))
@@ -31,16 +36,14 @@ export const PreferencesTab: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header da seção */}
       <div>
-        <h3 className="text-xl font-bold text-base-content mb-2">Preferências</h3>
-        <p className="text-base-content/70 text-sm leading-relaxed">
+        <h3 className={leveSettingsSectionTitleClass}>Preferências</h3>
+        <p className={cn(leveSettingsSectionSubtitleClass, 'mt-2')}>
           Configure suas preferências pessoais do aplicativo
         </p>
       </div>
 
-      {/* Navegação por seções */}
-      <div className="border-b border-base-300">
+      <div className="border-b border-[color-mix(in_srgb,var(--leve-header-text)_12%,transparent)]">
         <nav
           className="flex gap-1 overflow-x-auto no-scrollbar"
           role="tablist"
@@ -54,13 +57,7 @@ export const PreferencesTab: React.FC = () => {
               <button
                 key={section.id}
                 onClick={() => setActiveSection(section.id)}
-                className={cn(
-                  'relative inline-flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
-                  'hover:text-base-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2',
-                  isActive
-                    ? 'border-error font-semibold text-base-content after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:rounded-full after:bg-error'
-                    : 'border-transparent text-base-content/70 hover:border-base-300 hover:text-base-content/85'
-                )}
+                className={leveSettingsSubTabClass(isActive)}
                 role="tab"
                 aria-selected={isActive}
                 aria-controls={`preference-panel-${section.id}`}

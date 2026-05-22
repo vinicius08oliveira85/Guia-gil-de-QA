@@ -29,7 +29,21 @@ import { Trash2, CheckCircle2, AlertTriangle, CloudOff, Layers } from 'lucide-re
 import { logger } from '../utils/logger';
 import { Button } from './common/Button';
 import { cn } from '../utils/cn';
-import { appContentPaddingX, appNavPillTabClass, outlineActionBtn } from './common/viewUi';
+import { appContentPaddingX } from './common/viewUi';
+import {
+  projectViewHeaderBacklogBtnClass,
+  projectViewHeaderBacklogCountClass,
+  projectViewHeaderScrollFadeFromClass,
+  projectViewHeaderScrollFadeToClass,
+  projectViewHeaderScrollHintClass,
+  projectViewHeaderShellClass,
+  projectViewHeaderSyncBtnClass,
+  projectViewHeaderTabClass,
+  projectViewHeaderTabsDividerClass,
+  projectViewHeaderTabsNavClass,
+  projectViewHeaderToolbarClass,
+  projectViewHeaderToolbarDividerClass,
+} from './common/projectCardUi';
 import { countBacklogTasks, type TasksListMode } from '../utils/backlogTasks';
 
 const TAB_LABELS: Record<string, string> = {
@@ -448,11 +462,7 @@ export const ProjectView: React.FC<{
           appContentPaddingX
         )}
       >
-        <div
-          className={cn(
-            'mb-3 min-w-0 max-w-full rounded-[var(--rounded-box)] border border-base-300/60 bg-base-100 px-3 py-2 soft-shadow sm:mb-4 sm:px-4 sm:py-3'
-          )}
-        >
+        <div className={projectViewHeaderShellClass}>
           <div className="flex min-w-0 flex-col gap-1">
             {/* Linha 1: voltar + trilho | estado + excluir */}
             <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-1">
@@ -468,11 +478,7 @@ export const ProjectView: React.FC<{
                 </div>
               </div>
               {/* Toolbar de ações do projeto — agrupadas em uma única barra coesa */}
-              <div
-                className="flex shrink-0 items-center rounded-[var(--radius)] border border-base-300/60 bg-base-100 shadow-sm"
-                role="toolbar"
-                aria-label="Ações do projeto"
-              >
+              <div className={projectViewHeaderToolbarClass} role="toolbar" aria-label="Ações do projeto">
                 {/* Status de salvamento */}
                 {(supabaseAvailable || lastSaveToSupabase === false) && (
                   <div
@@ -519,7 +525,9 @@ export const ProjectView: React.FC<{
                       </>
                     )}
                     {saveStatus === 'idle' && supabaseAvailable && lastSaveToSupabase === false && (
-                      <span className="hidden text-base-content/55 sm:inline">Salvo localmente</span>
+                      <span className="hidden font-sans text-[var(--leve-header-text-muted)] sm:inline">
+                        Salvo localmente
+                      </span>
                     )}
                   </div>
                 )}
@@ -527,12 +535,12 @@ export const ProjectView: React.FC<{
                 {/* Botão Sincronizar — só quando há supabase E salvamento pendente */}
                 {supabaseAvailable && lastSaveToSupabase === false && saveStatus === 'idle' && (
                   <>
-                    <div className="h-5 w-px bg-base-300/70 shrink-0" aria-hidden />
+                    <div className={projectViewHeaderToolbarDividerClass} aria-hidden />
                     <button
                       type="button"
                       onClick={handleSaveToSupabase}
                       disabled={isSavingToSupabase || !isOnline}
-                      className="inline-flex min-h-[36px] items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--brand-cta)] transition-colors hover:bg-[color-mix(in_srgb,var(--brand-cta)_8%,transparent)] disabled:opacity-50 sm:min-h-0"
+                      className={projectViewHeaderSyncBtnClass}
                       aria-label="Sincronizar projeto com a nuvem"
                       title={
                         !isOnline
@@ -558,11 +566,11 @@ export const ProjectView: React.FC<{
                 {/* Separador + Excluir */}
                 {onDeleteProject && (
                   <>
-                    <div className="h-5 w-px bg-base-300/70 shrink-0" aria-hidden />
+                    <div className={projectViewHeaderToolbarDividerClass} aria-hidden />
                     <button
                       type="button"
                       onClick={() => setShowDeleteProjectConfirm(true)}
-                      className="inline-flex min-h-[36px] items-center gap-1.5 rounded-r-[var(--radius)] px-3 py-1.5 text-xs font-medium text-error transition-colors hover:bg-[color-mix(in_srgb,var(--foreground)_6%,transparent)] sm:min-h-0"
+                      className="inline-flex min-h-[36px] items-center gap-1.5 rounded-r-[var(--leve-header-radius)] px-3 py-1.5 font-sans text-xs font-medium text-error transition-colors hover:bg-[color-mix(in_srgb,var(--foreground)_6%,transparent)] sm:min-h-0"
                       aria-label={`Excluir projeto ${currentProject.name}`}
                     >
                       <Trash2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
@@ -578,23 +586,26 @@ export const ProjectView: React.FC<{
               activeTab !== 'documents' &&
               activeTab !== 'businessRules' && (
             <div className="flex min-w-0 flex-nowrap items-center gap-x-2 overflow-hidden">
-              <span className="badge badge-outline shrink-0 border-primary/30 bg-primary/10 px-2 py-0 text-[10px] font-medium leading-none text-primary">
+              <span className="inline-flex shrink-0 items-center rounded-[var(--project-dashboard-insight-inner-radius)] bg-[var(--leve-header-cream)] px-2 py-0.5 font-sans text-[10px] font-bold leading-none text-[var(--leve-header-accent)]">
                 {currentProject.settings?.jiraProjectKey
                   ? `Jira: ${currentProject.settings.jiraProjectKey}`
                   : 'Projeto'}
               </span>
               <h1
                 id="project-view-title"
-                className="min-w-0 max-w-[55%] flex-1 basis-0 truncate font-heading text-xl font-bold leading-tight tracking-tight text-base-content sm:max-w-none sm:text-2xl"
+                className="min-w-0 max-w-[55%] flex-1 basis-0 truncate font-sans text-xl font-bold leading-tight tracking-tight text-[var(--leve-header-text)] sm:max-w-none sm:text-2xl"
                 title={currentProject.name}
               >
                 {currentProject.name}
               </h1>
-              <span className="hidden shrink-0 text-base-content/35 sm:inline" aria-hidden="true">
+              <span
+                className="hidden shrink-0 text-[var(--leve-header-text-muted)] sm:inline"
+                aria-hidden="true"
+              >
                 ·
               </span>
               <span
-                className="min-w-0 flex-1 basis-0 truncate text-left text-xs leading-tight text-base-content/70 sm:text-sm"
+                className="min-w-0 flex-1 basis-0 truncate text-left font-sans text-xs leading-tight text-[var(--leve-header-text-muted)] sm:text-sm"
                 title={
                   currentProject.description?.trim() ? currentProject.description : 'Sem descrição.'
                 }
@@ -604,24 +615,18 @@ export const ProjectView: React.FC<{
             </div>
             )}
           </div>
-          <div className="relative mt-2 border-t border-base-300/50 pt-2 sm:mt-3">
+          <div className={projectViewHeaderTabsDividerClass}>
             {canScrollLeft && (
-              <div
-                className="pointer-events-none absolute bottom-0 left-0 top-2 z-10 w-8 bg-gradient-to-r from-base-100 to-transparent"
-                aria-hidden
-              />
+              <div className={projectViewHeaderScrollFadeFromClass} aria-hidden />
             )}
             {canScrollRight && (
-              <div
-                className="pointer-events-none absolute bottom-0 right-0 top-2 z-10 w-8 bg-gradient-to-l from-base-100 to-transparent"
-                aria-hidden
-              />
+              <div className={projectViewHeaderScrollFadeToClass} aria-hidden />
             )}
 
             <div className="flex w-full items-end gap-2">
               <nav
                 ref={tabsRef}
-                className="no-scrollbar flex min-w-0 flex-1 flex-nowrap gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory border-b border-base-300/70 sm:gap-6 md:gap-8"
+                className={projectViewHeaderTabsNavClass}
                 aria-label="Seções do projeto"
                 role="tablist"
                 aria-orientation="horizontal"
@@ -632,7 +637,7 @@ export const ProjectView: React.FC<{
                     key={tab.id}
                     type="button"
                     onClick={() => handleTabClick(tab.id)}
-                    className={appNavPillTabClass}
+                    className={projectViewHeaderTabClass}
                     data-active={activeTab === tab.id ? 'true' : undefined}
                     id={`tab-${tab.id}`}
                     role="tab"
@@ -647,12 +652,8 @@ export const ProjectView: React.FC<{
               <button
                 type="button"
                 onClick={handleNavigateToBacklog}
-                className={cn(
-                  'mb-0.5 inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold transition-all duration-150',
-                  'min-h-[40px] sm:min-h-7',
+                className={projectViewHeaderBacklogBtnClass(
                   activeTab === 'tasks' && tasksListMode === 'backlog'
-                    ? 'border-[color-mix(in_srgb,var(--brand-cta)_55%,transparent)] bg-[color-mix(in_srgb,var(--brand-cta)_10%,transparent)] text-[var(--brand-cta)]'
-                    : 'border-base-300/60 bg-base-100 text-base-content/65 hover:border-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] hover:text-[var(--brand-cta)]'
                 )}
                 aria-label={`Abrir backlog (${backlogCount} itens)`}
                 title="Ver backlog em Tarefas & Testes"
@@ -660,11 +661,8 @@ export const ProjectView: React.FC<{
                 <Layers className="h-3 w-3 shrink-0" aria-hidden />
                 <span className="hidden sm:inline">Backlog</span>
                 <span
-                  className={cn(
-                    'rounded-full px-1.5 py-0 text-[10px] font-bold tabular-nums leading-none',
+                  className={projectViewHeaderBacklogCountClass(
                     activeTab === 'tasks' && tasksListMode === 'backlog'
-                      ? 'bg-[color-mix(in_srgb,var(--brand-cta)_15%,transparent)] text-[var(--brand-cta)]'
-                      : 'bg-base-200/90 text-base-content/70'
                   )}
                   aria-hidden
                 >
@@ -673,10 +671,7 @@ export const ProjectView: React.FC<{
               </button>
             </div>
             {canScrollRight && (
-              <p
-                className="mt-1 text-center text-[11px] text-base-content/55 md:hidden"
-                aria-live="polite"
-              >
+              <p className={projectViewHeaderScrollHintClass} aria-live="polite">
                 Deslize as abas para ver mais seções
               </p>
             )}

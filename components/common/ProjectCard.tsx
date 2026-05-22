@@ -35,19 +35,19 @@ type MetricTheme = {
 
 const METRIC_THEMES: Record<'exec' | 'tasks' | 'success', MetricTheme> = {
   exec: {
-    ringClass: 'text-[var(--brand-cta)]',
-    valueClass: 'text-[var(--brand-cta)]',
-    iconClass: 'text-[var(--brand-cta)]',
+    ringClass: 'text-[var(--project-card-accent)]',
+    valueClass: 'text-[var(--project-card-accent)]',
+    iconClass: 'text-[var(--project-card-accent)]',
   },
   tasks: {
-    ringClass: 'text-[var(--brand-highlight)]',
-    valueClass: 'text-[var(--brand-highlight)]',
-    iconClass: 'text-[var(--brand-highlight)]',
+    ringClass: 'text-[var(--project-card-accent)]',
+    valueClass: 'text-[var(--project-card-accent)]',
+    iconClass: 'text-[var(--project-card-accent)]',
   },
   success: {
-    ringClass: 'text-success',
-    valueClass: 'text-success',
-    iconClass: 'text-success',
+    ringClass: 'text-[var(--project-card-accent)]',
+    valueClass: 'text-[var(--project-card-accent)]',
+    iconClass: 'text-[var(--project-card-accent)]',
   },
 };
 
@@ -74,7 +74,7 @@ function MetricRing({
       <div className="relative" style={{ width: size, height: size }}>
         <svg className="h-full w-full -rotate-90" viewBox={`0 0 ${size} ${size}`} aria-hidden>
           <circle
-            className="text-[color-mix(in_srgb,var(--brand-text-muted)_18%,transparent)]"
+            className="text-[color-mix(in_srgb,var(--project-card-text)_22%,transparent)]"
             cx={size / 2}
             cy={size / 2}
             fill="transparent"
@@ -102,7 +102,7 @@ function MetricRing({
       <p className={cn('text-[11px] font-bold tabular-nums leading-none sm:text-xs', theme.valueClass)}>
         {value}%
       </p>
-      <p className="text-[8px] font-semibold uppercase tracking-wider text-[var(--brand-text-muted)] sm:text-[9px]">
+      <p className="text-[8px] font-semibold uppercase tracking-wider text-[var(--project-card-text-muted)] sm:text-[9px]">
         {label}
       </p>
     </div>
@@ -180,40 +180,36 @@ export const ProjectCard = React.memo<ProjectCardProps>(
         className={cn(
           projectCardShellClass,
           'cursor-pointer p-3.5 sm:p-4',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_45%,transparent)] focus-visible:ring-offset-2',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--project-card-accent)_55%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--project-card-bg)]',
           'active:scale-[0.99] motion-reduce:active:scale-100',
           className
         )}
       >
         <div className={projectCardAccentBarClass} aria-hidden />
-        <div
-          className={projectCardOrbCtaClass}
-          style={{ background: 'radial-gradient(circle, var(--brand-cta) 0%, transparent 70%)' }}
-          aria-hidden
-        />
-        <div
-          className={projectCardOrbHighlightClass}
-          style={{ background: 'radial-gradient(circle, var(--brand-highlight) 0%, transparent 70%)' }}
-          aria-hidden
-        />
+        <div className={projectCardOrbCtaClass} aria-hidden />
+        <div className={projectCardOrbHighlightClass} aria-hidden />
 
         <div className="relative flex items-start justify-between gap-2">
           <div
             className={cn(
-              'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ring-1 sm:h-10 sm:w-10',
-              'shadow-sm transition-transform duration-300 group-hover:scale-[1.04]',
-              iconMeta.containerClassName
+              'flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--project-card-inner-radius)] ring-1 sm:h-10 sm:w-10',
+              'bg-[color-mix(in_srgb,var(--project-card-accent)_16%,transparent)]',
+              'ring-[color-mix(in_srgb,white_22%,transparent)]',
+              'shadow-sm transition-transform duration-300 group-hover:scale-[1.04]'
             )}
             aria-label={iconMeta.label}
             title={iconMeta.label}
           >
-            <Icon className={cn('h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]', iconMeta.iconClassName)} aria-hidden />
+            <Icon
+              className="h-4 w-4 text-[var(--project-card-accent)] sm:h-[1.125rem] sm:w-[1.125rem]"
+              aria-hidden
+            />
           </div>
           {openBugsCount > 0 ? (
             <div
               className={cn(
-                'inline-flex items-center gap-1 rounded-full px-2 py-0.5',
-                'border border-error/25 bg-error/10 text-error',
+                'inline-flex items-center gap-1 rounded-[var(--project-card-inner-radius)] px-2 py-0.5',
+                'border border-error/40 bg-error/20 text-error-content',
                 'text-[11px] font-bold tabular-nums shadow-sm'
               )}
             >
@@ -224,16 +220,21 @@ export const ProjectCard = React.memo<ProjectCardProps>(
         </div>
 
         <div className="relative mt-2.5 min-w-0 flex-1 space-y-1 sm:mt-3">
-          <h3 className="line-clamp-2 font-heading text-[0.9375rem] font-bold leading-snug text-[var(--brand-text-strong)] transition-colors duration-200 group-hover:text-[var(--brand-cta)] sm:text-base">
+          <h3 className="line-clamp-2 font-sans text-[0.9375rem] font-extrabold leading-snug text-[var(--project-card-text)] transition-colors duration-200 group-hover:text-[var(--project-card-accent)] sm:text-base">
             {project.name}
           </h3>
           {jiraKey ? (
-            <span className={cn(contextBadgeClass, 'inline-flex items-center gap-1.5')}>
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--brand-cta)]" aria-hidden />
+            <span
+              className={cn(
+                contextBadgeClass,
+                'inline-flex items-center gap-1.5 border-white/15 bg-white/10 text-[var(--project-card-text-muted)]'
+              )}
+            >
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--project-card-accent)]" aria-hidden />
               Jira: {jiraKey}
             </span>
           ) : (
-            <p className="text-[11px] italic text-[var(--brand-text-muted)]">Sem chave Jira</p>
+            <p className="text-[11px] italic text-[var(--project-card-text-subtle)]">Sem chave Jira</p>
           )}
         </div>
 
@@ -246,16 +247,18 @@ export const ProjectCard = React.memo<ProjectCardProps>(
         {(project.phases?.length ?? 0) > 0 && (
           <div className="mt-2.5 space-y-1 sm:mt-3">
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1 text-[var(--brand-text-muted)]">
+              <div className="flex items-center gap-1 text-[var(--project-card-text-muted)]">
                 <Activity className="h-3 w-3 shrink-0 opacity-70" aria-hidden />
                 <span className="text-[10px] font-semibold uppercase tracking-wide sm:text-[11px]">
                   Fase SDLC
                 </span>
               </div>
-              <span className="text-[11px] font-bold tabular-nums text-[var(--brand-cta)]">{phaseCompletionPercent}%</span>
+              <span className="text-[11px] font-bold tabular-nums text-[var(--project-card-accent)]">
+                {phaseCompletionPercent}%
+              </span>
             </div>
             <div
-              className="h-1.5 w-full overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--brand-text-muted)_12%,transparent)]"
+              className="h-1.5 w-full overflow-hidden rounded-[var(--project-card-inner-radius)] bg-[color-mix(in_srgb,white_12%,transparent)]"
               role="progressbar"
               aria-valuenow={phaseCompletionPercent}
               aria-valuemin={0}
@@ -263,7 +266,7 @@ export const ProjectCard = React.memo<ProjectCardProps>(
               aria-label={`Fase SDLC: ${phaseCompletionPercent}%`}
             >
               <div
-                className="h-full rounded-full bg-gradient-to-r from-[var(--brand-cta)] to-[color-mix(in_srgb,var(--brand-highlight)_75%,var(--brand-cta))] transition-[width] duration-500 ease-out"
+                className="h-full rounded-[var(--project-card-inner-radius)] bg-[var(--project-card-accent)] transition-[width] duration-500 ease-out"
                 style={{ width: `${phaseCompletionPercent}%` }}
               />
             </div>
@@ -272,18 +275,18 @@ export const ProjectCard = React.memo<ProjectCardProps>(
 
         <div className="mt-auto flex items-center justify-between gap-2 pt-2.5 sm:pt-3">
           {updatedAtLabel ? (
-            <div className="flex min-w-0 items-center gap-1 rounded-lg bg-[var(--brand-chip)] px-2 py-0.5">
-              <Clock className="h-3 w-3 shrink-0 text-[var(--brand-text-muted)]" aria-hidden />
-              <span className="truncate text-[10px] font-medium text-[var(--brand-text-muted)] sm:text-[11px]">
+            <div className="flex min-w-0 items-center gap-1 rounded-[var(--project-card-inner-radius)] bg-[var(--project-card-chip)] px-2 py-0.5">
+              <Clock className="h-3 w-3 shrink-0 text-[var(--project-card-text-muted)]" aria-hidden />
+              <span className="truncate text-[10px] font-medium text-[var(--project-card-text-muted)] sm:text-[11px]">
                 {updatedAtLabel}
               </span>
             </div>
           ) : (
             <span />
           )}
-          <div className="flex shrink-0 items-center gap-1 rounded-lg bg-[var(--brand-chip)] px-2 py-0.5 tabular-nums">
-            <Users className="h-3 w-3 text-[var(--brand-text-muted)]" aria-hidden />
-            <span className="text-[10px] font-semibold text-[var(--brand-text-muted)] sm:text-[11px]">
+          <div className="flex shrink-0 items-center gap-1 rounded-[var(--project-card-inner-radius)] bg-[var(--project-card-chip)] px-2 py-0.5 tabular-nums">
+            <Users className="h-3 w-3 text-[var(--project-card-text-muted)]" aria-hidden />
+            <span className="text-[10px] font-semibold text-[var(--project-card-text-muted)] sm:text-[11px]">
               {tasks.length}
             </span>
           </div>
@@ -298,10 +301,10 @@ export const ProjectCard = React.memo<ProjectCardProps>(
               onTaskClick(latestCompletedTask.id);
             }}
             className={cn(
-              'mt-2 hidden w-full truncate rounded-lg border border-[var(--brand-surface-border)] sm:block',
-              'bg-[var(--brand-chip)] px-2.5 py-1.5 text-left text-[11px] font-medium text-[var(--brand-text-muted)]',
+              'mt-2 hidden w-full truncate rounded-[var(--project-card-inner-radius)] border border-[var(--project-card-border)] sm:block',
+              'bg-[var(--project-card-chip)] px-2.5 py-1.5 text-left text-[11px] font-medium text-[var(--project-card-text-muted)]',
               'transition-colors duration-200',
-              'hover:border-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] hover:bg-[color-mix(in_srgb,var(--brand-cta)_6%,transparent)] hover:text-[var(--brand-cta)]'
+              'hover:border-[color-mix(in_srgb,var(--project-card-accent)_45%,transparent)] hover:bg-[color-mix(in_srgb,var(--project-card-accent)_12%,transparent)] hover:text-[var(--project-card-accent)]'
             )}
             aria-label={`Abrir tarefa concluída: ${latestCompletedTask.title}`}
           >

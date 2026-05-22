@@ -2,6 +2,16 @@ import React, { useEffect, useId, useRef } from 'react';
 import { X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { cn } from '../../utils/cn';
+import {
+  leveModalBodyClass,
+  leveModalCloseButtonClass,
+  leveModalFooterClass,
+  leveModalGrabberClass,
+  leveModalHeaderClass,
+  leveModalOverlayClass,
+  leveModalPanelBorderClass,
+  leveModalTitleClass,
+} from './projectCardUi';
 
 const FOCUSABLE_SELECTOR =
   'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
@@ -18,6 +28,10 @@ interface ModalProps {
   triggerRef?: React.RefObject<HTMLElement | null>;
   /** ID do elemento que descreve o modal (aria-describedby). */
   ariaDescribedBy?: string;
+  /** Classes extras no painel do modal (borda, fundo, etc.). */
+  panelClassName?: string;
+  /** Classes extras no título do cabeçalho. */
+  titleClassName?: string;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -30,6 +44,8 @@ export const Modal: React.FC<ModalProps> = ({
   maxHeight,
   triggerRef,
   ariaDescribedBy,
+  panelClassName,
+  titleClassName,
 }) => {
   const previousActiveElementRef = useRef<HTMLElement | null>(null);
   const reactId = useId();
@@ -44,7 +60,6 @@ export const Modal: React.FC<ModalProps> = ({
     }
   };
 
-  // ESC handler
   useEffect(() => {
     if (!isOpen) return;
     const handleEscape = (e: KeyboardEvent) => {
@@ -54,7 +69,6 @@ export const Modal: React.FC<ModalProps> = ({
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
 
-  // Scroll Lock
   useEffect(() => {
     if (!isOpen) return;
     const originalOverflow = document.body.style.overflow;
@@ -72,7 +86,6 @@ export const Modal: React.FC<ModalProps> = ({
     };
   }, [isOpen]);
 
-  // Focus: save previous, focus modal, trap Tab
   useEffect(() => {
     if (!isOpen) return;
     previousActiveElementRef.current = document.activeElement as HTMLElement | null;
@@ -122,10 +135,14 @@ export const Modal: React.FC<ModalProps> = ({
     '5xl': 'max-w-full sm:max-w-5xl',
     '6xl': 'max-w-full sm:max-w-6xl',
     '7xl': 'max-w-full sm:max-w-7xl',
-    full: 'max-w-none w-full h-screen max-h-full rounded-none',
+    full: 'max-w-none h-screen max-h-full w-full rounded-none',
   };
 
-  const overlayTint = 'bg-[color-mix(in_srgb,var(--foreground)_18%,transparent)]';
+  const panelBaseClass = cn(
+    'relative flex flex-col overflow-hidden font-sans shadow-[0_8px_32px_rgba(66,29,58,0.12)]',
+    leveModalPanelBorderClass,
+    panelClassName
+  );
 
   const modalLayout = (
     <div
@@ -133,11 +150,11 @@ export const Modal: React.FC<ModalProps> = ({
         isFull
           ? cn(
               'fixed inset-0 z-[9999] flex items-stretch justify-stretch p-0 backdrop-blur-md transition-opacity duration-200',
-              overlayTint
+              leveModalOverlayClass
             )
           : cn(
-              'fixed inset-0 z-[9999] flex items-end justify-center p-0 backdrop-blur-md animate-in fade-in duration-200 sm:items-center sm:p-4 md:p-6',
-              overlayTint
+              'fixed inset-0 z-[9999] flex animate-in fade-in items-end justify-center p-0 backdrop-blur-md duration-200 sm:items-center sm:p-4 md:p-6',
+              leveModalOverlayClass
             )
       }
       onClick={handleClose}
@@ -152,11 +169,14 @@ export const Modal: React.FC<ModalProps> = ({
           isFull
             ? cn(
                 sizeClasses.full,
-                'mica !rounded-none relative flex flex-col overflow-hidden border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] duration-300 ease-out animate-in fade-in'
+                panelBaseClass,
+                'animate-in fade-in duration-300 ease-out'
               )
             : cn(
-                'mica relative flex w-full max-w-full flex-col overflow-hidden border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] max-sm:max-w-none max-sm:animate-modal-bottom-sheet-in sm:animate-in sm:fade-in sm:duration-200 sm:zoom-in-95 sm:slide-in-from-bottom-8',
-                'rounded-t-[var(--radius)] rounded-b-none max-h-[min(92dvh,100svh-env(safe-area-inset-bottom))] sm:rounded-[var(--radius)] sm:max-h-[min(90vh,100dvh-env(safe-area-inset-top)-2rem)]',
+                panelBaseClass,
+                'max-sm:animate-modal-bottom-sheet-in w-full max-w-full max-sm:max-w-none sm:animate-in sm:fade-in sm:duration-200 sm:zoom-in-95 sm:slide-in-from-bottom-8',
+                'rounded-t-[var(--leve-header-radius)] rounded-b-none max-h-[min(92dvh,100svh-env(safe-area-inset-bottom))] sm:rounded-[var(--leve-header-radius)] sm:max-h-[min(90vh,100dvh-env(safe-area-inset-top)-2rem)]',
+                'bg-[var(--leve-header-bg)]',
                 sizeClasses[size]
               )
         }
@@ -164,33 +184,36 @@ export const Modal: React.FC<ModalProps> = ({
         style={maxHeight && !isFull ? { maxHeight } : undefined}
         tabIndex={-1}
       >
-        {/* Cabeçalho: em mobile estilo bottom sheet com grabber; sticky + mica */}
         <div
-          className={
-            isFull
-              ? 'sticky top-0 z-10 flex flex-shrink-0 flex-col gap-0 border-b border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-[color-mix(in_srgb,var(--background)_88%,transparent)] px-4 py-3 backdrop-blur-md sm:px-5 sm:py-4'
-              : 'sticky top-0 z-10 flex flex-shrink-0 flex-col gap-0 border-b border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-[color-mix(in_srgb,var(--background)_88%,transparent)] px-3 pb-3 pt-1 backdrop-blur-md transition-all duration-200 sm:px-5 sm:pb-4 sm:pt-4'
-          }
+          className={cn(
+            'sticky top-0 z-10 flex flex-shrink-0 flex-col gap-0',
+            leveModalHeaderClass,
+            isFull ? 'px-4 py-3 sm:px-5 sm:py-4' : 'px-3 pb-3 pt-1 sm:px-5 sm:pb-4 sm:pt-4'
+          )}
         >
           {!isFull && (
             <div
               className="mx-auto mb-2 flex h-5 w-full max-w-[120px] shrink-0 items-center justify-center sm:hidden"
               aria-hidden
             >
-              <span className="h-1.5 w-11 rounded-full bg-[color-mix(in_srgb,var(--foreground)_18%,transparent)]" />
+              <span className={cn('h-1.5 w-11 rounded-full', leveModalGrabberClass)} />
             </div>
           )}
           <div className="flex min-h-[48px] items-start justify-between gap-3 sm:min-h-0 sm:items-center">
             <div
               id={titleId}
-              className="min-w-0 flex-1 pr-2 text-lg font-semibold leading-snug text-balance text-[var(--foreground)] sm:pr-4 sm:text-xl [font-family:var(--font-sans)] tracking-[var(--letter-spacing)]"
+              className={cn(
+                'min-w-0 flex-1 pr-2 text-lg font-semibold leading-snug text-balance sm:pr-4 sm:text-xl',
+                leveModalTitleClass,
+                titleClassName
+              )}
             >
               {title}
             </div>
             <button
               type="button"
               onClick={handleClose}
-              className="win-icon-button text-[color-mix(in_srgb,var(--foreground)_72%,transparent)] hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] hover:text-[var(--foreground)]"
+              className={cn('win-icon-button', leveModalCloseButtonClass)}
               aria-label="Fechar modal"
             >
               <X className="h-5 w-5" strokeWidth={2} aria-hidden />
@@ -198,12 +221,17 @@ export const Modal: React.FC<ModalProps> = ({
           </div>
         </div>
 
-        <div className="custom-scrollbar flex-1 overflow-y-auto overscroll-contain bg-[color-mix(in_srgb,var(--background)_92%,transparent)] px-3 py-4 text-[var(--foreground)] scrollbar-thin scrollbar-thumb-[color-mix(in_oklch,oklch(var(--p))_35%,transparent)] scrollbar-track-transparent hover:scrollbar-thumb-[color-mix(in_oklch,oklch(var(--p))_50%,transparent)] sm:px-6 sm:py-6 [font-family:var(--font-sans)] tracking-[var(--letter-spacing)]">
+        <div
+          className={cn(
+            'custom-scrollbar flex-1 overflow-y-auto overscroll-contain px-3 py-4 scrollbar-thin scrollbar-track-transparent sm:px-6 sm:py-6',
+            leveModalBodyClass
+          )}
+        >
           {children}
         </div>
 
         {footer && (
-          <div className="flex-shrink-0 border-t border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-[color-mix(in_srgb,var(--background)_90%,transparent)] px-3 py-3 backdrop-blur-md sm:px-4 sm:py-4 [&_.btn-primary]:rounded-[var(--radius)] [&_button.btn]:rounded-[var(--radius)]">
+          <div className={cn('flex-shrink-0 px-3 py-3 backdrop-blur-md sm:px-4 sm:py-4', leveModalFooterClass)}>
             {footer}
           </div>
         )}

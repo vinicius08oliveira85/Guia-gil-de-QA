@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { projectViewCard } from '../common/viewUi';
+import {
+  leveSettingsHeadingSmClass,
+  leveSettingsInsetPanelClass,
+  leveSettingsInputClass,
+  leveSettingsMutedTextClass,
+  leveSettingsOutlineBtnClass,
+  leveViewInlineCodeClass,
+} from '../common/projectCardUi';
+import { cn } from '../../utils/cn';
 import {
   getKeyboardShortcutPreferences,
   updateKeyboardShortcutPreferences,
@@ -35,7 +43,6 @@ export const KeyboardShortcutsEditor: React.FC = () => {
       alt: event.altKey,
     };
 
-    // Validate for conflicts
     const conflicts = Object.entries(preferences).filter(
       ([k, v]) =>
         k !== key &&
@@ -106,49 +113,44 @@ export const KeyboardShortcutsEditor: React.FC = () => {
   ];
 
   return (
-    <div className={projectViewCard}>
+    <div className={leveSettingsInsetPanelClass}>
       <div className="space-y-6">
         <div>
-          <h4 className="text-lg font-semibold text-base-content mb-2">Atalhos de Teclado</h4>
-          <p className="text-sm text-base-content/70 leading-relaxed">
-            Personalize os atalhos de teclado do aplicativo
-          </p>
+          <h4 className={leveSettingsHeadingSmClass}>Atalhos de Teclado</h4>
+          <p className={leveSettingsMutedTextClass}>Personalize os atalhos de teclado do aplicativo</p>
         </div>
 
         {conflictError && (
-          <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-600 dark:text-red-400 text-sm">
+          <div className="rounded-lg border border-[color-mix(in_srgb,#e54b4f_30%,transparent)] bg-[color-mix(in_srgb,#e54b4f_8%,var(--leve-header-bg))] p-3 text-sm text-[#e54b4f]">
             {conflictError}
           </div>
         )}
 
-        <div className="divide-y divide-base-300">
+        <div className="divide-y divide-[color-mix(in_srgb,var(--leve-header-text)_12%,transparent)]">
           {shortcuts.map(shortcut => (
             <div
               key={shortcut.key}
-              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-4 first:pt-0 last:pb-0"
+              className="flex flex-col gap-4 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="flex-1 space-y-1">
-                <h5 className="font-medium text-base-content">{shortcut.label}</h5>
-                <p className="text-sm text-base-content/70 leading-relaxed">
-                  {shortcut.description}
-                </p>
+                <h5 className="font-medium text-[var(--leve-header-text)]">{shortcut.label}</h5>
+                <p className={leveSettingsMutedTextClass}>{shortcut.description}</p>
               </div>
               {editingKey === shortcut.key ? (
                 <input
                   type="text"
                   onKeyDown={e => handleKeyCapture(e, shortcut.key)}
                   placeholder="Pressione as teclas..."
-                  className="px-3 py-2 bg-base-200 border border-primary rounded text-base-content text-sm w-full sm:w-48 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className={cn(leveSettingsInputClass, 'w-full sm:w-48')}
                   autoFocus
                 />
               ) : (
-                <div className="flex items-center gap-3 shrink-0">
-                  <kbd className="px-3 py-1.5 bg-base-200 border border-base-300 rounded text-sm text-base-content font-mono">
-                    {formatShortcut(preferences[shortcut.key])}
-                  </kbd>
+                <div className="flex shrink-0 items-center gap-3">
+                  <kbd className={leveViewInlineCodeClass}>{formatShortcut(preferences[shortcut.key])}</kbd>
                   <button
+                    type="button"
                     onClick={() => handleStartEdit(shortcut.key)}
-                    className="px-3 py-1.5 text-sm text-primary hover:text-primary hover:bg-primary/10 rounded transition-colors"
+                    className="rounded-lg px-3 py-1.5 text-sm font-medium text-[var(--leve-header-accent)] transition-colors hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_10%,transparent)]"
                   >
                     Editar
                   </button>
@@ -158,8 +160,8 @@ export const KeyboardShortcutsEditor: React.FC = () => {
           ))}
         </div>
 
-        <div className="flex gap-3 pt-4 border-t border-base-300">
-          <button onClick={handleReset} className="btn btn-secondary text-sm">
+        <div className="flex gap-3 border-t border-[color-mix(in_srgb,var(--leve-header-text)_12%,transparent)] pt-4">
+          <button type="button" onClick={handleReset} className={leveSettingsOutlineBtnClass}>
             Resetar para Padrão
           </button>
         </div>

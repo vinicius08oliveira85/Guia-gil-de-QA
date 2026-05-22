@@ -19,23 +19,51 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
   const segments = useMemo(() => {
     const { todo, inProgress, done, total } = buckets;
     if (total === 0) {
-      return [{ key: 'empty', pct: 100, className: 'bg-[color-mix(in_srgb,var(--brand-text-muted)_20%,transparent)]', label: 'Sem tarefas' }];
+      return [
+        {
+          key: 'empty',
+          pct: 100,
+          className: embedded
+            ? 'bg-[color-mix(in_srgb,var(--workspace-panel-text-muted)_25%,transparent)]'
+            : 'bg-[color-mix(in_srgb,var(--brand-text-muted)_20%,transparent)]',
+          label: 'Sem tarefas',
+        },
+      ];
     }
     const pTodo = (todo / total) * 100;
     const pProg = (inProgress / total) * 100;
     const pDone = (done / total) * 100;
     return [
-      { key: 'todo', pct: pTodo, className: 'bg-[var(--brand-cta)]', label: 'A fazer' },
-      { key: 'prog', pct: pProg, className: 'bg-warning', label: 'Em prog.' },
-      { key: 'done', pct: pDone, className: 'bg-success', label: 'Feito' },
+      {
+        key: 'todo',
+        pct: pTodo,
+        className: embedded ? 'bg-[var(--workspace-panel-accent)]' : 'bg-[var(--brand-cta)]',
+        label: 'A fazer',
+      },
+      {
+        key: 'prog',
+        pct: pProg,
+        className: embedded
+          ? 'bg-[color-mix(in_srgb,var(--workspace-panel-accent)_55%,#fbbf24)]'
+          : 'bg-warning',
+        label: 'Em prog.',
+      },
+      {
+        key: 'done',
+        pct: pDone,
+        className: embedded
+          ? 'bg-[color-mix(in_srgb,var(--workspace-panel-text)_40%,transparent)]'
+          : 'bg-success',
+        label: 'Feito',
+      },
     ];
-  }, [buckets]);
+  }, [buckets, embedded]);
 
   return (
     <section
       className={cn(
         embedded
-          ? 'flex flex-col border-t border-[var(--brand-surface-border)] pt-3'
+          ? 'flex flex-col border-t border-[var(--workspace-panel-divider)] pt-4'
           : 'flex h-full min-h-0 flex-col rounded-[var(--rounded-box)] border border-[var(--brand-surface-border)] bg-[color-mix(in_srgb,var(--brand-surface-strong)_92%,transparent)] p-3 backdrop-blur-sm sm:p-3.5',
         className
       )}
@@ -50,7 +78,12 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
         </p>
       )}
       <div
-        className="mt-2.5 flex h-2.5 w-full shrink-0 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--brand-text-muted)_12%,transparent)] ring-1 ring-[var(--brand-surface-border)]"
+        className={cn(
+          'mt-2.5 flex h-2.5 w-full shrink-0 overflow-hidden rounded-[var(--workspace-panel-inner-radius)]',
+          embedded
+            ? 'bg-[color-mix(in_srgb,var(--workspace-panel-text-muted)_15%,transparent)] ring-1 ring-[var(--workspace-panel-border)]'
+            : 'rounded-full bg-[color-mix(in_srgb,var(--brand-text-muted)_12%,transparent)] ring-1 ring-[var(--brand-surface-border)]'
+        )}
         role="img"
         aria-label={`Tarefas: ${buckets.todo} a fazer, ${buckets.inProgress} em progresso, ${buckets.done} concluídas, de ${buckets.total} no total`}
       >
@@ -60,18 +93,67 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
           ) : null
         )}
       </div>
-      <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-[var(--brand-text-muted)] sm:text-xs">
+      <ul
+        className={cn(
+          'mt-3 flex flex-wrap gap-x-3 gap-y-1 font-sans text-[11px] sm:text-xs',
+          embedded ? 'text-[var(--workspace-panel-text-muted)]' : 'text-[var(--brand-text-muted)]'
+        )}
+      >
         <li>
-          <span className="mr-1 inline-block h-2 w-2 rounded-full bg-[var(--brand-cta)] align-middle" aria-hidden />
-          A fazer: <strong className="font-semibold text-[var(--brand-text-strong)]">{buckets.todo}</strong>
+          <span
+            className={cn(
+              'mr-1 inline-block h-2 w-2 rounded-full align-middle',
+              embedded ? 'bg-[var(--workspace-panel-accent)]' : 'bg-[var(--brand-cta)]'
+            )}
+            aria-hidden
+          />
+          A fazer:{' '}
+          <strong
+            className={cn(
+              'font-semibold',
+              embedded ? 'text-[var(--workspace-panel-text)]' : 'text-[var(--brand-text-strong)]'
+            )}
+          >
+            {buckets.todo}
+          </strong>
         </li>
         <li>
-          <span className="mr-1 inline-block h-2 w-2 rounded-full bg-warning align-middle" aria-hidden />
-          Em prog.: <strong className="font-semibold text-[var(--brand-text-strong)]">{buckets.inProgress}</strong>
+          <span
+            className={cn(
+              'mr-1 inline-block h-2 w-2 rounded-full align-middle',
+              embedded ? 'bg-[color-mix(in_srgb,var(--workspace-panel-accent)_55%,#fbbf24)]' : 'bg-warning'
+            )}
+            aria-hidden
+          />
+          Em prog.:{' '}
+          <strong
+            className={cn(
+              'font-semibold',
+              embedded ? 'text-[var(--workspace-panel-text)]' : 'text-[var(--brand-text-strong)]'
+            )}
+          >
+            {buckets.inProgress}
+          </strong>
         </li>
         <li>
-          <span className="mr-1 inline-block h-2 w-2 rounded-full bg-success align-middle" aria-hidden />
-          Feito: <strong className="font-semibold text-[var(--brand-text-strong)]">{buckets.done}</strong>
+          <span
+            className={cn(
+              'mr-1 inline-block h-2 w-2 rounded-full align-middle',
+              embedded
+                ? 'bg-[color-mix(in_srgb,var(--workspace-panel-text)_40%,transparent)]'
+                : 'bg-success'
+            )}
+            aria-hidden
+          />
+          Feito:{' '}
+          <strong
+            className={cn(
+              'font-semibold',
+              embedded ? 'text-[var(--workspace-panel-text)]' : 'text-[var(--brand-text-strong)]'
+            )}
+          >
+            {buckets.done}
+          </strong>
         </li>
         <li className="font-medium">Total: {buckets.total}</li>
       </ul>

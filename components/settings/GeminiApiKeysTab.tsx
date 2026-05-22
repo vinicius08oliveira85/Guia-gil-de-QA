@@ -10,8 +10,26 @@ import { Modal } from '../common/Modal';
 import { Spinner } from '../common/Spinner';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { StatusBadge } from './StatusBadge';
-import { primaryActionBtn, projectViewCard } from '../common/viewUi';
 import { Input } from '../common/Input';
+import {
+  leveSettingsCardClass,
+  leveSettingsInsetPanelClass,
+  leveSettingsLinkClass,
+  leveSettingsListClass,
+  leveSettingsMutedTextClass,
+  leveSettingsMutedTextXsClass,
+  leveSettingsOutlineBtnClass,
+  leveSettingsPrimaryBtnFullClass,
+  leveSettingsSectionIconWrapClass,
+  leveSettingsSectionMainClass,
+  leveSettingsSectionRowClass,
+  leveSettingsSectionSubtitleClass,
+  leveSettingsSectionTitleClass,
+  leveViewInlineCodeClass,
+  leveViewOutlineBtnClass,
+  leveViewPrimaryBtnClass,
+} from '../common/projectCardUi';
+import { cn } from '../../utils/cn';
 import toast from 'react-hot-toast';
 
 interface GeminiApiKeysTabProps {
@@ -31,7 +49,6 @@ export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChang
     v.trim().length > 0 && v.trim().length < 10 ? 'Chave muito curta (mínimo 10 caracteres)' : '';
 
   useEffect(() => {
-    // Carregar configuração salva
     try {
       const savedConfig = getGeminiConfig();
       if (savedConfig?.apiKey) {
@@ -39,7 +56,6 @@ export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChang
         setIsConfigured(true);
       }
     } catch (error) {
-      // Se houver erro ao carregar configuração, apenas logar e continuar
       console.warn('Erro ao carregar configuração do Gemini:', error);
     }
   }, []);
@@ -123,14 +139,12 @@ export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChang
       setApiKey('');
       setIsConfigured(false);
 
-      // Recarregar keys no manager
       try {
         const { geminiApiKeyManager } = await import('../../services/ai/geminiApiKeyManager');
         geminiApiKeyManager.reloadKeys();
         const { invalidateAIServiceCache } = await import('../../services/ai/aiServiceFactory');
         invalidateAIServiceCache();
       } catch (reloadError) {
-        // Se houver erro ao recarregar, apenas logar mas continuar
         console.warn('Erro ao recarregar keys no manager:', reloadError);
       }
 
@@ -145,18 +159,17 @@ export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChang
 
   return (
     <div className="space-y-6">
-      {/* Header da seção */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-4 flex-1 min-w-0">
-          <div className="shrink-0 h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Key className="h-6 w-6 text-primary" aria-hidden="true" />
+      <div className={leveSettingsSectionRowClass}>
+        <div className={leveSettingsSectionMainClass}>
+          <div className={leveSettingsSectionIconWrapClass}>
+            <Key className="h-6 w-6" aria-hidden="true" />
           </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-xl font-bold text-base-content mb-2">Chave API do Gemini</h3>
-            <p className="text-base-content/70 text-sm leading-relaxed">
+          <div className="min-w-0 flex-1">
+            <h3 className={leveSettingsSectionTitleClass}>Chave API do Gemini</h3>
+            <p className={leveSettingsSectionSubtitleClass}>
               Configure sua chave API do Google Gemini para usar funcionalidades de IA
             </p>
-            <p className="text-base-content/60 text-xs mt-2">
+            <p className={cn(leveSettingsMutedTextXsClass, 'mt-2')}>
               Conteúdo de documentos e descrições de tarefas são enviados ao provedor de IA para
               análises e gerações. Evite colar dados sensíveis se necessário.
             </p>
@@ -170,13 +183,13 @@ export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChang
       </div>
 
       {!isConfigured ? (
-        <div className={projectViewCard}>
+        <div className={leveSettingsInsetPanelClass}>
           <div className="space-y-4">
-            <p className="text-base-content/70 text-sm leading-relaxed">
+            <p className={leveSettingsMutedTextClass}>
               Configure sua chave API do Google Gemini para habilitar funcionalidades de IA no
               aplicativo.
             </p>
-            <ul className="list-disc list-inside text-base-content/70 text-sm space-y-2 ml-4">
+            <ul className={leveSettingsListClass}>
               <li>A chave API é armazenada localmente no seu navegador</li>
               <li>
                 Você pode obter uma chave em:{' '}
@@ -184,40 +197,40 @@ export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChang
                   href="https://makersuite.google.com/app/apikey"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-accent hover:text-accent-light underline"
+                  className={leveSettingsLinkClass}
                 >
                   Google AI Studio
                 </a>
               </li>
               <li>
                 A chave também pode ser configurada via variável de ambiente{' '}
-                <code className="bg-base-300 px-1.5 py-0.5 rounded text-xs">
-                  VITE_GEMINI_API_KEY
-                </code>
+                <code className={leveViewInlineCodeClass}>VITE_GEMINI_API_KEY</code>
               </li>
             </ul>
             <button
+              type="button"
               onClick={() => setShowConfigModal(true)}
-              className="btn btn-primary w-full mt-4"
+              className={leveSettingsPrimaryBtnFullClass}
             >
-              <Key className="h-4 w-4 mr-2" />
+              <Key className="h-4 w-4" aria-hidden />
               Configurar Chave API
             </button>
           </div>
         </div>
       ) : (
-        <div className={projectViewCard}>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className={leveSettingsCardClass}>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-1">
-              <p className="text-base-content/70 text-sm">Chave API configurada</p>
-              <p className="text-base-content/70 text-xs font-mono break-all">
+              <p className={leveSettingsMutedTextClass}>Chave API configurada</p>
+              <p className="break-all font-mono text-xs text-[var(--leve-header-text-muted)]">
                 {apiKey && apiKey.length > 12
                   ? `${apiKey.substring(0, 8)}...${apiKey.substring(apiKey.length - 4)}`
                   : '••••••••'}
               </p>
             </div>
-            <div className="flex gap-2 shrink-0">
+            <div className="flex shrink-0 gap-2">
               <button
+                type="button"
                 onClick={() => {
                   const savedConfig = getGeminiConfig();
                   if (savedConfig) {
@@ -225,13 +238,17 @@ export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChang
                   }
                   setShowConfigModal(true);
                 }}
-                className="btn btn-secondary text-sm"
+                className={cn(leveSettingsOutlineBtnClass, 'text-sm')}
               >
                 Editar
               </button>
               <button
+                type="button"
                 onClick={handleDisconnect}
-                className="btn btn-secondary text-sm hover:bg-red-500/20 hover:border-red-500/30"
+                className={cn(
+                  leveSettingsOutlineBtnClass,
+                  'text-sm text-[#e54b4f] hover:border-[color-mix(in_srgb,#e54b4f_35%,transparent)]'
+                )}
               >
                 Remover
               </button>
@@ -240,7 +257,6 @@ export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChang
         </div>
       )}
 
-      {/* Modal de Configuração */}
       <Modal
         isOpen={showConfigModal}
         onClose={() => setShowConfigModal(false)}
@@ -262,26 +278,34 @@ export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChang
             error={keyError}
             leftIcon={<Key className="w-4 h-4" />}
           />
-          <p className="text-xs text-base-content/70 -mt-3">
+          <p className={cn(leveSettingsMutedTextXsClass, '-mt-3')}>
             <a
               href="https://makersuite.google.com/app/apikey"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary hover:underline"
+              className={leveSettingsLinkClass}
             >
               Como obter uma chave API?
             </a>{' '}
             — A chave é armazenada localmente no navegador.
           </p>
 
-          <div className="flex flex-wrap justify-end gap-2 pt-4 border-t border-base-300 mt-6">
-            <button onClick={() => setShowConfigModal(false)} className="btn btn-ghost">
+          <div className="mt-6 flex flex-wrap justify-end gap-2 border-t border-[color-mix(in_srgb,var(--leve-header-text)_12%,transparent)] pt-4">
+            <button
+              type="button"
+              onClick={() => setShowConfigModal(false)}
+              className={leveViewOutlineBtnClass}
+            >
               Cancelar
             </button>
             <button
+              type="button"
               onClick={handleTestKey}
               disabled={isTesting || isSaving || !apiKey.trim()}
-              className="btn btn-outline btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              className={cn(
+                leveViewOutlineBtnClass,
+                'disabled:cursor-not-allowed disabled:opacity-50'
+              )}
             >
               {isTesting ? (
                 <>
@@ -293,9 +317,10 @@ export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChang
               )}
             </button>
             <button
+              type="button"
               onClick={handleSaveConfig}
               disabled={isTesting || isSaving || !apiKey.trim()}
-              className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              className={cn(leveViewPrimaryBtnClass, 'disabled:cursor-not-allowed disabled:opacity-50')}
             >
               {isSaving ? (
                 <>

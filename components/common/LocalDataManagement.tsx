@@ -7,6 +7,20 @@ import {
   pickBackupJsonFileViaFileSystemAccess,
 } from '../../services/fileSystemBackupService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
+import {
+  leveSettingsCheckboxPanelClass,
+  leveSettingsInsetPanelClass,
+  leveSettingsMutedTextClass,
+  leveSettingsSectionIconWrapClass,
+  leveSettingsSectionMainClass,
+  leveSettingsSectionRowClass,
+  leveSettingsSectionSubtitleClass,
+  leveSettingsSectionTitleClass,
+  leveSettingsStrongTextClass,
+  leveViewOutlineBtnClass,
+  leveViewPrimaryBtnClass,
+} from './projectCardUi';
+import { cn } from '../../utils/cn';
 
 export interface LocalDataManagementProps {
   /** Chamado após importação bem-sucedida (ex.: recarregar lista no store). */
@@ -110,64 +124,77 @@ export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImpo
   };
 
   return (
-    <div className="rounded-xl border border-base-300 bg-base-200/40 p-5 space-y-4">
-      <div className="flex items-start gap-3">
-        <HardDrive className="h-8 w-8 shrink-0 text-primary mt-0.5" aria-hidden />
-        <div>
-          <h3 className="text-lg font-semibold text-base-content">Dados locais (IndexedDB)</h3>
-          <p className="text-sm text-base-content/70 mt-1 leading-relaxed">
-            Exporte ou restaure todos os projetos deste dispositivo. Em navegadores compatíveis
-            (Chrome, Edge), você escolhe onde salvar ou de qual arquivo carregar o JSON; nos demais,
-            o navegador usa download e seletor de arquivo padrão. Útil quando o Supabase está
-            indisponível ou para migrar de máquina. A importação substitui projetos com o mesmo ID.
-          </p>
+    <div className="space-y-6">
+      <div className={leveSettingsSectionRowClass}>
+        <div className={leveSettingsSectionMainClass}>
+          <div className={leveSettingsSectionIconWrapClass}>
+            <HardDrive className="h-6 w-6" aria-hidden />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className={leveSettingsSectionTitleClass}>Dados locais (IndexedDB)</h3>
+            <p className={leveSettingsSectionSubtitleClass}>
+              Exporte ou restaure todos os projetos deste dispositivo
+            </p>
+          </div>
         </div>
       </div>
 
-      <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-base-300/80 bg-base-100/50 px-3 py-2.5">
-        <input
-          type="checkbox"
-          className="checkbox checkbox-primary checkbox-sm mt-0.5 shrink-0"
-          checked={syncAfterImport}
-          onChange={e => setSyncAfterImport(e.target.checked)}
-          aria-describedby="sync-after-import-hint"
-        />
-        <span className="text-sm text-base-content/90 leading-snug">
-          <span className="font-medium text-base-content">Enviar ao Supabase após importar</span>
-          <span id="sync-after-import-hint" className="block text-base-content/65 mt-0.5">
-            Opcional: só aplica se o Supabase estiver configurado. Útil para alinhar a nuvem com o
-            backup restaurado; desmarque se quiser manter apenas cópia local.
-          </span>
-        </span>
-      </label>
+      <div className={leveSettingsInsetPanelClass}>
+        <p className={leveSettingsMutedTextClass}>
+          Em navegadores compatíveis (Chrome, Edge), você escolhe onde salvar ou de qual arquivo
+          carregar o JSON; nos demais, o navegador usa download e seletor de arquivo padrão. Útil
+          quando o Supabase está indisponível ou para migrar de máquina. A importação substitui
+          projetos com o mesmo ID.
+        </p>
 
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          className="btn btn-outline btn-primary gap-2"
-          onClick={handleExport}
-          disabled={busy !== null}
-        >
-          <Download className="h-4 w-4" aria-hidden />
-          {busy === 'export' ? 'Exportando…' : 'Exportar backup local'}
-        </button>
-        <button
-          type="button"
-          className="btn btn-outline gap-2"
-          onClick={handleImportClick}
-          disabled={busy !== null}
-        >
-          <Upload className="h-4 w-4" aria-hidden />
-          {busy === 'import' ? 'Importando…' : 'Importar backup local'}
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".json,application/json"
-          className="hidden"
-          aria-label="Selecionar arquivo JSON de backup"
-          onChange={handleFileChange}
-        />
+        <label className={cn(leveSettingsCheckboxPanelClass, 'mt-4 flex cursor-pointer items-start gap-3')}>
+          <input
+            type="checkbox"
+            className="checkbox checkbox-sm mt-0.5 shrink-0 border-[color-mix(in_srgb,var(--leve-header-text)_20%,transparent)] [--chkbg:var(--leve-header-accent)]"
+            checked={syncAfterImport}
+            onChange={e => setSyncAfterImport(e.target.checked)}
+            aria-describedby="sync-after-import-hint"
+          />
+          <span className="text-sm leading-snug text-[var(--leve-header-text)]">
+            <span className={leveSettingsStrongTextClass}>Enviar ao Supabase após importar</span>
+            <span
+              id="sync-after-import-hint"
+              className="mt-0.5 block text-[var(--leve-header-text-muted)]"
+            >
+              Opcional: só aplica se o Supabase estiver configurado. Útil para alinhar a nuvem com o
+              backup restaurado; desmarque se quiser manter apenas cópia local.
+            </span>
+          </span>
+        </label>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            type="button"
+            className={cn(leveViewPrimaryBtnClass, 'gap-2')}
+            onClick={handleExport}
+            disabled={busy !== null}
+          >
+            <Download className="h-4 w-4" aria-hidden />
+            {busy === 'export' ? 'Exportando…' : 'Exportar backup local'}
+          </button>
+          <button
+            type="button"
+            className={cn(leveViewOutlineBtnClass, 'gap-2')}
+            onClick={handleImportClick}
+            disabled={busy !== null}
+          >
+            <Upload className="h-4 w-4" aria-hidden />
+            {busy === 'import' ? 'Importando…' : 'Importar backup local'}
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json,application/json"
+            className="hidden"
+            aria-label="Selecionar arquivo JSON de backup"
+            onChange={handleFileChange}
+          />
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,11 @@
 import React, { type RefObject } from 'react';
 import { Search, X } from 'lucide-react';
 import { cn } from '../../utils/cn';
-import { searchInputClass } from '../common/viewUi';
+import {
+  leveViewSearchHintClass,
+  leveViewSearchInputClass,
+  leveViewSearchLabelClass,
+} from '../common/projectCardUi';
 
 export interface TasksViewSearchProps {
   searchQuery: string;
@@ -17,14 +21,14 @@ export const TasksViewSearch: React.FC<TasksViewSearchProps> = ({
   <div className="py-1">
     <label
       htmlFor="quick-task-search"
-      className="app-element-typography mb-2 block text-sm font-medium text-[var(--brand-text-muted)]"
+      className={leveViewSearchLabelClass}
       title="Atalho: Ctrl+Shift+F (ou Cmd+Shift+F no Mac)"
     >
       Busca rápida
     </label>
     <div className="relative">
       <Search
-        className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--brand-text-muted)]"
+        className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--leve-header-text-muted)]"
         aria-hidden
       />
       <input
@@ -36,22 +40,22 @@ export const TasksViewSearch: React.FC<TasksViewSearchProps> = ({
         value={searchQuery}
         onChange={e => onSearchChange(e.target.value)}
         placeholder="ID, título ou palavra-chave…"
-        className={cn(searchInputClass, 'h-11 pr-10 sm:h-10')}
+        className={cn(leveViewSearchInputClass, 'pr-10')}
         title="Atalho: Ctrl+Shift+F (ou Cmd+Shift+F no Mac)"
         aria-label="Busca rápida por tarefa ou teste. Atalho: Ctrl+Shift+F"
       />
-      {searchQuery && (
+      {searchQuery ? (
         <button
           type="button"
           onClick={() => onSearchChange('')}
-          className="win-icon-button absolute right-2 top-1/2 h-8 w-8 -translate-y-1/2"
+          className="win-icon-button absolute right-2 top-1/2 h-8 w-8 -translate-y-1/2 text-[var(--leve-header-text-muted)] hover:text-[var(--leve-header-accent)]"
           aria-label="Limpar busca"
         >
           <X className="h-4 w-4" aria-hidden />
         </button>
-      )}
+      ) : null}
     </div>
-    <p className="app-element-typography mt-1.5 text-xs text-[var(--brand-text-muted)]">
+    <p className={leveViewSearchHintClass}>
       Filtro instantâneo na lista · Ctrl+Shift+F (Windows) ou Cmd+Shift+F (Mac)
     </p>
   </div>

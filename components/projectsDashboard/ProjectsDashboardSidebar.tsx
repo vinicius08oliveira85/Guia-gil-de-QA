@@ -46,7 +46,7 @@ export const ProjectsDashboardSidebar: React.FC<ProjectsDashboardSidebarProps> =
         onToggleListFilterNeedsAttention={onToggleListFilterNeedsAttention}
       />
     )}
-    <div className={cn(workspacePanelShellClass, 'gap-0 p-3 sm:p-3.5')}>
+    <div className={cn(workspacePanelShellClass, 'gap-0 p-4 sm:p-5')}>
       <ConsolidatedMetrics projects={projects} variant="embedded" />
       <TaskStatusDistributionBar buckets={taskWorkflowBuckets} variant="embedded" />
     </div>

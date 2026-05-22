@@ -1,6 +1,7 @@
 import React from 'react';
 import { Spinner } from '../common/Spinner';
 import { cn } from '../../utils/cn';
+import { leveViewSecondaryToolbarBtnClass } from '../common/projectCardUi';
 
 interface GeneralIAAnalysisButtonProps {
   onAnalyze: () => void | Promise<void>;
@@ -52,7 +53,7 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
         title={defaultTooltip}
         className={cn(
           grouped
-            ? 'inline-flex min-h-[36px] items-center gap-1.5 rounded-l-[var(--radius)] px-3 py-1.5 text-sm font-medium text-base-content/70 transition-colors hover:bg-base-200/60 hover:text-base-content disabled:opacity-50 sm:min-h-0'
+            ? cn(leveViewSecondaryToolbarBtnClass, 'rounded-l-full')
             : 'btn btn-ghost btn-sm flex min-h-[44px] items-center gap-1.5 rounded-[var(--radius)] border border-base-300 px-3 text-xs font-semibold transition-colors duration-300 sm:min-h-0 text-[color-mix(in_srgb,var(--foreground)_72%,transparent)] hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] hover:text-[var(--foreground)]',
           'disabled:cursor-not-allowed disabled:opacity-50'
         )}
@@ -62,7 +63,7 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
           <Spinner small />
         ) : (
           <svg
-            className="w-3.5 h-3.5 text-[oklch(var(--p))]"
+            className="h-3.5 w-3.5 text-[var(--leve-header-accent)]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
