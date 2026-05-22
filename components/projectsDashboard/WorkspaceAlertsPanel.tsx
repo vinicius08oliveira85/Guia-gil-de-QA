@@ -2,6 +2,7 @@ import React, { useEffect, useId, useState } from 'react';
 import type { Project } from '../../types';
 import { AlertOctagon, AlertTriangle } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { workspacePanelShellClass } from '../common/projectCardUi';
 
 export type WorkspaceAlertsTab = 'health' | 'tests';
 
@@ -9,15 +10,11 @@ export interface WorkspaceAlertsPanelProps {
   healthProjects: Project[];
   testExecutionAlertProjects: Project[];
   onSelectProject: (id: string) => void;
-  /** Filtro da grade em “precisa de atenção” (mesmo critério da aba Saúde). */
   listFilterNeedsAttention: boolean;
   onToggleListFilterNeedsAttention: () => void;
   className?: string;
 }
 
-/**
- * Painel único de alertas do workspace: aba “Saúde” (bugs / taxa) e aba “Execução” (casos Falhou ou Bloqueado).
- */
 export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
   healthProjects,
   testExecutionAlertProjects,
@@ -52,27 +49,34 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
     return null;
   }
 
-  const tabBtnClass = (active: boolean) =>
+  const tabBtnClass = (active: boolean, tone: 'warning' | 'error') =>
     cn(
-      'inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-[var(--radius)] px-2.5 py-1.5 text-xs font-semibold transition-colors sm:min-h-0 sm:flex-none sm:px-3 sm:text-sm',
+      'inline-flex min-h-[40px] flex-1 items-center justify-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all duration-200 sm:min-h-0 sm:flex-none sm:px-3 sm:text-xs',
       active
-        ? 'bg-base-200 text-base-content soft-shadow ring-1 ring-base-300/60'
-        : 'text-base-content/70 hover:bg-base-200/55 hover:text-base-content'
+        ? tone === 'warning'
+          ? 'bg-[color-mix(in_srgb,var(--brand-cta)_12%,var(--brand-surface-strong))] text-[var(--brand-text-strong)] ring-1 ring-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] shadow-sm'
+          : 'bg-error/10 text-[var(--brand-text-strong)] ring-1 ring-error/30 shadow-sm'
+        : 'text-[var(--brand-text-muted)] hover:bg-[var(--brand-chip)] hover:text-[var(--brand-text-strong)]'
+    );
+
+  const projectChipClass = (tone: 'warning' | 'error') =>
+    cn(
+      'w-full truncate rounded-lg border px-2 py-1.5 text-left text-xs font-medium transition-colors sm:px-2.5 sm:text-sm',
+      tone === 'warning'
+        ? 'border-[color-mix(in_srgb,var(--brand-cta)_28%,transparent)] bg-[var(--brand-surface-strong)] text-[var(--brand-text-strong)] hover:border-[color-mix(in_srgb,var(--brand-cta)_45%,transparent)] hover:bg-[color-mix(in_srgb,var(--brand-cta)_6%,transparent)]'
+        : 'border-error/25 bg-[var(--brand-surface-strong)] text-[var(--brand-text-strong)] hover:border-error/40 hover:bg-error/5'
     );
 
   return (
     <div
-      className={cn(
-        'relative z-[1] flex h-full min-h-0 w-full flex-col overflow-hidden rounded-[var(--rounded-box)] border border-base-300/70 bg-base-100/80 p-2.5 soft-shadow ring-1 ring-base-content/[0.03] sm:p-3',
-        className
-      )}
+      className={cn(workspacePanelShellClass, 'p-3 sm:p-3.5', className)}
       role="region"
       aria-label="Alertas do workspace"
     >
       <div
         role="tablist"
         aria-label="Tipo de alerta"
-        className="mb-2 flex shrink-0 flex-wrap gap-1 border-b border-base-300/50 pb-1.5 sm:gap-1.5 sm:pb-2"
+        className="mb-2.5 flex shrink-0 flex-wrap gap-1 rounded-full bg-[var(--brand-chip)] p-0.5 sm:gap-1"
       >
         {healthCount > 0 && (
           <button
@@ -82,12 +86,10 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
             aria-selected={tab === 'health'}
             aria-controls={panelHealthId}
             tabIndex={tab === 'health' ? 0 : -1}
-            className={tabBtnClass(tab === 'health')}
+            className={tabBtnClass(tab === 'health', 'warning')}
             onClick={() => setTab('health')}
           >
-            <div className="flex h-5 w-5 items-center justify-center rounded text-warning" aria-hidden>
-              <AlertTriangle className="h-4 w-4 shrink-0" />
-            </div>
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-warning" aria-hidden />
             Saúde do workspace
             <span className="tabular-nums opacity-80">({healthCount})</span>
           </button>
@@ -100,12 +102,10 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
             aria-selected={tab === 'tests'}
             aria-controls={panelTestsId}
             tabIndex={tab === 'tests' ? 0 : -1}
-            className={tabBtnClass(tab === 'tests')}
+            className={tabBtnClass(tab === 'tests', 'error')}
             onClick={() => setTab('tests')}
           >
-            <div className="flex h-5 w-5 items-center justify-center rounded text-error" aria-hidden>
-              <AlertOctagon className="h-4 w-4 shrink-0" />
-            </div>
+            <AlertOctagon className="h-3.5 w-3.5 shrink-0 text-error" aria-hidden />
             Execução de testes
             <span className="tabular-nums opacity-80">({testsCount})</span>
           </button>
@@ -118,17 +118,14 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
           role="tabpanel"
           aria-labelledby={tabHealthId}
           hidden={tab !== 'health'}
-          className={cn(
-            'flex min-h-0 flex-1 flex-col overflow-hidden',
-            tab !== 'health' && 'hidden'
-          )}
+          className={cn('flex min-h-0 flex-1 flex-col overflow-hidden', tab !== 'health' && 'hidden')}
         >
-          <p className="mb-1.5 shrink-0 text-xs leading-snug text-base-content/80 sm:text-[13px]">
-            Critério: 2 ou mais bugs abertos, ou taxa de sucesso dos testes abaixo de 70% com casos
-            já executados.
+          <p className="mb-2 shrink-0 text-[11px] leading-snug text-[var(--brand-text-muted)] sm:text-xs">
+            Critério: 2 ou mais bugs abertos, ou taxa de sucesso dos testes abaixo de 70% com casos já
+            executados.
           </p>
           <ul
-            className="m-0 grid min-h-0 flex-1 list-none grid-cols-2 gap-1.5 overflow-y-auto overscroll-contain p-0 pr-0.5 [scrollbar-gutter:stable] sm:grid-cols-3 sm:gap-2"
+            className="m-0 grid min-h-0 flex-1 list-none grid-cols-2 gap-1.5 overflow-y-auto overscroll-contain p-0 [scrollbar-gutter:stable] sm:grid-cols-2 sm:gap-2"
             aria-label="Projetos com alerta de saúde"
           >
             {healthProjects.map(p => (
@@ -136,7 +133,7 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
                 <button
                   type="button"
                   onClick={() => onSelectProject(p.id)}
-                  className="w-full truncate rounded-[var(--radius)] border border-warning/30 bg-base-100 px-2 py-1.5 text-left text-xs font-medium text-base-content transition-colors hover:border-warning/50 hover:bg-warning/5 sm:px-2.5 sm:text-sm"
+                  className={projectChipClass('warning')}
                   title={p.name}
                 >
                   {p.name}
@@ -144,13 +141,15 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
               </li>
             ))}
           </ul>
-          <div className="shrink-0 pt-2">
+          <div className="mt-2.5 shrink-0 pt-0.5">
             <button
               type="button"
               onClick={onToggleListFilterNeedsAttention}
               className={cn(
-                'btn btn-xs w-full sm:w-auto',
-                listFilterNeedsAttention ? 'btn-warning btn-outline' : 'btn-outline'
+                'rounded-full border px-3 py-1 text-[11px] font-semibold transition-colors',
+                listFilterNeedsAttention
+                  ? 'border-[color-mix(in_srgb,var(--brand-cta)_45%,transparent)] bg-[color-mix(in_srgb,var(--brand-cta)_10%,transparent)] text-[var(--brand-cta)]'
+                  : 'border-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)] text-[var(--brand-text-strong)] hover:border-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)]'
               )}
               aria-pressed={listFilterNeedsAttention}
             >
@@ -166,22 +165,22 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
           role="tabpanel"
           aria-labelledby={tabTestsId}
           hidden={tab !== 'tests'}
-          className={cn(
-            'flex min-h-0 flex-1 flex-col overflow-hidden',
-            tab !== 'tests' && 'hidden'
-          )}
+          className={cn('flex min-h-0 flex-1 flex-col overflow-hidden', tab !== 'tests' && 'hidden')}
         >
-          <div className="mb-1.5 flex shrink-0 items-start gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded text-error sm:h-7 sm:w-7" aria-hidden>
-              <AlertOctagon className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
+          <div className="mb-2 flex shrink-0 items-start gap-2">
+            <div
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-error/10 text-error"
+              aria-hidden
+            >
+              <AlertOctagon className="h-4 w-4" />
             </div>
-            <p className="text-xs leading-snug text-base-content/80 sm:text-[13px]">
-              Projetos com ao menos um caso de teste em status <strong>Falhou</strong> ou{' '}
-              <strong>Bloqueado</strong>.
+            <p className="text-[11px] leading-snug text-[var(--brand-text-muted)] sm:text-xs">
+              Projetos com ao menos um caso de teste em status <strong className="text-[var(--brand-text-strong)]">Falhou</strong> ou{' '}
+              <strong className="text-[var(--brand-text-strong)]">Bloqueado</strong>.
             </p>
           </div>
           <ul
-            className="m-0 flex min-h-0 flex-1 flex-wrap content-start gap-2 overflow-y-auto overscroll-contain p-0 pr-0.5 [scrollbar-gutter:stable]"
+            className="m-0 flex min-h-0 flex-1 flex-wrap content-start gap-2 overflow-y-auto overscroll-contain p-0 [scrollbar-gutter:stable]"
             aria-label="Projetos com falha ou bloqueio em testes"
           >
             {testExecutionAlertProjects.map(p => (
@@ -189,7 +188,7 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
                 <button
                   type="button"
                   onClick={() => onSelectProject(p.id)}
-                  className="min-h-[44px] rounded-[var(--radius)] border border-error/25 bg-base-100 px-3 py-2 text-left text-sm font-medium text-base-content transition-colors hover:border-error/45 hover:bg-error/5 sm:min-h-0"
+                  className={cn(projectChipClass('error'), 'min-h-[40px] px-3 py-2 sm:min-h-0')}
                 >
                   {p.name}
                 </button>

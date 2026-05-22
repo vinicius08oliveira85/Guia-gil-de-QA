@@ -6,7 +6,7 @@ function SkeletonCard() {
   return (
     <div
       className={cn(
-        'flex min-h-[11.5rem] flex-col gap-2 rounded-[var(--rounded-box)] border border-base-300/70 bg-base-100 p-3 soft-shadow sm:min-h-[14.5rem] sm:gap-3 sm:p-4',
+        'flex min-h-[12rem] flex-col gap-2 rounded-[var(--rounded-box)] border border-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)] p-3.5 sm:min-h-[14rem] sm:gap-2.5 sm:p-4',
         'animate-pulse'
       )}
       aria-hidden
@@ -44,14 +44,18 @@ export const ProjectsDashboardSkeleton: React.FC = () => {
     >
       <div className={projectsListShell}>
         <div className="mb-6 h-20 animate-pulse rounded-[var(--rounded-box)] bg-base-100/80" />
-        <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2.5 lg:grid-cols-[repeat(4,minmax(0,1fr))_minmax(12rem,1.35fr)]">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-16 animate-pulse rounded-[var(--rounded-box)] bg-base-100/80" />
+            <div
+              key={i}
+              className="h-[4.25rem] animate-pulse rounded-[var(--rounded-box)] border border-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)]"
+            />
           ))}
+          <div className="col-span-2 h-[4.25rem] animate-pulse rounded-[var(--rounded-box)] border border-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)] sm:col-span-4 lg:col-span-1" />
         </div>
         <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-6">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
               <SkeletonCard key={i} />
             ))}
           </div>

@@ -211,9 +211,13 @@ export const ProjectsDashboard: React.FC<{
           />
 
           {projects.length > 0 && (
-            <div className="mb-4 mt-4 flex flex-col gap-3 sm:mt-5 lg:flex-row lg:items-stretch lg:gap-3">
+            <div
+              className="mb-4 mt-4 grid grid-cols-2 gap-2 sm:mt-5 sm:grid-cols-4 sm:gap-2.5 lg:grid-cols-[repeat(4,minmax(0,1fr))_minmax(12rem,1.35fr)] lg:items-stretch"
+              role="region"
+              aria-label="Resumo do workspace"
+            >
               <WorkspaceDaisyStats
-                className="min-w-0 flex-1"
+                className="contents"
                 projectCount={projects.length}
                 testSuccessPercent={workspaceTestMetrics.testSuccessPercent}
                 taskDonePercent={taskDonePercentGlobal}
@@ -222,7 +226,7 @@ export const ProjectsDashboard: React.FC<{
                 supabaseLoadFailed={supabaseLoadFailed}
               />
               <GlobalEfficiencyMetric
-                className="w-full shrink-0 lg:w-auto lg:min-w-[13rem]"
+                className="col-span-2 sm:col-span-4 lg:col-span-1"
                 percent={workspaceTestMetrics.executionEfficiencyPercent}
                 executedCount={workspaceTestMetrics.executedTestCases}
                 totalCount={workspaceTestMetrics.totalTestCases}
@@ -330,7 +334,7 @@ export const ProjectsDashboard: React.FC<{
             <div className="min-w-0">
             {filteredProjects.length > 0 ? (
               <div
-                className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:gap-5"
+                className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 md:gap-5"
                 role="list"
                 aria-label="Lista de projetos"
               >
