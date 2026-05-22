@@ -7,14 +7,12 @@ import React, {
   useMemo,
   useId,
 } from 'react';
-import { NotificationBell } from './NotificationBell';
 import { ExpandableTabs } from './ExpandableTabs';
 import { ExpansibleButton } from './ExpansibleButton';
 import { useTheme } from '../../hooks/useTheme';
 import { getActiveColorForTheme } from '../../utils/expandableTabsColors';
 import {
   BookOpen,
-  Bell,
   Moon,
   Sun,
   Heart,
@@ -27,7 +25,6 @@ import {
   MoreVertical,
 } from 'lucide-react';
 import { Project } from '../../types';
-import { getUnreadCount } from '../../utils/notificationService';
 import { Modal } from './Modal';
 import { GlossaryView } from '../glossary/GlossaryView';
 import { useProjectsStore } from '../../store/projectsStore';
@@ -62,8 +59,6 @@ export const Header: React.FC<HeaderProps> = ({
   onLogoClick,
 }) => {
   const { theme, toggleTheme } = useTheme();
-  const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
-  const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isSyncingSupabase, setIsSyncingSupabase] = useState(false);
@@ -103,20 +98,6 @@ export const Header: React.FC<HeaderProps> = ({
   const utilityMenuRef = useRef<HTMLDetailsElement>(null);
   const closeUtilityMenu = useCallback(() => {
     if (utilityMenuRef.current) utilityMenuRef.current.open = false;
-  }, []);
-
-  useEffect(() => {
-    const updateUnreadCount = () => {
-      const count = getUnreadCount();
-      setNotificationUnreadCount(count);
-    };
-
-    updateUnreadCount();
-    window.addEventListener('notification-created', updateUnreadCount);
-
-    return () => {
-      window.removeEventListener('notification-created', updateUnreadCount);
-    };
   }, []);
 
   useEffect(() => {
@@ -203,24 +184,17 @@ export const Header: React.FC<HeaderProps> = ({
 
   const handleTabChange = (id: string | null) => {
     if (id === null) {
-      setShowNotificationDropdown(false);
       return;
     }
 
     switch (id) {
       case 'settings':
         onOpenSettings?.();
-        setShowNotificationDropdown(false);
         closeMobileMenu();
         closeUtilityMenu();
         break;
       case 'glossary':
         setIsGlossaryOpen(true);
-        closeMobileMenu();
-        closeUtilityMenu();
-        break;
-      case 'notifications':
-        setShowNotificationDropdown(true);
         closeMobileMenu();
         closeUtilityMenu();
         break;
@@ -234,7 +208,6 @@ export const Header: React.FC<HeaderProps> = ({
   const tabs = [
     { id: 'settings', title: 'Configurações', icon: Sliders },
     { id: 'glossary', title: 'Glossário', icon: BookOpen },
-    { id: 'notifications', title: 'Notificações', icon: Bell },
     { id: 'theme', title: getThemeTitle(), icon: getThemeIcon() },
   ];
 
@@ -570,11 +543,6 @@ export const Header: React.FC<HeaderProps> = ({
                 activeColor={activeColor}
                 onChange={handleTabChange}
                 onOutsideClick={() => setExpandedButton(null)}
-                tabBadge={
-                  notificationUnreadCount > 0
-                    ? { tabId: 'notifications', count: notificationUnreadCount }
-                    : undefined
-                }
                 leadingContent={
                   leadingContent ? (
                     <div className="flex flex-nowrap items-center gap-1.5">{leadingContent}</div>
@@ -586,9 +554,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="relative z-[110] flex shrink-0 items-center gap-1 md:hidden">
               <details ref={utilityMenuRef} className="dropdown dropdown-end relative z-[120]">
                 <summary className="win-icon-button list-none [&::-webkit-details-marker]:hidden [&::marker]:hidden">
-                  <span className="sr-only">
-                    Mais opções: configurações, glossário, notificações e tema
-                  </span>
+                  <span className="sr-only">Mais opções: configurações, glossário e tema</span>
                   <MoreVertical className="h-5 w-5" aria-hidden />
                 </summary>
                 <ul
@@ -635,29 +601,6 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
       </div>
-
-      {showNotificationDropdown && (
-        <>
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => {
-              setShowNotificationDropdown(false);
-            }}
-          />
-          <div
-            className="fixed right-2 z-[60] w-[min(100vw-1rem,20rem)] sm:right-4 sm:w-80"
-            style={{ top: 'calc(var(--app-header-sticky-offset, 4.5rem) + 0.5rem)' }}
-          >
-            <NotificationBell
-              isOpen={showNotificationDropdown}
-              onClose={() => {
-                setShowNotificationDropdown(false);
-              }}
-              showButton={false}
-            />
-          </div>
-        </>
-      )}
 
       <Modal
         isOpen={isGlossaryOpen}

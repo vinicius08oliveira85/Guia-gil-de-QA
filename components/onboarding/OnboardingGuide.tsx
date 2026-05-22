@@ -54,7 +54,7 @@ export const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ forceOpen = fa
   const content = STEPS[step];
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Bem-vindo ao QA Agile Guide" size="lg">
+    <Modal isOpen={isOpen} onClose={handleClose} title="Bem-vindo ao QA Agile Guide" size="xl">
       <div className="space-y-4">
         <p className="text-sm text-base-content/75">
           Passo {step + 1} de {STEPS.length}

@@ -102,7 +102,7 @@ export const BusinessRuleCategoryPresetsModal: React.FC<BusinessRuleCategoryPres
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={handleClose} title="Gerenciar categorias">
+      <Modal isOpen={isOpen} onClose={handleClose} title="Gerenciar categorias" size="xl">
         <div className="space-y-4">
           <div className="flex gap-2 items-start">
             <Tags className="w-5 h-5 text-primary shrink-0 mt-0.5" aria-hidden />

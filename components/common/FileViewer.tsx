@@ -251,7 +251,7 @@ export const FileViewer: React.FC<FileViewerProps> = React.memo(
 
     // Visualização inline para PDF, imagens, texto, etc.
     return (
-      <Modal isOpen={true} onClose={onClose} title={fileName} size="xl">
+      <Modal isOpen={true} onClose={onClose} title={fileName} size="2xl">
         <div className="relative">
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-surface/80 z-10">

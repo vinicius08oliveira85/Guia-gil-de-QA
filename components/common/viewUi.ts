@@ -6,7 +6,7 @@ import { cn } from '../../utils/cn';
 export const appContentPaddingX = 'px-3 sm:px-4';
 
 export const projectViewShell =
-  'tasks-panel-scope w-full min-w-0 max-w-none space-y-4 sm:space-y-5';
+  'tasks-panel-scope w-full min-w-0 max-w-none space-y-3 sm:space-y-4';
 
 /** Lista de projetos (dashboard inicial). */
 export const projectsListShell =
@@ -14,14 +14,14 @@ export const projectsListShell =
 
 export const appPanelClass = 'app-panel';
 
-export const projectViewPanel = cn(appPanelClass, 'p-3 soft-shadow sm:p-4');
+export const projectViewPanel = cn(appPanelClass, 'p-2.5 soft-shadow sm:p-3.5');
 
 export const outlineActionBtn = cn(
-  'app-btn-outline inline-flex min-h-[44px] items-center gap-2 px-3 py-2 text-sm disabled:opacity-50 sm:min-h-9'
+  'app-btn-outline inline-flex min-h-[44px] items-center gap-1.5 px-2.5 py-1.5 text-sm disabled:opacity-50 sm:min-h-9 sm:gap-2 sm:px-3 sm:py-2'
 );
 
 export const primaryActionBtn = cn(
-  'app-btn-primary-inline inline-flex min-h-[44px] items-center gap-2 px-4 py-2 text-sm disabled:opacity-50 active:scale-[0.98] sm:min-h-9'
+  'app-btn-primary-inline inline-flex min-h-[44px] items-center gap-1.5 px-3 py-1.5 text-sm disabled:opacity-50 active:scale-[0.98] sm:min-h-9 sm:gap-2 sm:px-4 sm:py-2'
 );
 
 export function filterPillClass(active: boolean): string {
@@ -53,10 +53,10 @@ export const appSelectClass = cn('app-select select select-bordered select-sm h-
 
 export const appMenuPanelClass = 'app-menu-panel';
 
-export const appMenuItemClass = 'app-menu-item w-full flex items-center gap-2 px-3 py-2 text-left';
+export const appMenuItemClass = 'app-menu-item w-full flex items-center gap-2 px-2.5 py-1.5 text-left sm:px-3 sm:py-2';
 
 export const appNavPillTabClass = cn(
-  'app-nav-pill app-element-typography min-h-[44px] shrink-0 snap-start whitespace-nowrap px-3 py-2 text-sm font-semibold sm:min-h-0'
+  'app-nav-pill app-element-typography min-h-[44px] shrink-0 snap-start whitespace-nowrap px-2.5 py-1.5 text-sm font-semibold sm:min-h-0 sm:px-3 sm:py-2'
 );
 
 /** Card de métrica / bloco em trilha, timeline e análise. */

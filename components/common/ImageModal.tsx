@@ -49,7 +49,7 @@ export const ImageModal: React.FC<ImageModalProps> = ({ url, fileName, onClose, 
   const showLoading = fetching && !imageSrc && !loadError;
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={fileName} size="xl">
+    <Modal isOpen={true} onClose={onClose} title={fileName} size="2xl">
       <div className="flex flex-col gap-4">
         {loadError ? (
           <div className="flex flex-col items-center justify-center py-12 bg-base-200 rounded-xl text-error">

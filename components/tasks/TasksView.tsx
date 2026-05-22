@@ -2249,7 +2249,7 @@ export const TasksView: React.FC<{
         </section>
 
         <section className={projectViewPanel}>
-          <div className="flex flex-col gap-4 sm:gap-5">
+          <div className="flex flex-col gap-3 sm:gap-4">
           <Modal
             isOpen={isFiltersModalOpen}
             onClose={() => setIsFiltersModalOpen(false)}
@@ -2658,6 +2658,7 @@ export const TasksView: React.FC<{
         isOpen={failModalState.isOpen}
         onClose={() => setFailModalState({ ...failModalState, isOpen: false })}
         title="Registrar Falha no Teste"
+        size="xl"
       >
         <div className="space-y-4">
           <div>

@@ -1,5 +1,5 @@
 import React, { useState, Suspense } from 'react';
-import { Bell, Keyboard, Upload } from 'lucide-react';
+import { Keyboard, Upload } from 'lucide-react';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { cn } from '../../utils/cn';
 import { lazyWithRetry } from '../../utils/lazyWithRetry';
@@ -9,9 +9,6 @@ import {
   leveSettingsSubTabClass,
 } from '../common/projectCardUi';
 
-const NotificationPreferences = lazyWithRetry(() =>
-  import('./NotificationPreferences').then(m => ({ default: m.NotificationPreferences }))
-);
 const KeyboardShortcutsEditor = lazyWithRetry(() =>
   import('./KeyboardShortcutsEditor').then(m => ({ default: m.KeyboardShortcutsEditor }))
 );
@@ -19,17 +16,16 @@ const ExportPreferences = lazyWithRetry(() =>
   import('./ExportPreferences').then(m => ({ default: m.ExportPreferences }))
 );
 
-type PreferenceSection = 'notifications' | 'shortcuts' | 'export';
+type PreferenceSection = 'shortcuts' | 'export';
 
 export const PreferencesTab: React.FC = () => {
-  const [activeSection, setActiveSection] = useState<PreferenceSection>('notifications');
+  const [activeSection, setActiveSection] = useState<PreferenceSection>('shortcuts');
 
   const sections: {
     id: PreferenceSection;
     label: string;
     icon: React.ComponentType<{ className?: string }>;
   }[] = [
-    { id: 'notifications', label: 'Notificações', icon: Bell },
     { id: 'shortcuts', label: 'Atalhos', icon: Keyboard },
     { id: 'export', label: 'Exportação', icon: Upload },
   ];
@@ -77,7 +73,6 @@ export const PreferencesTab: React.FC = () => {
           role="tabpanel"
           aria-labelledby={`preference-tab-${activeSection}`}
         >
-          {activeSection === 'notifications' && <NotificationPreferences />}
           {activeSection === 'shortcuts' && <KeyboardShortcutsEditor />}
           {activeSection === 'export' && <ExportPreferences />}
         </div>

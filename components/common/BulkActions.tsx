@@ -62,12 +62,12 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
   );
 
   const toolbarActionClassName =
-    'app-toolbar-action inline-flex min-h-[40px] shrink-0 items-center justify-center whitespace-nowrap rounded-full px-2.5 text-[13px] font-medium leading-none tracking-[-0.01em] sm:min-h-9 sm:px-3';
+    'app-toolbar-action inline-flex min-h-[44px] shrink-0 items-center justify-center whitespace-nowrap rounded-full px-2 py-1.5 text-[13px] font-medium leading-none tracking-[-0.01em] sm:min-h-9 sm:px-2.5 sm:py-2';
   const toolbarPrimaryActionClassName = `${toolbarActionClassName} app-toolbar-action-primary shadow-sm`;
   const toolbarDangerActionClassName = `${toolbarActionClassName} app-toolbar-action-danger`;
   const toolbarOutlineActionClassName = `${toolbarActionClassName} border border-[var(--brand-surface-border)] bg-base-100/60`;
   const modalPrimaryActionClassName =
-    'app-toolbar-action app-toolbar-action-primary mt-2 inline-flex w-full justify-center rounded-full px-4 py-3 text-sm font-semibold shadow-sm';
+    'app-toolbar-action app-toolbar-action-primary mt-2 inline-flex min-h-[44px] w-full justify-center rounded-full px-3 py-2.5 text-sm font-semibold shadow-sm';
 
   const handleBulkStatusChange = () => {
     const updatedTasks = (project.tasks || []).map(task =>

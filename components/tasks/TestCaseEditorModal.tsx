@@ -72,7 +72,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
   const previewTitle = action.trim().slice(0, 60) || testCase.id;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`Editar caso de teste: ${previewTitle}`} size="xl">
+    <Modal isOpen={isOpen} onClose={onClose} title={`Editar caso de teste: ${previewTitle}`} size="2xl">
       <div className="space-y-4 app-element-typography">
         <label
           className={cn(

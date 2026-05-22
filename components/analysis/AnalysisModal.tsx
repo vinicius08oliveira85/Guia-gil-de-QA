@@ -15,7 +15,7 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({
   children,
 }) => {
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={title} size="lg" maxHeight="90vh">
+    <Modal isOpen={isOpen} onClose={onClose} title={title} size="2xl" maxHeight="92vh">
       <div className="overflow-y-auto max-h-[calc(90vh-120px)]">{children}</div>
     </Modal>
   );

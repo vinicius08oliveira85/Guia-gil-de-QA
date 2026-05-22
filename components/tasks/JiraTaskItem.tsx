@@ -1363,7 +1363,7 @@ export const JiraTaskItem: React.FC<{
 
           {/* Ferramentas (Geral) + Nível de Detalhe + Regerar com IA */}
           <section className="mt-6 mica overflow-hidden rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] soft-shadow">
-            <div className="p-5 flex flex-col lg:flex-row lg:items-center gap-6 font-sans tracking-[var(--letter-spacing)] text-base-content">
+            <div className="flex flex-col gap-4 p-4 font-sans tracking-[var(--letter-spacing)] text-base-content lg:flex-row lg:items-center lg:gap-5">
               <div className="flex-grow">
                 {onTaskToolsChange && (
                   <>

@@ -107,7 +107,7 @@ export const DashboardFiltersModal: React.FC<DashboardFiltersModalProps> = ({
     (filters.phase?.length ?? 0);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Filtros" size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title="Filtros" size="2xl">
       {activeFiltersCount > 0 && (
         <div className="flex justify-end mb-4">
           <button

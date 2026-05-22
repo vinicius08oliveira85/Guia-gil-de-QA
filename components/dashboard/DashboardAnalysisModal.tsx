@@ -38,7 +38,7 @@ export const DashboardAnalysisModal: React.FC<DashboardAnalysisModalProps> = ({
           )}
         </div>
       }
-      size="xl"
+      size="2xl"
       maxHeight="85vh"
     >
       <div className="space-y-6">

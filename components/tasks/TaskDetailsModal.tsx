@@ -847,7 +847,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         )}
 
         <section className={cn(leveTaskModalSectionClass, 'mt-6 overflow-hidden')}>
-          <div className="flex flex-col gap-6 p-5 lg:flex-row lg:items-center">
+          <div className="flex flex-col gap-4 p-4 lg:flex-row lg:items-center lg:gap-5">
             <div className="flex-grow">
               {onTaskToolsChange && (
                 <>

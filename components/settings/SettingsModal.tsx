@@ -62,7 +62,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   ];
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Configurações" size="lg" maxHeight="90vh">
+    <Modal isOpen={isOpen} onClose={onClose} title="Configurações" size="2xl" maxHeight="92vh">
       <div className="flex flex-col h-full">
         {/* Tab Navigation */}
         <div className="flex border-b border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] mb-4 gap-4 overflow-x-auto no-scrollbar px-4 sm:px-6">

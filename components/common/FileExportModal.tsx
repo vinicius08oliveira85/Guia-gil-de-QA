@@ -168,7 +168,7 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(
     };
 
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Exportar Dados" size="md">
+      <Modal isOpen={isOpen} onClose={onClose} title="Exportar Dados" size="lg">
         <div className="p-4 space-y-4">
           {/* Informação sobre o que será exportado */}
           <div className="text-sm text-text-secondary">

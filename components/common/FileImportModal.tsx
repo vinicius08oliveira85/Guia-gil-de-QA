@@ -215,7 +215,7 @@ export const FileImportModal: React.FC<FileImportModalProps> = React.memo(
     };
 
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Importar Arquivo" size="md">
+      <Modal isOpen={isOpen} onClose={onClose} title="Importar Arquivo" size="lg">
         <div className="space-y-4 p-4 font-body">
           {/* Seleção de tipo de importação */}
           {importType === 'auto' && (

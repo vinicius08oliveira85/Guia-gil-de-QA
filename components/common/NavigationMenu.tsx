@@ -107,7 +107,7 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
               <button
                 type="button"
                 role="menuitem"
-                className="app-nav-pill app-element-typography flex min-h-[44px] w-full items-center gap-3 rounded-[var(--radius)] px-3 text-left text-sm font-medium"
+                className="app-nav-pill app-element-typography flex min-h-[44px] w-full items-center gap-2.5 rounded-[var(--radius)] px-2.5 text-left text-sm font-medium sm:gap-3 sm:px-3"
                 data-active={currentId === item.id ? 'true' : undefined}
                 aria-current={currentId === item.id ? 'page' : undefined}
                 onClick={() => {
@@ -177,7 +177,7 @@ export const NavigationMenuRail: React.FC<NavigationMenuRailProps> = ({
         type="button"
         onClick={item.onClick}
         className={cn(
-          'app-nav-pill app-element-typography btn btn-ghost btn-sm rounded-[var(--radius)] px-3 transition-colors duration-200'
+          'app-nav-pill app-element-typography btn btn-ghost btn-sm rounded-[var(--radius)] px-2.5 transition-colors duration-200 sm:px-3'
         )}
         data-active={currentId === item.id ? 'true' : 'false'}
         aria-current={currentId === item.id ? 'page' : undefined}

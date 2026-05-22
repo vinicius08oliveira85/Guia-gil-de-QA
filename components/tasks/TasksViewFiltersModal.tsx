@@ -28,7 +28,7 @@ const FilterChip = ({
     onClick={onClick}
     className={cn(
       filterPillClass(isActive),
-      'inline-flex items-center gap-2 px-3 py-1.5 text-xs',
+      'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs sm:gap-2 sm:px-3 sm:py-1.5',
       !isActive &&
         'hover:border-[color-mix(in_srgb,var(--color-primary)_40%,var(--brand-surface-border))]'
     )}
@@ -207,7 +207,7 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
               {savedPresets.map(preset => (
                 <div
                   key={preset.id}
-                  className="app-filter-pill inline-flex items-center gap-1.5 px-3 py-1.5 text-xs group hover:border-[color-mix(in_srgb,var(--color-primary)_40%,var(--brand-surface-border))]"
+                  className="app-filter-pill inline-flex items-center gap-1.5 px-2.5 py-1 text-xs group hover:border-[color-mix(in_srgb,var(--color-primary)_40%,var(--brand-surface-border))] sm:px-3 sm:py-1.5"
                 >
                   <button
                     type="button"

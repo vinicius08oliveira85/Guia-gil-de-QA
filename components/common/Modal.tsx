@@ -128,13 +128,13 @@ export const Modal: React.FC<ModalProps> = ({
     sm: 'max-w-full sm:max-w-sm',
     md: 'max-w-full sm:max-w-md',
     lg: 'max-w-full sm:max-w-lg',
-    xl: 'max-w-full sm:max-w-xl',
-    '2xl': 'max-w-full sm:max-w-2xl',
-    '3xl': 'max-w-full sm:max-w-3xl',
-    '4xl': 'max-w-full sm:max-w-4xl',
-    '5xl': 'max-w-full sm:max-w-5xl',
-    '6xl': 'max-w-full sm:max-w-6xl',
-    '7xl': 'max-w-full sm:max-w-7xl',
+    xl: 'max-w-full sm:max-w-xl sm:min-w-[min(20rem,90vw)]',
+    '2xl': 'max-w-full sm:max-w-2xl sm:min-w-[min(24rem,90vw)]',
+    '3xl': 'max-w-full sm:max-w-3xl sm:min-w-[min(28rem,90vw)]',
+    '4xl': 'max-w-full sm:max-w-4xl sm:min-w-[min(32rem,90vw)]',
+    '5xl': 'max-w-full sm:max-w-5xl sm:min-w-[min(36rem,90vw)]',
+    '6xl': 'max-w-full sm:max-w-6xl sm:min-w-[min(40rem,90vw)]',
+    '7xl': 'max-w-full sm:max-w-7xl sm:min-w-[min(44rem,90vw)]',
     full: 'max-w-none h-screen max-h-full w-full rounded-none',
   };
 
@@ -153,7 +153,7 @@ export const Modal: React.FC<ModalProps> = ({
               leveModalOverlayClass
             )
           : cn(
-              'fixed inset-0 z-[9999] flex animate-in fade-in items-end justify-center p-0 backdrop-blur-md duration-200 sm:items-center sm:p-4 md:p-6',
+              'fixed inset-0 z-[9999] flex animate-in fade-in items-end justify-center p-0 backdrop-blur-md duration-200 sm:items-center sm:p-3 md:p-5',
               leveModalOverlayClass
             )
       }
@@ -175,7 +175,7 @@ export const Modal: React.FC<ModalProps> = ({
             : cn(
                 panelBaseClass,
                 'max-sm:animate-modal-bottom-sheet-in w-full max-w-full max-sm:max-w-none sm:animate-in sm:fade-in sm:duration-200 sm:zoom-in-95 sm:slide-in-from-bottom-8',
-                'rounded-t-[var(--leve-header-radius)] rounded-b-none max-h-[min(92dvh,100svh-env(safe-area-inset-bottom))] sm:rounded-[var(--leve-header-radius)] sm:max-h-[min(90vh,100dvh-env(safe-area-inset-top)-2rem)]',
+                'rounded-t-[var(--leve-header-radius)] rounded-b-none max-h-[min(96dvh,100svh-env(safe-area-inset-bottom))] min-h-[min(40vh,20rem)] sm:rounded-[var(--leve-header-radius)] sm:max-h-[min(92vh,100dvh-env(safe-area-inset-top)-1.5rem)]',
                 'bg-[var(--leve-header-bg)]',
                 sizeClasses[size]
               )
@@ -188,7 +188,7 @@ export const Modal: React.FC<ModalProps> = ({
           className={cn(
             'sticky top-0 z-10 flex flex-shrink-0 flex-col gap-0',
             leveModalHeaderClass,
-            isFull ? 'px-4 py-3 sm:px-5 sm:py-4' : 'px-3 pb-3 pt-1 sm:px-5 sm:pb-4 sm:pt-4'
+            isFull ? 'px-3 py-2.5 sm:px-5 sm:py-3.5' : 'px-3 pb-2 pt-1 sm:px-5 sm:pb-3 sm:pt-3.5'
           )}
         >
           {!isFull && (
@@ -223,7 +223,7 @@ export const Modal: React.FC<ModalProps> = ({
 
         <div
           className={cn(
-            'custom-scrollbar flex-1 overflow-y-auto overscroll-contain px-3 py-4 scrollbar-thin scrollbar-track-transparent sm:px-6 sm:py-6',
+            'custom-scrollbar flex-1 overflow-y-auto overscroll-contain px-3 py-3 scrollbar-thin scrollbar-track-transparent sm:px-5 sm:py-5',
             leveModalBodyClass
           )}
         >
@@ -231,7 +231,7 @@ export const Modal: React.FC<ModalProps> = ({
         </div>
 
         {footer && (
-          <div className={cn('flex-shrink-0 px-3 py-3 backdrop-blur-md sm:px-4 sm:py-4', leveModalFooterClass)}>
+          <div className={cn('flex-shrink-0 px-3 py-2.5 backdrop-blur-md sm:px-4 sm:py-3', leveModalFooterClass)}>
             {footer}
           </div>
         )}
