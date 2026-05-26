@@ -298,7 +298,7 @@ export const leveViewModeTabActiveClass = cn(
 export const leveViewModeTabIdleClass = cn(
   'inline-flex min-h-[2rem] items-center gap-1.5 rounded-full px-3 py-1.5',
   'font-sans text-xs font-medium text-[var(--leve-header-text-muted)] transition-colors',
-  'hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_8%,var(--leve-header-bg))] hover:text-[var(--leve-header-text)]',
+  'hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_8%,var(--app-neu-bg))] hover:text-[var(--leve-header-text)]',
   'disabled:opacity-50'
 );
 
@@ -312,26 +312,23 @@ export const leveViewModeCountActiveClass = cn(
 );
 
 export const leveViewModeCountIdleClass = cn(
-  'inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full border-0 px-1 py-0',
-  'bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))]',
-  'font-sans text-[10px] font-bold tabular-nums leading-none',
-  'text-[var(--leve-header-text-muted)] shadow-[var(--leve-neu-inset)]'
+  'dashboard-neu-insight-inset inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full border-0 px-1 py-0',
+  'font-sans text-[10px] font-bold tabular-nums leading-none text-[var(--leve-header-text-muted)]'
 );
 
 export const leveViewSearchLabelClass =
   'mb-2 block font-sans text-sm font-medium text-[var(--leve-header-text-muted)]';
 
 export const leveViewSearchInputClass = cn(
-  'app-input h-11 w-full rounded-full border-0 py-2 pl-10 pr-10 font-sans text-sm shadow-[var(--leve-neu-inset)] sm:h-10',
+  'app-input h-11 w-full rounded-full border py-2 pl-10 pr-10 font-sans text-sm sm:h-10',
   'text-[var(--leve-header-text)] placeholder:text-[var(--leve-header-text-muted)]',
   'focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_28%,transparent)]'
 );
 
 export const leveViewSearchClearBtnClass = cn(
-  'absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full',
-  'border border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]',
-  'bg-[var(--leve-neu-surface)] text-[var(--leve-header-text-muted)] shadow-[var(--leve-neu-raised)]',
-  'transition-[box-shadow,color] hover:text-[var(--leve-header-accent)] hover:shadow-[var(--leve-neu-hover)]'
+  'leve-neu-pill absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full',
+  'text-[var(--leve-header-text-muted)] transition-[box-shadow,color]',
+  'hover:text-[var(--leve-header-accent)]'
 );
 
 export const leveViewSearchHintClass =
@@ -373,8 +370,7 @@ export const leveViewFilterLabelClass =
   'mb-1.5 block font-sans text-xs font-medium text-[var(--leve-header-text-muted)]';
 
 export const leveViewFilterSelectClass = cn(
-  'select h-10 min-h-0 w-full rounded-full border border-[var(--leve-header-border)]',
-  'bg-[var(--leve-header-cream)] font-sans text-sm text-[var(--leve-header-text)] shadow-sm'
+  'app-select select h-10 min-h-0 w-full rounded-full font-sans text-sm text-[var(--leve-header-text)]'
 );
 
 export const leveViewManageLinkClass =
@@ -389,7 +385,7 @@ export const leveViewFilterPillClass = (active: boolean) =>
           'bg-[var(--leve-header-accent)] font-semibold text-white',
           'shadow-[2px_2px_8px_color-mix(in_srgb,black_30%,var(--leve-header-accent)),-2px_-2px_8px_color-mix(in_srgb,white_30%,var(--leve-header-accent))]'
         )
-      : 'leve-neu-pill rounded-full font-medium text-[var(--leve-header-text-muted)] hover:shadow-[var(--leve-neu-hover)] hover:text-[var(--leve-header-text)]'
+      : 'leve-neu-pill rounded-full font-medium text-[var(--leve-header-text-muted)] hover:text-[var(--leve-header-text)]'
   );
 
 export const leveViewInlineCodeClass = cn(

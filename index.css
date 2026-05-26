@@ -89,7 +89,7 @@
     --workspace-panel-radius: 12px;
     --workspace-panel-inner-radius: 8px;
     /** Faixa superior WorkspaceDaisyStats (Projetos, Sucesso, etc.) */
-    --workspace-stat-bg: #f9f9f9;
+    --workspace-stat-bg: var(--projects-dash-bg);
     --workspace-stat-text: #333333;
     --workspace-stat-accent: #fc4c02;
     --workspace-stat-border: rgba(0, 0, 0, 0.06);
@@ -1125,17 +1125,18 @@
   }
   .projects-dash-stat-card {
     border-radius: var(--workspace-stat-radius);
-    border: 1px solid color-mix(in srgb, var(--workspace-stat-neu-light) 55%, transparent);
-    background: var(--workspace-stat-bg);
-    box-shadow: var(--workspace-stat-neu-raised);
+    border: 1px solid color-mix(in srgb, var(--app-neu-light) 48%, transparent);
+    background: var(--app-neu-bg);
+    box-shadow: var(--app-neu-raised);
     transition:
       box-shadow 200ms ease,
       transform 200ms ease;
   }
   .projects-dash-stat-card:hover {
     box-shadow:
-      7px 7px 16px var(--workspace-stat-neu-dark),
-      -5px -5px 12px var(--workspace-stat-neu-light);
+      7px 7px 18px var(--app-neu-dark),
+      -5px -5px 14px var(--app-neu-light),
+      0 0 0 1px color-mix(in srgb, var(--workspace-stat-accent) 12%, transparent);
   }
   .workspace-stat-neu-track {
     border-radius: 9999px;
@@ -1315,11 +1316,152 @@
     box-shadow: var(--leve-neu-hover);
   }
 
+  /** Header global — roxo Leve + neumorfismo (referência: card de projeto). */
   .app-header-shell {
+    --foreground: var(--project-card-text);
+    --color-primary: var(--project-card-accent);
+    --brand-text-strong: var(--project-card-text);
+    --brand-text-muted: var(--project-card-text-muted);
+    --leve-header-bg: var(--project-card-bg);
+    --leve-header-text: var(--project-card-text);
+    --leve-header-text-muted: var(--project-card-text-muted);
+    --leve-header-border: var(--project-card-border);
+    --leve-neu-bg: var(--project-card-bg);
+    --leve-neu-surface: color-mix(in srgb, white 10%, var(--project-card-bg));
+    --leve-neu-light: var(--project-card-neu-light);
+    --leve-neu-dark: var(--project-card-neu-dark);
+    --leve-neu-raised: var(--project-card-neu-raised);
+    --leve-neu-inset: var(--project-card-neu-inset);
+    --leve-neu-inset-deep: var(--project-card-neu-inset-deep);
+    --leve-neu-hover: var(--project-card-neu-hover);
     overflow: hidden;
-    border-bottom: 1px solid color-mix(in srgb, var(--leve-neu-light) 40%, transparent);
-    background: var(--leve-neu-bg);
-    box-shadow: var(--leve-neu-raised);
+    border-bottom: 1px solid color-mix(in srgb, var(--project-card-neu-light) 32%, transparent);
+    background: var(--project-card-bg);
+    color: var(--project-card-text);
+    box-shadow: var(--project-card-neu-raised);
+  }
+
+  .app-header-shell .app-brand-title {
+    color: var(--project-card-text);
+    background-image: linear-gradient(
+      135deg,
+      var(--project-card-text) 0%,
+      color-mix(in srgb, var(--project-card-accent) 38%, var(--project-card-text)) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /** Placa neumórfica clara — contraste para a logo sobre o roxo do header. */
+  .app-header-logo-plate {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem 0.55rem;
+    border-radius: var(--project-card-inner-radius);
+    border: 1px solid color-mix(in srgb, var(--project-card-neu-light) 45%, transparent);
+    background: color-mix(in srgb, var(--leve-header-cream) 96%, white);
+    box-shadow: var(--project-card-neu-raised-sm);
+    transition: box-shadow 200ms ease;
+  }
+
+  .app-header-shell button:hover .app-header-logo-plate,
+  .app-header-shell button:focus-visible .app-header-logo-plate {
+    box-shadow: var(--project-card-neu-hover);
+  }
+
+  .app-header-logo-plate img {
+    display: block;
+    height: 1.75rem;
+    width: auto;
+    max-width: min(7.5rem, 28vw);
+    object-fit: contain;
+  }
+
+  @media (min-width: 640px) {
+    .app-header-logo-plate img {
+      height: 2rem;
+      max-width: 8.5rem;
+    }
+  }
+
+  .app-header-shell .app-toolbar-action.btn-ghost {
+    background: var(--leve-neu-surface);
+    color: var(--leve-header-text-muted);
+  }
+
+  .app-header-shell .app-toolbar-action.btn-ghost:hover:not(:disabled) {
+    background: color-mix(in srgb, white 12%, var(--project-card-bg));
+    color: var(--leve-header-text);
+  }
+
+  /** Faixa inset (Configurações, glossário, tema) — ícones e rótulos legíveis. */
+  .app-header-shell .leve-neu-surface-inset {
+    border-color: color-mix(in srgb, var(--project-card-neu-light) 26%, transparent);
+    background: color-mix(in srgb, var(--project-card-neu-dark) 20%, var(--project-card-bg));
+    box-shadow: var(--project-card-neu-inset-deep);
+  }
+
+  .app-header-shell .leve-neu-surface-inset button {
+    color: var(--project-card-text-muted);
+  }
+
+  .app-header-shell .leve-neu-surface-inset button:hover {
+    color: var(--project-card-text);
+    background: color-mix(in srgb, white 7%, var(--project-card-bg));
+    --tw-ring-color: color-mix(in srgb, var(--project-card-accent) 30%, transparent);
+  }
+
+  .app-header-shell .leve-neu-surface-inset button[aria-pressed='true'] {
+    color: var(--project-card-accent);
+    border-color: color-mix(in srgb, var(--project-card-accent) 45%, transparent);
+    background: color-mix(in srgb, var(--project-card-accent) 11%, var(--project-card-bg));
+    box-shadow: var(--project-card-neu-inset);
+  }
+
+  .app-header-shell .leve-neu-surface-inset button svg {
+    color: currentColor;
+    stroke: currentColor;
+  }
+
+  .app-header-shell .leve-neu-surface-inset [class*='bg-[color-mix'] {
+    background: color-mix(in srgb, var(--project-card-neu-light) 32%, transparent) !important;
+  }
+
+  .app-header-shell .win-icon-button {
+    color: var(--project-card-text-muted);
+    border-color: color-mix(in srgb, var(--project-card-neu-light) 28%, transparent);
+    background: color-mix(in srgb, var(--project-card-neu-dark) 16%, var(--project-card-bg));
+    box-shadow: var(--project-card-neu-inset);
+  }
+
+  .app-header-shell .win-icon-button:hover {
+    color: var(--project-card-text);
+    border-color: color-mix(in srgb, var(--project-card-accent) 32%, transparent);
+    background: color-mix(in srgb, white 8%, var(--project-card-bg));
+    box-shadow: var(--project-card-neu-raised-sm);
+  }
+
+  .app-header-shell .app-nav-pill.btn-ghost {
+    color: var(--project-card-text-muted);
+    background: transparent;
+    border-color: color-mix(in srgb, var(--project-card-neu-light) 22%, transparent);
+    box-shadow: var(--project-card-neu-inset);
+  }
+
+  .app-header-shell .app-nav-pill.btn-ghost:hover {
+    color: var(--project-card-text);
+    background: color-mix(in srgb, white 8%, var(--project-card-bg));
+    box-shadow: var(--project-card-neu-raised-sm);
+  }
+
+  .app-header-shell .app-nav-pill[data-active='true'] {
+    color: var(--project-card-accent);
+    border-color: color-mix(in srgb, var(--project-card-accent) 42%, transparent);
+    background: color-mix(in srgb, var(--project-card-accent) 10%, var(--project-card-bg));
+    box-shadow: var(--project-card-neu-inset);
   }
 
   .app-header-toolbar {
@@ -2049,6 +2191,67 @@
       7px 7px 18px var(--app-neu-dark),
       -5px -5px 14px var(--app-neu-light),
       0 0 0 2px color-mix(in srgb, var(--workspace-stat-accent) 22%, transparent);
+  }
+
+  /**
+   * Shell do app (Tarefas, Documentos, Regras, Meus Projetos):
+   * superfícies Leve e inputs usam o bege --app-neu-bg com sombras coerentes.
+   */
+  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .leve-neu-surface,
+  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .app-panel {
+    border: 1px solid color-mix(in srgb, var(--app-neu-light) 48%, transparent);
+    background: var(--app-neu-bg);
+    box-shadow: var(--app-neu-raised);
+  }
+  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .leve-neu-surface-inset {
+    border: 1px solid color-mix(in srgb, var(--app-neu-light) 32%, transparent);
+    background: color-mix(in srgb, var(--app-neu-dark) 7%, var(--app-neu-bg));
+    box-shadow: var(--app-neu-inset);
+  }
+  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .leve-neu-pill {
+    border-color: color-mix(in srgb, var(--app-neu-light) 40%, transparent);
+    background: var(--app-neu-bg);
+    box-shadow: var(--app-neu-raised);
+  }
+  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .leve-neu-pill-active {
+    background: color-mix(in srgb, var(--leve-header-accent) 14%, var(--app-neu-bg));
+    box-shadow: var(--app-neu-inset);
+  }
+  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .app-input {
+    border-color: color-mix(in srgb, var(--app-neu-light) 30%, transparent);
+    background: color-mix(in srgb, var(--app-neu-dark) 6%, var(--app-neu-bg));
+    box-shadow: var(--app-neu-inset);
+  }
+  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .app-input:focus {
+    box-shadow:
+      var(--app-neu-inset),
+      0 0 0 2px color-mix(in srgb, var(--leve-header-accent) 18%, transparent);
+  }
+  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .app-select:not([multiple]),
+  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .app-select[multiple] {
+    border-color: color-mix(in srgb, var(--app-neu-light) 30%, transparent);
+    background-color: color-mix(in srgb, var(--app-neu-dark) 6%, var(--app-neu-bg));
+    box-shadow: var(--app-neu-inset);
+  }
+  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .app-select:not([multiple]):focus {
+    box-shadow:
+      var(--app-neu-inset),
+      0 0 0 2px color-mix(in srgb, var(--leve-header-accent) 18%, transparent);
+  }
+  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .app-filter-pill {
+    border-color: color-mix(in srgb, var(--app-neu-light) 40%, transparent);
+    background: var(--app-neu-bg);
+    box-shadow: var(--app-neu-raised);
+  }
+  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .app-filter-pill:hover:not(:disabled) {
+    box-shadow:
+      7px 7px 18px var(--app-neu-dark),
+      -5px -5px 14px var(--app-neu-light);
+  }
+  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .app-filter-pill-active,
+  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .app-filter-pill[data-active='true'] {
+    background: color-mix(in srgb, var(--leve-header-accent) 14%, var(--app-neu-bg));
+    box-shadow: var(--app-neu-inset);
   }
 
   /** DaisyUI dentro do app — alinhamento neumórfico leve */

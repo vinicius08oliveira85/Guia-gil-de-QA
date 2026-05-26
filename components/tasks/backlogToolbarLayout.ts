@@ -42,7 +42,7 @@ export const backlogListSurfaceHeaderClass = cn(
 );
 
 /** Corpo da lista — fundo creme para os cards neu “saltarem”. */
-export const backlogListSurfaceBodyClass = 'min-w-0 bg-[var(--leve-neu-bg)] p-2 sm:p-4';
+export const backlogListSurfaceBodyClass = 'min-w-0 bg-[var(--app-neu-bg)] p-2 sm:p-4';
 
 export const backlogActiveChipClass = cn(
   'leve-neu-pill inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-[var(--leve-header-text-muted)]'

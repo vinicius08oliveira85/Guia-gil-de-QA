@@ -68,8 +68,7 @@ export const documentsBodyTextClass =
 export const documentsMutedTextClass = 'font-sans text-xs text-[var(--leve-header-text-muted)]';
 
 export const documentsProgressTrackClass = cn(
-  'relative h-2 min-w-0 flex-1 overflow-hidden rounded-full',
-  'bg-[color-mix(in_srgb,var(--leve-header-text)_12%,transparent)] shadow-[var(--leve-neu-inset)]'
+  'dashboard-neu-insight-track relative h-2 min-w-0 flex-1'
 );
 
 export const documentsProgressPercentClass =

@@ -10,7 +10,6 @@ import React, {
 import { ExpandableTabs } from './ExpandableTabs';
 import { ExpansibleButton } from './ExpansibleButton';
 import { useTheme } from '../../hooks/useTheme';
-import { getActiveColorForTheme } from '../../utils/expandableTabsColors';
 import {
   BookOpen,
   Moon,
@@ -212,7 +211,7 @@ export const Header: React.FC<HeaderProps> = ({
     { id: 'theme', title: getThemeTitle(), icon: getThemeIcon() },
   ];
 
-  const activeColor = getActiveColorForTheme(theme);
+  const activeColor = 'text-[var(--project-card-accent)]';
 
   const handleSave = async () => {
     const proj = getSelectedProject();
@@ -320,15 +319,15 @@ export const Header: React.FC<HeaderProps> = ({
 
   const logoContent = (
     <>
-      <img
-        src="/Logo_Moderno_Leve-removebg-preview.png"
-        alt=""
-        aria-hidden="true"
-        className="h-8 w-auto shrink-0 sm:h-9"
-        loading="lazy"
-        decoding="async"
-        draggable={false}
-      />
+      <span className="app-header-logo-plate" aria-hidden>
+        <img
+          src="/Logo_Moderno_Leve-removebg-preview.png"
+          alt=""
+          loading="lazy"
+          decoding="async"
+          draggable={false}
+        />
+      </span>
       <div className="min-w-0 border-l-2 border-[var(--brand-cta)] pl-2.5 sm:pl-3">
         <p
           className={cn(
