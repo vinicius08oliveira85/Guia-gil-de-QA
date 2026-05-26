@@ -110,7 +110,7 @@ export const HeroSection: React.FC = () => {
                 initial={reduceMotion ? false : { opacity: 0, y: 20 }}
                 animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
-                className="flex flex-col items-center rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-200/50 p-6 backdrop-blur-sm soft-shadow transition-[transform,box-shadow] duration-200 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_22%,transparent)]"
+                className="leve-neu-surface flex flex-col items-center p-6 transition-[transform,box-shadow] duration-200 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_22%,transparent)]"
                 style={{ gap: '0.75rem' }}
                 whileHover={
                   reduceMotion

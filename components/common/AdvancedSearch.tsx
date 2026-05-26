@@ -79,7 +79,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
   }, [searchQuery, searchResults]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-[color-mix(in_srgb,var(--foreground)_22%,transparent)] p-4 pt-20 backdrop-blur-sm">
+    <div className="neu-overlay fixed inset-0 z-50 flex items-start justify-center p-4 pt-20">
       <div
         className={cn(
           'mica w-full max-w-3xl overflow-hidden rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)]',

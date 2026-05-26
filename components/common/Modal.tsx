@@ -139,7 +139,7 @@ export const Modal: React.FC<ModalProps> = ({
   };
 
   const panelBaseClass = cn(
-    'relative flex flex-col overflow-hidden font-sans shadow-[0_8px_32px_rgba(66,29,58,0.12)]',
+    'relative flex flex-col overflow-hidden font-sans',
     leveModalPanelBorderClass,
     panelClassName
   );
@@ -149,11 +149,11 @@ export const Modal: React.FC<ModalProps> = ({
       className={
         isFull
           ? cn(
-              'fixed inset-0 z-[9999] flex items-stretch justify-stretch p-0 backdrop-blur-md transition-opacity duration-200',
+              'neu-overlay fixed inset-0 z-[9999] flex items-stretch justify-stretch p-0 transition-opacity duration-200',
               leveModalOverlayClass
             )
           : cn(
-              'fixed inset-0 z-[9999] flex animate-in fade-in items-end justify-center p-0 backdrop-blur-md duration-200 sm:items-center sm:p-3 md:p-5',
+              'neu-overlay fixed inset-0 z-[9999] flex animate-in fade-in items-end justify-center p-0 duration-200 sm:items-center sm:p-3 md:p-5',
               leveModalOverlayClass
             )
       }
@@ -176,7 +176,6 @@ export const Modal: React.FC<ModalProps> = ({
                 panelBaseClass,
                 'max-sm:animate-modal-bottom-sheet-in w-full max-w-full max-sm:max-w-none sm:animate-in sm:fade-in sm:duration-200 sm:zoom-in-95 sm:slide-in-from-bottom-8',
                 'rounded-t-[var(--leve-header-radius)] rounded-b-none max-h-[min(96dvh,100svh-env(safe-area-inset-bottom))] min-h-[min(40vh,20rem)] sm:rounded-[var(--leve-header-radius)] sm:max-h-[min(92vh,100dvh-env(safe-area-inset-top)-1.5rem)]',
-                'bg-[var(--leve-header-bg)]',
                 sizeClasses[size]
               )
         }
@@ -231,7 +230,7 @@ export const Modal: React.FC<ModalProps> = ({
         </div>
 
         {footer && (
-          <div className={cn('flex-shrink-0 px-3 py-2.5 backdrop-blur-md sm:px-4 sm:py-3', leveModalFooterClass)}>
+          <div className={cn('flex-shrink-0 px-3 py-2.5 sm:px-4 sm:py-3', leveModalFooterClass)}>
             {footer}
           </div>
         )}

@@ -55,17 +55,13 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
 
   const tabBtnClass = (active: boolean) =>
     cn(
-      'inline-flex min-h-[40px] flex-1 items-center justify-center gap-1.5 rounded-[var(--workspace-panel-inner-radius)] px-2 py-1 font-sans text-[11px] font-semibold transition-all duration-200 sm:min-h-0 sm:flex-none sm:px-2.5 sm:text-xs',
-      active
-        ? 'bg-[var(--workspace-panel-badge-bg)] text-[var(--workspace-panel-badge-text)] shadow-sm'
-        : 'text-[var(--workspace-panel-text-muted)] hover:bg-[var(--workspace-panel-chip)] hover:text-[var(--workspace-panel-text)]'
+      'inline-flex min-h-[40px] flex-1 items-center justify-center gap-1.5 px-2 py-1 font-sans text-[11px] font-semibold sm:min-h-0 sm:flex-none sm:px-2.5 sm:text-xs',
+      active ? 'workspace-panel-neu-tab-active' : 'workspace-panel-neu-tab-idle'
     );
 
   const projectChipClass = () =>
     cn(
-      'w-full truncate rounded-[var(--workspace-panel-inner-radius)] border px-2 py-1.5 text-left font-sans text-xs font-medium transition-colors sm:px-2.5 sm:text-sm',
-      'border-[var(--workspace-panel-border)] bg-[var(--workspace-panel-chip)] text-[var(--workspace-panel-text)]',
-      'hover:border-[var(--workspace-panel-accent)] hover:text-[var(--workspace-panel-accent)]'
+      'workspace-panel-neu-chip w-full truncate border-0 px-2 py-1.5 text-left font-sans text-xs font-medium text-[var(--workspace-panel-text)] sm:px-2.5 sm:text-sm'
     );
 
   return (
@@ -77,7 +73,7 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
       <div
         role="tablist"
         aria-label="Tipo de alerta"
-        className="mb-3 flex shrink-0 flex-wrap gap-1.5 rounded-[var(--workspace-panel-inner-radius)] bg-[var(--workspace-panel-chip)] p-1 sm:gap-2"
+        className="workspace-panel-neu-inset mb-3 flex shrink-0 flex-wrap gap-1.5 p-1 sm:gap-2"
       >
         {healthCount > 0 && (
           <button
@@ -165,7 +161,7 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
         >
           <div className="mb-2 flex shrink-0 items-start gap-2">
             <div
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--workspace-panel-text)] text-[var(--workspace-panel-accent)]"
+              className="workspace-panel-neu-icon-wrap flex h-7 w-7 shrink-0 items-center justify-center"
               aria-hidden
             >
               <AlertOctagon className="h-4 w-4" strokeWidth={1.75} />

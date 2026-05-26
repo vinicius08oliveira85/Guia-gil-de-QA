@@ -465,8 +465,8 @@ export const Header: React.FC<HeaderProps> = ({
                 'group flex h-full min-h-0 min-w-0 flex-1 cursor-pointer items-center gap-2 overflow-hidden rounded-[var(--radius)] p-0.5 text-left sm:gap-2.5',
                 'border border-transparent bg-transparent',
                 'transition-[background-color,border-color,box-shadow] duration-200 ease-out',
-                'hover:border-[var(--brand-surface-border)]',
-                'hover:bg-[var(--brand-chip)]',
+                'hover:border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]',
+                'hover:bg-[color-mix(in_srgb,var(--leve-neu-bg)_88%,var(--leve-neu-light))]',
                 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[oklch(var(--p))]'
               )}
               aria-label="Voltar para Meus Projetos"
@@ -475,12 +475,12 @@ export const Header: React.FC<HeaderProps> = ({
                 className={cn(
                   'pointer-events-none flex h-9 w-9 shrink-0 items-center justify-center',
                   'rounded-full border border-transparent transition-all duration-200',
-                  'group-hover:border-[var(--brand-surface-border)]',
-                  'group-hover:bg-[var(--brand-chip)]'
+                  'group-hover:border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]',
+                  'group-hover:bg-[color-mix(in_srgb,var(--leve-neu-bg)_88%,var(--leve-neu-light))]'
                 )}
                 aria-hidden
               >
-                <ChevronLeft className="h-5 w-5 text-[var(--brand-text-muted)] group-hover:text-[var(--brand-text-strong)]" />
+                <ChevronLeft className="h-5 w-5 text-[var(--leve-header-text-muted)] group-hover:text-[var(--leve-header-text)]" />
               </span>
               {logoContent}
             </button>
@@ -492,7 +492,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           <div className="relative flex min-w-0 max-w-[min(100%,52%)] shrink-0 items-center justify-end gap-1.5 overflow-hidden sm:max-w-[min(100%,58%)] md:gap-2">
             {showDashboardActions && (
-              <div className="hidden shrink-0 flex-col items-stretch gap-1 border-r border-[var(--brand-surface-border)] pr-2 md:flex md:flex-row md:items-center md:gap-1">
+              <div className="hidden shrink-0 flex-col items-stretch gap-1 border-r border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pr-2 md:flex md:flex-row md:items-center md:gap-1">
                 {onOpenCreateModal && (
                   <button
                     type="button"

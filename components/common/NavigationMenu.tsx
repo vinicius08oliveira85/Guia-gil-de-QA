@@ -72,7 +72,7 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
     <>
       <button
         type="button"
-        className="fixed inset-0 z-40 bg-[color-mix(in_srgb,var(--foreground)_22%,transparent)] backdrop-blur-sm md:hidden"
+        className="neu-overlay fixed inset-0 z-40 md:hidden"
         aria-label="Fechar menu"
         onClick={close}
       />

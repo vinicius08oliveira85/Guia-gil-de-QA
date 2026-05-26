@@ -219,12 +219,12 @@ export function ExecutionAutomationCard({
 
   return (
     <div
-      className="relative overflow-hidden rounded-[var(--rounded-box)] border border-base-300/50 bg-gradient-to-br from-base-100 to-base-100/95 p-4 backdrop-blur-md transition-all duration-300 dark:border-base-content/8 dark:from-base-200/60 dark:to-base-200/40 sm:p-5"
+      className="leve-neu-surface relative overflow-hidden p-4 transition-[box-shadow] duration-300 sm:p-5"
       role="region"
       aria-label="Execução de Testes e Automatizados"
     >
       <div
-        className="absolute -left-10 bottom-0 h-64 w-64 rounded-full bg-primary/15 blur-3xl opacity-50 dark:bg-primary/20"
+        className="pointer-events-none absolute -left-10 bottom-0 h-64 w-64 rounded-full bg-[color-mix(in_srgb,var(--leve-header-accent)_12%,transparent)] opacity-60"
         aria-hidden
       />
       <div className="relative z-10 grid grid-cols-1 items-center gap-4 lg:grid-cols-12 lg:gap-5">
@@ -232,7 +232,7 @@ export function ExecutionAutomationCard({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <div
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-primary/25 bg-primary/10 dark:bg-primary/15"
+                className="leve-neu-pill flex h-11 w-11 shrink-0 items-center justify-center text-[var(--leve-header-accent)]"
                 aria-hidden
               >
                 <ListChecks className="h-5 w-5 text-primary" />
@@ -260,7 +260,7 @@ export function ExecutionAutomationCard({
           </div>
           <div className="space-y-2">
             <div
-              className="h-3 w-full overflow-hidden rounded-full border border-base-300/40 bg-base-200/80 dark:bg-base-300/60"
+              className="workspace-stat-neu-track relative h-3 w-full"
               role="progressbar"
               aria-valuenow={executionPercent}
               aria-valuemin={0}
@@ -268,7 +268,7 @@ export function ExecutionAutomationCard({
               aria-label={`Progresso: ${executionPercent}%, ${executedTestCases} de ${totalTestCases} casos executados`}
             >
               <div
-                className="h-full rounded-full bg-gradient-to-r from-primary via-primary/90 to-primary/80 shadow-[0_0_8px_color-mix(in_srgb,var(--color-primary)_40%,transparent)] transition-all duration-700 ease-out"
+                className="workspace-stat-neu-fill h-full transition-all duration-700 ease-out"
                 style={{ width: `${executionPercent}%` }}
               />
             </div>
@@ -281,7 +281,7 @@ export function ExecutionAutomationCard({
             <p className="text-sm text-base-content/60">{executionTrend}</p>
           )}
         </div>
-        <div className="flex items-center justify-center border-t border-base-300/50 pt-4 lg:col-span-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+        <div className="flex items-center justify-center border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pt-4 lg:col-span-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
           <div className="flex items-center gap-4 sm:gap-5">
             <div className="relative flex h-20 w-20 shrink-0 items-center justify-center sm:h-[5.5rem] sm:w-[5.5rem]">
               <svg className="h-full w-full -rotate-90" viewBox="0 0 96 96" aria-hidden>

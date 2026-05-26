@@ -16,7 +16,7 @@ export interface ConsolidatedMetricsProps {
   variant?: 'embedded' | 'standalone';
 }
 
-const EMBEDDED_TILE = 'border-[var(--workspace-panel-border)] bg-[var(--workspace-panel-chip)]';
+const EMBEDDED_TILE = 'workspace-panel-neu-metric-tile border-0';
 
 export const ConsolidatedMetrics = React.memo<ConsolidatedMetricsProps>(
   ({ projects, className, variant = 'standalone' }) => {
@@ -54,7 +54,7 @@ export const ConsolidatedMetrics = React.memo<ConsolidatedMetricsProps>(
       : 'text-[10px] font-bold uppercase tracking-wide text-base-content/70';
 
     return (
-      <section className={cn(embedded ? 'relative z-[1]' : 'mb-6 rounded-2xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5', className)} aria-labelledby="consolidated-metrics-heading">
+      <section className={cn(embedded ? 'relative z-[1]' : cn('leve-neu-surface mb-6 p-4 sm:p-5'), className)} aria-labelledby="consolidated-metrics-heading">
         <div className={cn('mb-2.5 flex items-center gap-2', embedded && 'mb-3')}>
           <BarChart3
             className={cn(

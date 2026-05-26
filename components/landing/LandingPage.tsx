@@ -11,7 +11,7 @@ import { Footer } from './Footer';
  */
 export const LandingPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-base-100">
+    <div className="app-page landing-neu-scope min-h-screen">
       <HeroSection />
       <FeaturesSection />
       <BenefitsSection />

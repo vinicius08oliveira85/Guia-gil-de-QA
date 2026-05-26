@@ -392,8 +392,7 @@ export const TaskTypeIcon: React.FC<{ type: JiraTaskType; className?: string }> 
     return (
       <div
         className={`
-                group relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border 
-                backdrop-blur-sm transition-all duration-300
+                leve-neu-surface-inset group relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-0 transition-all duration-300
                 ${config.bgColor}
                 ${config.borderColor}
                 ${config.hoverColor}

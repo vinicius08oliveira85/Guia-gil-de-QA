@@ -196,7 +196,7 @@ export const TaskJiraStatusDropdown: React.FC<TaskJiraStatusDropdownProps> = ({
         ref={menuRef}
         role="listbox"
         aria-label="Opções de status Jira"
-        className="mica max-h-[min(16rem,70vh)] overflow-y-auto overscroll-contain rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-[var(--brand-surface-strong)] shadow-[0_12px_32px_-12px_var(--brand-surface-shadow)] backdrop-blur-md"
+        className="app-menu-panel max-h-[min(16rem,70vh)] overscroll-contain"
         style={{
           position: 'fixed',
           top: menuPosition.top,

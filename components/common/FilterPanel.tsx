@@ -28,24 +28,24 @@ const FilterSection: React.FC<FilterSectionProps> = ({
     <div
       className={cn(
         appPanelClass,
-        'overflow-hidden transition-all duration-200 hover:border-[color-mix(in_srgb,var(--color-primary)_30%,var(--brand-surface-border))]'
+        'overflow-hidden transition-[box-shadow] duration-200 hover:shadow-[var(--leve-neu-hover)]'
       )}
     >
       <button
         type="button"
         onClick={() => onToggle(id)}
-        className="app-element-typography w-full flex items-center justify-between p-4 bg-transparent hover:bg-[var(--brand-chip-hover)] transition-colors duration-200 group"
+        className="app-element-typography group flex w-full items-center justify-between p-4 transition-[box-shadow] duration-200 hover:shadow-[var(--leve-neu-inset)]"
         aria-expanded={isExpanded}
         aria-controls={contentId}
       >
         <div className="flex items-center gap-3">
-          <div className="p-1.5 bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] rounded-[var(--radius)] group-hover:bg-[color-mix(in_srgb,var(--color-primary)_18%,transparent)] transition-colors">
+          <div className="leve-neu-pill p-1.5 transition-[box-shadow] group-hover:shadow-[var(--leve-neu-hover)]">
             {icon}
           </div>
-          <span className="text-sm font-semibold text-[var(--brand-text-strong)]">{title}</span>
+          <span className="text-sm font-semibold text-[var(--leve-header-text)]">{title}</span>
         </div>
         <motion.svg
-          className="w-4 h-4 text-[var(--brand-text-muted)]"
+          className="h-4 w-4 text-[var(--leve-header-text-muted)]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -65,7 +65,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
             transition={{ duration: 0.2, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <div className="p-4 border-t border-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)]">
+            <div className="leve-neu-surface-inset border-0 border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] p-4">
               {children}
             </div>
           </motion.div>

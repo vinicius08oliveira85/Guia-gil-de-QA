@@ -11,7 +11,7 @@ export const TASK_ACTION_SLOT_CLASSNAMES = {
 
 /** Shell visual do card na listagem (tokens em index.css `.task-card-shell`). */
 export const taskCardShellClass =
-  'task-card-shell px-2 py-2 transition-colors duration-200 sm:px-3 sm:py-2';
+  'task-card-shell px-2 py-2 transition-[box-shadow] duration-200 sm:px-3 sm:py-2';
 
 /** Plus Jakarta Sans + tracking do tema (identidade tipográfica do app). */
 export const taskCardTypography = 'font-sans tracking-[var(--letter-spacing)]';
@@ -26,9 +26,9 @@ export const taskCardFieldLabelClass = 'task-card-field-label';
 
 export const taskCardSectionTitleClass = 'task-card-section-title flex items-center gap-2';
 
-export const taskModalSectionClass = 'task-modal-section';
+export const taskModalSectionClass = 'leve-neu-surface task-modal-section';
 
-export const taskModalSectionAccentClass = 'task-modal-section-accent';
+export const taskModalSectionAccentClass = 'task-modal-section-accent leve-neu-surface';
 
 export const taskUiTagClass = 'task-ui-tag';
 
@@ -39,32 +39,30 @@ export const taskUiTagSuccessClass = 'task-ui-tag-success';
 export const taskToolbarPillGroupClass = 'task-toolbar-pill-group';
 
 /** Borda + raio padrão para painéis compactos (filtros, colapsáveis, anexos). */
-export const taskPanelBorderClass =
-  'border border-[var(--brand-surface-border)] rounded-[var(--radius)]';
+export const taskPanelBorderClass = 'leve-neu-surface-inset rounded-[var(--leve-header-radius)]';
 
-/** Select/input compacto em modais de tarefa — alias de `.app-select` do design system. */
-export const taskSelectControlClass = 'app-select shadow-sm';
+/** Select/input compacto em modais de tarefa. */
+export const taskSelectControlClass = 'app-select';
 
 /** Textarea em formulários de caso de teste / modais densos. */
 export const taskTextareaClass =
-  'textarea textarea-bordered app-input w-full font-mono whitespace-pre-wrap text-[var(--brand-text-strong)]';
+  'textarea textarea-bordered app-input w-full font-mono whitespace-pre-wrap text-[var(--leve-header-text)]';
 
 /** Painel interno de formulário (prévia, opcionais). */
-export const taskFormInsetPanelClass = `${taskModalSectionClass} space-y-3 bg-[color-mix(in_srgb,var(--brand-chip)_35%,var(--brand-surface-strong))] p-3`;
+export const taskFormInsetPanelClass = `${taskModalSectionClass} leve-neu-surface-inset space-y-3 p-3`;
 
-export const taskFormPreviewBoxClass = `${taskPanelBorderClass} mt-2 bg-[var(--brand-chip)] p-3 text-xs`;
+export const taskFormPreviewBoxClass = `${taskPanelBorderClass} mt-2 p-3 text-xs`;
 
-export const taskChipSurfaceClass =
-  'bg-[var(--brand-chip)] hover:bg-[var(--brand-chip-hover)]';
+export const taskChipSurfaceClass = 'leve-neu-surface-inset hover:shadow-[var(--leve-neu-raised)]';
 
 export const taskLabelMutedClass = 'task-card-muted';
 
-export const taskTextStrongClass = 'text-[var(--brand-text-strong)]';
+export const taskTextStrongClass = 'text-[var(--leve-header-text)]';
 
 export const taskCollapsibleShellClass = `${taskPanelBorderClass} overflow-hidden`;
 
 export const taskCollapsibleHeaderClass =
-  'flex w-full items-center justify-between bg-[var(--brand-chip)] px-sm py-xs transition-colors hover:bg-[var(--brand-chip-hover)]';
+  'leve-neu-surface-inset flex w-full items-center justify-between px-sm py-xs transition-[box-shadow] hover:shadow-[var(--leve-neu-raised)]';
 
 /** Título da tarefa na linha do card (12px, sem escalar para sm). */
 export const taskCardTitleTypography = `${taskCardTypography} text-xs font-semibold leading-tight`;
@@ -94,24 +92,23 @@ export const taskCardButtonTypography = `${taskCardTypography} text-[10px] font-
 export const taskCardButtonShape = 'rounded-full px-2 py-0';
 
 const taskCardActionChipBase = [
-  'btn-task-format inline-flex h-6 max-h-6 min-h-6 w-full min-w-0 items-center justify-center gap-0.5 border shadow-sm',
+  'btn-task-format leve-neu-pill inline-flex h-6 max-h-6 min-h-6 w-full min-w-0 items-center justify-center gap-0.5',
   taskCardButtonShape,
   taskCardButtonTypography,
   'transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2',
 ].join(' ');
 
-export const taskCardActionChipCta = `${taskCardActionChipBase} border-[color-mix(in_srgb,var(--brand-cta)_40%,transparent)] bg-[color-mix(in_srgb,var(--brand-cta)_10%,transparent)] text-[var(--brand-text-strong)] hover:bg-[var(--brand-cta)] hover:text-[var(--brand-cta-foreground)] hover:border-[var(--brand-cta)] hover:shadow-md active:scale-95 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_30%,transparent)]`;
+export const taskCardActionChipCta = `${taskCardActionChipBase} text-[var(--leve-header-text)] hover:text-[var(--leve-header-accent)] focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_30%,transparent)]`;
 
 export const taskCardActionChipBusy =
-  'ring-1 ring-[color-mix(in_srgb,var(--brand-cta)_28%,transparent)]';
+  'ring-1 ring-[color-mix(in_srgb,var(--leve-header-accent)_28%,transparent)]';
 
 export const taskCardTestStatusChipLayout = [
-  'h-6 max-h-6 min-h-6 min-w-0 w-full justify-center gap-0.5',
+  'leve-neu-pill h-6 max-h-6 min-h-6 min-w-0 w-full justify-center gap-0.5',
   taskCardButtonShape,
   taskCardButtonTypography,
-  'shadow-sm',
 ].join(' ');
 
 /** Largura fixa do chevron + contador de subtarefas (alinha metadados entre cards). */
 export const taskCardSubtreeExpandSlotClass =
-  'inline-flex shrink-0 items-center justify-center gap-0.5 rounded-[var(--radius)] px-1.5 min-h-[44px] min-w-[44px] max-md:px-2 sm:min-h-8 sm:min-w-[3.25rem]';
+  'leve-neu-pill inline-flex shrink-0 items-center justify-center gap-0.5 px-1.5 min-h-[44px] min-w-[44px] max-md:px-2 sm:min-h-8 sm:min-w-[3.25rem]';

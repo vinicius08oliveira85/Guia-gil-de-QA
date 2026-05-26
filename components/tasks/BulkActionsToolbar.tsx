@@ -21,7 +21,7 @@ export const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
   }
 
   return (
-    <div className="sticky top-0 z-20 bg-primary/10 border-b border-primary/30 px-md py-sm backdrop-blur-sm">
+    <div className="leve-neu-surface sticky top-0 z-20 border-0 border-b border-[color-mix(in_srgb,var(--leve-header-accent)_25%,transparent)] px-md py-sm">
       <div className="flex items-center justify-between gap-md">
         <div className="flex items-center gap-sm">
           <span className="text-sm font-semibold text-[var(--brand-text-strong)]">

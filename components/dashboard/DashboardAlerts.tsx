@@ -105,7 +105,7 @@ export const DashboardAlerts: React.FC<DashboardAlertsProps> = React.memo(
             >
               <Card
                 className={cn(
-                  'flex items-center gap-3 p-4 border backdrop-blur-sm transition-all duration-200 hover:shadow-lg hover:scale-[1.02]',
+                  'leve-neu-surface flex items-center gap-3 border-0 p-4 transition-all duration-200 hover:scale-[1.01]',
                   alert.bgColor,
                   alert.borderColor
                 )}

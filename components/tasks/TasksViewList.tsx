@@ -48,10 +48,10 @@ const QUALITY_LABELS: Record<string, string> = {
 };
 
 const filterChipClass =
-  'app-element-typography inline-flex items-center gap-1 rounded-full border border-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)] px-2.5 py-1 text-xs font-medium text-[var(--brand-text-muted)] shadow-sm';
+  'leve-neu-pill app-element-typography inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-[var(--leve-header-text-muted)]';
 
 const filterChipBtnClass =
-  'flex h-5 w-5 items-center justify-center rounded-full text-[var(--brand-text-muted)] transition-colors hover:bg-[var(--brand-chip-hover)] hover:text-[var(--brand-text-strong)]';
+  'flex h-5 w-5 items-center justify-center rounded-full text-[var(--leve-header-text-muted)] transition-colors hover:text-[var(--leve-header-accent)]';
 
 export const TasksViewList: React.FC<TasksViewListProps> = ({
   statusFilter,
@@ -78,7 +78,7 @@ export const TasksViewList: React.FC<TasksViewListProps> = ({
 }) => (
   <>
     {hasActiveFiltersOrSearch && (
-      <div className="flex flex-wrap items-center gap-2 rounded-[var(--rounded-box)] border border-[var(--brand-surface-border)] bg-[var(--brand-chip)] p-2.5 sm:p-3">
+      <div className="leve-neu-surface-inset flex flex-wrap items-center gap-2 p-2.5 sm:p-3">
         {statusFilter.map(s => (
           <span
             key={`status-${s}`}

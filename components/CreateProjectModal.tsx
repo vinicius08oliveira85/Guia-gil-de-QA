@@ -237,7 +237,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                 <button
                   onClick={() => setShowTemplates(true)}
                   type="button"
-                  className="w-full rounded-[var(--rounded-box)] border-2 border-dashed border-base-300 bg-base-200/50 p-4 text-left transition-colors hover:border-primary/40 hover:bg-base-300/30 dark:bg-base-200/30"
+                  className="neu-dashed-panel w-full p-4 text-left"
                 >
                   <div className="flex items-start gap-3">
                     <span className="text-xl" aria-hidden>
@@ -258,7 +258,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                     else setJiraConfigStatus('missing');
                   }}
                   type="button"
-                  className="w-full rounded-[var(--rounded-box)] border-2 border-dashed border-base-300 bg-base-200/50 p-4 text-left transition-colors hover:border-primary/40 hover:bg-base-300/30 dark:bg-base-200/30"
+                  className="neu-dashed-panel w-full p-4 text-left"
                 >
                   <div className="flex items-start gap-3">
                     <span className="text-xl" aria-hidden>
@@ -275,7 +275,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                 <button
                   onClick={() => setShowFileImportModal(true)}
                   type="button"
-                  className="w-full rounded-[var(--rounded-box)] border-2 border-dashed border-base-300 bg-base-200/50 p-4 text-left transition-colors hover:border-primary/40 hover:bg-base-300/30 dark:bg-base-200/30"
+                  className="neu-dashed-panel w-full p-4 text-left"
                 >
                   <div className="flex items-start gap-3">
                     <span className="text-xl" aria-hidden>
@@ -352,7 +352,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                 </div>
               )}
               <Card
-                className="border-base-300/80 bg-base-200/70 p-4 sm:p-6 dark:bg-base-200/45"
+                className="leve-neu-surface-inset p-4 sm:p-6"
                 hoverable={false}
               >
                 <div className="space-y-4">

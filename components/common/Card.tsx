@@ -28,16 +28,13 @@ type CardProps = React.HTMLAttributes<HTMLElement> & {
 export const Card = React.memo<CardProps>(
   ({ children, className = '', variant = 'default', hoverable = true, ...rest }) => {
     const variantClasses = {
-      default:
-        'app-surface',
-      elevated:
-        'app-surface app-surface-strong task-card-shadow',
-      outlined:
-        'border bg-[color-mix(in_srgb,var(--brand-surface)_72%,transparent)] border-[var(--brand-surface-border)] shadow-none',
+      default: 'app-surface',
+      elevated: 'app-surface app-surface-strong',
+      outlined: 'leve-neu-surface-inset border-0',
     };
 
     const hoverClasses = hoverable
-      ? 'transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--brand-cta)_22%,var(--brand-surface-border))] hover:ring-1 hover:ring-[color-mix(in_srgb,var(--brand-highlight)_16%,transparent)] motion-reduce:transform-none motion-reduce:hover:ring-0'
+      ? 'transition-[box-shadow,transform] duration-300 ease-out hover:-translate-y-0.5 motion-reduce:transform-none'
       : '';
 
     return (

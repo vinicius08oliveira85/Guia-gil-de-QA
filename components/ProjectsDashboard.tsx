@@ -24,7 +24,20 @@ import { GlobalEfficiencyMetric } from './projectsDashboard/GlobalEfficiencyMetr
 import { NewProjectCard } from './projectsDashboard/NewProjectCard';
 import { ProjectsDashboardSidebar } from './projectsDashboard/ProjectsDashboardSidebar';
 import { useAriaLive } from '../hooks/useAriaLive';
-import { filterPillClass, appPanelClass, projectsListShell } from './common/viewUi';
+import { projectsListShell } from './common/viewUi';
+import {
+  projectsDashboardFilterPillClass,
+  projectsDashboardMainGridClass,
+  projectsDashboardMessagePanelClass,
+  projectsDashboardPageClass,
+  projectsDashboardProjectGridClass,
+  projectsDashboardStatsRegionClass,
+  projectsDashboardSyncAlertBtnClass,
+  projectsDashboardSyncAlertClass,
+  projectsDashboardSyncDismissClass,
+  projectsDashboardSyncAlertMutedClass,
+  projectsDashboardSyncAlertTitleClass,
+} from './projectsDashboard/projectsDashboardUi';
 
 type QuickFilter = 'all' | 'withBugs' | 'needsAttention';
 
@@ -201,7 +214,7 @@ export const ProjectsDashboard: React.FC<{
 
   return (
     <>
-      <div className="animate-fade-in min-h-[calc(100vh-4rem)] bg-base-200/40 font-body">
+      <div className={projectsDashboardPageClass}>
         <div className={projectsListShell}>
           <ProjectsDashboardHeader
             projectCount={projects.length}
@@ -212,7 +225,7 @@ export const ProjectsDashboard: React.FC<{
 
           {projects.length > 0 && (
             <div
-              className="mb-4 mt-4 grid grid-cols-2 gap-2 sm:mt-5 sm:grid-cols-4 sm:gap-2.5 lg:grid-cols-[repeat(4,minmax(0,1fr))_minmax(12rem,1.35fr)] lg:items-stretch"
+              className={projectsDashboardStatsRegionClass}
               role="region"
               aria-label="Resumo do workspace"
             >
@@ -243,7 +256,7 @@ export const ProjectsDashboard: React.FC<{
               <button
                 type="button"
                 onClick={() => setQuickFilter('all')}
-                className={filterPillClass(quickFilter === 'all')}
+                className={projectsDashboardFilterPillClass(quickFilter === 'all')}
                 aria-pressed={quickFilter === 'all'}
               >
                 Todos
@@ -252,7 +265,7 @@ export const ProjectsDashboard: React.FC<{
                 <button
                   type="button"
                   onClick={() => setQuickFilter(quickFilter === 'withBugs' ? 'all' : 'withBugs')}
-                  className={cn(filterPillClass(quickFilter === 'withBugs'), 'gap-1.5')}
+                  className={projectsDashboardFilterPillClass(quickFilter === 'withBugs')}
                   aria-pressed={quickFilter === 'withBugs'}
                 >
                   <Bug className="h-3.5 w-3.5" aria-hidden />
@@ -265,7 +278,7 @@ export const ProjectsDashboard: React.FC<{
                   onClick={() =>
                     setQuickFilter(quickFilter === 'needsAttention' ? 'all' : 'needsAttention')
                   }
-                  className={cn(filterPillClass(quickFilter === 'needsAttention'), 'gap-1.5')}
+                  className={projectsDashboardFilterPillClass(quickFilter === 'needsAttention')}
                   aria-pressed={quickFilter === 'needsAttention'}
                 >
                   <AlertTriangle className="h-3.5 w-3.5" aria-hidden />
@@ -278,19 +291,19 @@ export const ProjectsDashboard: React.FC<{
           {/* Com projetos no workspace: banner não depende do filtro (evita sumir quando o filtro zera a lista) */}
           {supabaseLoadFailed && projects.length > 0 && !syncBannerDismissed && (
             <div
-              className={`mb-4 p-3 rounded-lg text-sm flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between ${isSyncServerError ? 'bg-error/10 text-error-content border border-error/30' : 'bg-warning/10 text-warning-content border border-warning/30'}`}
+              className={projectsDashboardSyncAlertClass(isSyncServerError ? 'error' : 'warning')}
               role="alert"
             >
               <div className="flex flex-col gap-1 min-w-0">
                 {supabaseLoadError ? (
                   <>
-                    <span className="font-medium">Sincronização indisponível:</span>
+                    <span className={projectsDashboardSyncAlertTitleClass}>Sincronização indisponível:</span>
                     <span className="break-words">{supabaseLoadError}</span>
                   </>
                 ) : (
                   <span>Sincronização com a nuvem indisponível no momento.</span>
                 )}
-                <span className="text-base-content/80 text-xs mt-0.5">
+                <span className={projectsDashboardSyncAlertMutedClass}>
                   Seus projetos locais continuam disponíveis. Tente novamente mais tarde ou
                   verifique em Configurações.
                 </span>
@@ -299,7 +312,7 @@ export const ProjectsDashboard: React.FC<{
                 <button
                   type="button"
                   onClick={() => setSyncBannerDismissed(true)}
-                  className="px-2 py-1 rounded text-xs font-medium opacity-80 hover:opacity-100"
+                  className={projectsDashboardSyncDismissClass}
                 >
                   Dispensar
                 </button>
@@ -307,7 +320,7 @@ export const ProjectsDashboard: React.FC<{
                   type="button"
                   onClick={handleRetrySync}
                   disabled={retryButtonDisabled}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed ${isSyncServerError ? 'bg-error/20 hover:bg-error/30 border border-error/40 text-error-content' : 'bg-warning/20 hover:bg-warning/30 border border-warning/40 text-warning-content'}`}
+                  className={projectsDashboardSyncAlertBtnClass(isSyncServerError ? 'error' : 'warning')}
                 >
                   {retryButtonDisabled ? 'Aguarde…' : 'Tentar novamente'}
                 </button>
@@ -324,17 +337,11 @@ export const ProjectsDashboard: React.FC<{
             onCreateBusyChange={setIsCreateSubmitting}
           />
 
-          <div
-            className={cn(
-              'mt-2',
-              projects.length > 0 &&
-                'lg:grid lg:grid-cols-[minmax(0,1fr)_min(100%,20rem)] lg:items-start lg:gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]'
-            )}
-          >
+          <div className={cn(projects.length > 0 && projectsDashboardMainGridClass)}>
             <div className="min-w-0">
             {filteredProjects.length > 0 ? (
               <div
-                className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 md:gap-5"
+                className={projectsDashboardProjectGridClass}
                 role="list"
                 aria-label="Lista de projetos"
               >
@@ -369,13 +376,13 @@ export const ProjectsDashboard: React.FC<{
                 {/* Sem projetos no workspace: aviso de sync aqui (com lista vazia não há banner no topo) */}
                 {supabaseLoadFailed && projects.length === 0 && (
                   <div
-                    className={`mb-4 p-3 rounded-lg text-sm flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between ${isSyncServerError ? 'bg-error/10 text-error-content border border-error/30' : 'bg-warning/10 text-warning-content border border-warning/30'}`}
+                    className={projectsDashboardSyncAlertClass(isSyncServerError ? 'error' : 'warning')}
                     role="alert"
                   >
                     <div className="flex flex-col gap-1 min-w-0">
                       {supabaseLoadError ? (
                         <>
-                          <span className="font-medium">Sincronização indisponível:</span>
+                          <span className={projectsDashboardSyncAlertTitleClass}>Sincronização indisponível:</span>
                           <span className="break-words">{supabaseLoadError}</span>
                         </>
                       ) : (
@@ -384,7 +391,7 @@ export const ProjectsDashboard: React.FC<{
                           projetos, tente novamente ou verifique a conexão.
                         </span>
                       )}
-                      <span className="text-base-content/80 text-xs mt-0.5">
+                      <span className={projectsDashboardSyncAlertMutedClass}>
                         Seus projetos locais continuam disponíveis. Tente novamente mais tarde ou
                         verifique em Configurações.
                       </span>
@@ -393,7 +400,7 @@ export const ProjectsDashboard: React.FC<{
                       type="button"
                       onClick={handleRetrySync}
                       disabled={retryButtonDisabled}
-                      className={`shrink-0 px-3 py-1.5 rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed ${isSyncServerError ? 'bg-error/20 hover:bg-error/30 border border-error/40 text-error-content' : 'bg-warning/20 hover:bg-warning/30 border border-warning/40 text-warning-content'}`}
+                      className={projectsDashboardSyncAlertBtnClass(isSyncServerError ? 'error' : 'warning')}
                     >
                       {retryButtonDisabled ? (
                         <>
@@ -410,7 +417,7 @@ export const ProjectsDashboard: React.FC<{
                   </div>
                 )}
                 {projects.length === 0 ? (
-                  <div className={cn(appPanelClass, 'rounded-[var(--rounded-box)] p-4 shadow-sm sm:p-8')}>
+                  <div className={cn(projectsDashboardMessagePanelClass, 'sm:p-8')}>
                     <EmptyState
                       icon="🚀"
                       title="Nenhum projeto ainda"
@@ -424,14 +431,7 @@ export const ProjectsDashboard: React.FC<{
                     />
                   </div>
                 ) : (
-                  <div
-                    className={cn(
-                      appPanelClass,
-                      'rounded-[var(--rounded-box)] bg-[var(--brand-chip)] p-4 text-center sm:p-5'
-                    )}
-                    role="status"
-                    aria-live="polite"
-                  >
+                  <div className={projectsDashboardMessagePanelClass} role="status" aria-live="polite">
                     <p className="mb-4 max-w-full mx-auto text-sm text-[var(--brand-text-muted)]">
                       {quickFilter === 'withBugs'
                         ? 'Nenhum projeto com bugs abertos corresponde a este filtro.'
@@ -440,7 +440,7 @@ export const ProjectsDashboard: React.FC<{
                     <button
                       type="button"
                       onClick={() => setQuickFilter('all')}
-                      className={cn(filterPillClass(false), 'mx-auto')}
+                      className={cn(projectsDashboardFilterPillClass(false), 'mx-auto')}
                     >
                       Mostrar todos os projetos
                     </button>

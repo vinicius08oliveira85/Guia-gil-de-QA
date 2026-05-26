@@ -12,7 +12,12 @@ import { getProjectIconMeta } from '../../utils/projectIcon';
 import { contextBadgeClass } from './viewUi';
 import {
   projectCardAccentBarClass,
-  projectCardMetricCellClass,
+  projectCardChipClass,
+  projectCardIconWrapClass,
+  projectCardMetricFillClass,
+  projectCardMetricKnobClass,
+  projectCardMetricRowClass,
+  projectCardMetricTrackClass,
   projectCardMetricsPanelClass,
   projectCardOrbCtaClass,
   projectCardOrbHighlightClass,
@@ -27,84 +32,63 @@ export interface ProjectCardProps {
   className?: string;
 }
 
-type MetricTheme = {
-  ringClass: string;
-  valueClass: string;
-  iconClass: string;
-};
-
-const METRIC_THEMES: Record<'exec' | 'tasks' | 'success', MetricTheme> = {
-  exec: {
-    ringClass: 'text-[var(--project-card-accent)]',
-    valueClass: 'text-[var(--project-card-accent)]',
-    iconClass: 'text-[var(--project-card-accent)]',
-  },
-  tasks: {
-    ringClass: 'text-[var(--project-card-accent)]',
-    valueClass: 'text-[var(--project-card-accent)]',
-    iconClass: 'text-[var(--project-card-accent)]',
-  },
-  success: {
-    ringClass: 'text-[var(--project-card-accent)]',
-    valueClass: 'text-[var(--project-card-accent)]',
-    iconClass: 'text-[var(--project-card-accent)]',
-  },
-};
-
-function MetricRing({
+function NeumorphicProgressBar({
   value,
-  theme,
-  icon: Icon,
   label,
+  ariaLabel,
 }: {
   value: number;
-  theme: MetricTheme;
-  icon: LucideIcon;
   label: string;
+  ariaLabel: string;
 }) {
-  const size = 40;
-  const strokeWidth = 3;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
   const progress = Math.min(100, Math.max(0, value));
-  const offset = circumference - (progress / 100) * circumference;
+  const knobLeft = `clamp(0px, calc(${progress}% - 6px), calc(100% - 12px))`;
 
   return (
-    <div className={projectCardMetricCellClass}>
-      <div className="relative" style={{ width: size, height: size }}>
-        <svg className="h-full w-full -rotate-90" viewBox={`0 0 ${size} ${size}`} aria-hidden>
-          <circle
-            className="text-[color-mix(in_srgb,var(--project-card-text)_22%,transparent)]"
-            cx={size / 2}
-            cy={size / 2}
-            fill="transparent"
-            r={radius}
-            stroke="currentColor"
-            strokeWidth={strokeWidth}
-          />
-          <circle
-            className={cn(theme.ringClass, 'transition-all duration-700 ease-out')}
-            cx={size / 2}
-            cy={size / 2}
-            fill="transparent"
-            r={radius}
-            stroke="currentColor"
-            strokeDasharray={circumference}
-            strokeDashoffset={offset}
-            strokeWidth={strokeWidth}
-            strokeLinecap="round"
-          />
-        </svg>
-        <span className="absolute inset-0 flex items-center justify-center" aria-hidden>
-          <Icon className={cn('h-3 w-3 opacity-70', theme.iconClass)} />
+    <div
+      className={projectCardMetricTrackClass}
+      role="progressbar"
+      aria-valuenow={progress}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-label={ariaLabel}
+    >
+      <div className={projectCardMetricFillClass} style={{ width: `${progress}%` }} />
+      {progress > 0 ? (
+        <span
+          className={projectCardMetricKnobClass}
+          style={{ left: knobLeft }}
+          aria-hidden
+        />
+      ) : null}
+      <span className="sr-only">{label}: {progress}%</span>
+    </div>
+  );
+}
+
+function MetricRow({
+  label,
+  value,
+  icon: Icon,
+}: {
+  label: string;
+  value: number;
+  icon: LucideIcon;
+}) {
+  return (
+    <div className={projectCardMetricRowClass}>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <Icon className="h-3 w-3 shrink-0 text-[var(--project-card-text-muted)] opacity-80" aria-hidden />
+          <span className="text-[10px] font-semibold text-[var(--project-card-text-muted)] sm:text-[11px]">
+            {label}
+          </span>
+        </div>
+        <span className="text-[11px] font-bold tabular-nums text-[var(--project-card-accent)] sm:text-xs">
+          {value}%
         </span>
       </div>
-      <p className={cn('text-[11px] font-bold tabular-nums leading-none sm:text-xs', theme.valueClass)}>
-        {value}%
-      </p>
-      <p className="text-[8px] font-semibold uppercase tracking-wider text-[var(--project-card-text-muted)] sm:text-[9px]">
-        {label}
-      </p>
+      <NeumorphicProgressBar value={value} label={label} ariaLabel={`${label}: ${value}%`} />
     </div>
   );
 }
@@ -179,7 +163,7 @@ export const ProjectCard = React.memo<ProjectCardProps>(
         }}
         className={cn(
           projectCardShellClass,
-          'cursor-pointer p-3.5 sm:p-4',
+          'cursor-pointer p-4 sm:p-[1.125rem]',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--project-card-accent)_55%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--project-card-bg)]',
           'active:scale-[0.99] motion-reduce:active:scale-100',
           className
@@ -189,28 +173,23 @@ export const ProjectCard = React.memo<ProjectCardProps>(
         <div className={projectCardOrbCtaClass} aria-hidden />
         <div className={projectCardOrbHighlightClass} aria-hidden />
 
-        <div className="relative flex items-start justify-between gap-2">
+        <div className="relative flex items-start justify-between gap-3">
           <div
-            className={cn(
-              'flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--project-card-inner-radius)] ring-1 sm:h-10 sm:w-10',
-              'bg-[color-mix(in_srgb,var(--project-card-accent)_16%,transparent)]',
-              'ring-[color-mix(in_srgb,white_22%,transparent)]',
-              'shadow-sm transition-transform duration-300 group-hover:scale-[1.04]'
-            )}
+            className={projectCardIconWrapClass}
             aria-label={iconMeta.label}
             title={iconMeta.label}
           >
             <Icon
-              className="h-4 w-4 text-[var(--project-card-accent)] sm:h-[1.125rem] sm:w-[1.125rem]"
+              className="h-[1.125rem] w-[1.125rem] text-[var(--project-card-accent)] sm:h-5 sm:w-5"
               aria-hidden
             />
           </div>
           {openBugsCount > 0 ? (
             <div
               className={cn(
-                'inline-flex items-center gap-1 rounded-[var(--project-card-inner-radius)] px-2 py-0.5',
-                'border border-error/40 bg-error/20 text-error-content',
-                'text-[11px] font-bold tabular-nums shadow-sm'
+                projectCardChipClass,
+                'inline-flex items-center gap-1 px-2.5 py-1',
+                'text-[11px] font-bold tabular-nums text-error'
               )}
             >
               <Bug className="h-3 w-3 shrink-0" aria-hidden />
@@ -219,7 +198,7 @@ export const ProjectCard = React.memo<ProjectCardProps>(
           ) : null}
         </div>
 
-        <div className="relative mt-2.5 min-w-0 flex-1 space-y-1 sm:mt-3">
+        <div className="relative mt-3 min-w-0 flex-1 space-y-1">
           <h3 className="line-clamp-2 font-sans text-[0.9375rem] font-extrabold leading-snug text-[var(--project-card-text)] transition-colors duration-200 group-hover:text-[var(--project-card-accent)] sm:text-base">
             {project.name}
           </h3>
@@ -227,7 +206,8 @@ export const ProjectCard = React.memo<ProjectCardProps>(
             <span
               className={cn(
                 contextBadgeClass,
-                'inline-flex items-center gap-1.5 border-white/15 bg-white/10 text-[var(--project-card-text-muted)]'
+                projectCardChipClass,
+                'inline-flex items-center gap-1.5 px-2 py-0.5 text-[var(--project-card-text-muted)]'
               )}
             >
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--project-card-accent)]" aria-hidden />
@@ -238,44 +218,36 @@ export const ProjectCard = React.memo<ProjectCardProps>(
           )}
         </div>
 
-        <div className={cn(projectCardMetricsPanelClass, 'mt-2.5 sm:mt-3')}>
-          <MetricRing value={testsPercent} theme={METRIC_THEMES.exec} icon={Zap} label="Exec." />
-          <MetricRing value={tasksDonePercent} theme={METRIC_THEMES.tasks} icon={CheckCircle2} label="Tasks" />
-          <MetricRing value={metrics.testPassRate} theme={METRIC_THEMES.success} icon={TrendingUp} label="Suc." />
+        <div className={cn(projectCardMetricsPanelClass, 'mt-3 sm:mt-3.5')}>
+          <MetricRow value={testsPercent} label="Exec." icon={Zap} />
+          <MetricRow value={tasksDonePercent} label="Tasks" icon={CheckCircle2} />
+          <MetricRow value={metrics.testPassRate} label="Suc." icon={TrendingUp} />
         </div>
 
         {(project.phases?.length ?? 0) > 0 && (
-          <div className="mt-2.5 space-y-1 sm:mt-3">
+          <div className={cn(projectCardMetricRowClass, 'mt-3 sm:mt-3.5')}>
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1 text-[var(--project-card-text-muted)]">
-                <Activity className="h-3 w-3 shrink-0 opacity-70" aria-hidden />
+              <div className="flex items-center gap-1.5 text-[var(--project-card-text-muted)]">
+                <Activity className="h-3 w-3 shrink-0 opacity-80" aria-hidden />
                 <span className="text-[10px] font-semibold uppercase tracking-wide sm:text-[11px]">
                   Fase SDLC
                 </span>
               </div>
-              <span className="text-[11px] font-bold tabular-nums text-[var(--project-card-accent)]">
+              <span className="text-[11px] font-bold tabular-nums text-[var(--project-card-accent)] sm:text-xs">
                 {phaseCompletionPercent}%
               </span>
             </div>
-            <div
-              className="h-1.5 w-full overflow-hidden rounded-[var(--project-card-inner-radius)] bg-[color-mix(in_srgb,white_12%,transparent)]"
-              role="progressbar"
-              aria-valuenow={phaseCompletionPercent}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label={`Fase SDLC: ${phaseCompletionPercent}%`}
-            >
-              <div
-                className="h-full rounded-[var(--project-card-inner-radius)] bg-[var(--project-card-accent)] transition-[width] duration-500 ease-out"
-                style={{ width: `${phaseCompletionPercent}%` }}
-              />
-            </div>
+            <NeumorphicProgressBar
+              value={phaseCompletionPercent}
+              label="Fase SDLC"
+              ariaLabel={`Fase SDLC: ${phaseCompletionPercent}%`}
+            />
           </div>
         )}
 
-        <div className="mt-auto flex items-center justify-between gap-2 pt-2.5 sm:pt-3">
+        <div className="mt-auto flex items-center justify-between gap-2 pt-3 sm:pt-3.5">
           {updatedAtLabel ? (
-            <div className="flex min-w-0 items-center gap-1 rounded-[var(--project-card-inner-radius)] bg-[var(--project-card-chip)] px-2 py-0.5">
+            <div className={cn(projectCardChipClass, 'flex min-w-0 items-center gap-1 px-2 py-1')}>
               <Clock className="h-3 w-3 shrink-0 text-[var(--project-card-text-muted)]" aria-hidden />
               <span className="truncate text-[10px] font-medium text-[var(--project-card-text-muted)] sm:text-[11px]">
                 {updatedAtLabel}
@@ -284,7 +256,12 @@ export const ProjectCard = React.memo<ProjectCardProps>(
           ) : (
             <span />
           )}
-          <div className="flex shrink-0 items-center gap-1 rounded-[var(--project-card-inner-radius)] bg-[var(--project-card-chip)] px-2 py-0.5 tabular-nums">
+          <div
+            className={cn(
+              projectCardChipClass,
+              'flex shrink-0 items-center gap-1 px-2 py-1 tabular-nums'
+            )}
+          >
             <Users className="h-3 w-3 text-[var(--project-card-text-muted)]" aria-hidden />
             <span className="text-[10px] font-semibold text-[var(--project-card-text-muted)] sm:text-[11px]">
               {tasks.length}
@@ -301,10 +278,12 @@ export const ProjectCard = React.memo<ProjectCardProps>(
               onTaskClick(latestCompletedTask.id);
             }}
             className={cn(
-              'mt-2 hidden w-full truncate rounded-[var(--project-card-inner-radius)] border border-[var(--project-card-border)] sm:block',
-              'bg-[var(--project-card-chip)] px-2.5 py-1.5 text-left text-[11px] font-medium text-[var(--project-card-text-muted)]',
-              'transition-colors duration-200',
-              'hover:border-[color-mix(in_srgb,var(--project-card-accent)_45%,transparent)] hover:bg-[color-mix(in_srgb,var(--project-card-accent)_12%,transparent)] hover:text-[var(--project-card-accent)]'
+              projectCardChipClass,
+              'mt-2.5 hidden w-full truncate px-2.5 py-1.5 text-left sm:block',
+              'text-[11px] font-medium text-[var(--project-card-text-muted)]',
+              'transition-[box-shadow,color] duration-200',
+              'hover:text-[var(--project-card-accent)]',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--project-card-accent)_45%,transparent)]'
             )}
             aria-label={`Abrir tarefa concluída: ${latestCompletedTask.title}`}
           >

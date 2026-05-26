@@ -3,6 +3,7 @@ import { Plus, Sparkles } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import {
   projectCardAccentBarClass,
+  projectCardIconWrapClass,
   projectCardOrbCtaClass,
   projectCardOrbHighlightClass,
   projectCardShellClass,
@@ -25,9 +26,9 @@ export const NewProjectCard: React.FC<NewProjectCardProps> = ({
     disabled={disabled}
     className={cn(
       projectCardShellClass,
-      'min-h-[12.5rem] w-full cursor-pointer items-center justify-center gap-2.5 border-dashed p-4 text-center sm:min-h-[14.5rem] sm:gap-3 sm:p-5',
-      'border-2 border-[color-mix(in_srgb,var(--project-card-accent)_45%,transparent)]',
-      'hover:border-[var(--project-card-accent)]',
+      'min-h-[12.5rem] w-full cursor-pointer items-center justify-center gap-2.5 p-4 text-center sm:min-h-[14.5rem] sm:gap-3 sm:p-5',
+      'border border-dashed border-[color-mix(in_srgb,var(--project-card-accent)_40%,transparent)]',
+      'hover:border-[color-mix(in_srgb,var(--project-card-accent)_65%,transparent)]',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--project-card-accent)_55%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--project-card-bg)]',
       'disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none',
       className
@@ -47,17 +48,7 @@ export const NewProjectCard: React.FC<NewProjectCardProps> = ({
       aria-hidden
     />
 
-    <span
-      className={cn(
-        'relative flex h-12 w-12 items-center justify-center rounded-full sm:h-14 sm:w-14',
-        'bg-[color-mix(in_srgb,var(--project-card-accent)_18%,transparent)]',
-        'ring-1 ring-[color-mix(in_srgb,var(--project-card-accent)_40%,transparent)]',
-        'transition-all duration-300 group-hover:scale-105 group-hover:ring-[var(--project-card-accent)]',
-        'group-hover:shadow-[0_0_18px_-4px_rgba(252,76,2,0.45)]',
-        'motion-reduce:transform-none'
-      )}
-      aria-hidden
-    >
+    <span className={cn(projectCardIconWrapClass, 'relative h-12 w-12 sm:h-14 sm:w-14')} aria-hidden>
       <Plus
         className="h-6 w-6 text-[var(--project-card-accent)] transition-transform duration-300 group-hover:rotate-90 sm:h-7 sm:w-7 motion-reduce:transform-none"
         strokeWidth={2}

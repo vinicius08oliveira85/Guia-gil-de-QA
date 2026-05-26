@@ -14,7 +14,7 @@ export const projectsListShell =
 
 export const appPanelClass = 'app-panel';
 
-export const projectViewPanel = cn(appPanelClass, 'p-2.5 soft-shadow sm:p-3.5');
+export const projectViewPanel = cn(appPanelClass, 'p-2.5 sm:p-3.5');
 
 export const outlineActionBtn = cn(
   'app-btn-outline inline-flex min-h-[44px] items-center gap-1.5 px-2.5 py-1.5 text-sm disabled:opacity-50 sm:min-h-9 sm:gap-2 sm:px-3 sm:py-2'
@@ -37,19 +37,19 @@ export const toolbarActionPrimaryClass = cn(
 
 /** Badge de contexto (ex.: chave do projeto Jira). */
 export const contextBadgeClass = cn(
-  'app-element-typography shrink-0 rounded-md border border-[var(--brand-surface-border)] bg-[var(--brand-chip)] px-2 py-0.5 text-xs font-medium text-[var(--brand-text-muted)]'
+  'leve-neu-surface-inset app-element-typography shrink-0 px-2 py-0.5 text-xs font-medium text-[var(--leve-header-text-muted)]'
 );
 
 /** Chip removível de filtro ativo (dashboard, listas). */
 export const activeFilterChipClass = cn(
-  'app-element-typography inline-flex items-center gap-1 rounded-full border border-[var(--brand-surface-border)] bg-[var(--brand-chip)] pl-2.5 pr-1 py-1 text-xs text-[var(--brand-text-muted)]'
+  'leve-neu-pill app-element-typography inline-flex items-center gap-1 pl-2.5 pr-1 py-1 text-xs text-[var(--leve-header-text-muted)]'
 );
 
 export const searchInputClass = cn(
-  'app-input h-10 w-full py-2 pl-10 pr-3 text-sm shadow-sm'
+  'app-input h-10 w-full py-2 pl-10 pr-3 text-sm'
 );
 
-export const appSelectClass = cn('app-select select select-bordered select-sm h-9 min-h-0 text-sm shadow-sm');
+export const appSelectClass = cn('app-select select select-bordered select-sm h-9 min-h-0 text-sm');
 
 export const appMenuPanelClass = 'app-menu-panel';
 
@@ -60,7 +60,7 @@ export const appNavPillTabClass = cn(
 );
 
 /** Card de métrica / bloco em trilha, timeline e análise. */
-export const projectViewCard = cn('app-panel p-4 soft-shadow sm:p-5');
+export const projectViewCard = cn('app-panel p-4 sm:p-5');
 
 export const pageTitleClass =
   'app-element-typography font-heading text-2xl font-bold tracking-tight text-[var(--brand-text-strong)] sm:text-[1.65rem]';
@@ -81,4 +81,4 @@ export const documentCardGrid =
 export const strategicAnalysisGrid =
   'grid w-full grid-cols-1 gap-4 xl:grid-cols-2 2xl:grid-cols-3';
 
-export const compactMetricTile = cn('app-panel bg-[var(--brand-chip)] p-3 sm:p-4');
+export const compactMetricTile = cn('leve-neu-surface-inset p-3 sm:p-4');

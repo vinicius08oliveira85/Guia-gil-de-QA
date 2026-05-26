@@ -458,7 +458,7 @@ export const ProjectView: React.FC<{
     <>
       <div
         className={cn(
-          'animate-fade-in w-full min-w-0 max-w-none bg-base-200/30 py-3 sm:py-4 non-printable',
+          'animate-fade-in w-full min-w-0 max-w-none py-3 sm:py-4 non-printable',
           appContentPaddingX
         )}
       >

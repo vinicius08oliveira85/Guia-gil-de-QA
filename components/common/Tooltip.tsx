@@ -173,11 +173,10 @@ export const Tooltip: React.FC<TooltipProps> = ({
             <motion.div
               ref={tooltipRef}
               role="tooltip"
-              className="fixed z-[100] px-3 py-2 text-sm text-tooltip-text rounded-lg shadow-lg pointer-events-none border border-tooltip-border backdrop-blur-sm"
+              className="leve-neu-surface fixed z-[100] pointer-events-none rounded-lg border-0 px-3 py-2 text-sm text-[var(--leve-header-text)]"
               style={{
                 top: `${tooltipPosition.top}px`,
                 left: `${tooltipPosition.left}px`,
-                backgroundColor: 'var(--tooltip-bg)',
                 maxWidth: 'min(320px, calc(100vw - 16px))',
               }}
               initial={{ opacity: 0, scale: 0.98 }}

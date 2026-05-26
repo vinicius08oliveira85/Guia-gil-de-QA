@@ -383,11 +383,10 @@ const App: React.FC = () => {
           toastOptions={{
             duration: 4000,
             style: {
-              background: 'var(--layer-1)',
-              color: 'var(--text-primary)',
-              border: '1px solid var(--surface-border)',
-              boxShadow: '0 25px 60px color-mix(in_srgb, var(--foreground) 48%, transparent)',
-              backdropFilter: 'blur(24px) saturate(140%)',
+              background: 'var(--leve-neu-bg)',
+              color: 'var(--leve-header-text)',
+              border: '1px solid color-mix(in srgb, var(--leve-neu-light) 45%, transparent)',
+              boxShadow: 'var(--leve-neu-hover)',
             },
             success: {
               iconTheme: {
@@ -418,7 +417,7 @@ const App: React.FC = () => {
             role="dialog"
             aria-modal="true"
             aria-label="Busca global"
-            className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 backdrop-blur pt-20 p-4"
+            className="neu-overlay fixed inset-0 z-50 flex items-start justify-center pt-20 p-4"
             onClick={e => {
               if (e.target === e.currentTarget) closeGlobalSearch();
             }}
@@ -437,7 +436,7 @@ const App: React.FC = () => {
         {showAdvancedSearch && (
           <Suspense
             fallback={
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur">
+              <div className="neu-overlay fixed inset-0 z-50 flex items-center justify-center">
                 <Spinner />
               </div>
             }
@@ -455,7 +454,7 @@ const App: React.FC = () => {
           </Suspense>
         )}
 
-        <main id="main-content">
+        <main id="main-content" className="app-page min-h-[calc(100vh-var(--app-header-sticky-offset,4.5rem))]">
           {storeError && (
             <div className="container mx-auto px-4 py-3">
               <div

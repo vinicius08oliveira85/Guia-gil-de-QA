@@ -102,9 +102,7 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
     <div
       ref={outsideClickRef}
       className={cn(
-        'flex flex-wrap items-center gap-1.5 overflow-visible rounded-[var(--radius)] border p-0.5 shadow-sm backdrop-blur-md',
-        'border-[color-mix(in_srgb,var(--foreground)_12%,transparent)]',
-        'bg-[color-mix(in_srgb,var(--background)_72%,transparent)]',
+        'leve-neu-surface-inset flex flex-wrap items-center gap-1.5 overflow-visible p-0.5',
         'transition-[background-color,border-color,box-shadow] duration-300 ease-out',
         className
       )}

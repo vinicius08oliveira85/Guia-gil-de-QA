@@ -63,8 +63,8 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
     <section
       className={cn(
         embedded
-          ? 'flex flex-col border-t border-[var(--workspace-panel-divider)] pt-4'
-          : 'flex h-full min-h-0 flex-col rounded-[var(--rounded-box)] border border-[var(--brand-surface-border)] bg-[color-mix(in_srgb,var(--brand-surface-strong)_92%,transparent)] p-3 backdrop-blur-sm sm:p-3.5',
+          ? 'flex flex-col border-t border-[color-mix(in_srgb,var(--workspace-panel-neu-light)_30%,transparent)] pt-4'
+          : 'leve-neu-surface flex h-full min-h-0 flex-col p-3 sm:p-3.5',
         className
       )}
       aria-labelledby="task-dist-heading"
@@ -79,9 +79,9 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
       )}
       <div
         className={cn(
-          'mt-2.5 flex h-2.5 w-full shrink-0 overflow-hidden rounded-[var(--workspace-panel-inner-radius)]',
+          'mt-2.5 flex h-2.5 w-full shrink-0 overflow-hidden',
           embedded
-            ? 'bg-[color-mix(in_srgb,var(--workspace-panel-text-muted)_15%,transparent)] ring-1 ring-[var(--workspace-panel-border)]'
+            ? 'workspace-panel-neu-dist-track'
             : 'rounded-full bg-[color-mix(in_srgb,var(--brand-text-muted)_12%,transparent)] ring-1 ring-[var(--brand-surface-border)]'
         )}
         role="img"

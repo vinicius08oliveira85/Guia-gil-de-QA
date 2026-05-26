@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '../../utils/cn';
+import { neuSkeletonBlockClass, neuSkeletonShellClass } from './neuUi';
 
 interface LoadingSkeletonProps {
   variant?: 'task' | 'card' | 'list' | 'text' | 'button' | 'table';
@@ -8,55 +9,57 @@ interface LoadingSkeletonProps {
   className?: string;
 }
 
+const shimmerClasses =
+  'absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-[color-mix(in_srgb,var(--leve-neu-dark)_8%,transparent)] to-transparent';
+
 export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
   variant = 'card',
   count = 1,
   className = '',
 }) => {
-  const renderSkeleton = () => {
-    const baseClasses = 'relative overflow-hidden rounded-lg';
-    const shimmerClasses =
-      'absolute inset-0 bg-gradient-to-r from-transparent via-base-content/5 to-transparent animate-shimmer';
+  const blockClass = cn(neuSkeletonBlockClass, 'relative overflow-hidden');
+  const shellClass = cn(neuSkeletonShellClass, 'p-4');
 
+  const renderSkeleton = () => {
     switch (variant) {
       case 'task':
         return (
           <motion.div
-            className={cn(baseClasses, 'bg-base-100 border border-base-300 p-4')}
+            className={cn(shellClass)}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
             <div className="relative">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 bg-base-200 rounded-full"></div>
+              <div className="mb-3 flex items-center gap-3">
+                <div className={cn(blockClass, 'h-8 w-8 rounded-full')} />
                 <div className="flex-1">
-                  <div className="h-4 bg-base-200 rounded w-1/4 mb-2"></div>
-                  <div className="h-5 bg-base-200 rounded w-3/4"></div>
+                  <div className={cn(blockClass, 'mb-2 h-4 w-1/4')} />
+                  <div className={cn(blockClass, 'h-5 w-3/4')} />
                 </div>
               </div>
-              <div className="h-3 bg-base-200 rounded w-full mb-2"></div>
-              <div className="h-3 bg-base-200 rounded w-5/6"></div>
-              <div className={shimmerClasses}></div>
+              <div className={cn(blockClass, 'mb-2 h-3 w-full')} />
+              <div className={cn(blockClass, 'h-3 w-5/6')} />
+              <div className={shimmerClasses} />
             </div>
           </motion.div>
         );
       case 'card':
         return (
           <motion.div
-            className={cn(baseClasses, 'bg-base-100 border border-base-300 p-6')}
+            className={cn(shellClass, 'p-6')}
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3 }}
           >
             <div className="relative">
-              <div className="h-6 bg-base-200 rounded w-1/3 mb-4"></div>
+              <div className={cn(blockClass, 'mb-4 h-6 w-1/3')} />
               <div className="space-y-3">
-                <div className="h-4 bg-base-200 rounded w-full"></div>
-                <div className="h-4 bg-base-200 rounded w-5/6"></div>
-                <div className="h-4 bg-base-200 rounded w-4/6"></div>
+                <div className={cn(blockClass, 'h-4 w-full')} />
+                <div className={cn(blockClass, 'h-4 w-5/6')} />
+                <div className={cn(blockClass, 'h-4 w-4/6')} />
               </div>
-              <div className={shimmerClasses}></div>
+              <div className={shimmerClasses} />
             </div>
           </motion.div>
         );
@@ -71,12 +74,12 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
             {[0, 1, 2].map(i => (
               <motion.div
                 key={i}
-                className={cn(baseClasses, 'h-10 bg-base-200')}
+                className={cn(blockClass, 'h-10')}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.1, duration: 0.3 }}
               >
-                <div className={shimmerClasses}></div>
+                <div className={shimmerClasses} />
               </motion.div>
             ))}
           </motion.div>
@@ -84,19 +87,19 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
       case 'table':
         return (
           <motion.div
-            className={cn(baseClasses, 'bg-base-100 border border-base-300 p-4')}
+            className={cn(shellClass)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
           >
             <div className="relative">
               <div className="space-y-3">
-                <div className="h-12 bg-base-200 rounded"></div>
+                <div className={cn(blockClass, 'h-12 rounded')} />
                 {[0, 1, 2, 3].map(i => (
-                  <div key={i} className="h-10 bg-base-200 rounded"></div>
+                  <div key={i} className={cn(blockClass, 'h-10 rounded')} />
                 ))}
               </div>
-              <div className={shimmerClasses}></div>
+              <div className={shimmerClasses} />
             </div>
           </motion.div>
         );
@@ -108,32 +111,32 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="h-4 bg-base-200 rounded w-full mb-2"></div>
-            <div className="h-4 bg-base-200 rounded w-5/6 mb-2"></div>
-            <div className="h-4 bg-base-200 rounded w-4/6"></div>
-            <div className={shimmerClasses}></div>
+            <div className={cn(blockClass, 'mb-2 h-4 w-full')} />
+            <div className={cn(blockClass, 'mb-2 h-4 w-5/6')} />
+            <div className={cn(blockClass, 'h-4 w-4/6')} />
+            <div className={shimmerClasses} />
           </motion.div>
         );
       case 'button':
         return (
           <motion.div
-            className={cn(baseClasses, 'h-10 bg-base-200 w-24')}
+            className={cn(blockClass, 'h-10 w-24')}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3 }}
           >
-            <div className={shimmerClasses}></div>
+            <div className={shimmerClasses} />
           </motion.div>
         );
       default:
         return (
           <motion.div
-            className={cn(baseClasses, 'h-20 bg-base-200')}
+            className={cn(blockClass, 'h-20')}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
           >
-            <div className={shimmerClasses}></div>
+            <div className={shimmerClasses} />
           </motion.div>
         );
     }
@@ -160,7 +163,6 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
   );
 };
 
-// Componentes específicos para diferentes contextos
 export const TaskListSkeleton: React.FC<{ count?: number }> = ({ count = 5 }) => (
   <LoadingSkeleton variant="task" count={count} />
 );

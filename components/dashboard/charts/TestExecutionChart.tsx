@@ -54,12 +54,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label })
 
     return (
       <div
-        className={cn(
-          'rounded-lg border border-base-300',
-          'bg-base-100 shadow-lg',
-          'p-4 min-w-[200px]',
-          'backdrop-blur-sm'
-        )}
+        className={cn('app-menu-panel min-w-[200px] p-4')}
       >
         <p className="mb-3 font-semibold text-base-content text-sm border-b border-base-300 pb-2">
           {label}

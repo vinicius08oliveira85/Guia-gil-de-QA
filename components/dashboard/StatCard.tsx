@@ -106,7 +106,7 @@ export const StatCard: React.FC<StatCardProps> = ({
           aria-live="polite"
           hoverable={false}
         >
-          <div className="absolute inset-0 bg-base-100/60 dark:bg-base-100/40 backdrop-blur-xl" />
+          <div className="pointer-events-none absolute inset-0 bg-[color-mix(in_srgb,var(--leve-neu-bg)_72%,transparent)]" />
 
           <div
             className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${accentBackground[accent]} to-transparent`}

@@ -40,7 +40,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ items, classNa
   return (
     <nav
       className={cn(
-        'sticky top-24 rounded-xl border border-base-300/60 bg-base-100/90 p-4 shadow-sm backdrop-blur-sm',
+        'leve-neu-surface sticky top-24 p-4',
         className
       )}
       aria-label="Sumário da página"

@@ -31,7 +31,7 @@ try {
         <div className="pointer-events-none fixed inset-0 z-0" aria-hidden>
           <GridPattern />
         </div>
-        <div className="relative z-[1] min-h-dvh">
+        <div className="app-neu-scope relative z-[1] min-h-dvh">
           <App />
         </div>
       </div>
