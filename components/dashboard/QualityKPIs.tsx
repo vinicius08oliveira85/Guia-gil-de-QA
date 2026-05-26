@@ -150,7 +150,7 @@ export const QualityKPIs = React.memo<QualityKPIsProps>(({ project, className })
           </div>
 
           {/* Overall Quality Score */}
-          <div className="pt-4 border-t border-base-300">
+          <div className="border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pt-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-base-content/70">Score Geral de Qualidade</span>
               <Badge variant={qualityBadge.variant} size="sm">

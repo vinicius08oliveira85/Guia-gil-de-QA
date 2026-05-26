@@ -66,7 +66,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="app-element-typography block text-sm font-medium text-[var(--brand-text-muted)] mb-1.5"
+            className="app-element-typography block text-sm font-medium text-[var(--leve-header-text-muted)] mb-1.5"
           >
             {label}
           </label>
@@ -74,7 +74,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
         <div className="relative">
           {leftIcon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--brand-text-muted)] pointer-events-none">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--leve-header-text-muted)] pointer-events-none">
               {leftIcon}
             </div>
           )}
@@ -91,7 +91,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           />
 
           {rightIcon && !error && !success && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--brand-text-muted)] pointer-events-none">
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--leve-header-text-muted)] pointer-events-none">
               {rightIcon}
             </div>
           )}
@@ -121,7 +121,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         )}
 
         {helperText && !error && (
-          <p id={`${inputId}-helper`} className="mt-1.5 text-sm text-[var(--brand-text-muted)]">
+          <p id={`${inputId}-helper`} className="mt-1.5 text-sm text-[var(--leve-header-text-muted)]">
             {helperText}
           </p>
         )}

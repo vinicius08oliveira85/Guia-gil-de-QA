@@ -2,6 +2,11 @@ import React, { useMemo } from 'react';
 import { JiraTask } from '../../types';
 import { cn } from '../../utils/cn';
 import { projectViewCard } from '../common/viewUi';
+import {
+  trailProgressFillClass,
+  trailProgressTrackSmClass,
+  trailTileClass,
+} from './trailNeuUi';
 
 interface FunctionalTestsCardProps {
   versionLabel: string;
@@ -51,13 +56,13 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
       </header>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4 min-w-0">
-        <div className="rounded-2xl border border-base-300 bg-base-200 p-4 text-center">
+        <div className={cn(trailTileClass, 'text-center')}>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-base-content/60">
             Casos totais
           </p>
           <p className="mt-2 text-2xl font-semibold text-base-content">{totalTestCases}</p>
         </div>
-        <div className="rounded-2xl border border-base-300 bg-base-200 p-4 text-center">
+        <div className={cn(trailTileClass, 'text-center')}>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-base-content/60">
             Executados
           </p>
@@ -66,7 +71,7 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
             {formatPercent(executionRate)} executados
           </p>
         </div>
-        <div className="rounded-2xl border border-base-300 bg-base-200 p-4 text-center">
+        <div className={cn(trailTileClass, 'text-center')}>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-base-content/60">
             Falhas
           </p>
@@ -77,7 +82,7 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
               : 'Tudo passando'}
           </p>
         </div>
-        <div className="rounded-2xl border border-base-300 bg-base-200 p-4 text-center">
+        <div className={cn(trailTileClass, 'text-center')}>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-base-content/60">
             Pendentes
           </p>
@@ -88,7 +93,7 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
         </div>
       </div>
 
-      <div className="min-w-0 rounded-2xl border border-base-300 bg-base-200 p-4">
+      <div className={cn(trailTileClass, 'min-w-0')}>
         <p className="text-xs font-semibold uppercase tracking-[0.35em] text-base-content/60">
           Taxa de aprovação
         </p>
@@ -97,9 +102,9 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
             <span>Progresso</span>
             <span>{formatPercent(executionRate)}</span>
           </div>
-          <div className="mt-2 h-2 rounded-full bg-base-300">
+          <div className={cn(trailProgressTrackSmClass, 'mt-2')}>
             <div
-              className="h-full rounded-full bg-gradient-to-r from-accent to-emerald-400"
+              className={cn(trailProgressFillClass, 'bg-gradient-to-r from-accent to-emerald-400')}
               style={{ width: `${executionRate}%` }}
             />
           </div>
@@ -109,9 +114,9 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
             <span>Aprovação</span>
             <span>{formatPercent(passRate)}</span>
           </div>
-          <div className="mt-2 h-2 rounded-full bg-base-300">
+          <div className={cn(trailProgressTrackSmClass, 'mt-2')}>
             <div
-              className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-green-500"
+              className={cn(trailProgressFillClass, 'bg-gradient-to-r from-emerald-400 to-green-500')}
               style={{ width: `${passRate}%` }}
             />
           </div>
@@ -119,7 +124,7 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="min-w-0 rounded-2xl border border-base-300 bg-base-200 p-4">
+        <div className={cn(trailTileClass, 'min-w-0')}>
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.35em] text-base-content/60">
             Cobertura pendente
           </p>
@@ -138,7 +143,7 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
             </ul>
           )}
         </div>
-        <div className="min-w-0 rounded-2xl border border-base-300 bg-base-200 p-4">
+        <div className={cn(trailTileClass, 'min-w-0')}>
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.35em] text-base-content/60">
             Falhas em atenção
           </p>

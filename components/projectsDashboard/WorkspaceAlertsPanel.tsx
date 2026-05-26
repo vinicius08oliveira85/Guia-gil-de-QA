@@ -59,6 +59,12 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
       active ? 'workspace-panel-neu-tab-active' : 'workspace-panel-neu-tab-idle'
     );
 
+  /** Contador na aba ativa (laranja): creme + texto escuro para contraste legível. */
+  const tabCountBadgeClass = cn(
+    workspacePanelCountBadgeClass,
+    'bg-[var(--workspace-panel-text)] text-[var(--workspace-panel-bg)]'
+  );
+
   const projectChipClass = () =>
     cn(
       'workspace-panel-neu-chip w-full truncate border-0 px-2 py-1.5 text-left font-sans text-xs font-medium text-[var(--workspace-panel-text)] sm:px-2.5 sm:text-sm'
@@ -88,7 +94,7 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
           >
             <AlertTriangle className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} aria-hidden />
             <span>Saúde do workspace</span>
-            <span className={workspacePanelCountBadgeClass}>{healthCount}</span>
+            <span className={tabCountBadgeClass}>{healthCount}</span>
           </button>
         )}
         {testsCount > 0 && (
@@ -104,7 +110,7 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
           >
             <AlertOctagon className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} aria-hidden />
             <span>Execução de testes</span>
-            <span className={workspacePanelCountBadgeClass}>{testsCount}</span>
+            <span className={tabCountBadgeClass}>{testsCount}</span>
           </button>
         )}
       </div>

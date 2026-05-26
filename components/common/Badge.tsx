@@ -62,7 +62,8 @@ export const Badge = React.memo<BadgeProps>(
       warning: 'bg-amber-500 text-white',
       info: 'bg-blue-600 text-white',
       success: 'bg-green-600 text-white',
-      default: 'bg-base-200 text-base-content border border-base-300',
+      default:
+        'border border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))] text-base-content',
     };
     const pillSizeClasses = BADGE_SIZE_CLASSES;
 
@@ -90,7 +91,8 @@ export const Badge = React.memo<BadgeProps>(
     // Estilos customizados para badges dismissible seguindo padrão Radix UI
     const dismissibleVariantStyles = {
       default: 'bg-gray-50 border border-gray-300 text-gray-700',
-      neutral: 'bg-base-200 border border-base-300 text-base-content',
+      neutral:
+        'border border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))] text-base-content',
       primary: 'bg-primary/10 border border-primary text-primary',
       secondary: 'bg-secondary/10 border border-secondary text-secondary',
       accent: 'bg-accent/10 border border-accent text-accent',

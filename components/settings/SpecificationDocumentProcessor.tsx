@@ -13,10 +13,19 @@ import { invalidateContextCache } from '../../services/ai/documentContextService
 import { Project } from '../../types';
 import { CheckCircle2, RefreshCw, Trash2, Upload } from 'lucide-react';
 import {
-  leveViewPrimaryBtnClass,
-  workspacePanelSectionTitleClass,
-  workspacePanelShellClass,
-} from '../common/projectCardUi';
+  documentsAlertInfoClass,
+  documentsAlertSuccessClass,
+  documentsBodyTextClass,
+  documentsEyebrowClass,
+  documentsMutedTextClass,
+  documentsPrimaryBtnClass,
+  documentsProgressPercentClass,
+  documentsProgressTrackClass,
+  documentsSectionHeaderClass,
+  documentsSectionShellClass,
+  documentsSectionTitleClass,
+  documentsSpecRemoveBtnClass,
+} from '../documents/documentsNeuUi';
 
 interface SpecificationDocumentProcessorProps {
   project: Project;
@@ -102,34 +111,30 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
   };
 
   const primaryLabelClass = cn(
-    leveViewPrimaryBtnClass,
-    'min-h-0 gap-1.5 px-4 py-2 text-sm sm:min-h-0',
+    documentsPrimaryBtnClass,
     isProcessing && 'pointer-events-none opacity-60'
   );
 
   return (
-    <section className={cn(workspacePanelShellClass, 'p-3 sm:p-3.5')} aria-labelledby="spec-doc-heading">
-      <div className="border-b border-[var(--workspace-panel-border)] pb-2">
-        <p className={workspacePanelSectionTitleClass}>Contexto de IA</p>
-        <h2
-          id="spec-doc-heading"
-          className="mt-1 font-sans text-base font-bold text-[var(--workspace-panel-text)] sm:text-lg"
-        >
+    <section className={documentsSectionShellClass} aria-labelledby="spec-doc-heading">
+      <div className={documentsSectionHeaderClass}>
+        <p className={documentsEyebrowClass}>Contexto de IA</p>
+        <h2 id="spec-doc-heading" className={documentsSectionTitleClass}>
           Documento de especificação
         </h2>
       </div>
 
       {isProcessed ? (
         <div className="mt-3 space-y-2.5">
-          <div className="flex items-start gap-2 rounded-lg border border-[color-mix(in_srgb,#10b981_35%,transparent)] bg-[color-mix(in_srgb,#10b981_12%,var(--workspace-panel-chip))] px-3 py-2">
+          <div className={documentsAlertSuccessClass}>
             <CheckCircle2 className="h-4 w-4 shrink-0 text-success sm:h-5 sm:w-5" aria-hidden />
-            <p className="font-sans text-sm font-medium leading-snug text-[var(--workspace-panel-text)]">
+            <p className={documentsBodyTextClass}>
               Documento processado e disponível para uso nas análises de IA.
             </p>
           </div>
           <div className="flex items-center gap-2">
             <div
-              className="relative h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--workspace-panel-text)_15%,transparent)]"
+              className={documentsProgressTrackClass}
               role="progressbar"
               aria-valuenow={100}
               aria-valuemin={0}
@@ -137,14 +142,12 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
             >
               <div className="h-full w-full rounded-full bg-success" />
             </div>
-            <span className="shrink-0 font-sans text-xs font-bold tabular-nums text-[var(--workspace-panel-text-muted)]">
-              100%
-            </span>
+            <span className={documentsProgressPercentClass}>100%</span>
           </div>
           {documentSize != null && (
-            <p className="font-sans text-xs text-[var(--workspace-panel-text-muted)]">
+            <p className={documentsMutedTextClass}>
               Conteúdo processado:{' '}
-              <strong className="text-[var(--workspace-panel-text)]">{formatSize(documentSize)}</strong>
+              <strong className="text-[var(--leve-header-text)]">{formatSize(documentSize)}</strong>
             </p>
           )}
           <div className="flex flex-wrap gap-2 pt-0.5">
@@ -162,9 +165,9 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
             </label>
             <Button
               type="button"
-              variant="outline"
-              size="sm"
-              className="gap-1.5 rounded-full border-[var(--workspace-panel-border)] bg-transparent px-4 text-error hover:border-error/40 hover:bg-error/10"
+              variant="brandOutline"
+              size="panelXs"
+              className={documentsSpecRemoveBtnClass}
               onClick={handleClear}
               disabled={isProcessing}
               aria-label="Remover documento de especificação"
@@ -176,11 +179,11 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
         </div>
       ) : (
         <div className="mt-3 space-y-2.5">
-          <div className="flex items-start gap-2 rounded-lg border border-[color-mix(in_srgb,var(--workspace-panel-accent)_35%,transparent)] bg-[var(--workspace-panel-chip)] px-3 py-2">
-            <span className="text-base font-bold text-[var(--workspace-panel-accent)]" aria-hidden>
+          <div className={documentsAlertInfoClass}>
+            <span className="text-base font-bold text-[var(--leve-header-accent)]" aria-hidden>
               !
             </span>
-            <p className="font-sans text-sm font-medium leading-snug text-[var(--workspace-panel-text)]">
+            <p className={documentsBodyTextClass}>
               Nenhum documento processado. As análises de IA funcionarão sem o contexto do documento de
               especificação.
             </p>
@@ -206,7 +209,7 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
               aria-label="Selecionar arquivo .docx de especificação"
             />
           </label>
-          <p className="font-sans text-xs text-[var(--workspace-panel-text-muted)]">
+          <p className={documentsMutedTextClass}>
             Selecione um documento de especificação do projeto (.docx) para que a IA use seu conteúdo nas
             análises.
           </p>

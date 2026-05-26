@@ -51,7 +51,7 @@ export const DashboardAnalysisModal: React.FC<DashboardAnalysisModalProps> = ({
           <>
             <OverviewAnalysisContent analysis={analysis as DashboardOverviewAnalysis} />
 
-            <div className="flex items-center justify-between pt-4 border-t border-base-300">
+            <div className="flex items-center justify-between border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pt-4">
               <p className="text-xs text-base-content/60">
                 {generatedAt && `Gerada em: ${generatedAt}`}
               </p>

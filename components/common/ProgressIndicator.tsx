@@ -46,7 +46,7 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
         </div>
       )}
       <div
-        className={`w-full bg-base-300/60 rounded-full overflow-hidden ${sizeClasses[size]} relative`}
+        className={`w-full bg-[color-mix(in_srgb,var(--leve-neu-dark)_18%,var(--leve-neu-bg))]/60 rounded-full overflow-hidden ${sizeClasses[size]} relative`}
       >
         <div
           className={`${colorClasses[color]} bg-gradient-to-r ${color === 'blue' ? 'from-primary via-primary/90 to-primary/80' : color === 'green' ? 'from-success via-success/90 to-success/80' : ''} transition-all duration-500 ease-out relative`}

@@ -5,6 +5,11 @@ import { cn } from '../../utils/cn';
 import { isAnalysisOutdated } from '../../utils/analysisFreshness';
 import { getTestIaAnalysisSnapshotHash } from '../../services/ai/generalAnalysisService';
 import { SafeMarkdown } from '../common/SafeMarkdown';
+import {
+  analysisCardShellClass,
+  analysisDividerClass,
+  analysisTileClass,
+} from './analysisNeuUi';
 
 interface TestAnalysisCardProps {
   analysis: TestIAAnalysis;
@@ -45,13 +50,7 @@ export const TestAnalysisCard: React.FC<TestAnalysisCardProps> = ({
   }, [testCase]);
 
   return (
-    <div
-      className={cn(
-        'p-5 bg-base-100 border rounded-xl transition-all',
-        expanded ? 'shadow-lg border-primary/30' : 'shadow-sm border-base-300',
-        contentStale ? 'bg-warning/5 border-warning/30' : undefined
-      )}
-    >
+    <div className={analysisCardShellClass(expanded, contentStale)}>
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
@@ -94,7 +93,7 @@ export const TestAnalysisCard: React.FC<TestAnalysisCardProps> = ({
       </div>
 
       {/* Coverage */}
-      <div className="mb-3 p-3 bg-base-200 rounded-lg border border-base-300 hover:border-primary/30 transition-all">
+      <div className={cn(analysisTileClass, 'mb-3 p-3')}>
         <p className="text-xs font-semibold text-base-content/70 mb-2">Cobertura</p>
         <SafeMarkdown source={analysis.coverage} className="text-sm" />
       </div>
@@ -120,7 +119,7 @@ export const TestAnalysisCard: React.FC<TestAnalysisCardProps> = ({
 
       {/* Expanded Details */}
       {expanded && (
-        <div className="space-y-3 mt-3 pt-3 border-t border-base-300">
+        <div className={cn('mt-3 space-y-3 border-t pt-3', analysisDividerClass)}>
           {/* Problems */}
           {analysis.detectedProblems.length > 0 && (
             <div>
@@ -161,7 +160,7 @@ export const TestAnalysisCard: React.FC<TestAnalysisCardProps> = ({
           )}
 
           {/* Metadata */}
-          <div className="pt-2 border-t border-base-300">
+          <div className={cn('border-t pt-2', analysisDividerClass)}>
             <p className="text-xs text-base-content/70 flex items-center gap-2">
               <span>
                 Gerada em {format(new Date(analysis.generatedAt), "dd/MM/yyyy 'às' HH:mm")}

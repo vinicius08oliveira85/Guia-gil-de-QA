@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Modal } from '../common/Modal';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
+import { cn } from '../../utils/cn';
+import { neuCardInsetClass } from '../common/neuUi';
 
 export interface OnboardingGuideProps {
   /** Abre o guia mesmo se o usuário já tiver concluído antes. */
@@ -59,7 +61,7 @@ export const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ forceOpen = fa
         <p className="text-sm text-base-content/75">
           Passo {step + 1} de {STEPS.length}
         </p>
-        <div className="rounded-xl border border-base-300/60 bg-base-200/20 p-4">
+        <div className={cn(neuCardInsetClass, 'rounded-xl')}>
           <h3 className="text-lg font-semibold text-base-content">{content.title}</h3>
           <p className="mt-2 text-sm leading-relaxed text-base-content/80">{content.body}</p>
         </div>

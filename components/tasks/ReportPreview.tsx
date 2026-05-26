@@ -96,7 +96,7 @@ export const ReportPreview: React.FC<ReportPreviewProps> = ({
     <div className="flex flex-col h-full min-h-0">
       {/* Toggle de formato */}
       {onFormatChange && (
-        <div className="flex-shrink-0 flex items-center justify-between mb-sm pb-sm border-b border-[var(--brand-surface-border)]">
+        <div className="flex-shrink-0 flex items-center justify-between mb-sm pb-sm border-b border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]">
           <span className={taskCardFieldLabelClass}>
             Formato
           </span>
@@ -137,7 +137,7 @@ export const ReportPreview: React.FC<ReportPreviewProps> = ({
             </div>
             <pre
               className={cn(
-                'w-full p-sm text-xs font-mono overflow-x-auto bg-[var(--brand-chip)]',
+                'w-full p-sm text-xs font-mono overflow-x-auto bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))]',
                 taskPanelBorderClass,
                 taskTextStrongClass,
                 format === 'markdown' && 'whitespace-pre-wrap'

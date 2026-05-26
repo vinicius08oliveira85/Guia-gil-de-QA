@@ -52,12 +52,12 @@ export const JiraAttachment: React.FC<JiraAttachmentProps> = ({
       onClick={handleDownload}
       className={cn(
         taskPanelBorderClass,
-        'group relative cursor-pointer bg-[var(--brand-surface-strong)] p-2 transition-colors',
+        'group relative cursor-pointer bg-[color-mix(in_srgb,var(--leve-neu-dark)_6%,var(--leve-neu-bg))] p-2 transition-colors',
         isLoading ? 'pointer-events-none opacity-70' : taskChipSurfaceClass
       )}
     >
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center rounded-[var(--radius)] bg-[color-mix(in_srgb,var(--brand-surface-strong)_70%,transparent)]">
+        <div className="absolute inset-0 flex items-center justify-center rounded-[var(--radius)] bg-[color-mix(in_srgb,var(--leve-neu-bg)_70%,transparent)]">
           <span className="loading loading-spinner loading-sm" aria-label="Carregando anexo" />
         </div>
       )}

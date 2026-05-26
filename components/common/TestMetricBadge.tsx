@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '../../utils/cn';
+import { taskNeuChipRaisedClass } from '../tasks/taskActionLayout';
 
 type TestMetricTone = 'success' | 'error' | 'warning';
 type TestMetricBadgeSize = 'sm' | 'md';
@@ -13,9 +14,9 @@ interface TestMetricBadgeProps {
 }
 
 const TONE_CLASSES: Record<TestMetricTone, string> = {
-  success: 'bg-green-500 text-white',
-  error: 'bg-red-500 text-white',
-  warning: 'bg-yellow-500 text-white',
+  success: cn(taskNeuChipRaisedClass, 'text-success'),
+  error: cn(taskNeuChipRaisedClass, 'text-error'),
+  warning: cn(taskNeuChipRaisedClass, 'text-warning'),
 };
 
 const SIZE_CLASSES: Record<TestMetricBadgeSize, string> = {
@@ -36,7 +37,7 @@ export const TestMetricBadge: React.FC<TestMetricBadgeProps> = ({
   return (
     <span
       className={cn(
-        'inline-flex items-center justify-center rounded-full font-bold leading-none tabular-nums shadow-sm shrink-0',
+        'inline-flex items-center justify-center rounded-full font-bold leading-none tabular-nums shrink-0',
         TONE_CLASSES[tone],
         SIZE_CLASSES[size],
         className

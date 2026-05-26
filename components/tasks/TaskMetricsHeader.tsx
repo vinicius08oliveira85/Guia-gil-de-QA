@@ -13,6 +13,8 @@ import { Scale, Bug, Wrench, BarChart3, ShieldAlert } from 'lucide-react';
 import {
   taskCardMutedClass,
   taskCardSectionTitleClass,
+  taskNeuTrackClass,
+  taskNeuTrackFillMutedClass,
   taskPanelBorderClass,
   taskTextStrongClass,
 } from './taskActionLayout';
@@ -27,14 +29,14 @@ function ComparativeLoadBar(props: { donePct: number; doneUnits: number; todoUni
   const total = doneUnits + todoUnits;
   return (
     <div className="flex flex-col gap-tasks-panel-tight">
-      <div className="flex h-2 w-full overflow-hidden rounded-full bg-base-300/80">
+      <div className={cn(taskNeuTrackClass, 'flex h-2 w-full overflow-hidden')}>
         <div
           className="h-full shrink-0 rounded-l-full transition-all duration-500"
           style={{ width: `${donePct}%`, background: 'var(--color-primary)' }}
           title="Concluído / validado"
         />
         <div
-          className="h-full shrink-0 rounded-r-full bg-base-content/10"
+          className={taskNeuTrackFillMutedClass}
           style={{ width: `${100 - donePct}%` }}
           title="Em aberto"
         />
@@ -237,7 +239,7 @@ export const TaskMetricsHeader: React.FC<TaskMetricsHeaderProps> = React.memo(
                   'rounded-md border px-2 py-0.5 text-xs font-semibold',
                   regression.alertHigh
                     ? 'border-error/45 bg-error/15 text-error'
-                    : cn(taskPanelBorderClass, 'bg-[var(--brand-chip)]', taskTextStrongClass)
+                    : cn(taskPanelBorderClass, 'bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))]', taskTextStrongClass)
                 )}
               >
                 {regression.alertHigh ? 'Proporção alta' : 'Estável'}
@@ -261,7 +263,7 @@ export const TaskMetricsHeader: React.FC<TaskMetricsHeaderProps> = React.memo(
               {debtCount}
             </p>
             <p className={cn('mt-1 text-xs leading-snug', taskCardMutedClass)}>
-              <code className={cn('rounded-[var(--radius)] bg-[var(--brand-chip)] px-1 py-0.5 text-[11px] sm:text-xs', taskTextStrongClass)}>
+              <code className={cn('rounded-[var(--radius)] bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))] px-1 py-0.5 text-[11px] sm:text-xs', taskTextStrongClass)}>
                 isTechnicalDebt
               </code>{' '}
               ou palavras-chave no título/tags.

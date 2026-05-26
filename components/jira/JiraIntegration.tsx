@@ -18,6 +18,7 @@ import { Spinner } from '../common/Spinner';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { Badge } from '../common/Badge';
 import { logger } from '../../utils/logger';
+import { AppSelect } from '../common/AppSelect';
 
 interface JiraIntegrationProps {
   onProjectImported: (project: Project) => void;
@@ -298,9 +299,9 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
                   🔄 Atualizar
                 </button>
               </div>
-              <select
+              <AppSelect
                 value={selectedProjectKey}
-                onChange={e => setSelectedProjectKey(e.target.value)}
+                onChange={v => setSelectedProjectKey(v)}
                 className="w-full px-4 py-2 bg-surface border border-surface-border rounded-lg text-text-primary focus:outline-none focus:border-accent"
               >
                 <option value="">Selecione um projeto...</option>
@@ -310,7 +311,7 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
                       {project.key} - {project.name}
                     </option>
                   ))}
-              </select>
+              </AppSelect>
               <button
                 onClick={handleImport}
                 disabled={!selectedProjectKey || isImporting}

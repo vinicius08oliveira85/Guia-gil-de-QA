@@ -73,7 +73,7 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
         Status das tarefas
       </h2>
       {!embedded && (
-        <p className="mt-0.5 text-xs leading-snug text-[var(--brand-text-muted)]">
+        <p className="mt-0.5 text-xs leading-snug text-[var(--leve-header-text-muted)]">
           To Do, In Progress / Blocked e Done — proporção ao total.
         </p>
       )}
@@ -82,7 +82,7 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
           'mt-2.5 flex h-2.5 w-full shrink-0 overflow-hidden',
           embedded
             ? 'workspace-panel-neu-dist-track'
-            : 'rounded-full bg-[color-mix(in_srgb,var(--brand-text-muted)_12%,transparent)] ring-1 ring-[var(--brand-surface-border)]'
+            : 'rounded-full bg-[color-mix(in_srgb,var(--leve-neu-dark)_12%,var(--leve-neu-bg))] ring-1 ring-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]'
         )}
         role="img"
         aria-label={`Tarefas: ${buckets.todo} a fazer, ${buckets.inProgress} em progresso, ${buckets.done} concluídas, de ${buckets.total} no total`}
@@ -96,7 +96,7 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
       <ul
         className={cn(
           'mt-3 flex flex-wrap gap-x-3 gap-y-1 font-sans text-[11px] sm:text-xs',
-          embedded ? 'text-[var(--workspace-panel-text-muted)]' : 'text-[var(--brand-text-muted)]'
+          embedded ? 'text-[var(--workspace-panel-text-muted)]' : 'text-[var(--leve-header-text-muted)]'
         )}
       >
         <li>
@@ -111,7 +111,7 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
           <strong
             className={cn(
               'font-semibold',
-              embedded ? 'text-[var(--workspace-panel-text)]' : 'text-[var(--brand-text-strong)]'
+              embedded ? 'text-[var(--workspace-panel-text)]' : 'text-[var(--leve-header-text)]'
             )}
           >
             {buckets.todo}
@@ -129,7 +129,7 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
           <strong
             className={cn(
               'font-semibold',
-              embedded ? 'text-[var(--workspace-panel-text)]' : 'text-[var(--brand-text-strong)]'
+              embedded ? 'text-[var(--workspace-panel-text)]' : 'text-[var(--leve-header-text)]'
             )}
           >
             {buckets.inProgress}
@@ -149,7 +149,7 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
           <strong
             className={cn(
               'font-semibold',
-              embedded ? 'text-[var(--workspace-panel-text)]' : 'text-[var(--brand-text-strong)]'
+              embedded ? 'text-[var(--workspace-panel-text)]' : 'text-[var(--leve-header-text)]'
             )}
           >
             {buckets.done}

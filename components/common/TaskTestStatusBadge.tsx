@@ -7,6 +7,8 @@ import {
   taskCardBadgePillTypography,
   taskCardTestStatusChipLayout,
   taskCardTypography,
+  taskNeuChipRaisedClass,
+  taskNeuStatusToneClass,
 } from '../tasks/taskActionLayout';
 
 type TaskTestStatusBadgeValue = TaskTestStatus | 'sem_testes';
@@ -19,49 +21,42 @@ interface TaskTestStatusConfig {
   role: 'status' | 'alert' | 'none';
 }
 
+const neuStatusTone = (status: TaskTestStatusBadgeValue) => taskNeuStatusToneClass[status];
+
 const TASK_TEST_STATUS_MAP: Record<TaskTestStatusBadgeValue, TaskTestStatusConfig> = {
   testar: {
     label: 'Testar',
     icon: Info,
-    className:
-      'border-[color-mix(in_srgb,var(--color-primary)_30%,transparent)] bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] text-[color:var(--color-primary-deep)] hover:bg-[color-mix(in_srgb,var(--color-primary)_16%,transparent)]',
-    cardClassName:
-      'border-[color-mix(in_srgb,var(--color-primary)_30%,transparent)] bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] text-[color:var(--color-primary-deep)] hover:bg-[color-mix(in_srgb,var(--color-primary)_16%,transparent)]',
+    className: cn(taskNeuChipRaisedClass, neuStatusTone('testar')),
+    cardClassName: neuStatusTone('testar'),
     role: 'status',
   },
   testando: {
     label: 'Testando',
     icon: AlertCircle,
-    className:
-      'border-warning/35 bg-warning/10 text-warning hover:bg-warning/15',
-    cardClassName:
-      'border-warning/35 bg-warning/10 text-warning hover:bg-warning/15',
+    className: cn(taskNeuChipRaisedClass, neuStatusTone('testando')),
+    cardClassName: neuStatusTone('testando'),
     role: 'status',
   },
   pendente: {
     label: 'Pendente',
     icon: XCircle,
-    className:
-      'border-error/35 bg-error/10 text-error hover:bg-error/15',
-    cardClassName: 'border-error/35 bg-error/10 text-error hover:bg-error/15',
+    className: cn(taskNeuChipRaisedClass, neuStatusTone('pendente')),
+    cardClassName: neuStatusTone('pendente'),
     role: 'alert',
   },
   teste_concluido: {
     label: 'Teste Concluído',
     icon: CheckCircle,
-    className:
-      'border-success/35 bg-success/10 text-success hover:bg-success/15',
-    cardClassName:
-      'border-success/35 bg-success/10 text-success hover:bg-success/15',
+    className: cn(taskNeuChipRaisedClass, neuStatusTone('teste_concluido')),
+    cardClassName: neuStatusTone('teste_concluido'),
     role: 'status',
   },
   sem_testes: {
     label: 'Sem Testes',
     icon: MinusCircle,
-    className:
-      'border-[var(--brand-surface-border)] bg-[var(--brand-chip)] text-[var(--brand-text-muted)] hover:bg-[var(--brand-chip-hover)]',
-    cardClassName:
-      'border-[var(--brand-surface-border)] bg-[var(--brand-chip)] text-[var(--brand-text-muted)] hover:bg-[var(--brand-chip-hover)]',
+    className: cn(taskNeuChipRaisedClass, neuStatusTone('sem_testes')),
+    cardClassName: neuStatusTone('sem_testes'),
     role: 'none',
   },
 };
@@ -96,15 +91,15 @@ export const TaskTestStatusBadge: React.FC<TaskTestStatusBadgeProps> = ({
   const isCard = variant === 'card';
   const toneClass = isCard ? config.cardClassName : config.className;
   const sharedClassName = cn(
-    'inline-flex items-center gap-1 border whitespace-nowrap transition-colors duration-200',
+    'inline-flex items-center gap-1 whitespace-nowrap',
     isCard
-      ? taskCardTestStatusChipLayout
+      ? cn(taskCardTestStatusChipLayout, toneClass)
       : cn(
           'badge-task-format h-5 cursor-default px-2.5 text-xs normal-case',
           taskCardBadgePillShape,
-          taskCardBadgePillTypography
+          taskCardBadgePillTypography,
+          toneClass
         ),
-    toneClass,
     disabled && 'pointer-events-none opacity-50',
     className
   );

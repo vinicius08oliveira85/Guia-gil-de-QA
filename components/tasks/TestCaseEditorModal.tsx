@@ -4,6 +4,7 @@ import { Modal } from '../common/Modal';
 import { SafeMarkdown } from '../common/SafeMarkdown';
 import { cn } from '../../utils/cn';
 import { appSelectClass, outlineActionBtn, primaryActionBtn, searchInputClass } from '../common/viewUi';
+import { AppSelect } from '../common/AppSelect';
 import {
   taskCardFieldLabelClass,
   taskCardMutedClass,
@@ -77,7 +78,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
         <label
           className={cn(
             taskPanelBorderClass,
-            'flex cursor-pointer items-start gap-3 bg-[var(--brand-chip)] p-3 text-sm transition-colors hover:bg-[var(--brand-chip-hover)]',
+            'flex cursor-pointer items-start gap-3 bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))] p-3 text-sm transition-colors hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_12%,var(--leve-neu-bg))]',
             taskTextStrongClass
           )}
         >
@@ -100,7 +101,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
           <label className={labelClass}>Ação necessária</label>
           <textarea
             value={action}
-            onChange={e => setAction(e.target.value)}
+            onChange={v => setAction(v)}
             className={cn(taskTextareaClass, 'min-h-[120px]')}
             placeholder="Descreva o que deve ser executado (roteiro)."
           />
@@ -116,7 +117,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
           <label className={labelClass}>Parâmetros necessários</label>
           <textarea
             value={parameters}
-            onChange={e => setParameters(e.target.value)}
+            onChange={v => setParameters(v)}
             className={cn(taskTextareaClass, 'min-h-[88px]')}
             placeholder="Dados de entrada, massa, ambientes, contas…"
           />
@@ -132,7 +133,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
           <label className={labelClass}>Resultado esperado</label>
           <textarea
             value={expectedResult}
-            onChange={e => setExpectedResult(e.target.value)}
+            onChange={v => setExpectedResult(v)}
             className={cn(taskTextareaClass, 'min-h-[88px]')}
           />
           {previewMarkdown && (
@@ -147,7 +148,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
           <label className={labelClass}>Resultado Obtido</label>
           <textarea
             value={observedResult}
-            onChange={e => setObservedResult(e.target.value)}
+            onChange={v => setObservedResult(v)}
             className={cn(taskTextareaClass, 'min-h-[88px]')}
             placeholder="Preencha após a execução."
           />
@@ -165,7 +166,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
           </p>
           <div>
             <label className={labelClass}>Tipo de execução</label>
-            <select
+            <AppSelect
               value={executionKind}
               onChange={e =>
                 setExecutionKind((e.target.value || '') as TestCaseExecutionKind | '')
@@ -176,7 +177,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
               <option value="">Inferir pelo texto</option>
               <option value="automated">Automatizado</option>
               <option value="mixed">Misto</option>
-            </select>
+            </AppSelect>
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
@@ -184,7 +185,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
               <input
                 type="text"
                 value={environment}
-                onChange={e => setEnvironment(e.target.value)}
+                onChange={v => setEnvironment(v)}
                 className={cn(searchInputClass, 'h-9 pl-3')}
                 placeholder="Ex.: Homologação"
               />
@@ -194,7 +195,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
               <input
                 type="text"
                 value={suite}
-                onChange={e => setSuite(e.target.value)}
+                onChange={v => setSuite(v)}
                 className={cn(searchInputClass, 'h-9 pl-3')}
                 placeholder="Ex.: Smoke API"
               />
@@ -204,16 +205,16 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
 
         <div>
           <label className={labelClass}>Status</label>
-          <select
+          <AppSelect
             value={status}
-            onChange={e => setStatus(e.target.value as TestCase['status'])}
+            onChange={v => setStatus(v as TestCase['status'])}
             className={cn(appSelectClass, 'select-bordered w-full')}
           >
             <option value="Not Run">Não Executado</option>
             <option value="Passed">Aprovado</option>
             <option value="Failed">Reprovado</option>
             <option value="Blocked">Bloqueado</option>
-          </select>
+          </AppSelect>
         </div>
 
         <div className="flex flex-wrap justify-end gap-2 pt-2">

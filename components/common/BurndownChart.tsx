@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
 import { Project } from '../../types';
 import { calculateProjectEstimations } from '../../utils/estimationService';
+import { cn } from '../../utils/cn';
+import { neuCardInsetClass, neuDividerClass } from './neuUi';
 
 interface BurndownChartProps {
   project: Project;
@@ -41,7 +43,7 @@ export const BurndownChart: React.FC<BurndownChartProps> = ({ project, sprintDay
     chartHeight - padding - (hours / maxHours) * (chartHeight - padding * 2);
 
   return (
-    <div className="rounded-[1.4rem] border border-base-300 bg-base-200 p-4">
+    <div className={cn(neuCardInsetClass, 'rounded-[1.4rem]')}>
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-heading text-lg font-semibold text-base-content">Burndown Chart</h3>
         <div className="flex items-center gap-4 text-sm">
@@ -143,7 +145,7 @@ export const BurndownChart: React.FC<BurndownChartProps> = ({ project, sprintDay
       </div>
 
       {/* Estatísticas */}
-      <div className="mt-4 grid grid-cols-3 gap-4 border-t border-base-300 pt-4">
+      <div className={cn('mt-4 grid grid-cols-3 gap-4 border-t pt-4', neuDividerClass)}>
         <div className="text-center">
           <div className="text-2xl font-bold text-base-content">
             {Math.round(estimations.totalEstimated)}h

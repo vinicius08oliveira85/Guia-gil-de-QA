@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { cn } from '../../utils/cn';
+import { analysisTileClass } from './analysisNeuUi';
+import { neuSurfaceInsetClass } from '../common/neuUi';
 import { filterPillClass, projectViewPanel } from '../common/viewUi';
 
 interface AnalysisSectionProps {
@@ -65,7 +67,7 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
         <div className="flex items-center gap-2">
           {/* View Mode Toggle */}
           {onViewModeChange && hasContent && (
-            <div className="flex items-center gap-1 p-1 bg-base-200 rounded-full border border-base-300 transition-all">
+            <div className={cn(neuSurfaceInsetClass, 'flex items-center gap-1 rounded-full p-1 transition-all')}>
               <button
                 type="button"
                 onClick={() => onViewModeChange('list')}
@@ -73,7 +75,7 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
                   'rounded-lg px-2 py-1 text-xs transition-colors',
                   viewMode === 'list'
                     ? 'bg-[color-mix(in_srgb,var(--brand-cta)_14%,transparent)] text-[var(--brand-cta)]'
-                    : 'text-base-content/60 hover:bg-base-200/80'
+                    : 'text-base-content/60 hover:text-[var(--leve-header-accent)]'
                 )}
                 title="Visualização em lista"
               >
@@ -101,7 +103,7 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
                   'rounded-lg px-2 py-1 text-xs transition-colors',
                   viewMode === 'detailed'
                     ? 'bg-[color-mix(in_srgb,var(--brand-cta)_14%,transparent)] text-[var(--brand-cta)]'
-                    : 'text-base-content/60 hover:bg-base-200/80'
+                    : 'text-base-content/60 hover:text-[var(--leve-header-accent)]'
                 )}
                 title="Visualização detalhada"
               >
@@ -150,7 +152,7 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
 
       {/* Filters */}
       {showFilters && filters && (
-        <div className="mb-6 p-5 bg-base-200 rounded-xl border border-base-300 transition-all">
+        <div className={cn(analysisTileClass, 'mb-6')}>
           {filters}
         </div>
       )}

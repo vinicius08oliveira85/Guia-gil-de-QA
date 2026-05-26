@@ -1,6 +1,8 @@
 import React from 'react';
 import { Card } from '../common/Card';
 import { ProgressIndicator } from '../common/ProgressIndicator';
+import { cn } from '../../utils/cn';
+import { dashboardPanelClass, dashboardSectionDividerClass } from './dashboardNeuUi';
 
 interface ExecutionProgressCardProps {
   total: number;
@@ -20,7 +22,7 @@ export const ExecutionProgressCard: React.FC<ExecutionProgressCardProps> = React
 
     return (
       <Card
-        className="p-5 space-y-4 border border-base-300 hover:border-primary/30 hover:shadow-md transition-all duration-200"
+        className={dashboardPanelClass}
         aria-label="Progresso das execuções"
       >
         <div className="flex items-center justify-between">
@@ -39,7 +41,7 @@ export const ExecutionProgressCard: React.FC<ExecutionProgressCardProps> = React
           />
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-base-300">
+        <div className={cn('grid grid-cols-2 gap-3 sm:grid-cols-4', dashboardSectionDividerClass)}>
           <div>
             <p className="text-xs text-base-content/70 mb-1">Aprovados</p>
             <p className="text-lg font-bold text-success">{passed}</p>

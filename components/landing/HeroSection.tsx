@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, Sparkles, Zap, Target } from 'lucide-react';
+import { neuHoverSubtleClass } from '../common/neuUi';
+import { cn } from '../../utils/cn';
 
 /**
  * Hero Section - Primeira impressão da landing page
@@ -22,7 +24,7 @@ export const HeroSection: React.FC = () => {
   };
 
   return (
-    <section className="relative min-h-[70vh] sm:min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-base-100 via-base-200 to-base-300">
+    <section className="relative flex min-h-[70vh] items-center justify-center overflow-hidden bg-gradient-to-br from-[var(--leve-neu-bg)] via-[color-mix(in_srgb,var(--leve-neu-dark)_5%,var(--leve-neu-bg))] to-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] sm:min-h-[90vh]">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
@@ -79,14 +81,17 @@ export const HeroSection: React.FC = () => {
           >
             <button
               onClick={handleGetStarted}
-              className="btn btn-primary btn-lg px-8 py-4 text-lg font-semibold rounded-[var(--radius)] soft-shadow transition-all duration-300 hover:scale-105 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_28%,transparent)] group"
+              className="btn btn-primary btn-lg group rounded-[var(--radius)] px-8 py-4 text-lg font-semibold shadow-[var(--leve-neu-raised)] transition-all duration-300 hover:scale-105 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_28%,transparent)]"
             >
               Abrir Meus Projetos
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </button>
             <button
               onClick={handleLearnMore}
-              className="btn btn-outline btn-lg px-8 py-4 text-lg font-semibold rounded-[var(--radius)] border-2 hover:bg-base-200 transition-all duration-300"
+              className={cn(
+                'btn btn-outline btn-lg rounded-[var(--radius)] border-2 px-8 py-4 text-lg font-semibold transition-all duration-300',
+                neuHoverSubtleClass
+              )}
             >
               Ver funcionalidades
             </button>

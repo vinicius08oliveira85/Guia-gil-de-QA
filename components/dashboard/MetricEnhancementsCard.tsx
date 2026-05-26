@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowUp, ArrowDown, ArrowRight } from 'lucide-react';
 import { Card } from '../common/Card';
+import { dashboardHoverCardClass, dashboardPanelClass } from './dashboardNeuUi';
 import { DashboardInsightsAnalysis } from '../../types';
 import { Badge } from '../common/Badge';
 
@@ -52,14 +53,14 @@ export const MetricEnhancementsCard: React.FC<MetricEnhancementsCardProps> = Rea
 
     return (
       <Card
-        className="p-5 space-y-4 border border-base-300 hover:border-primary/30 hover:shadow-md transition-all duration-200"
+        className={dashboardPanelClass}
         aria-label="Melhorias de métricas"
       >
         <h3 className="text-lg font-semibold text-base-content">Melhorias de Métricas</h3>
 
         <div className="space-y-4">
           {/* Taxa de Sucesso */}
-          <div className="p-5 bg-base-100 rounded-xl border border-base-300 hover:bg-base-200 transition-colors">
+          <div className={dashboardHoverCardClass}>
             <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
               <h4 className="font-semibold text-base-content">Taxa de Sucesso dos Testes</h4>
               <div className="flex items-center gap-2 flex-wrap">
@@ -88,7 +89,7 @@ export const MetricEnhancementsCard: React.FC<MetricEnhancementsCardProps> = Rea
           </div>
 
           {/* Resolução de Bugs */}
-          <div className="p-5 bg-base-100 rounded-xl border border-base-300 hover:bg-base-200 transition-colors">
+          <div className={dashboardHoverCardClass}>
             <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
               <h4 className="font-semibold text-base-content">Resolução de Bugs</h4>
               <div className="flex items-center gap-2 flex-wrap">
@@ -117,7 +118,7 @@ export const MetricEnhancementsCard: React.FC<MetricEnhancementsCardProps> = Rea
           </div>
 
           {/* Cobertura */}
-          <div className="p-5 bg-base-100 rounded-xl border border-base-300 hover:bg-base-200 transition-colors">
+          <div className={dashboardHoverCardClass}>
             <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
               <h4 className="font-semibold text-base-content">Cobertura de Testes</h4>
               <div className="flex items-center gap-2 flex-wrap">

@@ -39,14 +39,14 @@ const FilterChip = ({
       ${
         isActive
           ? 'bg-primary text-primary-content border-primary shadow-sm'
-          : 'bg-base-100 text-base-content/70 border-base-300 hover:border-primary/50 hover:text-base-content'
+          : 'leve-neu-pill border-0 text-base-content/70 hover:text-base-content'
       }
     `}
   >
     {label}
     {showCount && (
       <span
-        className={`px-1.5 py-0.5 rounded-full text-[10px] ${isActive ? 'bg-white/20' : 'bg-base-200'}`}
+        className={`rounded-full px-1.5 py-0.5 text-[10px] ${isActive ? 'bg-white/20' : 'bg-[color-mix(in_srgb,var(--leve-neu-dark)_12%,var(--leve-neu-bg))]'}`}
       >
         {count}
       </span>

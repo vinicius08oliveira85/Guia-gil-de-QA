@@ -59,7 +59,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ items, classNa
                 'block rounded-lg px-2 py-1 transition-colors',
                 activeId === item.id
                   ? 'bg-primary/10 font-medium text-primary'
-                  : 'text-base-content/70 hover:bg-base-200/80 hover:text-base-content'
+                  : 'text-base-content/70 hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_12%,var(--leve-neu-bg))] hover:text-base-content'
               )}
             >
               {item.label}

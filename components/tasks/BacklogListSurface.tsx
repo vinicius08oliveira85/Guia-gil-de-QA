@@ -31,12 +31,12 @@ export const BacklogListSurface: React.FC<BacklogListSurfaceProps> = ({
   return (
     <section className={cn(backlogListSurfaceClass, className)} aria-label="Lista do backlog">
       <header className={backlogListSurfaceHeaderClass}>
-        <span className="text-xs font-semibold uppercase tracking-wider text-[var(--brand-text-muted)]">
+        <span className="text-xs font-semibold uppercase tracking-wider text-[var(--leve-header-text-muted)]">
           Lista do backlog
         </span>
-        <span className="text-xs font-medium text-[var(--brand-text-strong)]">
+        <span className="text-xs font-medium text-[var(--leve-header-text)]">
           {itemCount} {itemCount === 1 ? 'item' : 'itens'}
-          <span className="text-[var(--brand-text-muted)]"> · {scopeLabel}</span>
+          <span className="text-[var(--leve-header-text-muted)]"> · {scopeLabel}</span>
         </span>
       </header>
       <div className="min-w-0 p-3 sm:p-4">{children}</div>

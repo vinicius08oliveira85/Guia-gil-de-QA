@@ -11,6 +11,7 @@ import {
   projectViewShell,
 } from '../common/viewUi';
 import { cn } from '../../utils/cn';
+import { sdlcDividerClass, sdlcTrackClass } from './sdlcNeuUi';
 
 interface SDLCPhase {
   id: string;
@@ -267,7 +268,12 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
   return (
     <div className={cn(projectViewShell, 'pb-2')}>
       <section className={projectViewPanel}>
-        <header className="flex flex-col gap-4 border-b border-base-300/60 pb-4 sm:flex-row sm:items-start sm:justify-between">
+        <header
+          className={cn(
+            'flex flex-col gap-4 border-b pb-4 sm:flex-row sm:items-start sm:justify-between',
+            sdlcDividerClass
+          )}
+        >
           <div className="min-w-0">
             <h2 className={pageTitleClass}>Ciclo de Vida do Projeto (SDLC & DevOps)</h2>
             <p className={cn(pageSubtitleClass, 'mt-2')}>
@@ -285,7 +291,7 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
       </section>
 
       <div className="relative mt-4">
-        <div className="absolute left-6 sm:left-8 top-0 bottom-0 w-1 bg-base-300"></div>
+        <div className={cn('absolute bottom-0 left-6 top-0 w-1 sm:left-8', sdlcTrackClass)}></div>
 
         <div className="space-y-8">
           {sdlcPhases.map((phase, index) => {

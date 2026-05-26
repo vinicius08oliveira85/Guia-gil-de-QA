@@ -159,7 +159,7 @@ User Agent: ${typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'}
               </p>
 
               {this.state.error && (
-                <details className="text-left mb-6 bg-base-200 dark:bg-base-300 p-4 rounded-md">
+                <details className="text-left mb-6 bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] dark:bg-[color-mix(in_srgb,var(--leve-neu-dark)_18%,var(--leve-neu-bg))] p-4 rounded-md">
                   <summary className="cursor-pointer text-text-primary font-semibold mb-2 flex items-center gap-2">
                     <span>Detalhes do erro</span>
                     <button
@@ -187,7 +187,7 @@ User Agent: ${typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'}
                     {this.state.error.stack && (
                       <div>
                         <strong className="text-text-primary">Stack:</strong>
-                        <pre className="mt-1 text-xs text-text-secondary overflow-auto max-h-40 bg-base-100 p-2 rounded">
+                        <pre className="mt-1 text-xs text-text-secondary overflow-auto max-h-40 leve-neu-surface p-2 rounded">
                           {this.state.error.stack}
                         </pre>
                       </div>
@@ -195,7 +195,7 @@ User Agent: ${typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'}
                     {this.state.errorInfo && (
                       <div>
                         <strong className="text-text-primary">Component Stack:</strong>
-                        <pre className="mt-1 text-xs text-text-secondary overflow-auto max-h-40 bg-base-100 p-2 rounded">
+                        <pre className="mt-1 text-xs text-text-secondary overflow-auto max-h-40 leve-neu-surface p-2 rounded">
                           {this.state.errorInfo.componentStack}
                         </pre>
                       </div>

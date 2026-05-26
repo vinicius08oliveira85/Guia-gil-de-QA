@@ -49,11 +49,16 @@ export const searchInputClass = cn(
   'app-input h-10 w-full py-2 pl-10 pr-3 text-sm'
 );
 
-export const appSelectClass = cn('app-select select select-bordered select-sm h-9 min-h-0 text-sm');
+/** Gatilho de select (inset) — use com NeuSelect/AppSelect. */
+export const appSelectClass = cn('app-select h-9 min-h-0 text-sm');
 
 export const appMenuPanelClass = 'app-menu-panel';
 
-export const appMenuItemClass = 'app-menu-item w-full flex items-center gap-2 px-2.5 py-1.5 text-left sm:px-3 sm:py-2';
+export const appMenuItemClass = 'app-menu-item text-left';
+
+export function appMenuItemActiveClass(active: boolean): string {
+  return active ? 'app-menu-item-active' : '';
+}
 
 export const appNavPillTabClass = cn(
   'app-nav-pill app-element-typography min-h-[44px] shrink-0 snap-start whitespace-nowrap px-2.5 py-1.5 text-sm font-semibold sm:min-h-0 sm:px-3 sm:py-2'
@@ -63,10 +68,10 @@ export const appNavPillTabClass = cn(
 export const projectViewCard = cn('app-panel p-4 sm:p-5');
 
 export const pageTitleClass =
-  'app-element-typography font-heading text-2xl font-bold tracking-tight text-[var(--brand-text-strong)] sm:text-[1.65rem]';
+  'app-element-typography font-heading text-2xl font-bold tracking-tight text-[var(--leve-header-text)] sm:text-[1.65rem]';
 
 export const pageSubtitleClass =
-  'app-element-typography w-full text-sm leading-relaxed text-[var(--brand-text-muted)]';
+  'app-element-typography w-full text-sm leading-relaxed text-[var(--leve-header-text-muted)]';
 
 /** Container de telas globais (ex.: Configurações). */
 export const settingsContentShell = `w-full min-w-0 max-w-none ${appContentPaddingX}`;

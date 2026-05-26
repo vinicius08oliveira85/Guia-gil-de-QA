@@ -13,6 +13,8 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { SectionHeader } from '../common/SectionHeader';
+import { landingFeatureTileClass } from './landingNeuUi';
+import { cn } from '../../utils/cn';
 
 interface Feature {
   icon: React.ComponentType<{ className?: string }>;
@@ -95,7 +97,7 @@ export const FeaturesSection: React.FC = () => {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section id="features-section" className="py-20 md:py-32 bg-base-100 scroll-mt-24">
+    <section id="features-section" className="scroll-mt-24 bg-[var(--leve-neu-bg)] py-20 md:py-32">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeader
           eyebrow="Capacidades do produto"
@@ -113,7 +115,10 @@ export const FeaturesSection: React.FC = () => {
               whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="group relative rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-200 p-6 lg:p-8 soft-shadow transition-[transform,box-shadow] duration-200 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_22%,transparent)]"
+              className={cn(
+                landingFeatureTileClass,
+                'group relative p-6 transition-[transform,box-shadow] duration-200 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_22%,transparent)] lg:p-8'
+              )}
               whileHover={
                 reduceMotion
                   ? undefined

@@ -1,6 +1,8 @@
 import React from 'react';
 import { AlertCircle, CheckCircle2, Info, XCircle } from 'lucide-react';
 import { Card } from '../common/Card';
+import { dashboardInsetTileClass, dashboardPanelClass } from './dashboardNeuUi';
+import { cn } from '../../utils/cn';
 import { DashboardInsightsAnalysis } from '../../types';
 import { getPriorityVariant } from '../../utils/taskHelpers';
 import { Badge } from '../common/Badge';
@@ -56,7 +58,7 @@ export const DashboardInsightsCard: React.FC<DashboardInsightsCardProps> = React
         case 'info':
           return 'bg-info/10 border-info/30';
         default:
-          return 'bg-base-100 border-base-300';
+          return cn(dashboardInsetTileClass, 'border border-[color-mix(in_srgb,var(--leve-neu-light)_40%,transparent)]');
       }
     };
 
@@ -77,7 +79,7 @@ export const DashboardInsightsCard: React.FC<DashboardInsightsCardProps> = React
           {sortedInsights.map((insight, index) => (
             <div
               key={index}
-              className={`p-5 rounded-xl border ${getInsightColor(insight.type)} hover:bg-base-200 transition-colors`}
+              className={cn('rounded-xl border p-5 transition-[box-shadow] hover:shadow-[var(--leve-neu-hover)]', getInsightColor(insight.type))}
               aria-label={`${insight.type}: ${insight.title}`}
             >
               <div className="flex items-start gap-4">

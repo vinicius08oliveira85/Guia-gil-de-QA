@@ -3,6 +3,8 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { logger } from '../../utils/logger';
 import { SectionHeader } from '../common/SectionHeader';
+import { landingPanelClass, landingFeatureTileClass } from './landingNeuUi';
+import { cn } from '../../utils/cn';
 
 /**
  * CTA Section - Call to action principal
@@ -62,7 +64,10 @@ export const CTASection: React.FC = () => {
               whileInView={reduceMotion ? undefined : { opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="p-8 rounded-[var(--rounded-box)] bg-base-100 border-2 border-primary soft-shadow transition-shadow duration-200 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_25%,transparent)]"
+              className={cn(
+                landingPanelClass,
+                'rounded-[var(--rounded-box)] border-2 border-primary p-8 transition-shadow duration-200 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_25%,transparent)]'
+              )}
             >
               <h3 className="text-2xl font-bold text-base-content mb-4">Acesse o Dashboard</h3>
               <p className="text-base-content/70 mb-6">
@@ -71,7 +76,7 @@ export const CTASection: React.FC = () => {
               </p>
               <button
                 onClick={handleGetStarted}
-                className="btn btn-primary btn-lg w-full rounded-[var(--radius)] soft-shadow transition-all duration-200 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_28%,transparent)] group"
+                className="btn btn-primary btn-lg w-full rounded-[var(--radius)] shadow-[var(--leve-neu-raised)] transition-all duration-200 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_28%,transparent)] group"
               >
                 Criar / Abrir Projetos
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -88,7 +93,10 @@ export const CTASection: React.FC = () => {
               whileInView={reduceMotion ? undefined : { opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="p-8 rounded-[var(--rounded-box)] bg-base-200 border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] soft-shadow transition-shadow duration-200 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_18%,transparent)]"
+              className={cn(
+                landingFeatureTileClass,
+                'p-8 transition-shadow duration-200 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_18%,transparent)]'
+              )}
             >
               <h3 className="text-2xl font-bold text-base-content mb-4">Receba atualizações</h3>
               <p className="text-base-content/70 mb-6">

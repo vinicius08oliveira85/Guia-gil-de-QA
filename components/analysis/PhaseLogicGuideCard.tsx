@@ -61,14 +61,14 @@ export const PhaseLogicGuideCard: React.FC = () => {
       </p>
       <div className="overflow-x-auto scrollbar-hide">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-base-300 text-base-content/60">
+          <thead className="border-b border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] text-base-content/60">
             <tr>
               <th className="p-2">Fase</th>
               <th className="p-2">Condição para Sair (Tornar-se 'Concluído')</th>
               <th className="p-2">Indicadores Chave</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-base-300/70">
+          <tbody className="divide-y divide-[color-mix(in_srgb,var(--leve-neu-light)_30%,transparent)]">
             {phaseLogicData.map(row => (
               <tr key={row.phase}>
                 <td className="p-2 font-semibold text-[var(--brand-cta)]">{row.phase}</td>

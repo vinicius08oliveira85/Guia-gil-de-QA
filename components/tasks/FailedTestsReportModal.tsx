@@ -22,6 +22,7 @@ import { ActionMenu } from './ActionMenu';
 import { getTestCaseEnvironment, getTestCaseSuite } from '../../utils/testCaseMigration';
 import { taskCardFieldLabelClass, taskSelectControlClass, taskTextStrongClass } from './taskActionLayout';
 import { cn } from '../../utils/cn';
+import { AppSelect } from '../common/AppSelect';
 
 interface FailedTestWithTask {
   testCase: TestCase;
@@ -613,7 +614,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
         <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-md overflow-hidden">
           {/* Painel esquerdo: Filtros e Escopo */}
           <div
-            className={`${showFilters ? 'flex' : 'hidden'} lg:flex flex-col gap-md overflow-y-auto border-r border-base-300 pr-md`}
+            className={`${showFilters ? 'flex' : 'hidden'} lg:flex flex-col gap-md overflow-y-auto border-r pr-md`}
           >
             {/* Seletor de escopo */}
             <div className="flex-shrink-0 flex flex-col gap-sm">
@@ -655,7 +656,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                 <p className={taskCardFieldLabelClass}>
                   Tarefa
                 </p>
-                <select
+                <AppSelect
                   value={selectedTaskId || ''}
                   onChange={e => setSelectedTaskId(e.target.value || undefined)}
                   className="select select-bordered select-sm w-full"
@@ -666,7 +667,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                       {task.id} - {task.title || 'Sem título'}
                     </option>
                   ))}
-                </select>
+                </AppSelect>
               </div>
             )}
 
@@ -815,7 +816,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
             </div>
 
             {/* Ações principais */}
-            <div className="flex-shrink-0 flex flex-wrap items-center justify-between gap-md pt-md border-t border-base-300">
+            <div className="flex-shrink-0 flex flex-wrap items-center justify-between gap-md pt-md border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]">
               <div className="flex items-center gap-xs">
                 <button
                   type="button"
@@ -913,7 +914,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
 
           {/* Painel direito: Preview do relatório */}
           <div
-            className={`${showPreview ? 'flex' : 'hidden'} lg:flex flex-col gap-md overflow-hidden border-l border-base-300 pl-md`}
+            className={`${showPreview ? 'flex' : 'hidden'} lg:flex flex-col gap-md overflow-hidden border-l border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pl-md`}
           >
             <div className="flex items-center justify-between flex-shrink-0">
               <p className={taskCardFieldLabelClass}>
@@ -952,7 +953,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
 
         {/* Seção de Análise IA */}
         {aiAnalysisText && (
-          <div className="flex-shrink-0 flex flex-col gap-sm border-t border-base-300 pt-md">
+          <div className="flex-shrink-0 flex flex-col gap-sm border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pt-md">
             <div className="flex items-center justify-between">
               <p className={taskCardFieldLabelClass}>
                 Análise IA - Relatório para PO

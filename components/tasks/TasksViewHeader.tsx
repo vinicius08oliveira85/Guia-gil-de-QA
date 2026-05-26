@@ -12,6 +12,7 @@ import {
   leveViewSecondaryToolbarBtnClass,
   leveViewSecondaryToolbarBtnActiveClass,
   leveViewSecondaryToolbarDividerClass,
+  leveViewModeCountActiveClass,
 } from '../common/projectCardUi';
 
 export interface TasksViewHeaderProps {
@@ -93,7 +94,12 @@ export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
               Filtros{activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}
             </span>
             {activeFiltersCount > 0 ? (
-              <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-[var(--leve-header-accent)] font-sans text-[10px] font-bold text-white sm:hidden">
+              <span
+                className={cn(
+                  leveViewModeCountActiveClass,
+                  'h-4 min-w-[1rem] px-0.5 sm:hidden'
+                )}
+              >
                 {activeFiltersCount}
               </span>
             ) : null}

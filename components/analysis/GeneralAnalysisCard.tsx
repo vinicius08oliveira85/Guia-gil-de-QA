@@ -5,6 +5,8 @@ import { cn } from '../../utils/cn';
 import { isAnalysisOutdated } from '../../utils/analysisFreshness';
 import { getGeneralIAAnalysisSnapshotHash } from '../../services/ai/generalAnalysisService';
 import { SafeMarkdown } from '../common/SafeMarkdown';
+import { analysisPanelClass, analysisTileClass } from './analysisNeuUi';
+import { neuSurfaceInsetClass } from '../common/neuUi';
 
 interface GeneralAnalysisCardProps {
   analysis: GeneralIAAnalysis;
@@ -56,7 +58,10 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
           badge: 'badge badge-success badge-outline',
         };
       default:
-        return { box: 'bg-base-200 border-base-300', badge: 'badge badge-neutral badge-outline' };
+        return {
+          box: 'leve-neu-surface-inset border-0',
+          badge: 'badge badge-neutral badge-outline',
+        };
     }
   }, [analysis.riskCalculation.overallRisk]);
 
@@ -69,7 +74,7 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
     <button
       type="button"
       onClick={() => toggleSection(sectionKey)}
-      className="w-full flex items-center justify-between p-4 hover:bg-base-200 rounded-lg transition-all"
+      className="flex w-full items-center justify-between rounded-lg p-4 transition-all hover:shadow-[var(--leve-neu-hover)]"
     >
       <div className="flex items-center gap-3">
         <span className="text-2xl">{icon}</span>
@@ -93,7 +98,7 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
   );
 
   return (
-    <div className="p-6 bg-base-100 border border-base-300 rounded-xl shadow-sm">
+    <div className={analysisPanelClass}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
         <div>
@@ -164,7 +169,7 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
       <div className="mb-6">
         <SectionHeader title="Resumo Geral" icon="📊" sectionKey="summary" />
         {expandedSections.has('summary') && (
-          <div className="mt-4 p-6 bg-base-200 rounded-xl border border-base-300 hover:border-primary/30 transition-all">
+          <div className={cn(analysisTileClass, 'mt-4')}>
             <SafeMarkdown
               source={analysis.summary}
               className="leading-relaxed text-base"
@@ -275,7 +280,7 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
         {expandedSections.has('bddSuggestions') && (
           <div className="mt-4 space-y-4">
             {analysis.bddSuggestions.map((suggestion, idx) => (
-              <div key={idx} className="p-5 bg-base-200 border border-base-300 rounded-xl">
+              <div key={idx} className={cn(analysisTileClass, 'p-5')}>
                 <p className="font-semibold text-base-content mb-3 text-lg">
                   {suggestion.taskTitle}
                 </p>
@@ -283,7 +288,7 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
                   {suggestion.scenarios.map((scenario, sIdx) => (
                     <div
                       key={sIdx}
-                      className="p-4 bg-base-200 rounded-lg border border-base-300 text-sm text-base-content font-mono leading-relaxed hover:border-primary/30 transition-all"
+                      className={cn(neuSurfaceInsetClass, 'rounded-lg p-4 font-mono text-sm leading-relaxed text-base-content transition-all hover:shadow-[var(--leve-neu-hover)]')}
                     >
                       {scenario}
                     </div>

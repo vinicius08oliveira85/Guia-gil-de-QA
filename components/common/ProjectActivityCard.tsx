@@ -73,7 +73,7 @@ const MetricRing: React.FC<MetricRingProps> = ({
             */}
       <div className="relative w-full aspect-square max-w-[96px] sm:max-w-[110px] md:max-w-[130px] lg:max-w-[140px] mx-auto">
         {/* Background ring */}
-        <div className="absolute inset-0 rounded-full border-[4px] sm:border-[5px] border-base-200" />
+        <div className="absolute inset-0 rounded-full border-[4px] border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] sm:border-[5px]" />
         {/* Progress ring */}
         <svg
           aria-hidden="true"
@@ -136,7 +136,7 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
       case 'Baixa':
         return 'bg-success/10 hover:bg-success/15 border-success/20';
       default:
-        return 'bg-base-200/50 hover:bg-base-200/70 border-base-300/50';
+        return 'border-[color-mix(in_srgb,var(--leve-neu-light)_30%,transparent)] bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))] hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_12%,var(--leve-neu-bg))]';
     }
   };
 
@@ -238,9 +238,9 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
     <div
       className={cn(
         'relative h-full flex flex-col rounded-2xl sm:rounded-3xl px-4 py-4 md:px-5 md:py-6',
-        'bg-base-100',
-        'border border-base-200',
-        'hover:border-primary/30',
+        'leve-neu-surface',
+        'border border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]',
+        'hover:border-primary/30 hover:shadow-[var(--leve-neu-hover)]',
         'transition-all duration-300',
         'cursor-pointer',
         className
@@ -319,7 +319,7 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
       {/* Goals Section */}
       {goals.length > 0 && (
         <div className="mt-auto space-y-3 sm:space-y-4">
-          <div className="h-px bg-gradient-to-r from-transparent via-base-300 to-transparent" />
+          <div className="h-px bg-gradient-to-r from-transparent via-[color-mix(in_srgb,var(--leve-neu-light)_40%,transparent)] to-transparent" />
 
           <div className="space-y-3 sm:space-y-4">
             <div className="flex items-center gap-2">
@@ -379,7 +379,7 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
       )}
 
       {/* Footer */}
-      <div className="pt-3 sm:pt-4 mt-4 sm:mt-6 border-t border-base-300">
+      <div className="mt-4 border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pt-3 sm:mt-6 sm:pt-4">
         <button
           onClick={handleViewDetails}
           className="inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-medium

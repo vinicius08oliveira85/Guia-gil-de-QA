@@ -1,5 +1,7 @@
 import React from 'react';
 import { Card } from '../common/Card';
+import { cn } from '../../utils/cn';
+import { neuCardInsetClass } from '../common/neuUi';
 
 type RadarChartWidgetProps = {
   title: string;
@@ -45,7 +47,7 @@ export const RadarChartWidget: React.FC<RadarChartWidgetProps> = ({
         <h4 className="text-lg font-semibold text-base-content">{title}</h4>
         <span className="text-xs text-base-content/70">Qualidade por Epic</span>
       </div>
-      <div className="mt-4 flex justify-center rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-200/50 p-3">
+      <div className={cn(neuCardInsetClass, 'mt-4 flex justify-center rounded-[var(--rounded-box)] p-3')}>
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
           {guides.map(ratio => (
             <polygon

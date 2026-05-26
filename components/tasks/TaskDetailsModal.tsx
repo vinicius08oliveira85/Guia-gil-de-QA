@@ -63,6 +63,7 @@ import {
   leveTaskModalTabBadgeIdleClass,
   leveTaskModalTabClass,
   leveTaskModalTabsStripClass,
+  leveTaskModalGhostBtnClass,
   leveTaskModalWatchersBoxClass,
   leveViewOutlineBtnClass,
 } from '../common/projectCardUi';
@@ -428,7 +429,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
               <button
                 type="button"
                 onClick={() => setShowTestReport(true)}
-                className={cn(leveViewOutlineBtnClass, 'btn-sm flex items-center gap-2 min-h-9 rounded-full')}
+                className={cn(leveTaskModalGhostBtnClass, 'min-h-9 gap-2')}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
@@ -1044,7 +1045,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             type="button"
             variant="ghost"
             size="sm"
-            className="gap-1"
+            className={cn(leveTaskModalGhostBtnClass, 'gap-1')}
             onClick={() => setActiveSection(prevTab.id)}
             aria-label={`Anterior: ${prevTab.label}`}
           >
@@ -1059,7 +1060,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             type="button"
             variant="ghost"
             size="sm"
-            className="gap-1"
+            className={cn(leveTaskModalGhostBtnClass, 'gap-1')}
             onClick={() => setActiveSection(nextTab.id)}
             aria-label={`Próximo: ${nextTab.label}`}
           >

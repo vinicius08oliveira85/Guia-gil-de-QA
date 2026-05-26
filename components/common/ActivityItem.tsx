@@ -38,7 +38,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({
       case 'warning':
         return 'bg-warning/15 text-warning border-warning/20';
       default:
-        return 'bg-base-200 text-base-content/70 border-base-300';
+        return 'border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))] text-base-content/70';
     }
   };
 
@@ -54,7 +54,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({
       case 'warning':
         return 'border-l-warning';
       default:
-        return 'border-l-base-300';
+        return 'border-l-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]';
     }
   };
 
@@ -111,7 +111,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({
                 />
               </svg>
               <span className="font-medium truncate opacity-90">
-                <span className="font-mono bg-base-200 px-1.5 py-0.5 rounded text-[10px] tracking-wide mr-1.5">
+                <span className="font-mono bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] px-1.5 py-0.5 rounded text-[10px] tracking-wide mr-1.5">
                   {activity.taskId}
                 </span>
                 {activity.taskTitle}
@@ -121,7 +121,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({
 
           {/* Detalhes das Alterações */}
           {activity.changes && Object.keys(activity.changes).length > 0 && (
-            <div className="mt-2 text-xs bg-base-200/50 border border-base-200 rounded-md p-2 text-text-secondary group-hover:bg-base-200/80 transition-colors">
+            <div className="mt-2 rounded-md border border-[color-mix(in_srgb,var(--leve-neu-light)_30%,transparent)] bg-[color-mix(in_srgb,var(--leve-neu-dark)_6%,var(--leve-neu-bg))] p-2 text-xs text-text-secondary transition-colors group-hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))]">
               <span className="font-semibold opacity-80">Alterações: </span>
               <span className="opacity-90">
                 {Object.keys(activity.changes).slice(0, 3).join(', ')}

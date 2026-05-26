@@ -2,6 +2,11 @@ import React from 'react';
 import { ContextualHelp } from '../common/ContextualHelp';
 import { cn } from '../../utils/cn';
 import { projectViewCard } from '../common/viewUi';
+import {
+  trailProgressFillClass,
+  trailProgressTrackClass,
+  trailTileClass,
+} from './trailNeuUi';
 
 interface CoverageMetricsCardProps {
   versionLabel: string;
@@ -55,9 +60,9 @@ export const CoverageMetricsCard: React.FC<CoverageMetricsCardProps> = ({
             <span>Stories com testes</span>
             <span>{documentedPercentage}%</span>
           </div>
-          <div className="mt-2 h-3 rounded-full bg-base-300">
+          <div className={cn(trailProgressTrackClass, 'mt-2')}>
             <div
-              className="h-full rounded-full bg-gradient-to-r from-sky-400 to-accent"
+              className={cn(trailProgressFillClass, 'bg-gradient-to-r from-sky-400 to-accent')}
               style={{ width: `${documentedPercentage}%` }}
             />
           </div>
@@ -71,9 +76,9 @@ export const CoverageMetricsCard: React.FC<CoverageMetricsCardProps> = ({
             <span>Automação disponível</span>
             <span>{automationRatio}%</span>
           </div>
-          <div className="mt-2 h-3 rounded-full bg-base-300">
+          <div className={cn(trailProgressTrackClass, 'mt-2')}>
             <div
-              className="h-full rounded-full bg-gradient-to-r from-purple-400 to-fuchsia-500"
+              className={cn(trailProgressFillClass, 'bg-gradient-to-r from-purple-400 to-fuchsia-500')}
               style={{ width: `${automationRatio}%` }}
             />
           </div>
@@ -87,9 +92,9 @@ export const CoverageMetricsCard: React.FC<CoverageMetricsCardProps> = ({
             <span>Cobertura planejada</span>
             <span>{testCoverage}%</span>
           </div>
-          <div className="mt-2 h-3 rounded-full bg-base-300">
+          <div className={cn(trailProgressTrackClass, 'mt-2')}>
             <div
-              className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-green-500"
+              className={cn(trailProgressFillClass, 'bg-gradient-to-r from-emerald-400 to-green-500')}
               style={{ width: `${testCoverage}%` }}
             />
           </div>
@@ -100,7 +105,7 @@ export const CoverageMetricsCard: React.FC<CoverageMetricsCardProps> = ({
       </div>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <div className="min-w-0 rounded-2xl border border-base-300 bg-base-200 p-4">
+        <div className={cn(trailTileClass, 'min-w-0')}>
           <p className="text-xs font-semibold uppercase tracking-[0.35em] text-base-content/60">
             Quando investigar
           </p>
@@ -109,7 +114,7 @@ export const CoverageMetricsCard: React.FC<CoverageMetricsCardProps> = ({
             <li>• Automação &lt; 30% aumenta tempo de regressão.</li>
           </ul>
         </div>
-        <div className="min-w-0 rounded-2xl border border-base-300 bg-base-200 p-4">
+        <div className={cn(trailTileClass, 'min-w-0')}>
           <p className="text-xs font-semibold uppercase tracking-[0.35em] text-base-content/60">
             Próximas ações
           </p>

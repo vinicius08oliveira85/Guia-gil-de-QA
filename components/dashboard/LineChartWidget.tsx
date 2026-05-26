@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card } from '../common/Card';
+import { dashboardChartContainerClass } from './dashboardNeuUi';
 
 interface SeriesInfo {
   name: string;
@@ -61,7 +62,7 @@ export const LineChartWidget: React.FC<LineChartWidgetProps> = ({
           {formatDate(minDate)} — {formatDate(maxDate)}
         </span>
       </div>
-      <div className="mt-4 h-48 rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-200/50 p-3">
+      <div className={dashboardChartContainerClass}>
         <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
           {[0, 25, 50, 75, 100].map(y => (
             <line

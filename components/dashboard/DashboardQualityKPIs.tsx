@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '../../utils/cn';
+import { dashboardProgressFillClass, dashboardProgressTrackClass } from './dashboardNeuUi';
 
 export interface DashboardKpiMetrics {
   passRate: number;
@@ -27,9 +28,9 @@ function KpiRow({ label, value, barPercent, barColor }: KpiRowProps) {
         <span className="text-sm font-medium text-base-content">{label}</span>
         <span className="text-sm font-bold text-base-content">{value}</span>
       </div>
-      <div className="h-2 bg-base-300 rounded-full overflow-hidden">
+      <div className={dashboardProgressTrackClass}>
         <div
-          className={cn('h-full rounded-full transition-all duration-300', barColor)}
+          className={cn(dashboardProgressFillClass, 'transition-all duration-300', barColor)}
           style={{ width: `${Math.min(100, barPercent)}%` }}
         />
       </div>

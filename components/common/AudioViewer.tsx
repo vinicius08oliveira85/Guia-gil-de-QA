@@ -88,7 +88,7 @@ export const AudioViewer: React.FC<AudioViewerProps> = ({
   };
 
   return (
-    <div className={`audio-viewer flex flex-col gap-4 p-6 bg-base-100 rounded-lg ${className}`}>
+    <div className={`audio-viewer flex flex-col gap-4 p-6 leve-neu-surface rounded-lg ${className}`}>
       <div className="flex items-center gap-4">
         <button
           onClick={togglePlay}

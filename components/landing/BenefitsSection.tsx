@@ -2,6 +2,8 @@ import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, Rocket, DollarSign, Heart, Award, Target } from 'lucide-react';
 import { SectionHeader } from '../common/SectionHeader';
+import { landingFeatureTileClass } from './landingNeuUi';
+import { cn } from '../../utils/cn';
 
 interface Benefit {
   icon: React.ComponentType<{ className?: string }>;
@@ -52,7 +54,7 @@ export const BenefitsSection: React.FC = () => {
   return (
     <section
       id="benefits-section"
-      className="py-20 md:py-32 bg-gradient-to-b from-base-100 to-base-200 scroll-mt-24"
+      className="scroll-mt-24 bg-gradient-to-b from-[var(--leve-neu-bg)] to-[color-mix(in_srgb,var(--leve-neu-dark)_6%,var(--leve-neu-bg))] py-20 md:py-32"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeader
@@ -104,7 +106,10 @@ export const BenefitsSection: React.FC = () => {
                 {/* Ilustração/Placeholder */}
                 <div className="flex-1 w-full">
                   <div
-                    className={`relative h-64 md:h-80 lg:h-96 rounded-[var(--rounded-box)] bg-gradient-to-br ${benefit.bgGradient} border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] overflow-hidden soft-shadow`}
+                    className={cn(
+                      'relative h-64 overflow-hidden rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--leve-neu-light)_30%,transparent)] bg-gradient-to-br shadow-[var(--leve-neu-raised)] md:h-80 lg:h-96',
+                      benefit.bgGradient
+                    )}
                   >
                     {/* Placeholder visual - pode ser substituído por imagem real */}
                     <div className="absolute inset-0 flex items-center justify-center">
@@ -112,7 +117,7 @@ export const BenefitsSection: React.FC = () => {
                         <benefit.icon
                           className={`w-24 h-24 md:w-32 md:h-32 ${benefit.color} opacity-20 mx-auto mb-4`}
                         />
-                        <div className="w-32 h-32 md:w-48 md:h-48 bg-base-300/50 rounded-full mx-auto blur-2xl" />
+                        <div className="mx-auto h-32 w-32 rounded-full bg-[color-mix(in_srgb,var(--leve-neu-dark)_18%,var(--leve-neu-bg))] blur-2xl md:h-48 md:w-48" />
                       </div>
                     </div>
 
@@ -146,7 +151,10 @@ export const BenefitsSection: React.FC = () => {
               whileInView={reduceMotion ? undefined : { opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
-              className="rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-200 p-6 text-center soft-shadow transition-shadow duration-200 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_20%,transparent)]"
+              className={cn(
+                landingFeatureTileClass,
+                'p-6 text-center transition-shadow duration-200 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_20%,transparent)]'
+              )}
               whileHover={
                 reduceMotion
                   ? undefined

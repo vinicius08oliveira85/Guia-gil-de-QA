@@ -1,5 +1,11 @@
 import React from 'react';
 import { Card } from '../common/Card';
+import {
+  dashboardEmptyChartClass,
+  dashboardListRowClass,
+  dashboardPanelClass,
+} from './dashboardNeuUi';
+import { cn } from '../../utils/cn';
 import { LineChartWidget } from './LineChartWidget';
 import { BarChartWidget } from './BarChartWidget';
 import { useQualityMetrics } from '../../hooks/useQualityMetrics';
@@ -35,7 +41,7 @@ export const QualityTrendSection: React.FC<QualityTrendSectionProps> = ({ projec
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 rounded-[var(--rounded-box)] border border-base-300 bg-gradient-to-br from-base-100 to-base-200 px-4 py-4 sm:px-6 sm:py-6">
+      <div className={cn(dashboardPanelClass, 'bg-gradient-to-br from-[var(--leve-neu-bg)] to-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))]')}>
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-base-content/60">
             Análise de Risco
@@ -82,7 +88,7 @@ export const QualityTrendSection: React.FC<QualityTrendSectionProps> = ({ projec
             <h4 className="text-lg font-semibold text-base-content mb-2">
               Top Módulos Defeituosos
             </h4>
-            <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-base-300 text-base-content/60">
+            <div className={dashboardEmptyChartClass}>
               Nenhum módulo com bugs abertos encontrado.
             </div>
           </Card>
@@ -97,7 +103,7 @@ export const QualityTrendSection: React.FC<QualityTrendSectionProps> = ({ projec
             {metrics.topDefectiveModules.slice(0, 5).map((module, index) => (
               <div
                 key={module.module}
-                className="flex items-center justify-between rounded-2xl border border-base-300 bg-base-100 px-4 py-3"
+                className={dashboardListRowClass}
               >
                 <div className="flex items-center gap-3">
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/20 text-sm font-semibold text-accent">

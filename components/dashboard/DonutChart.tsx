@@ -43,7 +43,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({
         </div>
         <div
           className={cn(
-            'rounded-[var(--radius)] bg-base-200 px-3 py-1 text-[clamp(0.75rem,1.8vw,0.9rem)] font-semibold text-base-content',
+            'leve-neu-pill px-3 py-1 text-[clamp(0.75rem,1.8vw,0.9rem)] font-semibold text-base-content',
             interactive &&
               isHovered &&
               'ring-2 ring-[color-mix(in_oklch,oklch(var(--p))_25%,transparent)]'
@@ -56,7 +56,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({
       <div className="relative mx-auto flex items-center justify-center">
         <div
           className={cn(
-            'relative inline-flex shrink-0 rounded-full soft-shadow-chart',
+            'relative inline-flex shrink-0 rounded-full shadow-[var(--leve-neu-raised)]',
             interactive && 'transition-transform duration-200',
             interactive && isHovered && 'scale-105'
           )}

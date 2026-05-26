@@ -1428,7 +1428,28 @@
   }
 
   /** Select nativo alinhado ao mesmo shell de `.app-input`. */
-  .app-select {
+  .app-select:not([multiple]) {
+    font-family: var(--font-sans);
+    letter-spacing: var(--letter-spacing);
+    font-weight: 500;
+    color: var(--leve-header-text);
+    border: 1px solid color-mix(in srgb, var(--leve-neu-light) 30%, transparent);
+    border-radius: var(--leve-header-radius);
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 2.25rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23421d3a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.625rem center;
+    background-size: 0.875rem;
+    background-color: color-mix(in srgb, var(--leve-neu-dark) 6%, var(--leve-neu-bg));
+    box-shadow: var(--leve-neu-inset);
+    transition:
+      box-shadow 160ms ease,
+      border-color 160ms ease;
+  }
+
+  .app-select[multiple] {
     font-family: var(--font-sans);
     letter-spacing: var(--letter-spacing);
     font-weight: 500;
@@ -1437,16 +1458,13 @@
     border-radius: var(--leve-header-radius);
     background: color-mix(in srgb, var(--leve-neu-dark) 6%, var(--leve-neu-bg));
     box-shadow: var(--leve-neu-inset);
-    transition:
-      box-shadow 160ms ease,
-      border-color 160ms ease;
   }
 
-  .app-select:hover:not(:disabled) {
+  .app-select:not([multiple]):hover:not(:disabled) {
     border-color: color-mix(in srgb, var(--leve-header-accent) 30%, transparent);
   }
 
-  .app-select:focus {
+  .app-select:not([multiple]):focus {
     outline: none;
     border-color: color-mix(in srgb, var(--leve-header-accent) 45%, transparent);
     box-shadow:
@@ -1461,34 +1479,58 @@
 
   /** Painel flutuante (dropdown, resultados de busca). */
   .app-menu-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
     width: fit-content;
     min-width: min(12rem, 90vw);
     max-width: min(90vw, 28rem);
     max-height: min(90vh, 100dvh);
     overflow: auto;
-    border: 1px solid color-mix(in srgb, var(--leve-neu-light) 50%, transparent);
+    padding: 0.375rem;
+    border: 1px solid color-mix(in srgb, var(--leve-neu-light) 45%, transparent);
     border-radius: var(--leve-header-radius);
-    background: var(--leve-neu-bg);
+    background: color-mix(in srgb, var(--leve-neu-dark) 4%, var(--leve-neu-bg));
     box-shadow: var(--leve-neu-hover);
     font-family: var(--font-sans);
     letter-spacing: var(--letter-spacing);
   }
 
+  /** Item de lista / opção de menu — pill neumórfico. */
   .app-menu-item {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    border: 1px solid color-mix(in srgb, var(--leve-neu-light) 32%, transparent);
+    background: color-mix(in srgb, var(--leve-neu-dark) 5%, var(--leve-neu-bg));
+    padding: 0.5rem 0.75rem;
     font-family: var(--font-sans);
     letter-spacing: var(--letter-spacing);
     font-size: 0.875rem;
     font-weight: 500;
+    line-height: 1.25;
     color: var(--leve-header-text);
+    box-shadow: var(--leve-neu-raised);
     transition:
-      background-color 160ms ease,
+      box-shadow 160ms ease,
       color 160ms ease,
-      box-shadow 160ms ease;
+      background-color 160ms ease;
   }
 
   .app-menu-item:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--leve-header-accent) 8%, var(--leve-neu-bg));
     color: var(--leve-header-accent);
+    box-shadow: var(--leve-neu-hover);
+  }
+
+  .app-menu-item-active,
+  .app-menu-item[aria-selected='true'] {
+    border-color: color-mix(in srgb, var(--leve-header-accent) 28%, transparent);
+    background: color-mix(in srgb, var(--leve-header-accent) 10%, var(--leve-neu-bg));
+    color: var(--leve-header-accent);
+    font-weight: 600;
+    box-shadow: var(--leve-neu-inset);
   }
 
   .app-menu-item-danger {
@@ -1496,8 +1538,68 @@
   }
 
   .app-menu-item-danger:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--destructive) 10%, transparent);
+    border-color: color-mix(in srgb, var(--destructive) 35%, transparent);
+    background: color-mix(in srgb, var(--destructive) 8%, var(--leve-neu-bg));
     color: var(--destructive);
+    box-shadow: var(--leve-neu-inset);
+  }
+
+  /** Menus DaisyUI (dropdown-content menu) — itens neumórficos. */
+  .app-page .menu,
+  .dropdown-content.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.375rem !important;
+    border-radius: var(--leve-header-radius);
+    background: color-mix(in srgb, var(--leve-neu-dark) 4%, var(--leve-neu-bg)) !important;
+    box-shadow: var(--leve-neu-hover) !important;
+  }
+
+  .app-page .menu li,
+  .dropdown-content.menu li {
+    padding: 0;
+    margin: 0;
+  }
+
+  .app-page .menu li > *:not(ul),
+  .dropdown-content.menu li > *:not(ul) {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 9999px !important;
+    border: 1px solid color-mix(in srgb, var(--leve-neu-light) 32%, transparent) !important;
+    background: color-mix(in srgb, var(--leve-neu-dark) 5%, var(--leve-neu-bg)) !important;
+    padding: 0.5rem 0.75rem !important;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--leve-header-text) !important;
+    box-shadow: var(--leve-neu-raised);
+    transition:
+      box-shadow 160ms ease,
+      color 160ms ease;
+  }
+
+  .app-page .menu li > *:not(ul):hover,
+  .dropdown-content.menu li > *:not(ul):hover,
+  .app-page .menu li > *:not(ul):focus,
+  .dropdown-content.menu li > *:not(ul):focus {
+    color: var(--leve-header-accent) !important;
+    box-shadow: var(--leve-neu-hover) !important;
+    background: color-mix(in srgb, var(--leve-neu-dark) 5%, var(--leve-neu-bg)) !important;
+  }
+
+  .app-page .menu li > *:not(ul).active,
+  .dropdown-content.menu li > *:not(ul).active,
+  .app-page .menu li > *:not(ul)[aria-selected='true'],
+  .dropdown-content.menu li > *:not(ul)[aria-selected='true'] {
+    border-color: color-mix(in srgb, var(--leve-header-accent) 28%, transparent) !important;
+    background: color-mix(in srgb, var(--leve-header-accent) 10%, var(--leve-neu-bg)) !important;
+    color: var(--leve-header-accent) !important;
+    font-weight: 600;
+    box-shadow: var(--leve-neu-inset) !important;
   }
 
   /** Pills de filtro (toolbar, modos de listagem). */

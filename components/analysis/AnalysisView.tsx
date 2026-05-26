@@ -178,7 +178,7 @@ export const AnalysisView: React.FC<{
   return (
     <div className={cn(projectViewShell, 'pb-2')}>
       <section className={projectViewPanel}>
-        <header className="flex flex-col gap-4 border-b border-base-300/60 pb-4 mb-0">
+        <header className="mb-0 flex flex-col gap-4 border-b border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pb-4">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div className="flex-shrink-0">
             <h2 className={pageTitleClass}>Análise IA do Projeto</h2>
@@ -543,7 +543,7 @@ export const AnalysisView: React.FC<{
                 return (
                   <div
                     key={idx}
-                    className="p-5 bg-base-100 border border-base-300 rounded-xl hover:border-primary/30 transition-all"
+                    className="leve-neu-surface rounded-xl border-0 p-5 transition-[box-shadow] hover:shadow-[var(--leve-neu-hover)]"
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div>
@@ -563,7 +563,7 @@ export const AnalysisView: React.FC<{
                       {suggestion.scenarios.map((scenario, sIdx) => (
                         <div
                           key={sIdx}
-                          className="p-3 bg-base-200 rounded-lg border border-base-300 text-sm text-base-content/70 font-mono hover:border-primary/30 transition-all"
+                          className="leve-neu-surface-inset rounded-lg p-3 font-mono text-sm text-base-content/70 transition-[box-shadow] hover:shadow-[var(--leve-neu-hover)]"
                         >
                           {scenario}
                         </div>

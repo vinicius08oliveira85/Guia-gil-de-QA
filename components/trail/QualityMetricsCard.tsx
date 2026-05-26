@@ -3,6 +3,11 @@ import { BugSeverity, GeneralIAAnalysis } from '../../types';
 import { ContextualHelp } from '../common/ContextualHelp';
 import { cn } from '../../utils/cn';
 import { outlineActionBtn, projectViewCard } from '../common/viewUi';
+import {
+  trailProgressFillClass,
+  trailProgressTrackSmClass,
+  trailTileClass,
+} from './trailNeuUi';
 
 interface QualityMetricsCardProps {
   versionLabel: string;
@@ -68,7 +73,7 @@ export const QualityMetricsCard: React.FC<QualityMetricsCardProps> = ({
       </header>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-        <div className="min-w-0 rounded-2xl border border-base-300 bg-base-200 p-4">
+        <div className={cn(trailTileClass, 'min-w-0')}>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-base-content/60">
             Pass rate
           </p>
@@ -78,7 +83,11 @@ export const QualityMetricsCard: React.FC<QualityMetricsCardProps> = ({
           </p>
         </div>
         <div
-          className={`min-w-0 rounded-2xl border p-4 ${analysisOutdated ? 'border-amber-200 bg-amber-50' : 'border-base-300 bg-base-200'}`}
+          className={cn(
+            trailTileClass,
+            'min-w-0',
+            analysisOutdated ? 'border-amber-200 bg-amber-50' : ''
+          )}
         >
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-base-content/60">
             Bugs Abertos
@@ -88,7 +97,7 @@ export const QualityMetricsCard: React.FC<QualityMetricsCardProps> = ({
             {openVsClosedBugs.open} abertos • {openVsClosedBugs.closed} fechados
           </p>
         </div>
-        <div className="min-w-0 rounded-2xl border border-base-300 bg-base-200 p-4">
+        <div className={cn(trailTileClass, 'min-w-0')}>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-base-content/60">
             Risco geral
           </p>
@@ -107,7 +116,7 @@ export const QualityMetricsCard: React.FC<QualityMetricsCardProps> = ({
         </div>
       </div>
 
-      <div className="min-w-0 rounded-2xl border border-base-300 bg-base-200 p-4">
+      <div className={cn(trailTileClass, 'min-w-0')}>
         <p className="mb-2 text-xs font-semibold uppercase tracking-[0.35em] text-base-content/60">
           Bugs por severidade
         </p>
@@ -128,9 +137,9 @@ export const QualityMetricsCard: React.FC<QualityMetricsCardProps> = ({
                       {amount} • {percentage}%
                     </span>
                   </div>
-                  <div className="h-2 rounded-full bg-base-300">
+                  <div className={trailProgressTrackSmClass}>
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-amber-300 to-red-400"
+                      className={cn(trailProgressFillClass, 'bg-gradient-to-r from-amber-300 to-red-400')}
                       style={{ width: `${percentage}%` }}
                     />
                   </div>
@@ -141,7 +150,7 @@ export const QualityMetricsCard: React.FC<QualityMetricsCardProps> = ({
         )}
       </div>
 
-      <div className="min-w-0 rounded-2xl border border-base-300 bg-base-200 p-4">
+      <div className={cn(trailTileClass, 'min-w-0')}>
         <p className="mb-3 text-xs font-semibold uppercase tracking-[0.35em] text-base-content/60">
           Qualidade por módulo
         </p>
@@ -152,9 +161,9 @@ export const QualityMetricsCard: React.FC<QualityMetricsCardProps> = ({
                 <span>{module.module}</span>
                 <span className="text-base-content/70">{module.quality}%</span>
               </div>
-              <div className="mt-1 h-2 rounded-full bg-base-300">
+              <div className={cn(trailProgressTrackSmClass, 'mt-1')}>
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-green-500"
+                  className={cn(trailProgressFillClass, 'bg-gradient-to-r from-emerald-400 to-green-500')}
                   style={{ width: `${module.quality}%` }}
                 />
               </div>

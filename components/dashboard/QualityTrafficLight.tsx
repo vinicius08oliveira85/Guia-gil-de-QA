@@ -1,5 +1,7 @@
 import React from 'react';
 import { Card } from '../common/Card';
+import { cn } from '../../utils/cn';
+import { dashboardPanelClass } from './dashboardNeuUi';
 import { useQualityMetrics } from '../../hooks/useQualityMetrics';
 import { Project } from '../../types';
 import { AlertTriangle } from 'lucide-react';
@@ -40,7 +42,7 @@ export const QualityTrafficLight: React.FC<QualityTrafficLightProps> = ({ projec
         : 'shadow-lg shadow-error/10';
 
   return (
-    <Card className={`relative overflow-hidden border border-base-300 p-6 sm:p-8 ${statusGlow}`}>
+    <Card className={cn('relative overflow-hidden p-6 sm:p-8', dashboardPanelClass, statusBorder, statusGlow)}>
       <div className={`absolute inset-0 bg-gradient-to-br ${statusBg} to-transparent opacity-50`} />
 
       <div className="relative">

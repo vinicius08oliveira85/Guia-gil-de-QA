@@ -6,7 +6,7 @@ import { TestMetricBadge } from '../common/TestMetricBadge';
 import { TaskTestStatusBadge } from '../common/TaskTestStatusBadge';
 import type { JiraTask } from '../../types';
 import { cn } from '../../utils/cn';
-import { taskCardMutedClass, taskCardTitleClass } from './taskActionLayout';
+import { taskCardMutedClass, taskCardTitleClass, taskNeuDividerClass } from './taskActionLayout';
 
 interface TaskCardProps {
   task: JiraTask;
@@ -155,7 +155,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
       </div>
 
       {isExpanded && (
-        <div id={contentId} className="pt-4 mt-4 border-t border-base-300/20">
+        <div id={contentId} className={cn('mt-4 border-t pt-4', taskNeuDividerClass)}>
           <h4 className={cn(taskCardTitleClass, 'mb-2 text-sm')}>Descrição</h4>
           <p className={cn(taskCardMutedClass, 'whitespace-pre-wrap text-sm')}>
             {task.description || 'Esta tarefa não possui uma descrição detalhada.'}

@@ -33,6 +33,8 @@ import { appContentPaddingX } from './common/viewUi';
 import {
   projectViewHeaderBacklogBtnClass,
   projectViewHeaderBacklogCountClass,
+  projectViewHeaderBreadcrumbsClass,
+  projectViewHeaderDangerBtnClass,
   projectViewHeaderScrollFadeFromClass,
   projectViewHeaderScrollFadeToClass,
   projectViewHeaderScrollHintClass,
@@ -473,7 +475,7 @@ export const ProjectView: React.FC<{
                     showHome={false}
                     align="left"
                     dense
-                    className="w-full min-w-0 max-w-full"
+                    className={cn(projectViewHeaderBreadcrumbsClass, 'w-full min-w-0 max-w-full')}
                   />
                 </div>
               </div>
@@ -570,7 +572,7 @@ export const ProjectView: React.FC<{
                     <button
                       type="button"
                       onClick={() => setShowDeleteProjectConfirm(true)}
-                      className="inline-flex min-h-[36px] items-center gap-1.5 rounded-r-[var(--leve-header-radius)] px-3 py-1.5 font-sans text-xs font-medium text-error transition-colors hover:bg-[color-mix(in_srgb,var(--foreground)_6%,transparent)] sm:min-h-0"
+                      className={projectViewHeaderDangerBtnClass}
                       aria-label={`Excluir projeto ${currentProject.name}`}
                     >
                       <Trash2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
@@ -637,8 +639,7 @@ export const ProjectView: React.FC<{
                     key={tab.id}
                     type="button"
                     onClick={() => handleTabClick(tab.id)}
-                    className={projectViewHeaderTabClass}
-                    data-active={activeTab === tab.id ? 'true' : undefined}
+                    className={projectViewHeaderTabClass(activeTab === tab.id)}
                     id={`tab-${tab.id}`}
                     role="tab"
                     tabIndex={activeTab === tab.id ? 0 : -1}

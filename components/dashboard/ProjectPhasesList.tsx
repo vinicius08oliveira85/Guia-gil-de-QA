@@ -2,6 +2,7 @@ import React from 'react';
 import { CheckCircle2, Play, Clock } from 'lucide-react';
 import type { Phase, PhaseStatus } from '../../types';
 import { cn } from '../../utils/cn';
+import { dashboardProgressFillClass, dashboardProgressTrackSmClass } from './dashboardNeuUi';
 
 interface ProjectPhasesListProps {
   phases: Phase[];
@@ -60,7 +61,8 @@ export const ProjectPhasesList = React.memo<ProjectPhasesListProps>(
                     'w-8 h-8 rounded-full border-2 flex items-center justify-center shrink-0',
                     isCompleted && 'border-success text-success',
                     isActive && 'border-primary text-primary',
-                    isPending && 'border-base-300 text-base-content/50'
+                    isPending &&
+                      'border-[color-mix(in_srgb,var(--leve-neu-light)_40%,transparent)] text-base-content/50'
                   )}
                 >
                   {isCompleted && <CheckCircle2 className="w-4 h-4" aria-hidden="true" />}
@@ -82,9 +84,9 @@ export const ProjectPhasesList = React.memo<ProjectPhasesListProps>(
                     )}
                   </div>
                   {isActive && (
-                    <div className="w-full bg-base-300 h-1.5 rounded-full overflow-hidden mt-1">
+                    <div className={cn(dashboardProgressTrackSmClass, 'mt-1')}>
                       <div
-                        className="bg-primary h-full rounded-full transition-all duration-300"
+                        className={cn(dashboardProgressFillClass, 'bg-primary transition-all duration-300')}
                         style={{ width: `${progress}%` }}
                       />
                     </div>

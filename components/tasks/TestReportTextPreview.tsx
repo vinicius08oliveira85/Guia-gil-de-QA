@@ -88,7 +88,8 @@ function getSummaryMetricStyles(type: keyof PreviewSummaryMetrics) {
       return {
         label: 'Não executados',
         Icon: Clock3,
-        className: 'border-base-300 bg-base-200/70 text-base-content/70',
+        className:
+          'border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] text-base-content/70',
       };
   }
 }

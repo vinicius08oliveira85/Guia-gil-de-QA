@@ -134,11 +134,11 @@ function SmallIndicatorCard({ item }: { item: SmallIndicatorItem }) {
   const displayValue = formatIndicatorValue(item.value);
 
   const interactiveClasses = isClickable
-    ? 'group cursor-pointer hover:border-[color-mix(in_srgb,var(--workspace-stat-accent)_35%,transparent)] hover:shadow-[0_4px_14px_rgba(252,76,2,0.1)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--workspace-stat-accent)_40%,transparent)] focus-visible:ring-offset-2 motion-reduce:transform-none'
+    ? 'group cursor-pointer hover:shadow-[var(--leve-neu-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] focus-visible:ring-offset-2 motion-reduce:transform-none'
     : '';
 
   const activeClasses = item.isActive
-    ? 'border-[color-mix(in_srgb,var(--workspace-stat-accent)_45%,transparent)] ring-2 ring-[color-mix(in_srgb,var(--workspace-stat-accent)_25%,transparent)]'
+    ? 'ring-2 ring-[color-mix(in_srgb,var(--leve-header-accent)_28%,transparent)] shadow-[var(--leve-neu-hover)]'
     : '';
 
   return (

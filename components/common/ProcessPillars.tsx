@@ -296,7 +296,7 @@ export const ProcessPillars: React.FC<ProcessPillarsProps> = ({
                 {/* Badge de fase atual */}
                 {pillar.isCurrent && (
                   <motion.div
-                    className="absolute -top-1 sm:-top-2 -right-1 sm:-right-2 bg-warning text-warning-content text-[8px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 rounded-[var(--radius)] soft-shadow"
+                    className="absolute -top-1 sm:-top-2 -right-1 sm:-right-2 bg-warning text-warning-content text-[8px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 rounded-[var(--radius)] shadow-[var(--leve-neu-raised)]"
                     initial={{ scale: 0, rotate: -180 }}
                     whileInView={{ scale: 1, rotate: 0 }}
                     viewport={{ once: true }}

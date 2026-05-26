@@ -56,7 +56,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label })
       <div
         className={cn('app-menu-panel min-w-[200px] p-4')}
       >
-        <p className="mb-3 font-semibold text-base-content text-sm border-b border-base-300 pb-2">
+        <p className="mb-3 border-b border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pb-2 text-sm font-semibold text-base-content">
           {label}
         </p>
         <div className="space-y-2">
@@ -76,7 +76,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label })
           })}
         </div>
         {total > 0 && (
-          <div className="mt-3 pt-2 border-t border-base-300">
+          <div className="mt-3 border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pt-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-base-content/70">Total:</span>
               <span className="font-bold text-base-content text-sm">{total}</span>

@@ -109,7 +109,7 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
     >
       {leadingContent}
       {leadingContent != null && (
-        <div className="mx-0.5 h-[20px] w-px bg-base-200" aria-hidden="true" />
+        <div className="mx-0.5 h-[20px] w-px bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))]" aria-hidden="true" />
       )}
       {tabs.map((tab, index) => {
         if (tab.type === 'separator') {

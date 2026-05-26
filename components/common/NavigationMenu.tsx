@@ -83,11 +83,11 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
         aria-label={title}
         className={cn(
           'fixed right-3 z-[130] flex max-h-[min(70vh,28rem)] w-[min(calc(100vw-2rem),20rem)] flex-col overflow-y-auto md:hidden',
-          'app-surface !max-w-none !rounded-[var(--rounded-box)] p-2 text-[var(--brand-text-strong)]'
+          'app-surface !max-w-none !rounded-[var(--rounded-box)] p-2 text-[var(--leve-header-text)]'
         )}
         style={{ top: 'calc(var(--app-header-sticky-offset, 4.5rem) + 0.25rem)' }}
       >
-        <div className="mb-1 flex items-center justify-between gap-2 border-b border-base-200/80 px-1 pb-2">
+        <div className="mb-1 flex items-center justify-between gap-2 border-b border-[color-mix(in_srgb,var(--leve-neu-light)_30%,transparent)]/80 px-1 pb-2">
           <span className="font-heading text-xs font-semibold uppercase tracking-wide text-base-content/70">
             {title}
           </span>
@@ -100,7 +100,7 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
             <X className="h-4 w-4" aria-hidden />
           </button>
         </div>
-        {leadingSlot ? <div className="border-b border-base-200/60 py-2">{leadingSlot}</div> : null}
+        {leadingSlot ? <div className="border-b border-[color-mix(in_srgb,var(--leve-neu-light)_30%,transparent)]/60 py-2">{leadingSlot}</div> : null}
         <ul className="menu menu-sm rounded-box p-0 font-body" role="none">
           {items.map(item => (
             <li key={item.id} role="none">

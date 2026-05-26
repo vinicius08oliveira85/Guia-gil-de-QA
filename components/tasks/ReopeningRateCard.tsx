@@ -1,5 +1,7 @@
 import React from 'react';
 import { RefreshCcw } from 'lucide-react';
+import { cn } from '../../utils/cn';
+import { taskNeuTrackClass, taskPanelBorderClass } from './taskActionLayout';
 
 interface ReopeningRateCardProps {
   rate: number;
@@ -13,7 +15,12 @@ export const ReopeningRateCard: React.FC<ReopeningRateCardProps> = ({ rate }) =>
   const bgIconClass = isCritical ? 'bg-error/10' : 'bg-warning/10';
 
   return (
-    <div className="flex flex-col justify-center p-4 bg-base-100 rounded-2xl border border-base-200 shadow-sm hover:shadow-md transition-all duration-300">
+    <div
+      className={cn(
+        taskPanelBorderClass,
+        'flex flex-col justify-center rounded-2xl p-4 transition-all duration-300 hover:shadow-[var(--leve-neu-hover)]'
+      )}
+    >
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <div className={`p-2 rounded-lg ${bgIconClass}`}>
@@ -28,7 +35,7 @@ export const ReopeningRateCard: React.FC<ReopeningRateCardProps> = ({ rate }) =>
         </span>
       </div>
       <div className="w-full">
-        <div className="w-full bg-base-300/60 rounded-full overflow-hidden h-1.5 relative">
+        <div className={cn(taskNeuTrackClass, 'relative h-1.5 w-full overflow-hidden')}>
           <div
             className={`${bgClass} transition-all duration-500 ease-out`}
             style={{ width: `${Math.min(rate, 100)}%`, height: '100%' }}

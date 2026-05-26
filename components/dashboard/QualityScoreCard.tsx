@@ -134,7 +134,7 @@ export const QualityScoreCard: React.FC<QualityScoreCardProps> = React.memo(
             <div
               className={cn(
                 'flex items-center gap-2 px-3 py-1.5 rounded-full',
-                'bg-base-100 border-2',
+                'leve-neu-surface border-2',
                 config.borderColor,
                 'shadow-md'
               )}
@@ -204,7 +204,7 @@ export const QualityScoreCard: React.FC<QualityScoreCardProps> = React.memo(
 
           {/* Barra de progresso horizontal */}
           <div className="w-full mt-6">
-            <div className="relative h-2.5 bg-base-300/50 rounded-full overflow-hidden">
+            <div className="relative h-2.5 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--leve-neu-dark)_14%,var(--leve-neu-bg))] shadow-[var(--leve-neu-inset-deep)]">
               <motion.div
                 className={cn(
                   'h-full rounded-full',

@@ -10,8 +10,8 @@ export const projectsDashboardHeaderBadgeClass = cn(
 );
 
 export const projectsDashboardSearchBtnClass = cn(
-  'projects-dash-neu-icon-btn shrink-0 text-[var(--brand-text-muted)]',
-  'hover:text-[var(--brand-text-strong)]'
+  'projects-dash-neu-icon-btn shrink-0 text-[var(--leve-header-text-muted)]',
+  'hover:text-[var(--leve-header-text)]'
 );
 
 export const projectsDashboardSelectClass = cn(

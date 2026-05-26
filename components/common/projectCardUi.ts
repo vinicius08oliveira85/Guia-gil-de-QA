@@ -138,41 +138,49 @@ export const recentActivityIconWrapClass = (type: 'pass' | 'fail' | 'pending' | 
 
 /** Cabeçalho ProjectView — fundo claro, títulos roxo, destaque laranja. */
 export const projectViewHeaderShellClass = cn(
-  'leve-neu-surface mb-3 min-w-0 max-w-full font-sans px-3 py-2 sm:mb-4 sm:px-4 sm:py-3',
-  '[&_button]:font-sans [&_button]:text-[var(--leve-header-text-muted)]',
-  '[&_button:hover]:bg-[var(--leve-header-cream)] [&_button:hover]:text-[var(--leve-header-accent)]',
-  '[&_span[aria-current=page]]:font-bold [&_span[aria-current=page]]:text-[var(--leve-header-text)]',
+  'leve-neu-surface mb-3 min-w-0 max-w-full font-sans px-3 py-2 sm:mb-4 sm:px-4 sm:py-3'
+);
+
+/** Trilho de breadcrumbs — faixa rebaixada. */
+export const projectViewHeaderBreadcrumbsClass = cn(
+  'leve-neu-surface-inset rounded-full px-2.5 py-1.5 sm:px-3 sm:py-2',
+  '[&_button]:rounded-full [&_button]:font-sans [&_button]:font-medium [&_button]:text-[var(--leve-header-text-muted)]',
+  '[&_button:hover]:text-[var(--leve-header-accent)] [&_button:hover]:shadow-[var(--leve-neu-raised)]',
+  '[&_span[aria-current=page]]:font-sans [&_span[aria-current=page]]:font-bold [&_span[aria-current=page]]:text-[var(--leve-header-text)]',
   '[&_svg]:text-[var(--leve-header-text-muted)]'
 );
 
 export const projectViewHeaderToolbarClass = cn(
-  'leve-neu-surface-inset flex shrink-0 items-center'
+  'leve-neu-surface-inset flex shrink-0 items-center rounded-full'
 );
 
 export const projectViewHeaderToolbarDividerClass =
-  'h-5 w-px shrink-0 bg-[var(--leve-header-border)]';
+  'mx-0.5 h-5 w-px shrink-0 bg-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]';
 
-export const projectViewHeaderTabsDividerClass =
-  'relative mt-2 border-t border-[var(--leve-header-border)] pt-2 sm:mt-3';
+export const projectViewHeaderTabsDividerClass = 'relative mt-2.5 sm:mt-3';
 
 export const projectViewHeaderTabsNavClass = cn(
-  'no-scrollbar flex min-w-0 flex-1 flex-nowrap gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory',
-  'border-b border-[var(--leve-header-border)] sm:gap-6 md:gap-8'
+  'leve-neu-surface-inset no-scrollbar flex min-w-0 flex-1 flex-nowrap gap-1.5 overflow-x-auto scroll-smooth snap-x snap-mandatory rounded-full p-1.5'
 );
 
-export const projectViewHeaderTabClass = cn(
-  'min-h-[44px] shrink-0 snap-start whitespace-nowrap border-b-2 border-transparent px-3 py-2',
-  'font-sans text-sm font-semibold transition-colors sm:min-h-0',
-  'text-[color-mix(in_srgb,var(--leve-header-text)_70%,transparent)]',
-  'hover:border-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] hover:text-[var(--leve-header-text)]',
-  'data-[active=true]:border-[var(--leve-header-accent)] data-[active=true]:font-bold data-[active=true]:text-[var(--leve-header-text)]'
-);
+export const projectViewHeaderTabClass = (active: boolean) =>
+  active
+    ? cn(
+        'inline-flex min-h-[2.25rem] shrink-0 snap-start items-center whitespace-nowrap rounded-full px-3 py-2 sm:min-h-0',
+        'font-sans text-sm font-semibold text-white shadow-[0_2px_8px_rgba(252,76,2,0.22)]',
+        'bg-[var(--leve-header-accent)]'
+      )
+    : cn(
+        'inline-flex min-h-[2.25rem] shrink-0 snap-start items-center whitespace-nowrap rounded-full px-3 py-2 sm:min-h-0',
+        'font-sans text-sm font-medium text-[var(--leve-header-text-muted)] transition-colors',
+        'hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_8%,var(--leve-header-bg))] hover:text-[var(--leve-header-text)]'
+      );
 
 export const projectViewHeaderScrollFadeFromClass =
-  'pointer-events-none absolute bottom-0 left-0 top-2 z-10 w-8 bg-gradient-to-r from-[var(--leve-header-bg)] to-transparent';
+  'pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-8 rounded-l-full bg-gradient-to-r from-[var(--leve-neu-bg)] to-transparent';
 
 export const projectViewHeaderScrollFadeToClass =
-  'pointer-events-none absolute bottom-0 right-0 top-2 z-10 w-8 bg-gradient-to-l from-[var(--leve-header-bg)] to-transparent';
+  'pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-8 rounded-r-full bg-gradient-to-l from-[var(--leve-neu-bg)] to-transparent';
 
 export const projectViewHeaderScrollHintClass =
   'mt-1 text-center font-sans text-[11px] text-[var(--leve-header-text-muted)] md:hidden';
@@ -187,30 +195,36 @@ export const projectViewHeaderBacklogBtnClass = (active: boolean) =>
   );
 
 export const projectViewHeaderBacklogCountClass = (active: boolean) =>
-  cn(
-    'rounded-full px-1.5 py-0 font-sans text-[10px] font-bold tabular-nums leading-none',
-    active
-      ? 'bg-[color-mix(in_srgb,var(--leve-header-accent)_18%,transparent)] text-[var(--leve-header-accent)]'
-      : 'bg-[color-mix(in_srgb,var(--leve-header-text)_10%,transparent)] text-[var(--leve-header-text-muted)]'
-  );
+  active
+    ? cn(leveTaskModalTabBadgeActiveClass, 'px-1.5 py-0')
+    : cn(leveTaskModalTabBadgeIdleClass, 'px-1.5 py-0');
 
 export const projectViewHeaderSyncBtnClass = cn(
-  'inline-flex min-h-[36px] items-center gap-1.5 px-3 py-1.5 font-sans text-xs font-medium',
-  'text-[var(--leve-header-accent)] transition-colors hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_10%,transparent)] disabled:opacity-50 sm:min-h-0'
+  'leve-neu-pill inline-flex min-h-9 items-center gap-1.5 px-3 py-1.5',
+  'font-sans text-xs font-semibold text-[var(--leve-header-accent)]',
+  'shadow-[var(--leve-neu-raised)] transition-[box-shadow,color]',
+  'hover:shadow-[var(--leve-neu-hover)] disabled:opacity-50 sm:min-h-0'
+);
+
+export const projectViewHeaderDangerBtnClass = cn(
+  'leve-neu-pill inline-flex min-h-9 items-center gap-1.5 px-3 py-1.5',
+  'font-sans text-xs font-semibold text-error',
+  'shadow-[var(--leve-neu-raised)] transition-[box-shadow,color]',
+  'hover:shadow-[var(--leve-neu-hover)] hover:text-error sm:min-h-0'
 );
 
 /** Cabeçalho QADashboardHeaderToolbar. */
-export const qaDashboardHeaderShellClass = cn(
-  'flex flex-col gap-4 border-b border-[var(--leve-header-border)] pb-4 font-sans sm:pb-5'
-);
+export const qaDashboardHeaderShellClass = cn('flex flex-col gap-4 font-sans sm:gap-5');
 
 export const qaDashboardHeaderTitleClass = cn(
   'font-sans text-2xl font-bold tracking-tight text-[var(--leve-header-text)] sm:text-[1.65rem]'
 );
 
 export const qaDashboardHeaderJiraBadgeClass = cn(
-  'inline-flex shrink-0 items-center rounded-[var(--project-dashboard-insight-inner-radius)] px-2.5 py-0.5',
-  'bg-[var(--leve-header-cream)] font-sans text-xs font-bold text-[var(--leve-header-accent)]'
+  'inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5',
+  'border border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]',
+  'bg-[color-mix(in_srgb,var(--leve-neu-dark)_5%,var(--leve-neu-bg))]',
+  'font-sans text-xs font-bold text-[var(--leve-header-accent)] shadow-[var(--leve-neu-inset)]'
 );
 
 export const qaDashboardHeaderSubtitleClass = cn(
@@ -222,8 +236,9 @@ export const qaDashboardHeaderMutedClass =
 
 export const qaDashboardHeaderActionBtnClass = cn(
   'leve-neu-pill inline-flex min-h-[44px] items-center gap-2 px-3 py-2',
-  'font-sans text-sm font-semibold text-[var(--leve-header-text)] transition-[box-shadow,color] sm:min-h-9',
-  'hover:text-[var(--leve-header-accent)] disabled:opacity-50'
+  'font-sans text-sm font-semibold text-[var(--leve-header-text)]',
+  'shadow-[var(--leve-neu-raised)] transition-[box-shadow,color] duration-200',
+  'hover:shadow-[var(--leve-neu-hover)] hover:text-[var(--leve-header-accent)] disabled:opacity-50 sm:min-h-9'
 );
 
 export const qaDashboardHeaderFilterChipClass = cn(
@@ -240,70 +255,115 @@ export const leveViewPageTitleClass = qaDashboardHeaderTitleClass;
 export const leveViewPageJiraBadgeClass = qaDashboardHeaderJiraBadgeClass;
 export const leveViewPageSubtitleClass = qaDashboardHeaderSubtitleClass;
 export const leveViewPageMutedClass = qaDashboardHeaderMutedClass;
-export const leveViewPageSectionDividerClass =
-  'mt-4 border-t border-[var(--leve-header-border)] pt-4';
+export const leveViewPageSectionDividerClass = 'mt-4 pt-3';
 
 export const leveViewPrimaryBtnClass = cn(
   'app-btn-primary-inline inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-full px-4 py-2',
-  'font-sans text-sm font-bold sm:min-h-9',
+  'font-sans text-sm font-bold shadow-[2px_2px_8px_color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] sm:min-h-9',
   'disabled:cursor-not-allowed disabled:opacity-50'
 );
 
 export const leveViewOutlineBtnClass = cn(
   qaDashboardHeaderActionBtnClass,
-  'rounded-full border-[color-mix(in_srgb,var(--leve-header-text)_30%,transparent)]'
+  'rounded-full border-0'
 );
 
 export const leveViewSecondaryToolbarClass = cn(
-  'leve-neu-surface-inset inline-flex items-stretch rounded-full'
+  'leve-neu-surface-inset inline-flex items-stretch gap-0.5 rounded-full p-1'
 );
 
 export const leveViewSecondaryToolbarDividerClass =
-  'my-1.5 w-px shrink-0 bg-[var(--leve-header-border)]';
+  'my-1.5 w-px shrink-0 self-stretch bg-[color-mix(in_srgb,var(--leve-neu-dark)_14%,transparent)]';
 
 export const leveViewSecondaryToolbarBtnClass = cn(
-  'inline-flex min-h-[36px] items-center gap-1.5 px-3 py-1.5 font-sans text-sm font-semibold transition-colors sm:min-h-0',
-  'text-[var(--leve-header-text-muted)] hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_8%,transparent)] hover:text-[var(--leve-header-text)]',
-  'disabled:opacity-50'
+  'inline-flex min-h-[36px] items-center gap-1.5 rounded-full px-3 py-1.5 font-sans text-sm font-semibold transition-[box-shadow,color] sm:min-h-0',
+  'text-[var(--leve-header-text-muted)] hover:text-[var(--leve-header-text)] disabled:opacity-50'
 );
 
 export const leveViewSecondaryToolbarBtnActiveClass = cn(
   leveViewSecondaryToolbarBtnClass,
-  'text-[var(--leve-header-accent)]'
+  'leve-neu-pill-active text-[var(--leve-header-accent)]'
 );
 
 export const leveViewModeTabsClass = cn(
-  'leve-neu-surface-inset inline-flex w-fit shrink-0 items-center rounded-full p-0.5'
+  'leve-neu-surface-inset inline-flex w-fit max-w-full shrink-0 flex-wrap items-center gap-1.5 rounded-full p-1.5'
 );
 
 export const leveViewModeTabActiveClass = cn(
-  'inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-sans text-xs font-semibold text-white',
-  'bg-[var(--leve-header-accent)] shadow-[2px_2px_6px_var(--leve-neu-dark),-1px_-1px_4px_var(--leve-neu-light)] transition-all duration-150 disabled:opacity-50'
+  'inline-flex min-h-[2rem] items-center gap-1.5 rounded-full px-3 py-1.5',
+  'font-sans text-xs font-semibold text-white shadow-[0_2px_8px_rgba(252,76,2,0.22)]',
+  'bg-[var(--leve-header-accent)] transition-colors disabled:opacity-50'
 );
 
 export const leveViewModeTabIdleClass = cn(
-  'inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-sans text-xs font-medium',
-  'text-[var(--leve-header-text-muted)] transition-all duration-150 hover:text-[var(--leve-header-text)] disabled:opacity-50'
+  'inline-flex min-h-[2rem] items-center gap-1.5 rounded-full px-3 py-1.5',
+  'font-sans text-xs font-medium text-[var(--leve-header-text-muted)] transition-colors',
+  'hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_8%,var(--leve-header-bg))] hover:text-[var(--leve-header-text)]',
+  'disabled:opacity-50'
 );
 
-export const leveViewModeCountActiveClass =
-  'rounded-full bg-white/25 px-1 py-0 font-sans text-[10px] font-bold tabular-nums leading-none';
+export const leveViewModeCountActiveClass = cn(
+  'inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full border px-1 py-0',
+  'border-[color-mix(in_srgb,white_55%,transparent)]',
+  '!bg-[color-mix(in_srgb,var(--leve-header-cream)_82%,white)]',
+  'font-sans text-[10px] font-bold tabular-nums leading-none',
+  '!text-[var(--leve-header-text)]',
+  'shadow-[2px_2px_6px_color-mix(in_srgb,black_28%,var(--leve-header-accent)),-1px_-1px_4px_color-mix(in_srgb,white_36%,var(--leve-header-accent))]'
+);
 
 export const leveViewModeCountIdleClass = cn(
-  'rounded-full px-1 py-0 font-sans text-[10px] font-bold tabular-nums leading-none',
-  'bg-[color-mix(in_srgb,var(--leve-header-text)_12%,transparent)] text-[var(--leve-header-text-muted)]'
+  'inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full border-0 px-1 py-0',
+  'bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))]',
+  'font-sans text-[10px] font-bold tabular-nums leading-none',
+  'text-[var(--leve-header-text-muted)] shadow-[var(--leve-neu-inset)]'
 );
 
 export const leveViewSearchLabelClass =
   'mb-2 block font-sans text-sm font-medium text-[var(--leve-header-text-muted)]';
 
 export const leveViewSearchInputClass = cn(
-  'app-input h-11 w-full rounded-full border-0 py-2 pl-10 pr-10 font-sans text-sm sm:h-10',
-  'text-[var(--leve-header-text)] placeholder:text-[var(--leve-header-text-muted)]'
+  'app-input h-11 w-full rounded-full border-0 py-2 pl-10 pr-10 font-sans text-sm shadow-[var(--leve-neu-inset)] sm:h-10',
+  'text-[var(--leve-header-text)] placeholder:text-[var(--leve-header-text-muted)]',
+  'focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_28%,transparent)]'
+);
+
+export const leveViewSearchClearBtnClass = cn(
+  'absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full',
+  'border border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]',
+  'bg-[var(--leve-neu-surface)] text-[var(--leve-header-text-muted)] shadow-[var(--leve-neu-raised)]',
+  'transition-[box-shadow,color] hover:text-[var(--leve-header-accent)] hover:shadow-[var(--leve-neu-hover)]'
 );
 
 export const leveViewSearchHintClass =
   'mt-1.5 font-sans text-xs text-[var(--leve-header-text-muted)]';
+
+/** Modal Exportar Dados — formato e ações. */
+export const leveExportModalContentClass = 'space-y-4 p-1 font-sans';
+
+export const leveExportModalInfoClass = 'text-sm text-[var(--leve-header-text-muted)]';
+
+export const leveExportModalFieldLabelClass =
+  'mb-2 block font-sans text-sm font-semibold text-[var(--leve-header-text)]';
+
+export const leveExportFormatStripClass = cn(
+  'leve-neu-surface-inset grid gap-1 rounded-[var(--leve-header-radius)] p-1.5',
+  'grid-cols-2 sm:grid-cols-3'
+);
+
+export const leveExportFormatOptionClass = (active: boolean) =>
+  cn(
+    'min-h-[44px] rounded-full px-3 py-2 text-center font-sans text-sm font-semibold transition-[box-shadow,color] sm:min-h-9',
+    active
+      ? 'bg-[var(--leve-header-accent)] text-white shadow-[0_2px_8px_rgba(252,76,2,0.22)]'
+      : 'text-[var(--leve-header-text-muted)] hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_8%,var(--leve-neu-bg))] hover:text-[var(--leve-header-text)]'
+  );
+
+export const leveExportModalHintClass = 'text-xs text-[var(--leve-header-text-muted)]';
+
+export const leveExportModalSubmitClass = cn(
+  leveViewPrimaryBtnClass,
+  'inline-flex w-full min-h-[44px] items-center justify-center gap-2 sm:min-h-10'
+);
 
 export const leveViewFiltersBarClass = cn(
   'leve-neu-surface-inset flex flex-col gap-3 p-3 font-sans sm:flex-row sm:flex-wrap sm:items-end lg:gap-4'
@@ -549,12 +609,21 @@ export const leveTaskModalTabClass = (active: boolean) =>
         'hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_8%,var(--leve-header-bg))] hover:text-[var(--leve-header-text)]'
       );
 
-export const leveTaskModalTabBadgeActiveClass =
-  'border-0 bg-white/25 font-sans text-[10px] font-bold text-white';
+/** Contador na aba ativa (laranja) — relevo neumórfico + texto legível. */
+export const leveTaskModalTabBadgeActiveClass = cn(
+  'min-h-[1.125rem] min-w-[1.125rem] justify-center rounded-full border',
+  'border-[color-mix(in_srgb,white_55%,transparent)]',
+  '!bg-[color-mix(in_srgb,var(--leve-header-cream)_82%,white)]',
+  'font-sans text-[10px] font-bold tabular-nums leading-none',
+  '!text-[var(--leve-header-text)]',
+  'shadow-[2px_2px_6px_color-mix(in_srgb,black_28%,var(--leve-header-accent)),-1px_-1px_4px_color-mix(in_srgb,white_36%,var(--leve-header-accent))]'
+);
 
 export const leveTaskModalTabBadgeIdleClass = cn(
-  'border border-[var(--leve-header-border)] bg-[var(--leve-header-cream)] font-sans text-[10px] font-bold',
-  'text-[var(--leve-header-text-muted)]'
+  'min-h-[1.125rem] min-w-[1.125rem] justify-center rounded-full border-0',
+  'bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))]',
+  'font-sans text-[10px] font-bold tabular-nums leading-none',
+  'text-[var(--leve-header-text-muted)] shadow-[var(--leve-neu-inset)]'
 );
 
 export const leveTaskModalFieldLabelClass = workspacePanelSectionTitleClass;
@@ -630,6 +699,44 @@ export const leveTaskModalCategoryBadgeClass = cn(
   'font-sans text-[10px] font-semibold text-[var(--leve-header-accent)]'
 );
 
+/** Botões — modal / detalhe expandido da tarefa (neumorfismo Leve). */
+export const leveTaskModalGhostBtnClass = cn(
+  leveViewOutlineBtnClass,
+  'min-h-[44px] rounded-full border-0 shadow-[var(--leve-neu-raised)]',
+  'hover:shadow-[var(--leve-neu-hover)] hover:text-[var(--leve-header-accent)] sm:min-h-9'
+);
+
+export const leveTaskModalPrimaryBtnClass = cn(
+  leveViewPrimaryBtnClass,
+  'shadow-[2px_2px_8px_color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)]'
+);
+
+export const leveTaskModalSecondaryBtnClass = cn(
+  'leve-neu-pill inline-flex min-h-[44px] cursor-pointer items-center gap-2 px-3 py-2',
+  'font-sans text-sm font-semibold text-[var(--leve-header-text)]',
+  'shadow-[var(--leve-neu-raised)] transition-[box-shadow,color]',
+  'hover:shadow-[var(--leve-neu-hover)] hover:text-[var(--leve-header-accent)]',
+  'disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-9'
+);
+
+export const leveTaskModalInfoActionBtnClass = cn(
+  leveTaskModalSecondaryBtnClass,
+  'text-[color-mix(in_srgb,#0284c7_88%,var(--leve-header-text))]'
+);
+
+export const leveTaskModalSuccessActionBtnClass = cn(
+  leveTaskModalSecondaryBtnClass,
+  'text-[color-mix(in_srgb,#16a34a_88%,var(--leve-header-text))]'
+);
+
+export const leveTaskModalIconBtnClass = cn(
+  'inline-flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-full',
+  'border border-[color-mix(in_srgb,var(--leve-neu-light)_40%,transparent)]',
+  'bg-[var(--leve-neu-surface)] text-[var(--leve-header-text-muted)] shadow-[var(--leve-neu-raised)]',
+  'transition-[box-shadow,color] hover:text-[var(--leve-header-accent)] hover:shadow-[var(--leve-neu-hover)]',
+  'sm:min-h-9 sm:min-w-9'
+);
+
 /** Faixa WorkspaceDaisyStats — fundo claro, valores em laranja Leve. */
 export const workspaceDaisyStatCardClass = cn(
   'projects-dash-stat-card flex min-h-[4rem] flex-col items-center justify-center gap-1.5 font-sans text-center',
@@ -659,8 +766,14 @@ export function formatWorkspaceStatCount(value: number): string {
   return value.toLocaleString('pt-BR');
 }
 
-/** Cards GlassIndicatorCards / KPI compactos — mesmo visual da faixa WorkspaceDaisyStats. */
-export const glassIndicatorCardClass = workspaceDaisyStatCardClass;
+/** Cards GlassIndicatorCards / KPI — relevo neumórfico (Tarefas, dashboard). */
+export const glassIndicatorCardClass = cn(
+  'flex min-h-[4rem] flex-col items-center justify-center gap-1.5 rounded-[var(--leve-header-radius)] font-sans text-center',
+  'border border-[color-mix(in_srgb,var(--leve-neu-light)_38%,transparent)]',
+  'bg-[color-mix(in_srgb,var(--leve-neu-dark)_5%,var(--leve-neu-bg))]',
+  'px-3 py-3 shadow-[var(--leve-neu-raised)] transition-[box-shadow] duration-200',
+  'hover:shadow-[var(--leve-neu-hover)] sm:min-h-[4.25rem] sm:px-4 sm:py-3.5'
+);
 
 export const glassIndicatorLabelClass = workspaceDaisyStatLabelClass;
 
@@ -681,9 +794,11 @@ export const glassIndicatorIconMutedClass =
 
 /** Badge percentual / tendência (laranja). */
 export const glassIndicatorBadgeClass = cn(
-  'inline-flex items-center justify-center rounded-[var(--workspace-panel-inner-radius)] px-1.5 py-0.5',
-  'bg-[color-mix(in_srgb,var(--workspace-stat-accent)_12%,transparent)]',
-  'font-sans text-[10px] font-bold tabular-nums text-[var(--workspace-stat-accent)]'
+  'inline-flex items-center justify-center rounded-full px-1.5 py-0.5',
+  'border border-[color-mix(in_srgb,var(--leve-neu-light)_30%,transparent)]',
+  'bg-[color-mix(in_srgb,var(--leve-neu-dark)_6%,var(--leve-neu-bg))]',
+  'font-sans text-[10px] font-bold tabular-nums text-[var(--leve-header-accent)]',
+  'shadow-[var(--leve-neu-inset)]'
 );
 
 /** Cards compactos da faixa superior (legado / outros usos). */
@@ -692,7 +807,7 @@ export const workspaceStatCardClass = cn(
 );
 
 export const workspaceStatLabelClass =
-  'text-[9px] font-bold uppercase tracking-wider text-[var(--brand-text-muted)] sm:text-[10px]';
+  'text-[9px] font-bold uppercase tracking-wider text-[var(--leve-header-text-muted)] sm:text-[10px]';
 
 export const workspaceStatValueClass =
   'font-heading text-lg font-bold tabular-nums leading-none sm:text-xl';
@@ -706,10 +821,10 @@ export const dashboardInsightHeaderClass =
   'mb-3 space-y-0.5 border-b border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pb-2.5';
 
 export const dashboardInsightTitleClass =
-  'font-heading text-sm font-semibold tracking-tight text-[var(--brand-text-strong)]';
+  'font-heading text-sm font-semibold tracking-tight text-[var(--leve-header-text)]';
 
 export const dashboardInsightSubtitleClass =
-  'text-[11px] leading-snug text-[var(--brand-text-muted)]';
+  'text-[11px] leading-snug text-[var(--leve-header-text-muted)]';
 
 /** Cards da grade ProjectDashboard (QADashboard) — identidade Leve creme + roxo + laranja. */
 export const projectDashboardInsightCardClass = cn(

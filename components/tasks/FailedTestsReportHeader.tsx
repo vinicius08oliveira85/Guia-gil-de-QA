@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '../../utils/cn';
+import { taskNeuDividerClass } from './taskActionLayout';
 import { StatsSummary } from './StatsSummary';
 
 interface FailedTestsReportHeaderProps {
@@ -29,7 +30,7 @@ export const FailedTestsReportHeader: React.FC<FailedTestsReportHeaderProps> = (
   canSelectAll,
 }) => {
   return (
-    <div className="sticky top-0 z-10 mica !rounded-none border-b border-base-300/70 px-md py-sm">
+    <div className={cn('mica sticky top-0 z-10 !rounded-none border-b px-md py-sm', taskNeuDividerClass)}>
       <div className="flex items-center justify-between gap-md flex-wrap">
         <StatsSummary
           totalTests={totalTests}

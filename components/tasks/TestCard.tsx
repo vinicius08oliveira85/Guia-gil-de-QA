@@ -3,7 +3,14 @@ import { TestCase, JiraTask } from '../../types';
 import { getPriorityVariant } from '../../utils/taskHelpers';
 import { Badge } from '../common/Badge';
 import { cn } from '../../utils/cn';
-import { taskChipSurfaceClass, taskPanelBorderClass } from './taskActionLayout';
+import {
+  taskCardIdleSurfaceClass,
+  taskCardSelectedSurfaceClass,
+  taskChipSurfaceClass,
+  taskMonoInsetClass,
+  taskNeuDividerClass,
+  taskPanelBorderClass,
+} from './taskActionLayout';
 
 interface TestCardProps {
   testCase: TestCase;
@@ -43,7 +50,7 @@ export const TestCard: React.FC<TestCardProps> = ({
       case 'Baixa':
         return 'bg-success';
       default:
-        return 'bg-[var(--brand-text-muted)]';
+        return 'bg-[var(--leve-header-text-muted)]';
     }
   };
 
@@ -53,11 +60,8 @@ export const TestCard: React.FC<TestCardProps> = ({
         'group relative cursor-pointer border transition-all duration-200',
         taskPanelBorderClass,
         isSelected
-          ? 'border-[var(--color-primary)] bg-[color-mix(in_srgb,var(--color-primary)_10%,var(--brand-surface))] shadow-md ring-2 ring-[color-mix(in_srgb,var(--color-primary)_22%,transparent)]'
-          : cn(
-              'bg-[var(--brand-surface-strong)] hover:border-[color-mix(in_srgb,var(--color-primary)_40%,var(--brand-surface-border))] hover:shadow-sm',
-              taskChipSurfaceClass
-            )
+          ? taskCardSelectedSurfaceClass
+          : cn(taskCardIdleSurfaceClass, taskChipSurfaceClass)
       )}
       onClick={e => {
         // Se clicar no checkbox ou botão de expandir, não toggle o card
@@ -151,13 +155,13 @@ export const TestCard: React.FC<TestCardProps> = ({
 
             {/* Detalhes expandidos */}
             {isExpanded && (
-              <div className="mt-sm pt-sm border-t border-base-300 space-y-xs">
+              <div className={cn('mt-sm space-y-xs border-t pt-sm', taskNeuDividerClass)}>
                 {testCase.observedResult && (
                   <div>
                     <p className="text-xs font-semibold text-base-content/70 mb-xs">
                       Resultado Obtido:
                     </p>
-                    <p className="text-xs text-base-content/80 font-mono bg-base-200 p-xs rounded">
+                    <p className={taskMonoInsetClass}>
                       {testCase.observedResult}
                     </p>
                   </div>
@@ -168,7 +172,7 @@ export const TestCard: React.FC<TestCardProps> = ({
                     <p className="text-xs font-semibold text-base-content/70 mb-xs">
                       Parâmetros necessários:
                     </p>
-                    <p className="text-xs text-base-content/80 font-mono bg-base-200 p-xs rounded whitespace-pre-wrap">
+                    <p className={cn(taskMonoInsetClass, 'whitespace-pre-wrap')}>
                       {testCase.parameters}
                     </p>
                   </div>
@@ -179,7 +183,7 @@ export const TestCard: React.FC<TestCardProps> = ({
                     <p className="text-xs font-semibold text-base-content/70 mb-xs">
                       Resultado esperado:
                     </p>
-                    <p className="text-xs text-base-content/80 font-mono bg-base-200 p-xs rounded whitespace-pre-wrap break-words">
+                    <p className={cn(taskMonoInsetClass, 'whitespace-pre-wrap break-words')}>
                       {testCase.expectedResult}
                     </p>
                   </div>

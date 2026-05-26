@@ -3,6 +3,8 @@ import { Phase } from '../../types';
 import { timelineData } from '../../utils/projectPhases';
 import { cn } from '../../utils/cn';
 import { filterPillClass, primaryActionBtn, projectViewCard } from '../common/viewUi';
+import { trailPanelClass, trailTileClass } from './trailNeuUi';
+import { neuSurfaceClass } from '../common/neuUi';
 
 type PhaseDisplayStatus = 'completed' | 'current' | 'upcoming';
 
@@ -19,7 +21,8 @@ const phaseButtonStyles: Record<PhaseDisplayStatus, string> = {
   completed: 'border-emerald-200 bg-emerald-50 text-emerald-900 hover:bg-emerald-100',
   current:
     'border-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] bg-[color-mix(in_srgb,var(--brand-cta)_10%,transparent)] text-base-content hover:bg-[color-mix(in_srgb,var(--brand-cta)_16%,transparent)]',
-  upcoming: 'border-base-300 bg-base-100 text-base-content/80 hover:bg-base-200',
+  upcoming:
+    'leve-neu-surface text-base-content/80 hover:shadow-[var(--leve-neu-hover)] border-0',
 };
 
 const statusBadgeStyles: Record<PhaseDisplayStatus, string> = {
@@ -107,7 +110,7 @@ export const SDLCPhasesCard: React.FC<SDLCPhasesCardProps> = ({
       </header>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-        <div className="rounded-2xl border border-base-300 bg-base-200 p-4">
+        <div className={trailTileClass}>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-base-content/60">
             Concluídas
           </p>
@@ -116,14 +119,14 @@ export const SDLCPhasesCard: React.FC<SDLCPhasesCardProps> = ({
             Fases já entregues com critérios atendidos
           </p>
         </div>
-        <div className="rounded-2xl border border-base-300 bg-base-200 p-4">
+        <div className={trailTileClass}>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-base-content/60">
             Em execução
           </p>
           <p className="mt-2 text-2xl font-semibold text-primary">{summary.current}</p>
           <p className="mt-1 text-xs text-base-content/70">Fases ativas para {versionLabel}</p>
         </div>
-        <div className="rounded-2xl border border-base-300 bg-base-200 p-4">
+        <div className={trailTileClass}>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-base-content/60">
             Planejadas
           </p>
@@ -158,7 +161,7 @@ export const SDLCPhasesCard: React.FC<SDLCPhasesCardProps> = ({
       </div>
 
       {expandedPhase && selectedDetails && (
-        <div className="space-y-4 rounded-2xl border border-base-300 bg-base-200 p-5">
+        <div className={cn(trailPanelClass, 'space-y-4')}>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.35em] text-base-content/60">
@@ -175,13 +178,13 @@ export const SDLCPhasesCard: React.FC<SDLCPhasesCardProps> = ({
           </div>
 
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <div className="rounded-xl border border-base-300 bg-base-100 p-4">
+            <div className={cn(neuSurfaceClass, 'rounded-xl p-4')}>
               <p className="text-xs font-semibold uppercase tracking-[0.35em] text-base-content/60">
                 Dependências
               </p>
               <p className="mt-1 text-sm text-base-content">{selectedDetails.dependencies}</p>
             </div>
-            <div className="rounded-xl border border-base-300 bg-base-100 p-4">
+            <div className={cn(neuSurfaceClass, 'rounded-xl p-4')}>
               <p className="text-xs font-semibold uppercase tracking-[0.35em] text-base-content/60">
                 Marco
               </p>
@@ -189,7 +192,7 @@ export const SDLCPhasesCard: React.FC<SDLCPhasesCardProps> = ({
             </div>
           </div>
 
-          <div className="rounded-xl border border-base-300 bg-base-100 p-4">
+          <div className={cn(neuSurfaceClass, 'rounded-xl p-4')}>
             <p className="mb-2 text-xs font-semibold uppercase tracking-[0.35em] text-base-content/60">
               Checklist-chave
             </p>

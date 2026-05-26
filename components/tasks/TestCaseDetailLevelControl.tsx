@@ -1,6 +1,12 @@
 import React from 'react';
 import type { TestCaseDetailLevel } from '../../types';
 import { cn } from '../../utils/cn';
+import { leveTaskModalFieldLabelClass, leveTaskModalMutedXsClass } from '../common/projectCardUi';
+import {
+  taskSegmentedControlClass,
+  taskSegmentedOptionActiveClass,
+  taskSegmentedOptionIdleClass,
+} from './taskActionLayout';
 
 export type TestCaseDetailLevelControlProps = {
   /** Prefixo estável para ids acessíveis (ex.: id da tarefa). */
@@ -35,13 +41,11 @@ export const TestCaseDetailLevelControl: React.FC<TestCaseDetailLevelControlProp
     >
       <legend
         id={`${groupId}-legend`}
-        className="text-sm font-medium text-base-content/70 mb-1.5 block px-0.5"
+        className={cn(leveTaskModalFieldLabelClass, 'mb-1.5 block px-0.5 normal-case')}
       >
         Nível de detalhe
       </legend>
-      <div
-        className="flex w-full gap-1 rounded-[var(--radius)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-200/40 p-1"
-        role="radiogroup"
+      <div className={taskSegmentedControlClass} role="radiogroup"
         aria-labelledby={`${groupId}-legend`}
       >
         <button
@@ -53,10 +57,8 @@ export const TestCaseDetailLevelControl: React.FC<TestCaseDetailLevelControlProp
           disabled={disabled}
           onClick={() => onChange('Resumido')}
           className={cn(
-            'min-h-[44px] flex-1 rounded-[var(--radius)] px-2 py-2 text-center text-xs font-medium transition-colors sm:min-h-0 sm:px-3 sm:text-sm',
-            value === 'Resumido'
-              ? 'bg-primary text-primary-content soft-shadow'
-              : 'text-base-content/75 hover:bg-base-300/50 hover:text-base-content'
+            'min-h-[44px] sm:min-h-0',
+            value === 'Resumido' ? taskSegmentedOptionActiveClass : taskSegmentedOptionIdleClass
           )}
         >
           Resumido
@@ -70,16 +72,14 @@ export const TestCaseDetailLevelControl: React.FC<TestCaseDetailLevelControlProp
           disabled={disabled}
           onClick={() => onChange('Estruturado')}
           className={cn(
-            'min-h-[44px] flex-1 rounded-[var(--radius)] px-2 py-2 text-center text-xs font-medium transition-colors sm:min-h-0 sm:px-3 sm:text-sm',
-            value === 'Estruturado'
-              ? 'bg-primary text-primary-content soft-shadow'
-              : 'text-base-content/75 hover:bg-base-300/50 hover:text-base-content'
+            'min-h-[44px] sm:min-h-0',
+            value === 'Estruturado' ? taskSegmentedOptionActiveClass : taskSegmentedOptionIdleClass
           )}
         >
           Estruturado
         </button>
       </div>
-      <p id={`${groupId}-hint`} className="text-[11px] leading-snug text-base-content/55 px-0.5">
+      <p id={`${groupId}-hint`} className={cn(leveTaskModalMutedXsClass, 'px-0.5')}>
         Resumido: menos passos. Estruturado: roteiro completo e checagens intermediárias (passe o
         mouse nos botões para detalhes).
       </p>

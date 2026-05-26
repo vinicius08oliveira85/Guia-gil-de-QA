@@ -2,6 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChecklistItem } from '../../types';
 import { getChecklistProgress, canMoveToNextPhase } from '../../utils/checklistService';
 import { cn } from '../../utils/cn';
+import {
+  neuCardClass,
+  neuChecklistItemCheckedClass,
+  neuChecklistItemIdleClass,
+  neuHoverSubtleClass,
+  neuSurfaceInsetClass,
+  neuTrackClass,
+} from './neuUi';
 
 interface ChecklistViewProps {
   checklist: ChecklistItem[];
@@ -60,7 +68,7 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
   return (
     <div className="space-y-4">
       {showProgress && (
-        <div className="p-4 bg-base-100 border border-base-300 rounded-xl">
+        <div className={cn(neuCardClass, 'rounded-xl')}>
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-semibold text-base-content">Progresso</span>
             <span className="text-sm text-base-content/70">
@@ -68,7 +76,7 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
               {Math.round((progress.completed / progress.total) * 100)}%)
             </span>
           </div>
-          <div className="w-full bg-base-200 rounded-full h-2">
+          <div className={cn(neuTrackClass, 'h-2 w-full')}>
             <div
               className="bg-primary h-2 rounded-full transition-all"
               style={{ width: `${(progress.completed / progress.total) * 100}%` }}
@@ -118,16 +126,14 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
             key={item.id}
             className={cn(
               'group flex items-start gap-3 p-3 rounded-xl border transition-all duration-200',
-              item.checked
-                ? 'bg-base-100/50 border-base-200 opacity-75'
-                : 'bg-base-100 border-base-200 hover:border-primary/30 hover:shadow-sm hover:bg-base-100'
+              item.checked ? neuChecklistItemCheckedClass : neuChecklistItemIdleClass
             )}
           >
             <input
               type="checkbox"
               checked={item.checked}
               onChange={() => onToggleItem(item.id)}
-              className="checkbox checkbox-sm mt-0.5 rounded-md border-base-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary transition-all"
+              className="checkbox checkbox-sm mt-0.5 rounded-md border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] transition-all data-[state=checked]:border-primary data-[state=checked]:bg-primary"
             />
             <div className="flex-1">
               {editingItemId === item.id && onEditItem ? (
@@ -138,7 +144,7 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
                   onChange={e => setEditingText(e.target.value)}
                   onBlur={handleSaveEdit}
                   onKeyDown={handleKeyDown}
-                  className="input input-sm w-full bg-base-200"
+                  className={cn('input input-sm w-full', neuSurfaceInsetClass)}
                 />
               ) : (
                 <div className="flex items-center gap-2">
@@ -161,7 +167,7 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
                   <button
                     type="button"
                     onClick={() => handleStartEdit(item)}
-                    className="btn btn-ghost btn-xs btn-square rounded-lg hover:bg-base-200 text-base-content/60"
+                    className={cn('btn btn-ghost btn-xs btn-square rounded-lg text-base-content/60', neuHoverSubtleClass)}
                   >
                     ✏️
                   </button>

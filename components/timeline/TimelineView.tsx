@@ -16,6 +16,13 @@ import {
   projectViewShell,
 } from '../common/viewUi';
 import { cn } from '../../utils/cn';
+import {
+  timelineBorderClass,
+  timelineDividerClass,
+  timelineHoverClass,
+  timelineInsetClass,
+  timelineTrackClass,
+} from './timelineNeuUi';
 
 interface TimelinePhase {
   phase: PhaseName;
@@ -35,7 +42,10 @@ const Checkbox: React.FC<{ checked: boolean; description?: string }> = ({
 }) => (
   <Tooltip content={description || ''}>
     <div
-      className={`w-5 h-5 rounded border-2 ${checked ? 'bg-success border-success' : 'border-base-300'} flex items-center justify-center flex-shrink-0 cursor-help transition-all`}
+      className={cn(
+        'flex h-5 w-5 flex-shrink-0 cursor-help items-center justify-center rounded border-2 transition-all',
+        checked ? 'border-success bg-success' : timelineBorderClass
+      )}
     >
       {checked && (
         <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 14 11">
@@ -93,7 +103,12 @@ export const TimelineView: React.FC<{ project: Project; currentPhaseName: PhaseN
   return (
     <div className={cn(projectViewShell, 'pb-2')}>
       <section className={projectViewPanel}>
-        <header className="flex flex-col gap-4 border-b border-base-300/60 pb-4 sm:flex-row sm:items-start sm:justify-between">
+        <header
+          className={cn(
+            'flex flex-col gap-4 border-b pb-4 sm:flex-row sm:items-start sm:justify-between',
+            timelineDividerClass
+          )}
+        >
           <div className="min-w-0">
             <h2 className={pageTitleClass}>Timeline Completa do Projeto</h2>
             <p className={cn(pageSubtitleClass, 'mt-2')}>
@@ -137,7 +152,7 @@ export const TimelineView: React.FC<{ project: Project; currentPhaseName: PhaseN
         {viewMode === 'timeline' ? (
           /* Visualização Timeline */
           <div className="relative">
-            <div className="absolute left-8 top-0 bottom-0 w-1 bg-base-300"></div>
+            <div className={cn('absolute bottom-0 left-8 top-0 w-1', timelineTrackClass)}></div>
 
             <div className="space-y-8">
               {timelineData.map((phase, index) => {
@@ -252,7 +267,10 @@ export const TimelineView: React.FC<{ project: Project; currentPhaseName: PhaseN
                               return (
                                 <div
                                   key={idx}
-                                  className={`flex items-start gap-2 p-2 rounded ${checked ? 'bg-success/10' : 'bg-base-200'}`}
+                                  className={cn(
+                                    'flex items-start gap-2 rounded p-2',
+                                    checked ? 'bg-success/10' : timelineInsetClass
+                                  )}
                                 >
                                   <Checkbox checked={checked} description={item.description} />
                                   <span
@@ -268,7 +286,7 @@ export const TimelineView: React.FC<{ project: Project; currentPhaseName: PhaseN
 
                         {/* Informações expandidas */}
                         {isExpanded && (
-                          <div className="mt-4 pt-4 border-t border-base-300 space-y-4">
+                          <div className={cn('mt-4 space-y-4 border-t pt-4', timelineDividerClass)}>
                             {phase.qaActivities && (
                               <div>
                                 <h5 className="text-sm font-semibold text-base-content/70 mb-2">
@@ -345,7 +363,7 @@ export const TimelineView: React.FC<{ project: Project; currentPhaseName: PhaseN
           /* Visualização Tabela */
           <div className="overflow-x-auto scrollbar-hide">
             <table className="w-full min-w-[1000px] text-left text-sm">
-              <thead className="border-b-2 border-base-300 text-base-content/70">
+              <thead className={cn('border-b-2 text-base-content/70', timelineDividerClass)}>
                 <tr>
                   <th className="p-3 w-1/12">Fase</th>
                   <th className="p-3 w-1/12">Status</th>
@@ -364,7 +382,12 @@ export const TimelineView: React.FC<{ project: Project; currentPhaseName: PhaseN
                   return (
                     <tr
                       key={phase.phase}
-                      className={`${isCurrent ? 'bg-primary/10' : ''} ${isDone ? 'opacity-60' : ''} transition-colors hover:bg-base-200 cursor-pointer`}
+                      className={cn(
+                        'cursor-pointer transition-colors',
+                        isCurrent && 'bg-primary/10',
+                        isDone && 'opacity-60',
+                        timelineHoverClass
+                      )}
                       onClick={() => setSelectedPhase(phase)}
                     >
                       <td
@@ -491,7 +514,12 @@ export const TimelineView: React.FC<{ project: Project; currentPhaseName: PhaseN
                   return (
                     <div
                       key={idx}
-                      className={`p-3 rounded-lg ${checked ? 'bg-success/10 border border-success/30' : 'bg-base-200 border border-base-300'}`}
+                      className={cn(
+                        'rounded-lg p-3',
+                        checked
+                          ? 'border border-success/30 bg-success/10'
+                          : cn('border', timelineInsetClass, timelineBorderClass)
+                      )}
                     >
                       <div className="flex items-start gap-2">
                         <Checkbox checked={checked} description={item.description} />

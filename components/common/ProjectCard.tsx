@@ -9,7 +9,6 @@ import { calculateProjectMetrics } from '../../hooks/useProjectMetrics';
 import { getTaskStatusCategory } from '../../utils/jiraStatusCategorizer';
 import { computePhaseCompletionPercent } from '../../utils/workspaceAnalytics';
 import { getProjectIconMeta } from '../../utils/projectIcon';
-import { contextBadgeClass } from './viewUi';
 import {
   projectCardAccentBarClass,
   projectCardChipClass,
@@ -188,12 +187,16 @@ export const ProjectCard = React.memo<ProjectCardProps>(
             <div
               className={cn(
                 projectCardChipClass,
-                'inline-flex items-center gap-1 px-2.5 py-1',
-                'text-[11px] font-bold tabular-nums text-error'
+                'inline-flex items-center gap-1 px-2.5 py-1'
               )}
             >
-              <Bug className="h-3 w-3 shrink-0" aria-hidden />
-              {openBugsCount}
+              <Bug
+                className="h-3 w-3 shrink-0 text-[color-mix(in_srgb,#f87171_88%,var(--project-card-accent))]"
+                aria-hidden
+              />
+              <span className="text-[11px] font-bold tabular-nums text-[color-mix(in_srgb,#fca5a5_92%,var(--project-card-text))]">
+                {openBugsCount}
+              </span>
             </div>
           ) : null}
         </div>
@@ -205,9 +208,9 @@ export const ProjectCard = React.memo<ProjectCardProps>(
           {jiraKey ? (
             <span
               className={cn(
-                contextBadgeClass,
                 projectCardChipClass,
-                'inline-flex items-center gap-1.5 px-2 py-0.5 text-[var(--project-card-text-muted)]'
+                'inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium',
+                'text-[color-mix(in_srgb,var(--project-card-text)_90%,transparent)]'
               )}
             >
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--project-card-accent)]" aria-hidden />

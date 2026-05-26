@@ -2,6 +2,7 @@ import React, { type RefObject } from 'react';
 import { Search, X } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import {
+  leveViewSearchClearBtnClass,
   leveViewSearchHintClass,
   leveViewSearchInputClass,
   leveViewSearchLabelClass,
@@ -48,7 +49,7 @@ export const TasksViewSearch: React.FC<TasksViewSearchProps> = ({
         <button
           type="button"
           onClick={() => onSearchChange('')}
-          className="win-icon-button absolute right-2 top-1/2 h-8 w-8 -translate-y-1/2 text-[var(--leve-header-text-muted)] hover:text-[var(--leve-header-accent)]"
+          className={leveViewSearchClearBtnClass}
           aria-label="Limpar busca"
         >
           <X className="h-4 w-4" aria-hidden />

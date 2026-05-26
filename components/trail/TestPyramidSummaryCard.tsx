@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Project, TestPyramidLevel } from '../../types';
 import { cn } from '../../utils/cn';
 import { projectViewCard } from '../common/viewUi';
+import { trailTileClass } from './trailNeuUi';
 
 interface TestPyramidSummaryCardProps {
   project: Project;
@@ -43,7 +44,10 @@ export const TestPyramidSummaryCard: React.FC<TestPyramidSummaryCardProps> = ({
                 <div
                   key={level}
                   style={{ width: `${widthPercentage}%` }}
-                  className="mx-auto mb-1 rounded-t-md border border-base-300 bg-base-200 px-3 py-2 text-center text-sm font-semibold text-base-content shadow-sm"
+                  className={cn(
+                    trailTileClass,
+                    'mx-auto mb-1 rounded-t-md px-3 py-2 text-center text-sm font-semibold'
+                  )}
                 >
                   {level}
                   {levelData?.effort && (
@@ -75,7 +79,7 @@ export const TestPyramidSummaryCard: React.FC<TestPyramidSummaryCardProps> = ({
               return (
                 <div
                   key={level}
-                  className="min-w-0 rounded-2xl border border-base-300 bg-base-200 p-4"
+                  className={cn(trailTileClass, 'min-w-0')}
                 >
                   <div className="flex items-center justify-between">
                     <p className="break-words text-sm font-semibold text-base-content">
@@ -105,7 +109,7 @@ export const TestPyramidSummaryCard: React.FC<TestPyramidSummaryCardProps> = ({
               );
             })
           ) : (
-            <div className="rounded-2xl border border-base-300 bg-base-200 p-6 text-center text-sm text-base-content/70 break-words">
+            <div className={cn(trailTileClass, 'break-words p-6 text-center text-sm text-base-content/70')}>
               <p>
                 Sem análise disponível. Gere recomendações de IA para visualizar a pirâmide de
                 testes.

@@ -106,7 +106,7 @@ export const ShiftLeftCard: React.FC<{ project: Project }> = ({ project }) => {
                 )}
               </div>
             ) : (
-              <div className="flex items-center justify-center h-20 rounded-lg bg-base-200/60">
+              <div className="leve-neu-surface-inset flex h-20 items-center justify-center rounded-lg">
                 <p className="text-base-content/50 text-xs">Análise da IA pendente...</p>
               </div>
             )}

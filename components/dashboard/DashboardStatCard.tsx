@@ -19,20 +19,20 @@ interface DashboardStatCardProps {
 
 const TONE_STYLES: Record<DashboardStatTone, { card: string; iconWrap: string }> = {
   info: {
-    card: 'border-[color-mix(in_srgb,var(--brand-highlight)_22%,transparent)] bg-[color-mix(in_srgb,var(--brand-highlight)_7%,var(--brand-surface-strong))]',
+    card: 'border-[color-mix(in_srgb,var(--brand-highlight)_22%,transparent)] bg-[color-mix(in_srgb,var(--brand-highlight)_7%,var(--leve-neu-bg))]',
     iconWrap:
       'bg-[color-mix(in_srgb,var(--brand-highlight)_14%,transparent)] text-[var(--brand-highlight)] ring-[color-mix(in_srgb,var(--brand-highlight)_20%,transparent)]',
   },
   success: {
-    card: 'border-[color-mix(in_srgb,#10b981_22%,transparent)] bg-[color-mix(in_srgb,#10b981_8%,var(--brand-surface-strong))]',
+    card: 'border-[color-mix(in_srgb,#10b981_22%,transparent)] bg-[color-mix(in_srgb,#10b981_8%,var(--leve-neu-bg))]',
     iconWrap: 'bg-[color-mix(in_srgb,#10b981_16%,transparent)] text-success ring-success/20',
   },
   warning: {
-    card: 'border-[color-mix(in_srgb,#ef4444_20%,transparent)] bg-[color-mix(in_srgb,#ef4444_6%,var(--brand-surface-strong))]',
+    card: 'border-[color-mix(in_srgb,#ef4444_20%,transparent)] bg-[color-mix(in_srgb,#ef4444_6%,var(--leve-neu-bg))]',
     iconWrap: 'bg-error/12 text-error ring-error/20',
   },
   accent: {
-    card: 'border-[color-mix(in_srgb,var(--brand-cta)_25%,transparent)] bg-[color-mix(in_srgb,var(--brand-cta)_8%,var(--brand-surface-strong))]',
+    card: 'border-[color-mix(in_srgb,var(--brand-cta)_25%,transparent)] bg-[color-mix(in_srgb,var(--brand-cta)_8%,var(--leve-neu-bg))]',
     iconWrap:
       'bg-[color-mix(in_srgb,var(--brand-cta)_14%,transparent)] text-[var(--brand-cta)] ring-[color-mix(in_srgb,var(--brand-cta)_22%,transparent)]',
   },
@@ -54,7 +54,7 @@ export const DashboardStatCard = React.memo<DashboardStatCardProps>(
         ? 'text-success'
         : trend === 'down'
           ? 'text-error'
-          : 'text-[var(--brand-text-muted)]';
+          : 'text-[var(--leve-header-text-muted)]';
 
     const isClickable = !!onClick;
     const toneStyle = TONE_STYLES[tone];
@@ -80,7 +80,7 @@ export const DashboardStatCard = React.memo<DashboardStatCardProps>(
           dashboardKpiCardBaseClass,
           toneStyle.card,
           isClickable &&
-            'cursor-pointer hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--brand-cta)_32%,transparent)] hover:shadow-[0_12px_28px_-14px_var(--brand-surface-shadow)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] motion-reduce:hover:translate-y-0',
+            'cursor-pointer hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--brand-cta)_32%,transparent)] hover:shadow-[var(--leve-neu-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] motion-reduce:hover:translate-y-0',
           className
         )}
       >
@@ -94,11 +94,11 @@ export const DashboardStatCard = React.memo<DashboardStatCardProps>(
           <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--brand-text-muted)] sm:text-[11px]">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--leve-header-text-muted)] sm:text-[11px]">
             {title}
           </p>
           <div className="mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-0">
-            <span className="font-heading text-xl font-bold tabular-nums text-[var(--brand-text-strong)] sm:text-2xl">
+            <span className="font-heading text-xl font-bold tabular-nums text-[var(--leve-header-text)] sm:text-2xl">
               {value}
             </span>
             {changePercent != null && (

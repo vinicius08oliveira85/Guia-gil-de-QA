@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Card } from '../common/Card';
 import { cn } from '../../utils/cn';
+import { dashboardProgressTrackClass } from './dashboardNeuUi';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -65,7 +66,7 @@ export const BarChartWidget: React.FC<BarChartWidgetProps> = ({
                 {rawData[index].value}
               </span>
             </div>
-            <div className="mt-1 h-2 overflow-hidden rounded-full bg-base-200">
+            <div className={dashboardProgressTrackClass}>
               <div
                 className={cn(
                   `h-2 rounded-full ${item.color}`,

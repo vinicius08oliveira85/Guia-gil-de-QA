@@ -12,6 +12,8 @@ import {
   taskCardBadgePillTypography,
   taskCardButtonShape,
   taskCardButtonTypography,
+  taskMenuItemClass,
+  taskTypeDefaultStripeClass,
 } from './taskActionLayout';
 
 type JiraStatusEntry = { name: string; color?: string } | string;
@@ -29,7 +31,7 @@ interface TaskJiraStatusDropdownProps {
 }
 
 const FALLBACK_STATUS_OPTIONS = [
-  { label: 'A Fazer', value: 'To Do', colorClassName: 'bg-base-content/35' },
+  { label: 'A Fazer', value: 'To Do', colorClassName: taskTypeDefaultStripeClass },
   { label: 'Em Andamento', value: 'In Progress', colorClassName: 'bg-info' },
   { label: 'Concluído', value: 'Done', colorClassName: 'bg-success' },
 ] as const;
@@ -148,10 +150,7 @@ export const TaskJiraStatusDropdown: React.FC<TaskJiraStatusDropdownProps> = ({
               onSelectStatus(statusName);
               setIsOpen(false);
             }}
-            className={cn(
-              'flex w-full items-center gap-2 px-3 py-2 text-left font-sans text-sm tracking-[var(--letter-spacing)] transition-colors hover:bg-base-200',
-              isSelected && 'bg-base-200 font-semibold text-[var(--brand-text-strong)]'
-            )}
+            className={cn(taskMenuItemClass, isSelected && 'app-menu-item-active')}
             style={
               isSelected
                 ? {
@@ -164,7 +163,7 @@ export const TaskJiraStatusDropdown: React.FC<TaskJiraStatusDropdownProps> = ({
               className="h-3 w-3 shrink-0 rounded-full"
               style={{ backgroundColor: statusColor || 'oklch(var(--b3))' }}
             />
-            <span className="text-[var(--brand-text-strong)]">{statusName}</span>
+            <span className="text-[var(--leve-header-text)]">{statusName}</span>
           </button>
         );
       });
@@ -179,7 +178,7 @@ export const TaskJiraStatusDropdown: React.FC<TaskJiraStatusDropdownProps> = ({
           onSelectStatus(option.value);
           setIsOpen(false);
         }}
-        className="flex w-full items-center gap-2 px-3 py-2 text-left font-sans text-sm tracking-[var(--letter-spacing)] text-[var(--brand-text-strong)] transition-colors hover:bg-base-200"
+        className={taskMenuItemClass}
       >
         <div className={cn('h-3 w-3 shrink-0 rounded-full', option.colorClassName)} />
         <span>{option.label}</span>

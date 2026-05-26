@@ -3,6 +3,7 @@ import { ProjectFullAnalysis } from '../../types';
 import { Modal } from '../common/Modal';
 import { Sparkles, Printer, Copy } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { dashboardHoverCardClass, dashboardPanelClass } from './dashboardNeuUi';
 import toast from 'react-hot-toast';
 
 const SUMMARY_SNIPPET_LENGTH = 120;
@@ -52,7 +53,7 @@ export const ProjectAnalysesBoard: React.FC<ProjectAnalysesBoardProps> = ({
       </h2>
 
       {analyses.length === 0 ? (
-        <div className="bg-base-100 rounded-xl border border-base-300 p-6 text-center space-y-4">
+        <div className={cn(dashboardPanelClass, 'text-center')}>
           <p className="text-base-content/70 text-sm">
             Nenhuma análise completa do projeto ainda. Você pode gerar a análise ampla (documentos,
             tarefas, testes e indicadores) ou começar só pela estratégia de QA com Gemini (Shift
@@ -93,7 +94,8 @@ export const ProjectAnalysesBoard: React.FC<ProjectAnalysesBoardProps> = ({
               <div
                 key={a.generatedAt + index}
                 className={cn(
-                  'bg-base-100 rounded-xl border border-base-300 shadow-sm p-4 flex flex-col hover:border-primary/30 transition-colors',
+                  dashboardHoverCardClass,
+                  'flex flex-col',
                   getSentimentBorderClass(a)
                 )}
               >

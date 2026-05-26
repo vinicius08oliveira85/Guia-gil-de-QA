@@ -73,7 +73,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                 type="button"
                 onClick={item.onClick}
                 className={cn(
-                  'inline-flex min-h-[44px] max-w-full min-w-0 items-center gap-1 rounded-lg px-1.5 py-1 text-left font-medium text-base-content/80 underline-offset-2 transition-colors hover:bg-base-200/70 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 sm:min-h-0 sm:py-0.5',
+                  'inline-flex min-h-[44px] max-w-full min-w-0 items-center gap-1 rounded-lg px-1.5 py-1 text-left font-medium text-base-content/80 underline-offset-2 transition-colors hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 sm:min-h-0 sm:py-0.5',
                   dense && 'font-normal'
                 )}
                 itemProp="item"

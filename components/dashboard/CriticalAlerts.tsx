@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertCircle } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { dashboardPanelClass } from './dashboardNeuUi';
 
 export interface DashboardAlert {
   id: string;
@@ -58,7 +59,7 @@ export const CriticalAlerts = React.memo<CriticalAlertsProps>(
 
     return (
       <div
-        className={cn('bg-base-100 rounded-2xl shadow-sm border border-base-300 p-6', className)}
+        className={cn(dashboardPanelClass, className)}
       >
         <div className="flex items-center gap-3 mb-4">
           <div className={cn(

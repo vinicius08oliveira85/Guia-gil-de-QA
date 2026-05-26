@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Github, Twitter, Linkedin, Mail, ArrowUp } from 'lucide-react';
+import { landingDividerClass } from './landingNeuUi';
+import { cn } from '../../utils/cn';
 
 interface FooterLink {
   title: string;
@@ -58,7 +60,7 @@ export const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-base-200 border-t border-base-300">
+    <footer className={cn('leve-neu-surface-inset border-t', landingDividerClass)}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 md:gap-12 mb-12">
           {/* Brand section */}
@@ -87,7 +89,7 @@ export const Footer: React.FC = () => {
                     transition={{ duration: 0.3, delay: index * 0.1 }}
                     whileHover={reduceMotion ? undefined : { scale: 1.1 }}
                     whileTap={reduceMotion ? undefined : { scale: 0.95 }}
-                    className="flex h-10 w-10 items-center justify-center rounded-[var(--radius)] bg-base-300 text-base-content/70 hover:bg-primary/10 hover:text-primary transition-colors"
+                    className="leve-neu-pill flex h-10 w-10 items-center justify-center rounded-[var(--radius)] text-base-content/70 hover:text-primary transition-colors"
                   >
                     <social.icon className="w-5 h-5" />
                   </motion.a>
@@ -128,7 +130,7 @@ export const Footer: React.FC = () => {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="pt-8 border-t border-base-300 flex flex-col md:flex-row justify-between items-center gap-4"
+          className={cn('flex flex-col items-center justify-between gap-4 border-t pt-8 md:flex-row', landingDividerClass)}
         >
           <p className="text-sm text-base-content/70 text-center md:text-left">
             © {new Date().getFullYear()} QA Agile Guide. Todos os direitos reservados.

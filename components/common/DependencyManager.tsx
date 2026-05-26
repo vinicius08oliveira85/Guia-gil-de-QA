@@ -11,6 +11,12 @@ import {
 } from '../../utils/dependencyService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { cn } from '../../utils/cn';
+import { AppSelect } from '../common/AppSelect';
+import {
+  neuCardClass,
+  neuDividerClass,
+  neuSurfaceClass,
+} from './neuUi';
 
 interface DependencyManagerProps {
   task: JiraTask;
@@ -82,7 +88,7 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
       </div>
 
       {/* Status da tarefa */}
-      <div className="p-4 bg-base-100 border border-base-300 rounded-xl">
+      <div className={cn(neuCardClass, 'rounded-xl')}>
         {isBlocked && (
           <div className="flex items-center gap-2 text-warning">
             <span>⚠️</span>
@@ -158,13 +164,13 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
       </div>
 
       {/* Adicionar nova dependência */}
-      <div className="border-t border-base-300 pt-4">
+      <div className="border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pt-4">
         <h4 className="text-md font-semibold text-base-content mb-2">Adicionar Dependência</h4>
         <div className="flex gap-2">
-          <select
+          <AppSelect
             value={selectedTaskId}
-            onChange={e => setSelectedTaskId(e.target.value)}
-            className="select select-bordered flex-1 bg-base-100 border-base-300 text-base-content"
+            onChange={v => setSelectedTaskId(v)}
+            className={cn('select select-bordered app-select flex-1 text-base-content', neuSurfaceClass)}
           >
             <option value="">Selecione uma tarefa...</option>
             {availableTasks.map(t => (
@@ -172,7 +178,7 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
                 {t.id}: {t.title}
               </option>
             ))}
-          </select>
+          </AppSelect>
           <button
             type="button"
             onClick={handleAddDependency}
@@ -186,7 +192,7 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
 
       {/* Dependentes (são bloqueados por esta tarefa) */}
       {dependents.length > 0 && (
-        <div className="border-t border-base-300 pt-4">
+        <div className="border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pt-4">
           <h4 className="text-md font-semibold text-base-content mb-2">
             Tarefas que dependem desta ({dependents.length})
           </h4>
@@ -196,7 +202,7 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
               if (!depTask) return null;
 
               return (
-                <div key={dep.id} className="p-3 rounded-lg border border-base-300 bg-base-100">
+                <div key={dep.id} className={cn(neuCardClass, 'rounded-lg p-3')}>
                   <span className="font-semibold text-base-content">{depTask.id}</span>
                   <span className="text-base-content/70 ml-2">{depTask.title}</span>
                 </div>

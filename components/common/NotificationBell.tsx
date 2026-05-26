@@ -181,7 +181,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                 notifications.map(notification => (
                   <div
                     key={notification.id}
-                    className={`p-4 border-b border-base-300 hover:bg-base-200 transition-colors cursor-pointer ${
+                    className={`p-4 border-b border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] transition-colors cursor-pointer ${
                       !notification.read ? 'bg-primary/5' : ''
                     }`}
                     onClick={() => {

@@ -2,6 +2,7 @@ import React from 'react';
 import { Spinner } from '../common/Spinner';
 import { cn } from '../../utils/cn';
 import { leveViewSecondaryToolbarBtnClass } from '../common/projectCardUi';
+import { taskNeuBorderDividerClass, taskNeuTrackClass } from './taskActionLayout';
 
 interface GeneralIAAnalysisButtonProps {
   onAnalyze: () => void | Promise<void>;
@@ -54,7 +55,11 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
         className={cn(
           grouped
             ? cn(leveViewSecondaryToolbarBtnClass, 'rounded-l-full')
-            : 'btn btn-ghost btn-sm flex min-h-[44px] items-center gap-1.5 rounded-[var(--radius)] border border-base-300 px-3 text-xs font-semibold transition-colors duration-300 sm:min-h-0 text-[color-mix(in_srgb,var(--foreground)_72%,transparent)] hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] hover:text-[var(--foreground)]',
+            : cn(
+                'btn btn-ghost btn-sm flex min-h-[44px] items-center gap-1.5 rounded-[var(--radius)] border px-3 text-xs font-semibold transition-colors duration-300 sm:min-h-0',
+                taskNeuBorderDividerClass,
+                'text-[color-mix(in_srgb,var(--foreground)_72%,transparent)] hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] hover:text-[var(--leve-header-text)]'
+              ),
           'disabled:cursor-not-allowed disabled:opacity-50'
         )}
         aria-label={isAnalyzing ? 'Analisando' : 'Análise geral com IA'}
@@ -89,7 +94,7 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
         <div className="flex flex-col gap-0.5 w-full" aria-live="polite">
           {stepLabel && <span className="text-[10px] text-base-content/60">{stepLabel}</span>}
           {progress.total > 0 && (
-            <div className="w-full h-1 bg-base-300 rounded-full overflow-hidden">
+            <div className={cn(taskNeuTrackClass, 'h-1 w-full overflow-hidden')}>
               <div
                 className="h-1 bg-primary transition-all duration-500"
                 style={{ width: `${Math.round((progress.current / progress.total) * 100)}%` }}

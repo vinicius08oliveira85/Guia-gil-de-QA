@@ -20,6 +20,7 @@ import type {
   ExportSchedule,
 } from '../../types';
 import { startExportScheduler, stopExportScheduler } from '../../utils/exportScheduler';
+import { AppSelect } from '../common/AppSelect';
 
 export const ExportPreferences: React.FC = () => {
   const [preferences, setPreferences] = useState<ExportPreferencesType>(getExportPreferences());
@@ -149,7 +150,7 @@ export const ExportPreferences: React.FC = () => {
             <input
               type="text"
               value={newTemplateName}
-              onChange={e => setNewTemplateName(e.target.value)}
+              onChange={v => setNewTemplateName(v)}
               placeholder="Nome do template..."
               className={cn(leveSettingsInputClass, 'flex-1')}
               onKeyPress={e => e.key === 'Enter' && handleSaveTemplate()}
@@ -234,7 +235,7 @@ export const ExportPreferences: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="mb-2 block text-sm text-[var(--leve-header-text-muted)]">Frequência</label>
-                  <select
+                  <AppSelect
                     value={preferences.schedule?.frequency || 'daily'}
                     onChange={e =>
                       handleScheduleChange({
@@ -246,7 +247,7 @@ export const ExportPreferences: React.FC = () => {
                     <option value="daily">Diária</option>
                     <option value="weekly">Semanal</option>
                     <option value="monthly">Mensal</option>
-                  </select>
+                  </AppSelect>
                 </div>
                 <div>
                   <label className="mb-2 block text-sm text-[var(--leve-header-text-muted)]">Horário</label>

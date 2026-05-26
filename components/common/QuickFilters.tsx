@@ -209,7 +209,7 @@ export const QuickFilters: React.FC<QuickFiltersProps> = ({
   return (
     <div className={cn(appPanelClass, 'p-3')}>
       <div className="flex flex-wrap items-center gap-2">
-        <div className="app-element-typography flex items-center gap-2 text-sm text-[var(--brand-text-muted)]">
+        <div className="app-element-typography flex items-center gap-2 text-sm text-[var(--leve-header-text-muted)]">
           <svg
             className="w-4 h-4 text-primary"
             fill="none"

@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertCircle, TrendingUp, TrendingDown } from 'lucide-react';
 import { Card } from '../common/Card';
+import { dashboardInsetTileClass, dashboardPanelClass } from './dashboardNeuUi';
 import { DashboardInsightsAnalysis } from '../../types';
 import { Badge } from '../common/Badge';
 
@@ -47,14 +48,14 @@ export const PredictionsCard: React.FC<PredictionsCardProps> = React.memo(
     };
 
     return (
-      <Card className="p-5 space-y-6" aria-label="Previsões e fatores de risco">
+      <Card className={dashboardPanelClass} aria-label="Previsões e fatores de risco">
         <h3 className="text-lg font-semibold text-base-content">Previsões e Riscos</h3>
 
         {/* Previsões numéricas */}
         {(predictions.nextWeekPassRate !== undefined || predictions.nextWeekBugs !== undefined) && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {predictions.nextWeekPassRate !== undefined && (
-              <div className="p-5 bg-base-100 border border-base-300 rounded-xl hover:bg-base-200 transition-colors">
+              <div className={dashboardInsetTileClass}>
                 <div className="flex items-center gap-2 mb-2">
                   <TrendingDown className="h-4 w-4 text-base-content/60" aria-hidden="true" />
                   <p className="text-xs text-base-content/70">Taxa de Sucesso (Próxima Semana)</p>
@@ -65,7 +66,7 @@ export const PredictionsCard: React.FC<PredictionsCardProps> = React.memo(
               </div>
             )}
             {predictions.nextWeekBugs !== undefined && (
-              <div className="p-5 bg-base-100 border border-base-300 rounded-xl hover:bg-base-200 transition-colors">
+              <div className={dashboardInsetTileClass}>
                 <div className="flex items-center gap-2 mb-2">
                   <TrendingUp className="h-4 w-4 text-base-content/60" aria-hidden="true" />
                   <p className="text-xs text-base-content/70">Bugs Previstos (Próxima Semana)</p>
@@ -89,7 +90,7 @@ export const PredictionsCard: React.FC<PredictionsCardProps> = React.memo(
               {predictions.riskFactors.map((risk, index) => (
                 <div
                   key={index}
-                  className="p-4 bg-base-100 border border-base-300 rounded-xl hover:bg-base-200 transition-colors"
+                  className={dashboardInsetTileClass}
                   aria-label={`Fator de risco: ${risk.factor} (${risk.probability})`}
                 >
                   <div className="flex items-start justify-between gap-3 mb-2">

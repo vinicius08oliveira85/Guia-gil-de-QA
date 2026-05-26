@@ -102,7 +102,7 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
   return (
     <div className={`pdf-viewer flex flex-col h-full ${className}`}>
       {/* Controles */}
-      <div className="pdf-viewer-controls flex items-center justify-between p-2 bg-base-200 rounded-t-lg border-b border-base-300">
+      <div className="pdf-viewer-controls flex items-center justify-between p-2 bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] rounded-t-lg border-b border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]">
         <div className="flex items-center gap-2">
           <button
             onClick={goToPrevPage}
@@ -172,7 +172,7 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
       </div>
 
       {/* Área de visualização */}
-      <div className="pdf-viewer-content flex-1 overflow-auto bg-base-100 p-4 flex justify-center">
+      <div className="pdf-viewer-content flex-1 overflow-auto leve-neu-surface p-4 flex justify-center">
         {loading && (
           <div className="flex items-center justify-center h-full">
             <div className="loading loading-spinner loading-lg"></div>

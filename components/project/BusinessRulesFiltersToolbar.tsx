@@ -1,6 +1,7 @@
 import React from 'react';
 import { Search } from 'lucide-react';
 import type { BusinessRuleSortKey } from '../../utils/businessRulesSort';
+import { AppSelect } from '../common/AppSelect';
 import {
   leveViewFilterLabelClass,
   leveViewFilterSelectClass,
@@ -41,7 +42,7 @@ export const BusinessRulesFiltersToolbar: React.FC<BusinessRulesFiltersToolbarPr
         <input
           type="search"
           value={searchQuery}
-          onChange={e => onSearchQueryChange(e.target.value)}
+          onChange={v => onSearchQueryChange(v)}
           placeholder="Título, descrição ou categoria…"
           className={leveViewSearchInputClass}
           aria-label="Filtrar regras de negócio"
@@ -62,9 +63,9 @@ export const BusinessRulesFiltersToolbar: React.FC<BusinessRulesFiltersToolbarPr
           </button>
         ) : null}
       </div>
-      <select
+      <AppSelect
         value={categoryScope}
-        onChange={e => onCategoryScopeChange(e.target.value)}
+        onChange={v => onCategoryScopeChange(v)}
         className={leveViewFilterSelectClass}
         aria-label="Filtrar por categoria"
       >
@@ -74,13 +75,13 @@ export const BusinessRulesFiltersToolbar: React.FC<BusinessRulesFiltersToolbarPr
             {c}
           </option>
         ))}
-      </select>
+      </AppSelect>
     </label>
     <label className="flex w-full flex-col gap-1 sm:min-w-[200px] lg:w-auto">
       <span className={leveViewFilterLabelClass}>Ordenar por</span>
-      <select
+      <AppSelect
         value={sortBy}
-        onChange={e => onSortByChange(e.target.value as BusinessRuleSortKey)}
+        onChange={v => onSortByChange(v as BusinessRuleSortKey)}
         className={leveViewFilterSelectClass}
         aria-label="Ordenar lista de regras"
       >
@@ -90,7 +91,7 @@ export const BusinessRulesFiltersToolbar: React.FC<BusinessRulesFiltersToolbarPr
         <option value="title_desc">Título (Z–A)</option>
         <option value="category_asc">Categoria (A–Z)</option>
         <option value="category_desc">Categoria (Z–A)</option>
-      </select>
+      </AppSelect>
     </label>
   </div>
 );

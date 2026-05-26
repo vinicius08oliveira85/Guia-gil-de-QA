@@ -30,12 +30,12 @@ const FilterChip = ({
       filterPillClass(isActive),
       'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs sm:gap-2 sm:px-3 sm:py-1.5',
       !isActive &&
-        'hover:border-[color-mix(in_srgb,var(--color-primary)_40%,var(--brand-surface-border))]'
+        'hover:border-[color-mix(in_srgb,var(--color-primary)_40%,transparent)]'
     )}
   >
     {label}
     <span
-      className={`rounded-full px-1.5 py-0.5 text-[10px] ${isActive ? 'bg-white/20' : 'bg-[var(--brand-chip)]'}`}
+      className={`rounded-full px-1.5 py-0.5 text-[10px] ${isActive ? 'bg-white/20' : 'bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))]'}`}
     >
       {count}
     </span>
@@ -147,7 +147,7 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
     <>
       {/* Seção de Filtros Salvos */}
       {projectId && (
-        <div className="mb-5 pb-5 border-b border-[var(--brand-surface-border)]">
+        <div className="mb-5 pb-5 border-b border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]">
           <div className="flex items-center justify-between mb-3">
             <p className={cn(taskCardFieldLabelClass, 'flex items-center gap-1.5')}>
               <Bookmark className="w-3.5 h-3.5" />
@@ -207,7 +207,7 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
               {savedPresets.map(preset => (
                 <div
                   key={preset.id}
-                  className="app-filter-pill inline-flex items-center gap-1.5 px-2.5 py-1 text-xs group hover:border-[color-mix(in_srgb,var(--color-primary)_40%,var(--brand-surface-border))] sm:px-3 sm:py-1.5"
+                  className="app-filter-pill group inline-flex items-center gap-1.5 px-2.5 py-1 text-xs hover:border-[color-mix(in_srgb,var(--color-primary)_40%,transparent)] sm:px-3 sm:py-1.5"
                 >
                   <button
                     type="button"

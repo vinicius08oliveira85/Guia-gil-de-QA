@@ -55,7 +55,7 @@ export const TestPhaseProgress = React.memo<TestPhaseProgressProps>(({ project, 
             <div key={phase.name} className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-base-300">
+                  <div className="leve-neu-surface-inset flex h-8 w-8 items-center justify-center rounded-full">
                     {status === 'completed' ? (
                       <CheckCircle2 className="h-4 w-4 text-success" aria-hidden="true" />
                     ) : status === 'active' ? (

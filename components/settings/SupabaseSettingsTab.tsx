@@ -17,6 +17,7 @@ import {
   leveViewInlineCodeClass,
 } from '../common/projectCardUi';
 import { cn } from '../../utils/cn';
+import { neuBrandBorderClass, neuCardInsetClass } from '../common/neuUi';
 
 interface VariableStatus {
   name: string;
@@ -151,10 +152,10 @@ export const SupabaseSettingsTab: React.FC = () => {
               <div>
                 <p className="text-[var(--leve-header-text)]/70 text-sm mb-4 leading-relaxed">
                   {diagnosis.details} No navegador apenas variáveis com prefixo{' '}
-                  <code className="bg-base-300 px-1 rounded text-xs">VITE_</code> são expostas; use{' '}
-                  <code className="bg-base-300 px-1 rounded text-xs">VITE_SUPABASE_PROXY_URL</code>{' '}
-                  ou <code className="bg-base-300 px-1 rounded text-xs">VITE_SUPABASE_URL</code> +{' '}
-                  <code className="bg-base-300 px-1 rounded text-xs">VITE_SUPABASE_ANON_KEY</code>.
+                  <code className={leveViewInlineCodeClass}>VITE_</code> são expostas; use{' '}
+                  <code className={leveViewInlineCodeClass}>VITE_SUPABASE_PROXY_URL</code> ou{' '}
+                  <code className={leveViewInlineCodeClass}>VITE_SUPABASE_URL</code> +{' '}
+                  <code className={leveViewInlineCodeClass}>VITE_SUPABASE_ANON_KEY</code>.
                 </p>
               </div>
 
@@ -171,7 +172,7 @@ export const SupabaseSettingsTab: React.FC = () => {
                           'flex items-start gap-3 p-3 rounded-lg border',
                           variable.configured
                             ? 'bg-emerald-500/5 border-emerald-500/20'
-                            : 'bg-base-200/50 border-base-300'
+                            : cn(neuCardInsetClass, neuBrandBorderClass)
                         )}
                       >
                         <div className="flex-shrink-0 mt-0.5">
@@ -241,7 +242,7 @@ export const SupabaseSettingsTab: React.FC = () => {
                   <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                   <p className="text-sm text-[var(--leve-header-text)]/70 leading-relaxed">
                     <strong className="text-[var(--leve-header-text)]">Documentação:</strong> Consulte{' '}
-                    <code className="bg-base-300 px-1.5 py-0.5 rounded font-mono text-xs">
+                    <code className={leveViewInlineCodeClass}>
                       docs/SUPABASE_SETUP.md
                     </code>{' '}
                     para um guia passo a passo de configuração.

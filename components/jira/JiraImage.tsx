@@ -103,7 +103,7 @@ export const JiraImage: React.FC<JiraImageProps> = ({
       <div
         ref={containerRef}
         className={cn(
-          'jira-image-placeholder flex items-center justify-center rounded-[1.4rem] bg-base-200',
+          'jira-image-placeholder flex items-center justify-center rounded-[1.4rem] bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))]',
           className
         )}
         style={{
@@ -123,7 +123,7 @@ export const JiraImage: React.FC<JiraImageProps> = ({
       <div
         ref={containerRef}
         className={cn(
-          'jira-image-loading flex items-center justify-center rounded-[1.4rem] bg-base-200',
+          'jira-image-loading flex items-center justify-center rounded-[1.4rem] bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))]',
           className
         )}
         style={{
@@ -145,7 +145,7 @@ export const JiraImage: React.FC<JiraImageProps> = ({
       <div
         ref={containerRef}
         className={cn(
-          'jira-image-error flex flex-col items-center justify-center gap-2 rounded-[1.4rem] bg-base-200 p-4',
+          'jira-image-error flex flex-col items-center justify-center gap-2 rounded-[1.4rem] bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] p-4',
           className
         )}
         style={{

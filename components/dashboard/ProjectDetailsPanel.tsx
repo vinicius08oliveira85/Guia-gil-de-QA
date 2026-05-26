@@ -4,6 +4,8 @@ import type { Phase } from '../../types';
 import { ProjectPhasesList } from './ProjectPhasesList';
 import { DashboardQualityKPIs, type DashboardKpiMetrics } from './DashboardQualityKPIs';
 import { cn } from '../../utils/cn';
+import { neuDividerClass } from '../common/neuUi';
+import { dashboardPanelClass } from './dashboardNeuUi';
 
 interface ProjectDetailsPanelProps {
   phases: Phase[];
@@ -19,19 +21,22 @@ export const ProjectDetailsPanel = React.memo<ProjectDetailsPanelProps>(
   ({ phases, currentPhaseProgress, kpiMetrics, className }) => {
     return (
       <div
-        className={cn(
-          'bg-base-100 rounded-2xl shadow-sm border border-base-300 flex flex-col max-h-[760px]',
-          className
-        )}
+        className={cn(dashboardPanelClass, 'flex max-h-[760px] flex-col overflow-hidden p-0', className)}
       >
-        <div className="p-6 border-b border-base-300 flex justify-between items-center bg-base-200/30 rounded-t-2xl shrink-0">
+        <div
+          className={cn(
+            'leve-neu-surface-inset flex shrink-0 items-center justify-between rounded-t-2xl p-6',
+            neuDividerClass,
+            'border-b'
+          )}
+        >
           <div>
             <h3 className="font-bold text-lg text-base-content">Detalhes do Projeto</h3>
             <p className="text-xs text-base-content/70">Fases e KPIs operacionais</p>
           </div>
           <button
             type="button"
-            className="p-1 rounded hover:bg-base-300 text-base-content/50"
+            className="rounded p-1 text-base-content/50 hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_12%,var(--leve-neu-bg))]"
             aria-label="Mais opções"
           >
             <MoreVertical className="w-5 h-5" aria-hidden="true" />
@@ -40,7 +45,7 @@ export const ProjectDetailsPanel = React.memo<ProjectDetailsPanelProps>(
         <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-6">
           <ProjectPhasesList phases={phases} currentPhaseProgress={currentPhaseProgress} />
         </div>
-        <div className="shrink-0 border-t border-base-300 p-6">
+        <div className={cn('shrink-0 border-t p-6', neuDividerClass)}>
           <DashboardQualityKPIs metrics={kpiMetrics} />
         </div>
       </div>

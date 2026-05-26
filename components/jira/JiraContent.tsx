@@ -42,7 +42,7 @@ const InlineImageTrigger = ({
 
   return (
     <div
-      className="relative group inline-block m-1 cursor-zoom-in overflow-hidden rounded-lg border border-base-300 bg-base-200 align-middle"
+      className="relative group inline-block m-1 cursor-zoom-in overflow-hidden rounded-lg border border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] align-middle"
       onClick={e => {
         e.stopPropagation();
         onClick();
@@ -50,7 +50,7 @@ const InlineImageTrigger = ({
       title="Clique para ampliar"
     >
       {loading ? (
-        <div className="w-24 h-24 flex items-center justify-center bg-base-200 animate-pulse">
+        <div className="w-24 h-24 flex items-center justify-center bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] animate-pulse">
           <span className="loading loading-spinner loading-xs"></span>
         </div>
       ) : (
@@ -118,7 +118,7 @@ export const JiraContent: React.FC<JiraContentProps> = ({
             return (
               <div
                 key={i}
-                className="inline-flex items-center gap-2 px-2 py-1 bg-base-200 rounded border border-base-300 mx-1"
+                className="inline-flex items-center gap-2 px-2 py-1 bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] rounded border border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] mx-1"
               >
                 <FileIcon fileName={filenameRaw} />
                 <span className="text-xs font-medium">{filenameRaw}</span>

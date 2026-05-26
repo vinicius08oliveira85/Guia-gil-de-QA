@@ -33,7 +33,12 @@ import {
 } from 'lucide-react';
 import { logger } from '../../utils/logger';
 import { cn } from '../../utils/cn';
-import { taskSelectControlClass } from './taskActionLayout';
+import {
+  taskListToolbarFieldClass,
+  taskListToolbarLabelClass,
+  taskListToolbarSelectClass,
+  taskListToolbarShellClass,
+} from './taskActionLayout';
 import { useProjectsStore } from '../../store/projectsStore';
 import { toToastableAiError } from '../../utils/aiErrorMapper';
 import { withTimeout } from '../../utils/withTimeout';
@@ -86,8 +91,12 @@ import {
 } from './tasksViewHelpers';
 import { testCaseLooksAutomated } from '../../utils/testCaseMigration';
 import { VirtualizedTaskRootList, shouldVirtualizeTaskRoots } from './VirtualizedTaskRootList';
-import { outlineActionBtn, projectViewPanel, projectViewShell } from '../common/viewUi';
-import { leveViewPagePanelClass, leveViewPageSectionDividerClass } from '../common/projectCardUi';
+import { projectViewPanel, projectViewShell } from '../common/viewUi';
+import {
+  leveViewOutlineBtnClass,
+  leveViewPagePanelClass,
+  leveViewPageSectionDividerClass,
+} from '../common/projectCardUi';
 import {
   applyBacklogSecondaryFilters,
   BACKLOG_SECONDARY_FILTER_DEFAULTS,
@@ -111,6 +120,7 @@ import {
   countTasksInBacklogTree,
 } from '../../utils/taskSprintDisplay';
 import { TasksViewListModeToggle } from './TasksViewListModeToggle';
+import { AppSelect } from '../common/AppSelect';
 
 export const TasksView: React.FC<{
   project: Project;
@@ -2346,7 +2356,7 @@ export const TasksView: React.FC<{
                     />
                     <button
                       onClick={() => setIsLinkModalOpen(true)}
-                      className={cn(outlineActionBtn, 'btn-sm flex items-center gap-1.5 min-h-[44px] px-4')}
+                      className={cn(leveViewOutlineBtnClass, 'btn-sm flex items-center gap-1.5 min-h-[44px] px-4')}
                     >
                       <LinkIcon className="w-4 h-4" />
                       Vincular a Projeto
@@ -2354,7 +2364,7 @@ export const TasksView: React.FC<{
                   </div>
                 )}
                 {(generatingTestsTaskId || generatingBddTaskId) && (
-                  <div className="p-4 bg-primary/10 border border-primary/40 rounded-[var(--radius)] text-sm text-[var(--brand-text-strong)] flex items-center gap-2">
+                  <div className="p-4 bg-primary/10 border border-primary/40 rounded-[var(--radius)] text-sm text-[var(--leve-header-text)] flex items-center gap-2">
                     <span className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent"></span>
                     {generatingTestsTaskId && (
                       <span>
@@ -2472,11 +2482,11 @@ export const TasksView: React.FC<{
                   scopeLabel={backlogScopeLabel}
                 >
                 <div className="space-y-6">
-                  <div className="flex flex-wrap items-end justify-end gap-3 border-b border-base-300/50 pb-3">
+                  <div className={taskListToolbarShellClass}>
                     <button
                       type="button"
                       onClick={() => setShowExportTasksModal(true)}
-                      className={outlineActionBtn}
+                      className={cn(leveViewOutlineBtnClass, 'gap-1.5')}
                       aria-label={`Exportar lista visível (${listTasks.length} tarefas)`}
                     >
                       <Download className="h-4 w-4 shrink-0" aria-hidden />
@@ -2486,18 +2496,15 @@ export const TasksView: React.FC<{
                         : ''}
                     </button>
                     {!backlogOnly && (
-                      <div className="flex flex-wrap items-center gap-2">
-                        <label
-                          htmlFor="tasks-sort-by"
-                          className="task-card-field-label normal-case tracking-normal text-xs font-medium"
-                        >
+                      <div className={taskListToolbarFieldClass}>
+                        <label htmlFor="tasks-sort-by" className={taskListToolbarLabelClass}>
                           Ordenar
                         </label>
-                        <select
+                        <AppSelect
                           id="tasks-sort-by"
                           value={sortBy}
-                          onChange={e => setSortBy(e.target.value as TaskSortBy)}
-                          className={cn('select select-bordered select-sm h-9 min-h-0 text-sm', taskSelectControlClass)}
+                          onChange={v => setSortBy(v as TaskSortBy)}
+                          className={taskListToolbarSelectClass}
                           aria-label="Ordenação da lista de tarefas"
                         >
                           <option value="id">ID</option>
@@ -2505,29 +2512,26 @@ export const TasksView: React.FC<{
                           <option value="priority">Prioridade</option>
                           <option value="createdAt">Data de criação</option>
                           <option value="title">Título</option>
-                        </select>
+                        </AppSelect>
                       </div>
                     )}
                     {!backlogOnly && (
-                      <div className="flex flex-wrap items-center gap-2">
-                        <label
-                          htmlFor="tasks-group-by"
-                          className="task-card-field-label normal-case tracking-normal text-xs font-medium"
-                        >
+                      <div className={taskListToolbarFieldClass}>
+                        <label htmlFor="tasks-group-by" className={taskListToolbarLabelClass}>
                           Agrupar
                         </label>
-                        <select
+                        <AppSelect
                           id="tasks-group-by"
                           value={groupBy}
-                          onChange={e => setGroupBy(e.target.value as TaskGroupBy)}
-                          className={cn('select select-bordered select-sm h-9 min-h-0 text-sm', taskSelectControlClass)}
+                          onChange={v => setGroupBy(v as TaskGroupBy)}
+                          className={taskListToolbarSelectClass}
                           aria-label="Agrupar lista de tarefas por"
                         >
                           <option value="none">Nenhum</option>
                           <option value="status">Status</option>
                           <option value="priority">Prioridade</option>
                           <option value="type">Tipo</option>
-                        </select>
+                        </AppSelect>
                       </div>
                     )}
                   </div>
@@ -2540,12 +2544,12 @@ export const TasksView: React.FC<{
                               'mb-3 flex flex-wrap items-center gap-2 font-heading text-xs font-bold uppercase tracking-wider',
                               group.isActive
                                 ? 'text-[var(--brand-highlight)]'
-                                : 'text-[var(--brand-text-muted)]'
+                                : 'text-[var(--leve-header-text-muted)]'
                             )}
                           >
                             <Layers className="h-4 w-4 shrink-0" aria-hidden />
                             {group.label}
-                            <span className="font-medium normal-case tracking-normal text-[var(--brand-text-muted)]">
+                            <span className="font-medium normal-case tracking-normal text-[var(--leve-header-text-muted)]">
                               ({countTasksInBacklogTree(tasksInGroup)})
                             </span>
                             {group.isActive ? (
@@ -2566,7 +2570,7 @@ export const TasksView: React.FC<{
                     <div className="space-y-6">
                       {groupedTasksEntriesWithA11y.map(([groupLabel, tasksInGroup, groupA11y]) => (
                         <section key={groupLabel} aria-label={`Grupo: ${groupLabel}`}>
-                          <h3 className="mb-3 flex items-center gap-2 font-heading text-xs font-bold uppercase tracking-wider text-[var(--brand-text-muted)]">
+                          <h3 className="mb-3 flex items-center gap-2 font-heading text-xs font-bold uppercase tracking-wider text-[var(--leve-header-text-muted)]">
                             <List className="w-4 h-4" aria-hidden />
                             {groupLabel}
                           </h3>
@@ -2594,7 +2598,7 @@ export const TasksView: React.FC<{
                         </section>
                       )}
                       {favoriteRoots.length > 0 && otherRoots.length > 0 && (
-                        <div className="border-t border-[var(--brand-surface-border)] my-4" aria-hidden />
+                        <div className="border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] my-4" aria-hidden />
                       )}
                       <section aria-label="Outras tarefas">
                         <h3 className="mb-3 flex items-center gap-2 task-card-field-label">
@@ -2613,7 +2617,7 @@ export const TasksView: React.FC<{
                 </BacklogListSurface>
               ) : listTasks.length === 0 && project.tasks.length > 0 ? (
                 <EmptyState
-                  icon={<Search className="mx-auto h-12 w-12 text-[var(--brand-text-muted)]" aria-hidden />}
+                  icon={<Search className="mx-auto h-12 w-12 text-[var(--leve-header-text-muted)]" aria-hidden />}
                   title="Nenhuma tarefa corresponde aos filtros"
                   description="Ajuste os filtros ou a busca para ver mais tarefas."
                   action={{
@@ -2629,7 +2633,7 @@ export const TasksView: React.FC<{
               ) : (
                 <EmptyState
                   icon={
-                    <ClipboardList className="mx-auto h-12 w-12 text-[var(--brand-text-muted)]" aria-hidden />
+                    <ClipboardList className="mx-auto h-12 w-12 text-[var(--leve-header-text-muted)]" aria-hidden />
                   }
                   title="Nenhuma tarefa criada ainda"
                   description="Comece criando sua primeira tarefa para organizar seu trabalho de QA."
@@ -2686,7 +2690,7 @@ export const TasksView: React.FC<{
               onChange={e => setFailModalState({ ...failModalState, createBug: e.target.checked })}
               className="checkbox checkbox-highlight"
             />
-            <label htmlFor="create-bug-task" className="block text-sm text-[var(--brand-text-strong)]">
+            <label htmlFor="create-bug-task" className="block text-sm text-[var(--leve-header-text)]">
               Criar tarefa de Bug automaticamente
             </label>
           </div>
@@ -2694,7 +2698,7 @@ export const TasksView: React.FC<{
             <button
               type="button"
               onClick={() => setFailModalState({ ...failModalState, isOpen: false })}
-              className={cn(outlineActionBtn, 'btn-sm flex items-center gap-1.5')}
+              className={cn(leveViewOutlineBtnClass, 'btn-sm flex items-center gap-1.5')}
             >
               Cancelar
             </button>

@@ -164,7 +164,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
     <div className="space-y-4 sm:space-y-5" role="main" aria-label="Dashboard do projeto">
       {showLoadingBanner && (
         <div
-          className="flex items-center gap-2 rounded-lg border border-base-300/70 bg-base-100 px-3 py-2.5 text-sm text-base-content/80 soft-shadow"
+          className="leve-neu-surface flex items-center gap-2 px-3 py-2.5 text-sm text-base-content/80"
           role="status"
           aria-live="polite"
         >
@@ -201,7 +201,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
             {Array.from({ length: showBacklogCard ? 5 : 4 }).map((_, k) => (
               <div
                 key={k}
-                className="h-[4.75rem] animate-pulse rounded-[var(--rounded-box)] border border-base-300/60 bg-base-200/50 sm:h-[5rem]"
+                className="leve-neu-surface-inset h-[4.75rem] animate-pulse rounded-[var(--rounded-box)] sm:h-[5rem]"
                 aria-hidden
               />
             ))}

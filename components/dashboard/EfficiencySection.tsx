@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Card } from '../common/Card';
+import { dashboardPanelClass } from './dashboardNeuUi';
+import { cn } from '../../utils/cn';
 import { StatCard } from './StatCard';
 import { DonutChart } from './DonutChart';
 import { BarChartWidget } from './BarChartWidget';
@@ -34,7 +36,12 @@ export const EfficiencySection: React.FC<EfficiencySectionProps> = ({ project })
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 rounded-[var(--rounded-box)] border border-base-300 bg-gradient-to-br from-base-100 to-base-200 px-4 py-4 sm:px-6 sm:py-6">
+      <div
+        className={cn(
+          dashboardPanelClass,
+          'bg-gradient-to-br from-[var(--leve-neu-bg)] to-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))]'
+        )}
+      >
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-base-content/60">
             Melhoria Contínua

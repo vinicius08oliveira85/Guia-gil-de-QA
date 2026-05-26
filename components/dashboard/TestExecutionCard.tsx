@@ -1,6 +1,15 @@
 import React from 'react';
 import { Card } from '../common/Card';
 import { Badge } from '../common/Badge';
+import { cn } from '../../utils/cn';
+import {
+  dashboardInsetTileClass,
+  dashboardPanelClass,
+  dashboardProgressFillClass,
+  dashboardProgressTrackClass,
+  dashboardProgressTrackSmClass,
+  dashboardSectionDividerClass,
+} from './dashboardNeuUi';
 
 interface TestExecutionCardProps {
   testExecution: {
@@ -24,7 +33,7 @@ const testStatusConfig: Record<
     label: 'Não Executados',
     icon: '⏸️',
     color: 'text-base-content/70',
-    bgColor: 'bg-base-200',
+    bgColor: 'bg-[color-mix(in_srgb,var(--leve-neu-dark)_12%,var(--leve-neu-bg))]',
   },
   Blocked: { label: 'Bloqueados', icon: '🚫', color: 'text-warning', bgColor: 'bg-warning/10' },
 };
@@ -46,7 +55,7 @@ export const TestExecutionCard: React.FC<TestExecutionCardProps> = ({
   };
 
   return (
-    <Card className="p-5 space-y-4 border border-base-300 hover:border-primary/30 hover:shadow-md transition-all duration-200">
+    <Card className={dashboardPanelClass}>
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-base-content">Execução de Testes</h3>
         <Badge variant="info" size="sm">
@@ -56,7 +65,7 @@ export const TestExecutionCard: React.FC<TestExecutionCardProps> = ({
 
       {/* Taxa de Sucesso */}
       <div
-        className={`p-4 rounded-xl border border-base-300 ${getPassRateBgColor(testExecution.passRate)}`}
+        className={cn(dashboardInsetTileClass, getPassRateBgColor(testExecution.passRate))}
       >
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-semibold text-base-content/70">Taxa de Sucesso</span>
@@ -64,15 +73,13 @@ export const TestExecutionCard: React.FC<TestExecutionCardProps> = ({
             {testExecution.passRate}%
           </span>
         </div>
-        <div className="w-full h-3 bg-base-200 rounded-full overflow-hidden">
+        <div className={dashboardProgressTrackClass}>
           <div
-            className={`h-full transition-all duration-300 ${
-              testExecution.passRate >= 80
-                ? 'bg-success'
-                : testExecution.passRate >= 60
-                  ? 'bg-warning'
-                  : 'bg-error'
-            }`}
+            className={cn(dashboardProgressFillClass, 'transition-all duration-300', {
+              'bg-success': testExecution.passRate >= 80,
+              'bg-warning': testExecution.passRate >= 60 && testExecution.passRate < 80,
+              'bg-error': testExecution.passRate < 60,
+            })}
             style={{ width: `${testExecution.passRate}%` }}
           />
         </div>
@@ -94,9 +101,9 @@ export const TestExecutionCard: React.FC<TestExecutionCardProps> = ({
                   <span className="text-xs text-base-content/50">({item.percentage}%)</span>
                 </div>
               </div>
-              <div className="w-full h-2 bg-base-200 rounded-full overflow-hidden">
+              <div className={dashboardProgressTrackSmClass}>
                 <div
-                  className={`h-full ${config.bgColor} transition-all duration-300`}
+                  className={cn(dashboardProgressFillClass, config.bgColor, 'transition-all duration-300')}
                   style={{ width: `${item.percentage}%` }}
                 />
               </div>
@@ -106,7 +113,7 @@ export const TestExecutionCard: React.FC<TestExecutionCardProps> = ({
       </div>
 
       {/* Resumo Rápido */}
-      <div className="grid grid-cols-2 gap-3 pt-4 border-t border-base-300">
+      <div className={cn('grid grid-cols-2 gap-3', dashboardSectionDividerClass)}>
         <div className="text-center p-3 rounded-xl bg-success/10">
           <p className="text-xs text-base-content/60 mb-1">Aprovados</p>
           <p className="text-xl font-bold text-success">{testExecution.passed}</p>

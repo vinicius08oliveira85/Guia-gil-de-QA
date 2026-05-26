@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '../../utils/cn';
+import { dashboardChartShellClass } from './dashboardNeuUi';
 
 const RADIUS = 110;
 const STROKE = 12;
@@ -35,10 +36,7 @@ export const QualityScoreChart = React.memo<QualityScoreChartProps>(
 
     return (
       <div
-        className={cn(
-          'bg-base-100 rounded-2xl shadow-sm border border-base-300 p-8 flex flex-col items-center justify-center min-h-[400px]',
-          className
-        )}
+        className={cn(dashboardChartShellClass, className)}
       >
         <div className="flex flex-col items-center gap-1 mb-6">
           <span className="text-xs font-semibold text-base-content/70 uppercase tracking-widest">

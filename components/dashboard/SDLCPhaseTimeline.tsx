@@ -10,6 +10,12 @@ import { phaseIcons, phaseDisplayNames } from '../../utils/sdlcPhaseIcons';
 import { PHASE_NAMES } from '../../utils/constants';
 import { getPriorityVariant } from '../../utils/taskHelpers';
 import { Badge } from '../common/Badge';
+import {
+  dashboardHoverCardClass,
+  dashboardProgressFillClass,
+  dashboardProgressTrackClass,
+  dashboardSectionDividerClass,
+} from './dashboardNeuUi';
 
 interface SDLCPhaseTimelineProps {
   project: Project;
@@ -100,9 +106,9 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(
                         {Math.round(progressPercentage)}% completo
                       </span>
                     </div>
-                    <div className="h-2.5 bg-base-200 rounded-full overflow-hidden">
+                    <div className={cn(dashboardProgressTrackClass, 'h-2.5')}>
                       <div
-                        className="h-full bg-[var(--brand-cta)] transition-all duration-500 rounded-full"
+                        className={cn(dashboardProgressFillClass, 'bg-[var(--brand-cta)] transition-all duration-500')}
                         style={{ width: `${progressPercentage}%` }}
                       />
                     </div>
@@ -135,7 +141,7 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(
                     {phaseAnalysis.nextSteps.map((step, index) => (
                       <div
                         key={index}
-                        className="flex items-start gap-3 p-4 rounded-lg bg-base-100 border border-base-300 hover:bg-base-200 transition-colors"
+                        className={dashboardHoverCardClass}
                       >
                         <div className="mt-0.5 flex-shrink-0">
                           <Circle className="h-5 w-5 text-base-content/40" aria-label="Pendente" />
@@ -188,7 +194,7 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(
                       return (
                         <div
                           key={index}
-                          className="p-4 rounded-lg bg-base-100 border border-base-300 space-y-3 hover:bg-base-200 transition-colors"
+                          className={cn(dashboardHoverCardClass, 'space-y-3')}
                         >
                           <div className="flex items-start justify-between gap-3">
                             <h4 className="font-medium text-base-content leading-relaxed">
@@ -205,7 +211,7 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(
                           <p className="text-sm text-base-content/70 leading-relaxed">
                             {blocker.description}
                           </p>
-                          <div className="space-y-2 pt-2 border-t border-base-300">
+                          <div className="space-y-2 border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pt-2">
                             <div className="flex items-center gap-2 text-sm font-medium text-base-content">
                               <Lightbulb className="h-4 w-4 text-warning" aria-label="Sugestão" />
                               <span>Sugestão</span>

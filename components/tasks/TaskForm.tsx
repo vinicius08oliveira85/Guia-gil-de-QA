@@ -4,7 +4,9 @@ import { motion } from 'framer-motion';
 import { cn } from '../../utils/cn';
 import {
   taskCardFieldLabelClass,
+  taskIconHoverClass,
   taskModalSectionClass,
+  taskNeuBorderDividerClass,
   taskSelectControlClass,
 } from './taskActionLayout';
 import { JiraTask, JiraTaskType, BugSeverity, TeamRole, TaskPriority } from '../../types';
@@ -17,6 +19,7 @@ import { Button } from '../common/Button';
 import { helpContent } from '../../utils/helpContent';
 import { isValidJiraKey } from '../../utils/jiraFieldMapper';
 import type { JiraTaskFormData } from '../../services/jiraService';
+import { AppSelect } from '../common/AppSelect';
 
 export const TaskForm: React.FC<{
   onSave: (
@@ -203,7 +206,7 @@ export const TaskForm: React.FC<{
               error={validationErrors.id}
               success={taskData.id.length >= 3 && !validationErrors.id}
               required
-              className="input-sm rounded-xl border-base-300"
+              className={cn('input-sm rounded-xl border', taskNeuBorderDividerClass)}
             />
             {!existingTask && onImportFromJira && (
               <button
@@ -246,7 +249,7 @@ export const TaskForm: React.FC<{
               error={validationErrors.title}
               success={taskData.title.length >= 5 && !validationErrors.title}
               required
-              className="input-sm rounded-xl border-base-300"
+              className={cn('input-sm rounded-xl border', taskNeuBorderDividerClass)}
             />
           </div>
           <div>
@@ -257,7 +260,7 @@ export const TaskForm: React.FC<{
                 content={helpContent.task.fields.type.content}
               />
             </label>
-            <select
+            <AppSelect
               id="type"
               value={taskData.type}
               onChange={e =>
@@ -273,7 +276,7 @@ export const TaskForm: React.FC<{
               <option value="História">História</option>
               <option value="Tarefa">Tarefa</option>
               <option value="Bug">Bug</option>
-            </select>
+            </AppSelect>
           </div>
           <div>
             <label htmlFor="priority" className={labelClass}>
@@ -283,7 +286,7 @@ export const TaskForm: React.FC<{
                 content={helpContent.task.fields.priority.content}
               />
             </label>
-            <select
+            <AppSelect
               id="priority"
               value={taskData.priority}
               onChange={e => setTaskData({ ...taskData, priority: e.target.value as TaskPriority })}
@@ -293,7 +296,7 @@ export const TaskForm: React.FC<{
               <option value="Média">Média</option>
               <option value="Alta">Alta</option>
               <option value="Urgente">Urgente</option>
-            </select>
+            </AppSelect>
           </div>
           <div className={taskData.type !== 'Bug' ? 'opacity-40 pointer-events-none' : ''}>
             <label htmlFor="severity" className={labelClass}>
@@ -303,7 +306,7 @@ export const TaskForm: React.FC<{
                 content={helpContent.task.fields.severity.content}
               />
             </label>
-            <select
+            <AppSelect
               id="severity"
               value={taskData.severity}
               onChange={e => setTaskData({ ...taskData, severity: e.target.value as BugSeverity })}
@@ -314,7 +317,7 @@ export const TaskForm: React.FC<{
               <option value="Alto">Alto</option>
               <option value="Médio">Médio</option>
               <option value="Baixo">Baixo</option>
-            </select>
+            </AppSelect>
           </div>
           {taskData.type !== 'Epic' && (
             <div className={taskData.type === 'Bug' ? '' : 'sm:col-span-2'}>
@@ -325,7 +328,7 @@ export const TaskForm: React.FC<{
                   content={helpContent.task.fields.parentId.content}
                 />
               </label>
-              <select
+              <AppSelect
                 id="parentId"
                 value={taskData.parentId}
                 onChange={e => setTaskData({ ...taskData, parentId: e.target.value })}
@@ -337,7 +340,7 @@ export const TaskForm: React.FC<{
                     {epic.id}: {epic.title}
                   </option>
                 ))}
-              </select>
+              </AppSelect>
             </div>
           )}
           <div>
@@ -348,7 +351,7 @@ export const TaskForm: React.FC<{
                 content={helpContent.task.fields.owner.content}
               />
             </label>
-            <select
+            <AppSelect
               id="owner"
               value={taskData.owner}
               onChange={e => setTaskData({ ...taskData, owner: e.target.value as TeamRole })}
@@ -357,7 +360,7 @@ export const TaskForm: React.FC<{
               <option value="Product">Produto</option>
               <option value="QA">QA</option>
               <option value="Dev">Desenvolvimento</option>
-            </select>
+            </AppSelect>
           </div>
           <div>
             <label htmlFor="assignee" className={labelClass}>
@@ -367,7 +370,7 @@ export const TaskForm: React.FC<{
                 content={helpContent.task.fields.assignee.content}
               />
             </label>
-            <select
+            <AppSelect
               id="assignee"
               value={taskData.assignee}
               onChange={e => setTaskData({ ...taskData, assignee: e.target.value as TeamRole })}
@@ -376,7 +379,7 @@ export const TaskForm: React.FC<{
               <option value="Product">Produto</option>
               <option value="QA">QA</option>
               <option value="Dev">Desenvolvimento</option>
-            </select>
+            </AppSelect>
           </div>
         </div>
       </motion.div>
@@ -426,7 +429,11 @@ export const TaskForm: React.FC<{
           type="button"
           variant="ghost"
           size="sm"
-          className="rounded-xl border border-base-300 text-base-content hover:bg-base-200"
+          className={cn(
+            'rounded-xl border text-base-content',
+            taskNeuBorderDividerClass,
+            taskIconHoverClass
+          )}
           onClick={onCancel}
         >
           Cancelar

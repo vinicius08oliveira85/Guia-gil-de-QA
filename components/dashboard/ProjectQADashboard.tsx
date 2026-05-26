@@ -12,12 +12,21 @@ import { EmptyState } from '../common/EmptyState';
 import { CompassIcon, CheckCircleIcon } from '../common/Icons';
 import { Zap, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { logger } from '../../utils/logger';
+import { cn } from '../../utils/cn';
 import { getDisplayStatusLabel } from '../../utils/taskHelpers';
 import {
   categorizeJiraStatus,
   getTaskStatusCategory,
   JiraStatusCategory,
 } from '../../utils/jiraStatusCategorizer';
+import {
+  dashboardHeroClass,
+  dashboardListRowClass,
+  dashboardMutedBarClass,
+  dashboardPanelClass,
+  dashboardProgressFillClass,
+  dashboardProgressTrackClass,
+} from './dashboardNeuUi';
 
 export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) => {
   const metrics = useProjectMetrics(project);
@@ -228,7 +237,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
     Validado: 'bg-info',
     Bloqueado: 'bg-error',
     Concluído: 'bg-success',
-    Outros: 'bg-base-300',
+    Outros: dashboardMutedBarClass,
   };
 
   // Função para obter cor baseado em status ou categoria
@@ -237,12 +246,12 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
       typeof statusOrCategory === 'string'
         ? categorizeJiraStatus(statusOrCategory)
         : statusOrCategory;
-    return categoryColors[category] || 'bg-base-300';
+    return categoryColors[category] || dashboardMutedBarClass;
   };
 
   return (
     <div className="space-y-6">
-      <div className="mica flex flex-col gap-4 !rounded-[var(--rounded-box)] !shadow-none soft-shadow px-4 py-4 sm:px-6 sm:py-6 md:flex-row md:items-center md:justify-between">
+      <div className={dashboardHeroClass}>
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2">
             <span className="badge badge-outline px-4 py-3 border-primary/30 text-primary bg-primary/10">
@@ -347,7 +356,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
               />
             </div>
 
-            <div className="space-y-5 rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-100 p-5 soft-shadow">
+            <div className={dashboardPanelClass}>
               <div className="flex items-center justify-between gap-3">
                 <h3 className="text-lg font-semibold text-base-content">Progresso geral</h3>
                 <Badge
@@ -442,7 +451,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
             </div>
           </div>
           <aside className="space-y-4">
-            <div className="space-y-4 rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-100 p-5 soft-shadow">
+            <div className={dashboardPanelClass}>
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-base-content">Fluxo das tarefas de QA</h3>
                 <Badge variant="info" size="sm">
@@ -459,9 +468,9 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                         <span>{statusLabel}</span>
                         <span className="font-semibold text-base-content">{bucket.count}</span>
                       </div>
-                      <div className="mt-1 h-2 rounded-full bg-base-300">
+                      <div className={dashboardProgressTrackClass}>
                         <div
-                          className={`h-2 rounded-full ${getStatusColor(category)}`}
+                          className={cn(dashboardProgressFillClass, getStatusColor(category))}
                           style={{ width: `${bucket.percentage}%` }}
                           aria-label={`Status ${statusLabel}`}
                           role="progressbar"
@@ -476,7 +485,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
               </div>
             </div>
 
-            <div className="space-y-4 rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-100 p-5 soft-shadow">
+            <div className={dashboardPanelClass}>
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-base-content">Alertas imediatos</h3>
                 <CheckCircleIcon className="h-5 w-5 text-success" />
@@ -485,7 +494,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                 {qaAlerts.map(alert => (
                   <div
                     key={alert.label}
-                    className="flex items-center justify-between rounded-[var(--radius)] border border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-base-100 px-3 py-2"
+                    className={dashboardListRowClass}
                     role="listitem"
                   >
                     <div>
@@ -504,7 +513,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
               </div>
             </div>
 
-            <div className="space-y-4 rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-100 p-5 soft-shadow">
+            <div className={dashboardPanelClass}>
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-base-content">Próximas ações de QA</h3>
                 <Badge variant="default" size="sm">
@@ -520,7 +529,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                   {highlightTasks.map(task => (
                     <div
                       key={task.id}
-                      className="rounded-[var(--radius)] border border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-base-100 px-3 py-2"
+                      className={dashboardListRowClass}
                       role="listitem"
                     >
                       <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] text-base-content/70">

@@ -52,7 +52,7 @@ export const ImageModal: React.FC<ImageModalProps> = ({ url, fileName, onClose, 
     <Modal isOpen={true} onClose={onClose} title={fileName} size="2xl">
       <div className="flex flex-col gap-4">
         {loadError ? (
-          <div className="flex flex-col items-center justify-center py-12 bg-base-200 rounded-xl text-error">
+          <div className="flex flex-col items-center justify-center py-12 bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] rounded-xl text-error">
             <ImageIcon size={48} className="mb-2" aria-hidden="true" />
             <span className="text-sm font-medium">Erro ao carregar</span>
             <button
@@ -64,7 +64,7 @@ export const ImageModal: React.FC<ImageModalProps> = ({ url, fileName, onClose, 
             </button>
           </div>
         ) : showLoading ? (
-          <div className="flex flex-col items-center justify-center py-12 bg-base-200 rounded-xl">
+          <div className="flex flex-col items-center justify-center py-12 bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] rounded-xl">
             <Spinner />
             <span className="text-sm text-base-content/70 mt-2">Carregando imagem...</span>
           </div>

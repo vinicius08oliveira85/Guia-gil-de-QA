@@ -16,6 +16,7 @@ import type { BacklogSprintFilterOption } from '../../utils/taskSprintDisplay';
 import { BACKLOG_SPRINT_FILTER_ALL } from '../../utils/taskSprintDisplay';
 import { cn } from '../../utils/cn';
 import { BacklogToolbarField } from './BacklogToolbarField';
+import { AppSelect } from '../common/AppSelect';
 import {
   backlogActiveChipClass,
   backlogToolbarChipsRowClass,
@@ -98,12 +99,12 @@ export const BacklogFiltersToolbar: React.FC<BacklogFiltersToolbarProps> = ({
       <p className={backlogToolbarHelpClass}>
         {itemFilter === 'completed' ? (
           <>
-            <strong className="text-[var(--brand-text-strong)]">Concluídos</strong> — Done ou Jira
+            <strong className="text-[var(--leve-header-text)]">Concluídos</strong> — Done ou Jira
             encerrado — exceto Epics.
           </>
         ) : (
           <>
-            <strong className="text-[var(--brand-text-strong)]">To Do</strong> ou fila Jira (Backlog,
+            <strong className="text-[var(--leve-header-text)]">To Do</strong> ou fila Jira (Backlog,
             A fazer) — exceto Epics.
           </>
         )}
@@ -139,11 +140,11 @@ export const BacklogFiltersToolbar: React.FC<BacklogFiltersToolbarProps> = ({
                 </button>
               ) : null}
             </div>
-            <select
+            <AppSelect
               id="backlog-sprint-filter"
               value={sprintFilter}
               disabled={disabled || sprintOptions.length <= 1}
-              onChange={e => onSprintFilterChange(e.target.value)}
+              onChange={v => onSprintFilterChange(v)}
               className={backlogToolbarSelectClass}
               aria-label="Filtrar backlog por sprint"
             >
@@ -152,7 +153,7 @@ export const BacklogFiltersToolbar: React.FC<BacklogFiltersToolbarProps> = ({
                   {opt.isActive ? `★ ${opt.label}` : opt.label}
                 </option>
               ))}
-            </select>
+            </AppSelect>
           </div>
         ) : null}
 
@@ -223,7 +224,7 @@ export const BacklogFiltersToolbar: React.FC<BacklogFiltersToolbarProps> = ({
               Tipo: {typeFilter}
               <button
                 type="button"
-                className="flex h-4 w-4 items-center justify-center rounded-full hover:bg-[var(--brand-chip-hover)]"
+                className="flex h-4 w-4 items-center justify-center rounded-full hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_12%,var(--leve-neu-bg))]"
                 aria-label="Remover filtro de tipo"
                 onClick={() => onTypeFilterChange('all')}
               >
@@ -236,7 +237,7 @@ export const BacklogFiltersToolbar: React.FC<BacklogFiltersToolbarProps> = ({
               Prioridade: {priorityFilter}
               <button
                 type="button"
-                className="flex h-4 w-4 items-center justify-center rounded-full hover:bg-[var(--brand-chip-hover)]"
+                className="flex h-4 w-4 items-center justify-center rounded-full hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_12%,var(--leve-neu-bg))]"
                 aria-label="Remover filtro de prioridade"
                 onClick={() => onPriorityFilterChange('all')}
               >
@@ -249,7 +250,7 @@ export const BacklogFiltersToolbar: React.FC<BacklogFiltersToolbarProps> = ({
               SP: {storyPointsFilter === 'withSp' ? 'Com pontos' : 'Sem pontos'}
               <button
                 type="button"
-                className="flex h-4 w-4 items-center justify-center rounded-full hover:bg-[var(--brand-chip-hover)]"
+                className="flex h-4 w-4 items-center justify-center rounded-full hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_12%,var(--leve-neu-bg))]"
                 aria-label="Remover filtro de story points"
                 onClick={() => onStoryPointsFilterChange('all')}
               >

@@ -22,23 +22,40 @@ import { viewFileInNewTab } from '../services/fileViewerService';
 import { DocumentStatsCards } from './documents/DocumentStatsCards';
 import { DocumentCard } from './documents/DocumentCard';
 import { Search, Upload, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
-import { Button } from './common/Button';
 import { cn } from '../utils/cn';
 import { documentCardGrid, projectViewPanel, projectViewShell } from './common/viewUi';
 import {
-  leveViewFilterPillClass,
-  leveViewOutlineBtnClass,
-  leveViewPageHeaderShellClass,
-  leveViewPageJiraBadgeClass,
-  leveViewPageMutedClass,
-  leveViewPagePanelClass,
-  leveViewPageSubtitleClass,
-  leveViewPageTitleClass,
-  leveViewPrimaryBtnClass,
-  leveViewSearchInputClass,
-  workspacePanelShellClass,
-  workspacePanelSectionTitleClass,
-} from './common/projectCardUi';
+  documentsEyebrowClass,
+  documentsFilterPillClass,
+  documentsFilterPillsGroupClass,
+  documentsFilterRowClass,
+  documentsFiltersPanelClass,
+  documentsJiraBadgeClass,
+  documentsModalFieldLabelClass,
+  documentsModalFooterCancelClass,
+  documentsModalFooterClass,
+  documentsModalFooterSaveClass,
+  documentsModalIframeClass,
+  documentsModalInputClass,
+  documentsModalMediaClass,
+  documentsModalMetaClass,
+  documentsModalPreClass,
+  documentsModalPreviewInsetClass,
+  documentsModalSectionLabelClass,
+  documentsModalTextareaClass,
+  documentsOutlineBtnClass,
+  documentsPageHeaderClass,
+  documentsPageMutedClass,
+  documentsPageSubtitleClass,
+  documentsPageTitleClass,
+  documentsPrimaryBtnClass,
+  documentsSearchInputClass,
+  documentsSummaryStatIconAccentClass,
+  documentsSummaryStatIconSuccessClass,
+  documentsSummaryStatsClass,
+  documentsSummaryStatStrongClass,
+  documentsSummaryStripClass,
+} from './documents/documentsNeuUi';
 import { DocumentAnalysisBody } from './documents/DocumentAnalysisBody';
 
 interface DocumentWithMetadata extends ProjectDocument {
@@ -360,7 +377,7 @@ export const DocumentsView: React.FC<{
         {stats.total} documento{stats.total !== 1 ? 's' : ''} • {formatFileSize(stats.totalSize)}
       </span>
       {lastUpdatedText ? (
-        <span className={cn(leveViewPageMutedClass, 'text-xs')} title="Última alteração do projeto">
+        <span className={cn(documentsPageMutedClass, 'text-xs')} title="Última alteração do projeto">
           {' '}
           — Atualizado {lastUpdatedText}
         </span>
@@ -372,20 +389,20 @@ export const DocumentsView: React.FC<{
 
   return (
     <div className={projectViewShell} role="main" aria-label="Documentos do projeto">
-      <header className={leveViewPageHeaderShellClass}>
+      <header className={documentsPageHeaderClass}>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
             <div className="mb-1 flex flex-wrap items-center gap-2">
-              <h1 id="documents-section-heading" className={leveViewPageTitleClass}>
+              <h1 id="documents-section-heading" className={documentsPageTitleClass}>
                 Documentos
               </h1>
               {jiraProjectKey ? (
-                <span className={leveViewPageJiraBadgeClass}>Jira: {jiraProjectKey}</span>
+                <span className={documentsJiraBadgeClass}>Jira: {jiraProjectKey}</span>
               ) : null}
             </div>
-            <p className={leveViewPageSubtitleClass}>{documentsDescription}</p>
+            <p className={documentsPageSubtitleClass}>{documentsDescription}</p>
           </div>
-          <label className={cn(leveViewPrimaryBtnClass, 'shrink-0 cursor-pointer')}>
+          <label className={cn(documentsPrimaryBtnClass, 'shrink-0 cursor-pointer')}>
             <Upload className="h-4 w-4 shrink-0" aria-hidden />
             Carregar
             <input
@@ -413,30 +430,25 @@ export const DocumentsView: React.FC<{
         <SpecificationDocumentProcessor project={project} onUpdateProject={onUpdateProject} />
       </section>
 
-      <section className={leveViewPagePanelClass} aria-label="Filtros e busca de documentos">
+      <section className={documentsFiltersPanelClass} aria-label="Filtros e busca de documentos">
         {stats.total > 0 ? (
-          <div
-            className={cn(
-              workspacePanelShellClass,
-              'mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-2.5 sm:px-3.5'
-            )}
-          >
-            <span className={workspacePanelSectionTitleClass}>Resumo</span>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-sans text-sm text-[var(--workspace-panel-text-muted)]">
+          <div className={documentsSummaryStripClass}>
+            <span className={documentsEyebrowClass}>Resumo</span>
+            <div className={documentsSummaryStatsClass}>
               <span className="inline-flex items-center gap-1.5">
-                <FileText className="h-4 w-4 text-[var(--workspace-panel-accent)]" aria-hidden />
-                <strong className="text-[var(--workspace-panel-text)]">{stats.total}</strong> documento
+                <FileText className={documentsSummaryStatIconAccentClass} aria-hidden />
+                <strong className={documentsSummaryStatStrongClass}>{stats.total}</strong> documento
                 {stats.total !== 1 ? 's' : ''}
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4 text-success" aria-hidden />
-                <strong className="text-[var(--workspace-panel-text)]">{stats.withAnalysisCount}</strong>{' '}
+                <CheckCircle2 className={documentsSummaryStatIconSuccessClass} aria-hidden />
+                <strong className={documentsSummaryStatStrongClass}>{stats.withAnalysisCount}</strong>{' '}
                 com análise
               </span>
               {stats.withoutAnalysisCount > 0 ? (
                 <span className="inline-flex items-center gap-1.5">
-                  <AlertCircle className="h-4 w-4 text-[var(--workspace-panel-accent)]" aria-hidden />
-                  <strong className="text-[var(--workspace-panel-text)]">
+                  <AlertCircle className={documentsSummaryStatIconAccentClass} aria-hidden />
+                  <strong className={documentsSummaryStatStrongClass}>
                     {stats.withoutAnalysisCount}
                   </strong>{' '}
                   sem análise
@@ -444,7 +456,7 @@ export const DocumentsView: React.FC<{
               ) : null}
               <span>
                 Total:{' '}
-                <strong className="text-[var(--workspace-panel-text)]">
+                <strong className={documentsSummaryStatStrongClass}>
                   {formatFileSize(stats.totalSize)}
                 </strong>
               </span>
@@ -453,7 +465,7 @@ export const DocumentsView: React.FC<{
         ) : null}
 
         {stats.total > 0 ? (
-          <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+          <div className={documentsFilterRowClass}>
             <div className="relative min-w-0 flex-1 sm:min-w-[240px]">
               <Search
                 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--leve-header-text-muted)]"
@@ -464,15 +476,15 @@ export const DocumentsView: React.FC<{
                 placeholder="Buscar documentos..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className={cn(leveViewSearchInputClass, 'min-w-[200px] flex-1')}
+                className={documentsSearchInputClass}
                 aria-label="Buscar documentos"
               />
             </div>
-            <div className="flex flex-wrap gap-1.5 sm:gap-2" role="group" aria-label="Filtrar documentos">
+            <div className={documentsFilterPillsGroupClass} role="group" aria-label="Filtrar documentos">
               <button
                 type="button"
                 onClick={() => setSelectedCategory('all')}
-                className={leveViewFilterPillClass(selectedCategory === 'all')}
+                className={documentsFilterPillClass(selectedCategory === 'all')}
                 aria-pressed={selectedCategory === 'all'}
                 aria-label={`Filtrar: todas, ${stats.total} documento(s)`}
               >
@@ -486,7 +498,7 @@ export const DocumentsView: React.FC<{
                     key={cat.id}
                     type="button"
                     onClick={() => setSelectedCategory(cat.id)}
-                    className={leveViewFilterPillClass(isSelected)}
+                    className={documentsFilterPillClass(isSelected)}
                     aria-pressed={isSelected}
                     aria-label={`Filtrar por ${label}, ${stats.categoryCounts[cat.id] || 0} documento(s)`}
                   >
@@ -498,7 +510,7 @@ export const DocumentsView: React.FC<{
                 <button
                   type="button"
                   onClick={() => setOnlyWithoutAnalysis(prev => !prev)}
-                  className={leveViewFilterPillClass(onlyWithoutAnalysis)}
+                  className={documentsFilterPillClass(onlyWithoutAnalysis)}
                   aria-pressed={onlyWithoutAnalysis}
                   aria-label={
                     onlyWithoutAnalysis
@@ -517,7 +529,7 @@ export const DocumentsView: React.FC<{
                     setSelectedCategory('all');
                     setOnlyWithoutAnalysis(false);
                   }}
-                  className={leveViewOutlineBtnClass}
+                  className={documentsOutlineBtnClass}
                   aria-label="Limpar filtros"
                 >
                   Limpar filtros
@@ -610,35 +622,37 @@ export const DocumentsView: React.FC<{
         >
           <div className="space-y-4">
             <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="info" size="sm">
+              <Badge variant="default" appearance="pill" size="sm">
                 {formatFileSize(selectedDoc.size || 0)}
               </Badge>
-              <Badge variant="info" size="sm">
+              <Badge variant="default" appearance="pill" size="sm">
                 {selectedDoc.content.split('\n').length} linhas
               </Badge>
               {selectedDoc.category && (
-                <Badge variant="info" size="sm">
+                <Badge variant="default" appearance="pill" size="sm">
                   {DOCUMENT_CATEGORIES.find(c => c.id === selectedDoc.category)?.label}
                 </Badge>
               )}
             </div>
-            <div className="bg-base-200 p-4 rounded-[var(--radius)] max-h-96 overflow-y-auto">
+            <div className={documentsModalPreviewInsetClass}>
               {selectedDoc.content.startsWith('data:image/') ? (
                 <div className="space-y-4">
                   <img
                     src={selectedDoc.content}
                     alt={selectedDoc.name}
-                    className="max-w-full h-auto rounded-[var(--radius)] border border-base-300"
+                    className={documentsModalMediaClass}
                   />
-                  <div className="text-sm text-base-content/70">
+                  <div className={documentsModalMetaClass}>
                     <p>
-                      <strong>Nome:</strong> {selectedDoc.name}
+                      <strong className="text-[var(--leve-header-text)]">Nome:</strong> {selectedDoc.name}
                     </p>
                     <p>
-                      <strong>Tamanho:</strong> {formatFileSize(selectedDoc.size || 0)}
+                      <strong className="text-[var(--leve-header-text)]">Tamanho:</strong>{' '}
+                      {formatFileSize(selectedDoc.size || 0)}
                     </p>
                     <p>
-                      <strong>Tipo:</strong> {selectedDoc.category || 'Não categorizado'}
+                      <strong className="text-[var(--leve-header-text)]">Tipo:</strong>{' '}
+                      {selectedDoc.category || 'Não categorizado'}
                     </p>
                   </div>
                 </div>
@@ -646,29 +660,26 @@ export const DocumentsView: React.FC<{
                 <div className="space-y-4">
                   <iframe
                     src={selectedDoc.content}
-                    className="w-full h-96 rounded-[var(--radius)] border border-base-300"
+                    className={documentsModalIframeClass}
                     title={selectedDoc.name}
                   />
-                  <div className="text-sm text-base-content/70">
+                  <div className={documentsModalMetaClass}>
                     <p>
-                      <strong>Nome:</strong> {selectedDoc.name}
+                      <strong className="text-[var(--leve-header-text)]">Nome:</strong> {selectedDoc.name}
                     </p>
                     <p>
-                      <strong>Tamanho:</strong> {formatFileSize(selectedDoc.size || 0)}
+                      <strong className="text-[var(--leve-header-text)]">Tamanho:</strong>{' '}
+                      {formatFileSize(selectedDoc.size || 0)}
                     </p>
                   </div>
                 </div>
               ) : (
-                <pre className="text-sm text-base-content whitespace-pre-wrap font-mono">
-                  {selectedDoc.content}
-                </pre>
+                <pre className={documentsModalPreClass}>{selectedDoc.content}</pre>
               )}
             </div>
             {selectedDoc.analysis && (
               <div className="space-y-2">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/60">
-                  Análise IA
-                </p>
+                <p className={documentsModalSectionLabelClass}>Análise IA</p>
                 <DocumentAnalysisBody html={selectedDoc.analysis} />
               </div>
             )}
@@ -708,9 +719,7 @@ export const DocumentsView: React.FC<{
           title={`Análise de ${analysisResult.name}`}
         >
           <div className="space-y-3">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/60">
-              Resultado da análise
-            </p>
+            <p className={documentsModalSectionLabelClass}>Resultado da análise</p>
             <DocumentAnalysisBody html={analysisResult.content} />
           </div>
         </Modal>
@@ -725,34 +734,34 @@ export const DocumentsView: React.FC<{
         >
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-base-content/70 mb-2">
-                Nome do Documento
-              </label>
+              <label className={documentsModalFieldLabelClass}>Nome do Documento</label>
               <input
                 type="text"
                 value={editingDoc.name}
                 onChange={e => setEditingDoc({ ...editingDoc, name: e.target.value })}
-                className="input input-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className={documentsModalInputClass}
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-base-content/70 mb-2">
-                Conteúdo
-              </label>
+              <label className={documentsModalFieldLabelClass}>Conteúdo</label>
               <textarea
                 value={editingDoc.content}
                 onChange={e => setEditingDoc({ ...editingDoc, content: e.target.value })}
                 rows={15}
-                className="textarea textarea-bordered w-full bg-base-100 border-base-300 text-base-content font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className={documentsModalTextareaClass}
               />
             </div>
-            <div className="flex justify-end gap-2 border-t border-base-200/80 pt-4">
-              <Button variant="ghost" size="sm" className="rounded-[var(--radius)] px-5" onClick={() => setEditingDoc(null)}>
+            <div className={documentsModalFooterClass}>
+              <button
+                type="button"
+                className={documentsModalFooterCancelClass}
+                onClick={() => setEditingDoc(null)}
+              >
                 Cancelar
-              </Button>
-              <Button variant="default" size="sm" className="rounded-[var(--radius)] px-6 ring-1 ring-[color-mix(in_oklch,oklch(var(--p))_22%,transparent)]" onClick={handleSaveEdit}>
+              </button>
+              <button type="button" className={documentsModalFooterSaveClass} onClick={handleSaveEdit}>
                 Salvar
-              </Button>
+              </button>
             </div>
           </div>
         </Modal>

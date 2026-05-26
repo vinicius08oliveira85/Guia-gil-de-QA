@@ -22,9 +22,16 @@ import {
   leveViewPrimaryBtnClass,
   leveViewSearchInputClass,
 } from '../common/projectCardUi';
+import {
+  taskNeuDividerClass,
+  taskStatusNeutralClass,
+  taskTypeDefaultBadgeClass,
+  taskTypeDefaultStripeClass,
+} from './taskActionLayout';
 import { JiraIssueTypeIcon } from '../common/Icons';
 import { EmptyState } from '../common/EmptyState';
 import { getDisplayStatusLabel } from '../../utils/taskHelpers';
+import { AppSelect } from '../common/AppSelect';
 
 interface TaskLinksViewProps {
   task: JiraTask;
@@ -45,7 +52,7 @@ function taskTypeStripeClass(type: string): string {
     case 'Bug':
       return 'bg-error';
     default:
-      return 'bg-base-300';
+      return taskTypeDefaultStripeClass;
   }
 }
 
@@ -60,7 +67,7 @@ function taskTypeBadgeClass(type: string): string {
     case 'Bug':
       return 'badge badge-sm border-0 bg-error text-error-content';
     default:
-      return 'badge badge-sm border-0 bg-base-300 text-base-content';
+      return taskTypeDefaultBadgeClass;
   }
 }
 
@@ -72,9 +79,9 @@ const getStatusColor = (status: string) => {
     case 'In Progress':
       return 'border-warning/40 bg-warning/10 text-warning';
     case 'To Do':
-      return 'border-base-300 bg-base-200 text-base-content/70';
+      return cn('border', taskStatusNeutralClass);
     default:
-      return 'border-base-300 bg-base-200 text-base-content/70';
+      return cn('border', taskStatusNeutralClass);
   }
 };
 
@@ -301,9 +308,9 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
         {showAddDependency && (
           <div className={cn(leveTaskModalInsetClass, 'mb-2')}>
             <div className="flex gap-2">
-              <select
+              <AppSelect
                 value={selectedTaskId}
-                onChange={e => setSelectedTaskId(e.target.value)}
+                onChange={v => setSelectedTaskId(v)}
                 className={cn(leveViewSearchInputClass, 'select flex-1')}
               >
                 <option value="">Selecione uma tarefa...</option>
@@ -312,7 +319,7 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
                     {t.id}: {t.title}
                   </option>
                 ))}
-              </select>
+              </AppSelect>
               <button
                 type="button"
                 onClick={handleAddDependency}
@@ -346,7 +353,7 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
                   {/* Linha conectora vertical (exceto no último item) */}
                   {index < dependencies.length - 1 && (
                     <div
-                      className="absolute left-2 top-full w-0.5 h-3 bg-base-300/50 -z-10"
+                      className="absolute left-2 top-full -z-10 h-3 w-0.5 bg-[color-mix(in_srgb,var(--leve-neu-dark)_22%,var(--leve-neu-bg))]"
                       style={{ marginTop: '0.75rem' }}
                       aria-hidden="true"
                     />
@@ -380,10 +387,10 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
       {dependencies.length > 0 && dependents.length > 0 && (
         <div className="relative py-2">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-dashed border-base-300"></div>
+            <div className={cn('w-full border-t border-dashed', taskNeuDividerClass)}></div>
           </div>
           <div className="relative flex justify-center">
-            <div className="bg-base-100 px-4 text-base-content/50 text-sm">
+            <div className="leve-neu-surface px-4 text-sm text-base-content/50">
               Tarefa atual: {task.id}
             </div>
           </div>
@@ -411,7 +418,7 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
                   {/* Linha conectora vertical (exceto no último item) */}
                   {index < dependents.length - 1 && (
                     <div
-                      className="absolute left-2 top-full w-0.5 h-3 bg-base-300/50 -z-10"
+                      className="absolute left-2 top-full -z-10 h-3 w-0.5 bg-[color-mix(in_srgb,var(--leve-neu-dark)_22%,var(--leve-neu-bg))]"
                       style={{ marginTop: '0.75rem' }}
                       aria-hidden="true"
                     />

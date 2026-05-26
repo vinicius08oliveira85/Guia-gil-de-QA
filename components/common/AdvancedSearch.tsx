@@ -165,7 +165,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                     onClose();
                   }}
                   aria-label={`Selecionar resultado: ${result.title}, tipo ${result.type}`}
-                  className="w-full rounded-[var(--radius)] border border-base-300 bg-base-100 p-3 text-left transition-colors hover:bg-base-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklch,oklch(var(--p))_35%,transparent)]"
+                  className="w-full rounded-[var(--radius)] border border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] leve-neu-surface p-3 text-left transition-colors hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklch,oklch(var(--p))_35%,transparent)]"
                 >
                   <div className="flex items-center justify-between">
                     <div>

@@ -2,6 +2,7 @@ import React from 'react';
 import type { BacklogSprintFilterOption } from '../../utils/taskSprintDisplay';
 import { cn } from '../../utils/cn';
 import { appSelectClass } from '../common/viewUi';
+import { AppSelect } from '../common/AppSelect';
 
 export interface BacklogSprintFilterSelectProps {
   value: string;
@@ -19,15 +20,15 @@ export const BacklogSprintFilterSelect: React.FC<BacklogSprintFilterSelectProps>
   <div className="flex flex-wrap items-center gap-2">
     <label
       htmlFor="backlog-sprint-filter"
-      className="text-xs font-medium text-[var(--brand-text-muted)]"
+      className="text-xs font-medium text-[var(--leve-header-text-muted)]"
     >
       Sprint
     </label>
-    <select
+    <AppSelect
       id="backlog-sprint-filter"
       value={value}
       disabled={disabled || options.length <= 1}
-      onChange={e => onChange(e.target.value)}
+      onChange={v => onChange(v)}
       className={cn(appSelectClass, 'max-w-[min(100%,14rem)]')}
       aria-label="Filtrar backlog por sprint"
     >
@@ -36,15 +37,15 @@ export const BacklogSprintFilterSelect: React.FC<BacklogSprintFilterSelectProps>
           {opt.isActive ? `★ ${opt.label}` : opt.label}
         </option>
       ))}
-    </select>
+    </AppSelect>
     {value !== 'all' ? (
       <button
         type="button"
         disabled={disabled}
         onClick={() => onChange('all')}
         className={cn(
-          'text-xs font-medium text-[var(--brand-text-muted)] underline-offset-2',
-          'hover:text-[var(--brand-text-strong)] hover:underline'
+          'text-xs font-medium text-[var(--leve-header-text-muted)] underline-offset-2',
+          'hover:text-[var(--leve-header-text)] hover:underline'
         )}
       >
         Limpar sprint

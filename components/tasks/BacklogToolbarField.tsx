@@ -1,4 +1,5 @@
 import React from 'react';
+import { AppSelect } from '../common/AppSelect';
 import { cn } from '../../utils/cn';
 import {
   backlogToolbarFieldClass,
@@ -31,15 +32,15 @@ export const BacklogToolbarField: React.FC<BacklogToolbarFieldProps> = ({
     <label htmlFor={id} className={backlogToolbarLabelClass}>
       {label}
     </label>
-    <select
+    <AppSelect
       id={id}
       value={value}
       disabled={disabled}
-      onChange={e => onChange(e.target.value)}
+      onChange={onChange}
       className={backlogToolbarSelectClass}
       aria-label={ariaLabel}
     >
       {children}
-    </select>
+    </AppSelect>
   </div>
 );

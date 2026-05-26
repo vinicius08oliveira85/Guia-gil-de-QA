@@ -39,6 +39,7 @@ import { Input } from '../common/Input';
 import { logger } from '../../utils/logger';
 import { cn } from '../../utils/cn';
 import toast from 'react-hot-toast';
+import { AppSelect } from '../common/AppSelect';
 
 interface JiraSettingsTabProps {
   onProjectImported?: (project: Project) => void;
@@ -392,9 +393,9 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
                       Atualizar
                     </button>
                   </div>
-                  <select
+                  <AppSelect
                     value={selectedProjectKey}
-                    onChange={e => setSelectedProjectKey(e.target.value)}
+                    onChange={v => setSelectedProjectKey(v)}
                     className={leveSettingsSelectClass}
                   >
                     <option value="">Selecione um projeto...</option>
@@ -404,7 +405,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
                           {project.key} - {project.name}
                         </option>
                       ))}
-                  </select>
+                  </AppSelect>
                   <button
                     onClick={handleImport}
                     disabled={!selectedProjectKey || isImporting}
@@ -445,9 +446,9 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
                     </span>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--leve-header-accent)]"></div>
                   </div>
-                  <div className="w-full bg-base-200 rounded-full h-2.5 mb-2">
+                  <div className="workspace-stat-neu-track mb-2 h-2.5 w-full">
                     <div
-                      className="bg-primary h-2.5 rounded-full transition-all duration-300"
+                      className="workspace-stat-neu-fill h-2.5 rounded-full bg-primary transition-all duration-300"
                       style={{
                         width: importProgress?.total
                           ? `${Math.min((importProgress.current / importProgress.total) * 100, 100)}%`

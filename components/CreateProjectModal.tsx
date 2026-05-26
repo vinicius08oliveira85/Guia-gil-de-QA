@@ -16,6 +16,9 @@ import { useProjectsStore } from '../store/projectsStore';
 import { logger } from '../utils/logger';
 import { RefreshCw } from 'lucide-react';
 import { BackButton } from './common/BackButton';
+import { cn } from '../utils/cn';
+import { neuSurfaceClass, neuTrackClass } from './common/neuUi';
+import { AppSelect } from './common/AppSelect';
 
 export interface CreateProjectModalProps {
   isOpen: boolean;
@@ -296,7 +299,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                   label="Nome do Projeto *"
                   type="text"
                   value={newName}
-                  onChange={e => setNewName(e.target.value)}
+                  onChange={v => setNewName(v)}
                   placeholder="Ex: E-commerce App"
                   maxLength={100}
                   error={
@@ -311,7 +314,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                   <textarea
                     id="proj-desc"
                     value={newDesc}
-                    onChange={e => setNewDesc(e.target.value)}
+                    onChange={v => setNewDesc(v)}
                     rows={3}
                     className="textarea textarea-bordered w-full"
                     placeholder="Breve descrição do projeto..."
@@ -389,10 +392,13 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                     </div>
                   ) : jiraProjects.length > 0 ? (
                     <>
-                      <select
+                      <AppSelect
                         value={selectedJiraProjectKey}
-                        onChange={e => setSelectedJiraProjectKey(e.target.value)}
-                        className="select select-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:border-primary"
+                        onChange={v => setSelectedJiraProjectKey(v)}
+                        className={cn(
+                          'select select-bordered app-select w-full text-base-content focus:border-primary focus:outline-none',
+                          neuSurfaceClass
+                        )}
                       >
                         <option value="">Selecione um projeto...</option>
                         {jiraProjects.map(project => (
@@ -400,7 +406,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                             {project.key} - {project.name}
                           </option>
                         ))}
-                      </select>
+                      </AppSelect>
                       <button
                         onClick={handleImportJiraProject}
                         disabled={!selectedJiraProjectKey || isImportingJira}
@@ -414,7 +420,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                       </button>
                       {isImportingJira && importProgress && (
                         <div
-                          className="w-full bg-base-200 rounded-full h-2.5"
+                          className={cn(neuTrackClass, 'h-2.5 w-full')}
                           aria-label="Progresso de importação"
                         >
                           <div
@@ -466,7 +472,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                     id="proj-name-template"
                     type="text"
                     value={newName}
-                    onChange={e => setNewName(e.target.value)}
+                    onChange={v => setNewName(v)}
                     className="input input-bordered w-full"
                   />
                 </label>
@@ -477,7 +483,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                   <textarea
                     id="proj-desc-template"
                     value={newDesc}
-                    onChange={e => setNewDesc(e.target.value)}
+                    onChange={v => setNewDesc(v)}
                     rows={3}
                     className="textarea textarea-bordered w-full"
                   />

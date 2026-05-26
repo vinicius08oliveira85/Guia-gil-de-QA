@@ -19,6 +19,7 @@ import { Copy, MoreVertical } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { appMenuPanelClass, appSelectClass } from '../common/viewUi';
 import { taskTextareaClass } from './taskActionLayout';
+import { AppSelect } from '../common/AppSelect';
 import {
   leveTaskModalCollapsibleHeaderClass,
   leveTaskModalCollapsibleShellClass,
@@ -415,7 +416,7 @@ export const TestCaseItem: React.FC<{
           >
             Tipo de execução
           </label>
-          <select
+          <AppSelect
             id={`tc-exec-kind-${testCase.id}`}
             value={testCase.executionKind ?? ''}
             onChange={e => {
@@ -441,7 +442,7 @@ export const TestCaseItem: React.FC<{
             <option value="">Inferir pelo texto</option>
             <option value="automated">Automatizado</option>
             <option value="mixed">Misto</option>
-          </select>
+          </AppSelect>
         </div>
       </div>
 
@@ -513,7 +514,7 @@ export const TestCaseItem: React.FC<{
               </label>
               <textarea
                 value={testCase.observedResult}
-                onChange={e => onObservedResultChange?.(e.target.value)}
+                onChange={v => onObservedResultChange?.(v)}
                 disabled={!onObservedResultChange}
                 placeholder="Preencha durante a execução com o comportamento observado."
                 className={cn(taskTextareaClass, 'textarea-sm text-xs min-h-[72px]')}

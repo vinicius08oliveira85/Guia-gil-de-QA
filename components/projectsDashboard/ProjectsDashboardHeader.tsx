@@ -1,6 +1,7 @@
 import React, { useId } from 'react';
 import { Search } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { AppSelect } from '../common/AppSelect';
 import {
   projectsDashboardHeaderBadgeClass,
   projectsDashboardSearchBtnClass,
@@ -32,7 +33,7 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
           <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-2.5">
             <h1
               id={headingId}
-              className="font-heading text-2xl font-bold tracking-tight text-[var(--brand-text-strong)] sm:text-[1.75rem]"
+              className="font-heading text-2xl font-bold tracking-tight text-[var(--leve-header-text)] sm:text-[1.75rem]"
             >
               Meus Projetos
             </h1>
@@ -54,31 +55,31 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
           >
             {lastActivityText && (
               <span
-                className="text-xs text-[var(--brand-text-muted)] sm:text-sm"
+                className="text-xs text-[var(--leve-header-text-muted)] sm:text-sm"
                 title="Última alteração em qualquer projeto"
               >
                 Última atividade:{' '}
-                <span className="font-medium text-[var(--brand-text-strong)]">{lastActivityText}</span>
+                <span className="font-medium text-[var(--leve-header-text)]">{lastActivityText}</span>
               </span>
             )}
             {showSort && (
               <label className="inline-flex min-h-[44px] items-center gap-2 sm:min-h-0">
-                <span className="text-xs font-medium text-[var(--brand-text-muted)]">Ordenar:</span>
-                <select
+                <span className="text-xs font-medium text-[var(--leve-header-text-muted)]">Ordenar:</span>
+                <AppSelect
                   value={sortBy}
-                  onChange={e => onSortByChange(e.target.value as ProjectsDashboardSortBy)}
+                  onChange={v => onSortByChange(v as ProjectsDashboardSortBy)}
                   className={projectsDashboardSelectClass}
                   aria-label="Ordenar projetos por"
                 >
                   <option value="name">Nome</option>
                   <option value="updatedAt">Última atualização</option>
-                </select>
+                </AppSelect>
               </label>
             )}
           </div>
         </div>
 
-        <p className="max-w-2xl text-sm leading-relaxed text-[var(--brand-text-muted)]">
+        <p className="max-w-2xl text-sm leading-relaxed text-[var(--leve-header-text-muted)]">
           Crie, organize e acompanhe o QA por projeto.
         </p>
       </div>

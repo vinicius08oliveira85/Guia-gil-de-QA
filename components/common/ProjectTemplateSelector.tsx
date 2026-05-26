@@ -61,7 +61,7 @@ export const ProjectTemplateSelector: React.FC<ProjectTemplateSelectorProps> = (
             type="button"
             className={cn(
               'text-left p-4',
-              'bg-base-100 border border-base-300',
+              'leve-neu-surface border border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]',
               'rounded-[var(--rounded-box)]',
               'transition-all hover:shadow-md hover:border-primary/30',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20'

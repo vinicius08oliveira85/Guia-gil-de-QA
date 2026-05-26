@@ -1,7 +1,8 @@
 import React from 'react';
 import type { BacklogSortBy } from '../../utils/backlogTasks';
-import { appSelectClass } from '../common/viewUi';
+import { AppSelect } from '../common/AppSelect';
 import { cn } from '../../utils/cn';
+import { appSelectClass } from '../common/viewUi';
 
 export interface BacklogSortSelectProps {
   value: BacklogSortBy;
@@ -15,14 +16,14 @@ export const BacklogSortSelect: React.FC<BacklogSortSelectProps> = ({
   disabled = false,
 }) => (
   <div className="flex flex-wrap items-center gap-2">
-    <label htmlFor="backlog-sort-by" className="text-xs font-medium text-[var(--brand-text-muted)]">
+    <label htmlFor="backlog-sort-by" className="text-xs font-medium text-[var(--leve-header-text-muted)]">
       Ordenar backlog
     </label>
-    <select
+    <AppSelect
       id="backlog-sort-by"
       value={value}
       disabled={disabled}
-      onChange={e => onChange(e.target.value as BacklogSortBy)}
+      onChange={v => onChange(v as BacklogSortBy)}
       className={cn(appSelectClass, 'max-w-none')}
       aria-label="Ordenação do backlog"
     >
@@ -30,6 +31,6 @@ export const BacklogSortSelect: React.FC<BacklogSortSelectProps> = ({
       <option value="storyPoints">Story Points (maior primeiro)</option>
       <option value="storyPointsAsc">Story Points (menor primeiro)</option>
       <option value="id">ID da issue</option>
-    </select>
+    </AppSelect>
   </div>
 );

@@ -89,11 +89,11 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
         }}
       >
         {loading || loadingThumbnail ? (
-          <div className="flex items-center justify-center w-full h-full bg-base-200 animate-pulse">
+          <div className="flex items-center justify-center w-full h-full bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] animate-pulse">
             <ImageIcon size={iconSize} className="text-base-content/20" />
           </div>
         ) : error ? (
-          <div className="flex flex-col items-center justify-center w-full h-full bg-base-200 text-base-content/70 p-2 text-center">
+          <div className="flex flex-col items-center justify-center w-full h-full bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] text-base-content/70 p-2 text-center">
             <ImageIcon size={iconSize} className="text-base-content/50" />
             <span className="text-xs mt-1 truncate w-full" title={filename}>
               {filename}
@@ -117,7 +117,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
             }}
           />
         ) : (
-          <div className="flex items-center justify-center w-full h-full bg-base-200">
+          <div className="flex items-center justify-center w-full h-full bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))]">
             <ImageIcon size={iconSize} className="text-base-content/20" />
           </div>
         )}

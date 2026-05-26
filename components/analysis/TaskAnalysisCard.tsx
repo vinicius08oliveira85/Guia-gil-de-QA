@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { cn } from '../../utils/cn';
 import { isAnalysisOutdated } from '../../utils/analysisFreshness';
 import { getTaskIaAnalysisSnapshotHash } from '../../services/ai/generalAnalysisService';
+import { analysisCardShellClass, analysisDividerClass } from './analysisNeuUi';
 
 interface TaskAnalysisCardProps {
   analysis: TaskIAAnalysis;
@@ -44,11 +45,7 @@ export const TaskAnalysisCard: React.FC<TaskAnalysisCardProps> = ({
 
   return (
     <div
-      className={cn(
-        'p-5 bg-base-100 border rounded-xl transition-all',
-        expanded ? 'shadow-lg border-primary/30' : 'shadow-sm border-base-300',
-        contentStale ? 'bg-warning/5 border-warning/30' : undefined
-      )}
+      className={analysisCardShellClass(expanded, contentStale)}
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
@@ -102,7 +99,7 @@ export const TaskAnalysisCard: React.FC<TaskAnalysisCardProps> = ({
 
       {/* Expanded Details */}
       {expanded && (
-        <div className="space-y-3 mt-3 pt-3 border-t border-base-300">
+        <div className={cn('mt-3 space-y-3 border-t pt-3', analysisDividerClass)}>
           {/* Problems */}
           {analysis.detectedProblems.length > 0 && (
             <div>
@@ -202,7 +199,7 @@ export const TaskAnalysisCard: React.FC<TaskAnalysisCardProps> = ({
           )}
 
           {/* Metadata */}
-          <div className="pt-2 border-t border-base-300">
+          <div className={cn('border-t pt-2', analysisDividerClass)}>
             <p className="text-xs text-base-content/70 flex items-center gap-2">
               <span>
                 Gerada em {format(new Date(analysis.generatedAt), "dd/MM/yyyy 'às' HH:mm")}

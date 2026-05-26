@@ -18,6 +18,11 @@ import {
   computeTaskDonePercent,
   computeProjectsWithTestExecutionAlerts,
 } from '../utils/workspaceAnalytics';
+import {
+  applyManualProjectOrder,
+  buildProjectOrderIds,
+  moveProjectIdInOrder,
+} from '../utils/projectListOrder';
 import { ProjectsDashboardHeader } from './projectsDashboard/ProjectsDashboardHeader';
 import { WorkspaceDaisyStats } from './projectsDashboard/WorkspaceDaisyStats';
 import { GlobalEfficiencyMetric } from './projectsDashboard/GlobalEfficiencyMetric';
@@ -63,6 +68,7 @@ export const ProjectsDashboard: React.FC<{
   const [retryCooldownUntil, setRetryCooldownUntil] = useState<number | null>(null);
   const [syncBannerDismissed, setSyncBannerDismissed] = useState(false);
   const [sortBy, setSortBy] = useLocalStorage<'name' | 'updatedAt'>('projectsSortBy', 'name');
+  const [manualOrder, setManualOrder] = useLocalStorage<string[]>('projectsManualOrder', []);
   const [quickFilter, setQuickFilter] = useState<QuickFilter>('all');
   // Visualização sempre em grade - removido viewMode
   // Ordenação fixa por nome - removido sortBy
@@ -122,17 +128,36 @@ export const ProjectsDashboard: React.FC<{
     [setSortBy]
   );
 
-  const sortedProjects = useMemo(() => {
-    const list = [...projects];
+  const sortProjectsList = useCallback((list: Project[]) => {
+    const copy = [...list];
     if (sortBy === 'name') {
-      return list.sort((a, b) => a.name.localeCompare(b.name));
+      return copy.sort((a, b) => a.name.localeCompare(b.name));
     }
-    return list.sort((a, b) => {
+    return copy.sort((a, b) => {
       const aDate = a.updatedAt || a.createdAt || '';
       const bDate = b.updatedAt || b.createdAt || '';
       return bDate.localeCompare(aDate);
     });
-  }, [projects, sortBy]);
+  }, [sortBy]);
+
+  const sortedProjects = useMemo(() => {
+    const list = sortProjectsList(projects);
+    return applyManualProjectOrder(list, manualOrder);
+  }, [projects, sortBy, manualOrder, sortProjectsList]);
+
+  /** Persiste reordenação do preview do browser (card na 2ª posição → 1ª). */
+  const previewCardOrderSeeded = useRef(false);
+  useEffect(() => {
+    if (previewCardOrderSeeded.current || manualOrder.length > 0 || projects.length < 2) return;
+
+    const base = sortProjectsList(projects);
+    const moved = base.find(p => p.name === 'Gestão de Pacientes Internados');
+    const fromIndex = moved ? base.findIndex(p => p.id === moved.id) : -1;
+    if (!moved || fromIndex !== 1) return;
+
+    previewCardOrderSeeded.current = true;
+    setManualOrder(moveProjectIdInOrder(buildProjectOrderIds(base), moved.id, 0));
+  }, [projects, manualOrder.length, sortProjectsList, setManualOrder]);
 
   const filteredProjects = useMemo(() => {
     if (quickFilter === 'withBugs') return sortedProjects.filter(projectHasOpenBugs);
@@ -432,7 +457,7 @@ export const ProjectsDashboard: React.FC<{
                   </div>
                 ) : (
                   <div className={projectsDashboardMessagePanelClass} role="status" aria-live="polite">
-                    <p className="mb-4 max-w-full mx-auto text-sm text-[var(--brand-text-muted)]">
+                    <p className="mb-4 max-w-full mx-auto text-sm text-[var(--leve-header-text-muted)]">
                       {quickFilter === 'withBugs'
                         ? 'Nenhum projeto com bugs abertos corresponde a este filtro.'
                         : 'Nenhum projeto corresponde a "Precisa de atenção" com os critérios atuais.'}

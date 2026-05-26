@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Card } from '../common/Card';
+import { dashboardPanelClass } from './dashboardNeuUi';
 import { Project } from '../../types';
 
 interface ProgressTrendsCardProps {
@@ -62,7 +63,7 @@ export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project 
   }, [tasks, allTestCases, period]);
 
   return (
-    <Card className="p-5 border border-base-300 hover:border-primary/30 hover:shadow-md transition-all duration-200">
+    <Card className={dashboardPanelClass}>
       {/* Cards de Métricas */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 hover:border-primary/40 transition-all group">

@@ -12,6 +12,12 @@ import {
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
 import { ConfirmDialog } from '../common/ConfirmDialog';
+import { cn } from '../../utils/cn';
+import {
+  projectNeuBorderClass,
+  projectNeuInsetClass,
+  projectNeuSurfaceClass,
+} from './projectNeuUi';
 
 export type BusinessRuleCategoryPresetsModalProps = {
   isOpen: boolean;
@@ -114,7 +120,11 @@ export const BusinessRuleCategoryPresetsModal: React.FC<BusinessRuleCategoryPres
           </div>
 
           <ul
-            className="rounded-lg border border-base-300 divide-y divide-base-300 max-h-56 overflow-y-auto bg-base-100/80"
+            className={cn(
+              projectNeuInsetClass,
+              'max-h-56 divide-y overflow-y-auto rounded-lg',
+              'divide-[color-mix(in_srgb,var(--leve-neu-light)_30%,transparent)]'
+            )}
             role="list"
           >
             {sortedPresets.map(name => (
@@ -125,7 +135,11 @@ export const BusinessRuleCategoryPresetsModal: React.FC<BusinessRuleCategoryPres
                       type="text"
                       value={editDraft}
                       onChange={e => setEditDraft(e.target.value)}
-                      className="input input-bordered input-sm flex-1 min-w-[120px] bg-base-100 border-base-300 rounded-lg"
+                      className={cn(
+                        'input input-bordered input-sm min-w-[120px] flex-1 rounded-lg',
+                        projectNeuSurfaceClass,
+                        projectNeuBorderClass
+                      )}
                       aria-label={`Novo nome para ${name}`}
                     />
                     <Button type="button" variant="default" size="sm" onClick={saveEdit}>
@@ -176,7 +190,11 @@ export const BusinessRuleCategoryPresetsModal: React.FC<BusinessRuleCategoryPres
                 value={newName}
                 onChange={e => setNewName(e.target.value)}
                 placeholder="Ex.: Performance"
-                className="input input-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[44px] rounded-xl"
+                className={cn(
+                  'input input-bordered min-h-[44px] w-full rounded-xl text-base-content',
+                  projectNeuSurfaceClass,
+                  projectNeuBorderClass
+                )}
                 autoComplete="off"
               />
             </div>

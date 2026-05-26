@@ -14,6 +14,16 @@ import {
 } from '../../utils/exportService';
 import { Project, JiraTask } from '../../types';
 import { downloadFile } from '../../utils/exportService';
+import { cn } from '../../utils/cn';
+import {
+  leveExportFormatOptionClass,
+  leveExportFormatStripClass,
+  leveExportModalContentClass,
+  leveExportModalFieldLabelClass,
+  leveExportModalHintClass,
+  leveExportModalInfoClass,
+  leveExportModalSubmitClass,
+} from './projectCardUi';
 
 export type ExportType = 'project' | 'tasks' | 'test-cases';
 export type ExportFormat = 'json' | 'csv' | 'excel' | 'pdf' | 'word' | 'markdown';
@@ -167,39 +177,55 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(
       markdown: 'Markdown (.md)',
     };
 
+    const formatHint: Partial<Record<ExportFormat, string>> = {
+      json: 'Formato JSON completo com todos os dados do projeto.',
+      csv: 'Formato CSV para uso em planilhas. Contém dados tabulares.',
+      excel: 'Arquivo Excel com múltiplas planilhas organizadas.',
+      pdf: 'Documento PDF formatado para impressão e compartilhamento.',
+      word: 'Documento Word editável com formatação.',
+      markdown: 'Relatório em Markdown para documentação.',
+    };
+
     return (
       <Modal isOpen={isOpen} onClose={onClose} title="Exportar Dados" size="lg">
-        <div className="p-4 space-y-4">
-          {/* Informação sobre o que será exportado */}
-          <div className="text-sm text-text-secondary">
+        <div className={leveExportModalContentClass}>
+          <div className={leveExportModalInfoClass}>
             {exportType === 'project' && project && (
               <p>
-                Exportando projeto: <strong>{project.name}</strong>
+                Exportando projeto: <strong className="text-[var(--leve-header-text)]">{project.name}</strong>
               </p>
             )}
             {exportType === 'tasks' && tasks && (
               <p>
-                Exportando <strong>{tasks.length}</strong> tarefa(s)
+                Exportando <strong className="text-[var(--leve-header-text)]">{tasks.length}</strong> tarefa(s)
               </p>
             )}
             {exportType === 'test-cases' && tasks && (
               <p>
-                Exportando casos de teste de <strong>{tasks.length}</strong> tarefa(s)
+                Exportando casos de teste de{' '}
+                <strong className="text-[var(--leve-header-text)]">{tasks.length}</strong> tarefa(s)
               </p>
             )}
           </div>
 
-          {/* Seleção de formato */}
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-2">
-              Formato de Exportação
-            </label>
-            <div className="grid grid-cols-2 gap-2">
+            <span className={leveExportModalFieldLabelClass}>Formato de Exportação</span>
+            <div
+              className={cn(
+                leveExportFormatStripClass,
+                availableFormats.length === 2 && 'grid-cols-2 sm:grid-cols-2'
+              )}
+              role="radiogroup"
+              aria-label="Formato de exportação"
+            >
               {availableFormats.map(format => (
                 <button
                   key={format}
+                  type="button"
+                  role="radio"
+                  aria-checked={selectedFormat === format}
                   onClick={() => setSelectedFormat(format)}
-                  className={`btn ${selectedFormat === format ? 'btn-primary' : 'btn-secondary'}`}
+                  className={leveExportFormatOptionClass(selectedFormat === format)}
                   disabled={isExporting}
                 >
                   {formatLabels[format]}
@@ -208,26 +234,16 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(
             </div>
           </div>
 
-          {/* Informações sobre o formato selecionado */}
-          <div className="text-xs text-text-tertiary">
-            {selectedFormat === 'json' && (
-              <p>Formato JSON completo com todos os dados do projeto.</p>
-            )}
-            {selectedFormat === 'csv' && (
-              <p>Formato CSV para uso em planilhas. Contém dados tabulares.</p>
-            )}
-            {selectedFormat === 'excel' && (
-              <p>Arquivo Excel com múltiplas planilhas organizadas.</p>
-            )}
-            {selectedFormat === 'pdf' && (
-              <p>Documento PDF formatado para impressão e compartilhamento.</p>
-            )}
-            {selectedFormat === 'word' && <p>Documento Word editável com formatação.</p>}
-            {selectedFormat === 'markdown' && <p>Relatório em Markdown para documentação.</p>}
-          </div>
+          {formatHint[selectedFormat] ? (
+            <p className={leveExportModalHintClass}>{formatHint[selectedFormat]}</p>
+          ) : null}
 
-          {/* Botão de exportação */}
-          <button onClick={handleExport} disabled={isExporting} className="btn btn-primary w-full">
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={isExporting}
+            className={leveExportModalSubmitClass}
+          >
             {isExporting ? (
               <>
                 <Spinner small />

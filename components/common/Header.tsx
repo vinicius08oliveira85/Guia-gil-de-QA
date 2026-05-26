@@ -40,6 +40,7 @@ import type { NavigationMenuItem } from './NavigationMenu';
 import { cn } from '../../utils/cn';
 import { isAnalysisOutdated } from '../../utils/analysisFreshness';
 import { getGeneralIAAnalysisSnapshotHash } from '../../services/ai/generalAnalysisService';
+import { AppSelect } from '../common/AppSelect';
 
 interface HeaderProps {
   onProjectImported?: (project: Project) => void;
@@ -349,7 +350,7 @@ export const Header: React.FC<HeaderProps> = ({
           className={cn(
             'hidden truncate text-xs text-balance lg:block',
             '[font-family:var(--font-sans)] tracking-[var(--letter-spacing)]',
-            'text-[var(--brand-text-muted)]'
+            'text-[var(--leve-header-text-muted)]'
           )}
         >
           Gestão de QA ágil, métricas e automação
@@ -442,7 +443,7 @@ export const Header: React.FC<HeaderProps> = ({
       ref={headerRef}
       className={cn(
         'app-header-shell relative sticky top-0 z-[100] !rounded-none',
-        'text-[var(--brand-text-strong)]',
+        'text-[var(--leve-header-text)]',
         'transition-[background-color,box-shadow,border-color,color] duration-300 ease-out'
       )}
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
@@ -558,7 +559,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <MoreVertical className="h-5 w-5" aria-hidden />
                 </summary>
                 <ul
-                  className="dropdown-content menu menu-sm app-surface fixed right-3 z-[130] w-56 rounded-box p-2 text-[var(--brand-text-strong)] shadow-xl transition-colors duration-300"
+                  className="dropdown-content menu menu-sm app-surface fixed right-3 z-[130] w-56 rounded-box p-2 text-[var(--leve-header-text)] shadow-xl transition-colors duration-300"
                   style={{ top: 'calc(var(--app-header-sticky-offset, 4.5rem) + 0.25rem)' }}
                 >
                   {tabs.map(tab => {
@@ -625,9 +626,9 @@ export const Header: React.FC<HeaderProps> = ({
           </p>
           <div>
             <label className="mb-2 block text-sm font-medium text-base-content">Projeto</label>
-            <select
+            <AppSelect
               value={selectedJiraProjectKey}
-              onChange={e => setSelectedJiraProjectKey(e.target.value)}
+              onChange={v => setSelectedJiraProjectKey(v)}
               className="select select-bordered w-full"
             >
               <option value="">Selecione um projeto...</option>
@@ -636,7 +637,7 @@ export const Header: React.FC<HeaderProps> = ({
                   {proj.name} ({proj.key})
                 </option>
               ))}
-            </select>
+            </AppSelect>
           </div>
           <div className="flex items-center justify-end gap-2">
             <button

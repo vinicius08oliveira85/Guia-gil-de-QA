@@ -2,6 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ArrowUpRight, LucideIcon } from 'lucide-react';
 import { Button } from './Button';
 import { cn } from '../../utils/cn';
+import {
+  neuCardInsetClass,
+  neuTimelineCardActiveClass,
+  neuTimelineCardClass,
+  neuTimelineCardIdleClass,
+  neuTimelineIconIdleClass,
+} from './neuUi';
 
 export type TimeLine_01Entry = {
   icon: LucideIcon;
@@ -125,7 +132,7 @@ export const ReleaseTimeline: React.FC<TimeLine_01Props> = ({
                     <div
                       className={cn(
                         'p-2 rounded-lg transition-colors duration-300',
-                        isActive ? 'bg-primary/10 text-primary' : 'bg-base-200 text-base-content/60'
+                        isActive ? 'bg-primary/10 text-primary' : neuTimelineIconIdleClass
                       )}
                     >
                       <Icon className="h-4 w-4" />
@@ -147,8 +154,8 @@ export const ReleaseTimeline: React.FC<TimeLine_01Props> = ({
                 {/* Content column */}
                 <article
                   className={cn(
-                    'flex flex-col rounded-2xl border p-4 transition-all duration-300 bg-base-100',
-                    isActive ? 'border-primary/30 shadow-lg' : 'border-base-300 shadow-sm'
+                    neuTimelineCardClass,
+                    isActive ? neuTimelineCardActiveClass : neuTimelineCardIdleClass
                   )}
                 >
                   {entry.image && (
@@ -187,7 +194,7 @@ export const ReleaseTimeline: React.FC<TimeLine_01Props> = ({
                       <div className="overflow-hidden">
                         <div className="space-y-4 pt-2">
                           {entry.items && entry.items.length > 0 && (
-                            <div className="rounded-lg border border-base-300 bg-base-100 p-4">
+                            <div className={cn(neuCardInsetClass, 'rounded-lg')}>
                               <ul className="space-y-2">
                                 {entry.items.map((item, itemIndex) => (
                                   <li

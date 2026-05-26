@@ -3,6 +3,12 @@ import { Card } from '../common/Card';
 import { BugSeverity } from '../../types';
 import { useJiraBugs } from '../../hooks/useJiraBugs';
 import { Project } from '../../types';
+import { cn } from '../../utils/cn';
+import {
+  dashboardInsetTileClass,
+  dashboardPanelClass,
+  dashboardSectionDividerClass,
+} from './dashboardNeuUi';
 
 interface BugsIncidentsCardProps {
   project: Project;
@@ -27,19 +33,16 @@ export const BugsIncidentsCard: React.FC<BugsIncidentsCardProps> = React.memo(
       ];
 
     return (
-      <Card
-        className="p-5 space-y-4 border border-base-300 hover:border-primary/30 hover:shadow-md transition-all duration-200"
-        aria-label="Bugs e incidentes"
-      >
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <h3 className="text-lg font-semibold text-base-content flex-shrink-0">
+      <Card className={dashboardPanelClass} aria-label="Bugs e incidentes">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <h3 className="flex-shrink-0 text-lg font-semibold text-base-content">
             Bugs e Incidentes
           </h3>
           {hasJiraConfig && (
             <button
               onClick={syncBugs}
               disabled={isLoading}
-              className="btn btn-outline btn-sm rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              className="btn btn-outline btn-sm flex items-center gap-1.5 rounded-full disabled:cursor-not-allowed disabled:opacity-50"
               aria-label="Sincronizar bugs do Jira"
             >
               {isLoading ? (
@@ -49,7 +52,7 @@ export const BugsIncidentsCard: React.FC<BugsIncidentsCardProps> = React.memo(
                 </>
               ) : (
                 <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -65,16 +68,16 @@ export const BugsIncidentsCard: React.FC<BugsIncidentsCardProps> = React.memo(
         </div>
 
         {error && (
-          <div className="alert alert-error text-sm py-2 px-3" role="alert">
+          <div className="alert alert-error px-3 py-2 text-sm" role="alert">
             Não foi possível carregar os dados do Jira. {error.message}
           </div>
         )}
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {severityConfigDaisy.map(({ severity, label, badgeClass }) => (
             <div
               key={severity}
-              className="p-4 bg-base-200 rounded-xl border border-base-300 hover:border-primary/30 transition-all"
+              className={dashboardInsetTileClass}
               aria-label={`${label}: ${bugsBySeverity[severity]} bugs`}
             >
               <div className={`badge ${badgeClass} badge-sm mb-2`}>{label}</div>
@@ -83,7 +86,7 @@ export const BugsIncidentsCard: React.FC<BugsIncidentsCardProps> = React.memo(
           ))}
         </div>
 
-        <div className="flex items-center justify-between pt-4 border-t border-base-300">
+        <div className={cn('flex items-center justify-between', dashboardSectionDividerClass)}>
           <div>
             <p className="text-sm text-base-content/70">Total de bugs abertos</p>
             <p className="text-2xl font-bold text-base-content">{totalBugs}</p>

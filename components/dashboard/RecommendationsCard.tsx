@@ -1,6 +1,7 @@
 import React from 'react';
 import { TestTube, Bug, Target, Settings, Award } from 'lucide-react';
 import { Card } from '../common/Card';
+import { dashboardHoverCardClass, dashboardPanelClass } from './dashboardNeuUi';
 import { DashboardInsightsAnalysis } from '../../types';
 import { Badge } from '../common/Badge';
 
@@ -93,7 +94,7 @@ export const RecommendationsCard: React.FC<RecommendationsCardProps> = React.mem
 
     return (
       <Card
-        className="p-5 space-y-4 border border-base-300 hover:border-primary/30 hover:shadow-md transition-all duration-200"
+        className={dashboardPanelClass}
         aria-label="Recomendações priorizadas"
       >
         <div className="flex items-center justify-between">
@@ -107,7 +108,7 @@ export const RecommendationsCard: React.FC<RecommendationsCardProps> = React.mem
           {sortedRecommendations.map((rec, index) => (
             <div
               key={index}
-              className="p-5 bg-base-100 border border-base-300 rounded-xl hover:bg-base-200 hover:border-primary/30 transition-colors"
+              className={dashboardHoverCardClass}
               aria-label={`Recomendação: ${rec.title} (${rec.category})`}
             >
               <div className="space-y-3">

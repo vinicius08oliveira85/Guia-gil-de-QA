@@ -18,6 +18,7 @@ import {
   SlidersHorizontal,
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { AppSelect } from '../common/AppSelect';
 import {
   leveSettingsSectionIconWrapClass,
   leveSettingsSelectClass,
@@ -290,14 +291,14 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                   type="search"
                   placeholder="Buscar na descrição, passos ou resultado..."
                   value={searchInput}
-                  onChange={e => setSearchInput(e.target.value)}
+                  onChange={v => setSearchInput(v)}
                   className={cn(leveViewSearchInputClass, 'input-sm w-full pl-8 text-sm')}
                   aria-label="Buscar nos casos de teste"
                 />
               </div>
-              <select
+              <AppSelect
                 value={sortBy}
-                onChange={e => setSortBy(e.target.value as SortBy)}
+                onChange={v => setSortBy(v as SortBy)}
                 className={cn(leveSettingsSelectClass, 'select-sm h-9 min-h-0 text-sm')}
                 aria-label="Ordenar casos por"
               >
@@ -306,7 +307,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                     {opt.label}
                   </option>
                 ))}
-              </select>
+              </AppSelect>
               <button
                 type="button"
                 onClick={() => setShowAdvancedFilters(p => !p)}

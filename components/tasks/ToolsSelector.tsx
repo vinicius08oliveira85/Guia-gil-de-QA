@@ -1,6 +1,8 @@
 import React from 'react';
 import { SUGGESTED_TOOLS, SuggestedTool } from '../../types';
 import { CheckIcon } from '../common/Icons';
+import { cn } from '../../utils/cn';
+import { taskSelectControlClass, taskToolChipIdleClass } from './taskActionLayout';
 
 interface ToolsSelectorProps {
   selectedTools: string[];
@@ -67,7 +69,7 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
                 ${
                   isSelected
                     ? 'bg-primary text-primary-content border-primary shadow-sm'
-                    : 'bg-base-200 text-base-content border-base-300 hover:border-primary/30 hover:bg-base-200'
+                    : taskToolChipIdleClass
                 }
               `}
               title={toolDescriptions[tool]}
@@ -137,7 +139,11 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
               e.target.value = '';
             }
           }}
-          className={`input input-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${compact ? 'text-xs py-1.5' : ''}`}
+          className={cn(
+            taskSelectControlClass,
+            'transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20',
+            compact && 'py-1.5 text-xs'
+          )}
         />
         <p className="text-[0.65rem] text-base-content/70 mt-1">
           Pressione Enter ou clique fora para adicionar

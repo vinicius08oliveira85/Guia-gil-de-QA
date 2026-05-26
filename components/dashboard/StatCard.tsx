@@ -1,6 +1,8 @@
 import React from 'react';
 import { Card } from '../common/Card';
 import { motion } from 'framer-motion';
+import { neuDividerClass } from '../common/neuUi';
+import { cn } from '../../utils/cn';
 
 type StatCardProps = {
   title: string;
@@ -20,7 +22,8 @@ const accentBackground: Record<NonNullable<StatCardProps['accent']>, string> = {
   success: 'from-success/20 via-success/10 to-success/5',
   warning: 'from-warning/20 via-warning/10 to-warning/5',
   danger: 'from-error/20 via-error/10 to-error/5',
-  neutral: 'from-base-200/60 via-base-200/30 to-base-200/10',
+  neutral:
+    'from-[color-mix(in_srgb,var(--leve-neu-dark)_12%,var(--leve-neu-bg))] via-[color-mix(in_srgb,var(--leve-neu-dark)_6%,var(--leve-neu-bg))] to-transparent',
 };
 
 const accentBorder: Record<NonNullable<StatCardProps['accent']>, string> = {
@@ -28,7 +31,8 @@ const accentBorder: Record<NonNullable<StatCardProps['accent']>, string> = {
   success: 'border-success/30 group-hover:border-success/50',
   warning: 'border-warning/30 group-hover:border-warning/50',
   danger: 'border-error/30 group-hover:border-error/50',
-  neutral: 'border-base-300 group-hover:border-base-300/60',
+  neutral:
+    'border-[color-mix(in_srgb,var(--leve-neu-light)_40%,transparent)] group-hover:border-[color-mix(in_srgb,var(--leve-neu-light)_55%,transparent)]',
 };
 
 const accentIconBg: Record<NonNullable<StatCardProps['accent']>, string> = {
@@ -36,7 +40,8 @@ const accentIconBg: Record<NonNullable<StatCardProps['accent']>, string> = {
   success: 'bg-success/10 group-hover:bg-success/15',
   warning: 'bg-warning/10 group-hover:bg-warning/15',
   danger: 'bg-error/10 group-hover:bg-error/15',
-  neutral: 'bg-base-200/80 group-hover:bg-base-200',
+  neutral:
+    'bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] group-hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_14%,var(--leve-neu-bg))]',
 };
 
 const accentTextColor: Record<NonNullable<StatCardProps['accent']>, string> = {
@@ -173,7 +178,7 @@ export const StatCard: React.FC<StatCardProps> = ({
             ) : null}
 
             {typeof trend === 'number' && trendLabel ? (
-              <div className="relative flex items-center gap-2 pt-3 border-t border-base-300/50">
+              <div className={cn('relative flex items-center gap-2 border-t pt-3', neuDividerClass)}>
                 <motion.span
                   initial={{ opacity: 0, x: -5 }}
                   animate={{ opacity: 1, x: 0 }}

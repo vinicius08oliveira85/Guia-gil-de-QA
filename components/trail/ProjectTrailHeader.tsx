@@ -8,6 +8,8 @@ import {
   pageSubtitleClass,
   pageTitleClass,
 } from '../common/viewUi';
+import { trailDividerClass, trailProgressFillClass, trailProgressTrackSmClass } from './trailNeuUi';
+import { AppSelect } from '../common/AppSelect';
 
 interface ProjectTrailHeaderProps {
   projectName: string;
@@ -49,7 +51,12 @@ export const ProjectTrailHeader: React.FC<ProjectTrailHeaderProps> = ({
 
   return (
     <section className={cn(projectViewCard, 'space-y-5')}>
-      <header className="flex flex-col gap-4 border-b border-base-300/60 pb-4 lg:flex-row lg:items-start lg:justify-between">
+      <header
+        className={cn(
+          'flex flex-col gap-4 border-b pb-4 lg:flex-row lg:items-start lg:justify-between',
+          trailDividerClass
+        )}
+      >
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-widest text-base-content/55">
             Trilha do projeto
@@ -70,8 +77,8 @@ export const ProjectTrailHeader: React.FC<ProjectTrailHeaderProps> = ({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
           <label className="flex min-w-[10rem] flex-col gap-1.5 text-xs font-medium text-base-content/65">
             Versão
-            <select
-              className="select select-bordered h-10 min-h-0 rounded-lg border-base-300/80 bg-base-100 text-sm shadow-sm"
+            <AppSelect
+              className="app-select h-10 min-h-0 text-sm"
               value={selectedVersion}
               onChange={event => onVersionChange(event.target.value)}
             >
@@ -80,7 +87,7 @@ export const ProjectTrailHeader: React.FC<ProjectTrailHeaderProps> = ({
                   {option}
                 </option>
               ))}
-            </select>
+            </AppSelect>
           </label>
 
           <button
@@ -111,9 +118,9 @@ export const ProjectTrailHeader: React.FC<ProjectTrailHeaderProps> = ({
             <span>Progresso geral</span>
             <span className="text-base-content">{overallProgress}%</span>
           </div>
-          <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-base-300/80">
+          <div className={cn(trailProgressTrackSmClass, 'mt-3')}>
             <div
-              className="h-full rounded-full bg-[var(--brand-cta)] transition-all duration-300"
+              className={cn(trailProgressFillClass, 'bg-[var(--brand-cta)] transition-all duration-300')}
               style={{ width: `${overallProgress}%` }}
             />
           </div>

@@ -10,9 +10,9 @@ export const buttonVariants = cva(
       variant: {
         default: 'btn-primary',
         destructive: 'btn-error',
-        outline: 'btn-outline border-[var(--brand-surface-border)]',
+        outline: 'btn-outline border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]',
         secondary: 'btn-secondary',
-        ghost: 'btn-ghost text-[var(--brand-text-strong)] hover:bg-[var(--brand-chip)]',
+        ghost: 'btn-ghost text-[var(--leve-header-text)] hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))]',
         link: 'btn-link',
         brand: 'app-btn-primary-inline border-0 shadow-md',
         brandOutline: 'app-btn-outline',

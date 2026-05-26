@@ -102,7 +102,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           placeholder={placeholder}
           className={searchInputClass}
         />
-        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--brand-text-muted)]">
+        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--leve-header-text-muted)]">
           🔍
         </span>
         {searchQuery && (
@@ -139,18 +139,18 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               }}
               className={cn(
                 appMenuItemClass,
-                index === selectedIndex && 'bg-[var(--brand-chip-active)]',
-                index > 0 && 'border-t border-[var(--brand-surface-border)]'
+                index === selectedIndex && 'bg-[color-mix(in_srgb,var(--leve-header-accent)_12%,var(--leve-neu-bg))]',
+                index > 0 && 'border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]'
               )}
             >
               <span className="text-xl">{getTypeIcon(result.type)}</span>
               <div className="flex-1 min-w-0">
                 <div className="font-semibold truncate">{result.title}</div>
-                <div className="text-sm text-[var(--brand-text-muted)] truncate">
+                <div className="text-sm text-[var(--leve-header-text-muted)] truncate">
                   {result.description}
                 </div>
                 {result.projectName && (
-                  <div className="text-xs text-[var(--brand-text-muted)] mt-1">
+                  <div className="text-xs text-[var(--leve-header-text-muted)] mt-1">
                     Projeto: {result.projectName}
                   </div>
                 )}
@@ -164,7 +164,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         <div
           className={cn(
             appMenuPanelClass,
-            'absolute z-50 w-full mt-2 p-4 text-center text-[var(--brand-text-muted)]'
+            'absolute z-50 w-full mt-2 p-4 text-center text-[var(--leve-header-text-muted)]'
           )}
         >
           Nenhum resultado encontrado

@@ -53,7 +53,7 @@ export const VersionBadge: React.FC<VersionBadgeProps> = ({
         rounded-[var(--radius)] font-semibold
         bg-primary/15 text-primary
         border border-primary/35
-        soft-shadow
+        shadow-[var(--leve-neu-raised)]
         transition-all duration-200
         hover:border-primary/55 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_25%,transparent)]
         ${sizeClasses[size]}

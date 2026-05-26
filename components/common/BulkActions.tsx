@@ -4,6 +4,15 @@ import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { Modal } from './Modal';
 import { ConfirmDialog } from './ConfirmDialog';
 import { useProjectsStore } from '../../store/projectsStore';
+import {
+  neuBrandBorderClass,
+  neuCardInsetClass,
+  neuDividerClass,
+  neuHoverSubtleClass,
+  neuSurfaceClass,
+} from './neuUi';
+import { cn } from '../../utils/cn';
+import { AppSelect } from '../common/AppSelect';
 
 interface BulkActionsProps {
   selectedTasks: string[] | Set<string>;
@@ -65,7 +74,11 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
     'app-toolbar-action inline-flex min-h-[44px] shrink-0 items-center justify-center whitespace-nowrap rounded-full px-2 py-1.5 text-[13px] font-medium leading-none tracking-[-0.01em] sm:min-h-9 sm:px-2.5 sm:py-2';
   const toolbarPrimaryActionClassName = `${toolbarActionClassName} app-toolbar-action-primary shadow-sm`;
   const toolbarDangerActionClassName = `${toolbarActionClassName} app-toolbar-action-danger`;
-  const toolbarOutlineActionClassName = `${toolbarActionClassName} border border-[var(--brand-surface-border)] bg-base-100/60`;
+  const toolbarOutlineActionClassName = cn(
+    toolbarActionClassName,
+    'border bg-[color-mix(in_srgb,var(--leve-neu-bg)_88%,transparent)]',
+    neuBrandBorderClass
+  );
   const modalPrimaryActionClassName =
     'app-toolbar-action app-toolbar-action-primary mt-2 inline-flex min-h-[44px] w-full justify-center rounded-full px-3 py-2.5 text-sm font-semibold shadow-sm';
 
@@ -337,16 +350,16 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
               <label className="label py-0" htmlFor="bulk-status-select">
                 <span className="label-text font-medium text-base-content">Novo status</span>
               </label>
-              <select
+              <AppSelect
                 id="bulk-status-select"
                 value={statusValue}
-                onChange={e => setStatusValue(e.target.value as 'To Do' | 'In Progress' | 'Done')}
-                className="select select-bordered w-full bg-base-100"
+                onChange={v => setStatusValue(v as 'To Do' | 'In Progress' | 'Done')}
+                className={cn('select select-bordered w-full', neuSurfaceClass)}
               >
                 <option value="To Do">A Fazer</option>
                 <option value="In Progress">Em Andamento</option>
                 <option value="Done">Concluído</option>
-              </select>
+              </AppSelect>
               <button
                 type="button"
                 onClick={handleBulkStatusChange}
@@ -366,9 +379,9 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
                 id="bulk-tag-input"
                 type="text"
                 value={tagValue}
-                onChange={e => setTagValue(e.target.value)}
+                onChange={v => setTagValue(v)}
                 placeholder="Ex: crítico, regressão..."
-                className="input input-bordered w-full bg-base-100"
+                className={cn('input input-bordered w-full', neuSurfaceClass)}
               />
               <button
                 type="button"
@@ -385,18 +398,17 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
               <label className="label py-0" htmlFor="bulk-assignee-select">
                 <span className="label-text font-medium text-base-content">Atribuir a</span>
               </label>
-              <select
+              <AppSelect
                 id="bulk-assignee-select"
                 value={assigneeValue}
-                onChange={e =>
-                  setAssigneeValue(e.target.value as 'Product' | 'QA' | 'Dev')
+                onChange={v => setAssigneeValue(v as 'Product' | 'QA' | 'Dev')
                 }
-                className="select select-bordered w-full bg-base-100"
+                className={cn('select select-bordered w-full', neuSurfaceClass)}
               >
                 <option value="Product">Produto</option>
                 <option value="QA">QA</option>
                 <option value="Dev">Desenvolvimento</option>
-              </select>
+              </AppSelect>
               <button
                 type="button"
                 onClick={handleBulkAssigneeChange}
@@ -423,11 +435,16 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
             Selecione as tarefas que deseja incluir no novo projeto. Você pode selecionar ou
             desmarcar tarefas.
           </p>
-          <div className="max-h-96 space-y-2 overflow-y-auto rounded-[var(--rounded-box)] border border-base-300 bg-base-200/50 p-3 dark:bg-base-200/30">
+          <div className={cn('max-h-96 space-y-2 overflow-y-auto rounded-[var(--rounded-box)] border p-3', neuCardInsetClass, neuBrandBorderClass)}>
             {selectedTasksData.map(task => (
               <label
                 key={task.id}
-                className="flex cursor-pointer items-start gap-3 rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-3 hover:bg-base-200/70 dark:hover:bg-base-300/40"
+                className={cn(
+                  'flex cursor-pointer items-start gap-3 rounded-[var(--rounded-box)] border p-3',
+                  neuSurfaceClass,
+                  neuBrandBorderClass,
+                  neuHoverSubtleClass
+                )}
               >
                 <input
                   type="checkbox"
@@ -450,7 +467,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
               </label>
             ))}
           </div>
-          <div className="flex justify-end gap-2 border-t border-base-300 pt-2">
+          <div className={cn('flex justify-end gap-2 border-t pt-2', neuDividerClass)}>
             <button
               onClick={() => {
                 setShowTaskSelectionModal(false);
@@ -492,9 +509,9 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
               id="bulk-new-project-name"
               type="text"
               value={projectName}
-              onChange={e => setProjectName(e.target.value)}
+              onChange={v => setProjectName(v)}
               placeholder="Ex: Projeto de Testes - Sprint 1"
-              className="input input-bordered w-full bg-base-100"
+              className={cn('input input-bordered w-full', neuSurfaceClass)}
               autoFocus
             />
           </div>
@@ -505,10 +522,10 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
             <textarea
               id="bulk-new-project-desc"
               value={projectDescription}
-              onChange={e => setProjectDescription(e.target.value)}
+              onChange={v => setProjectDescription(v)}
               placeholder="Descreva o objetivo deste projeto..."
               rows={4}
-              className="textarea textarea-bordered w-full resize-none bg-base-100"
+              className={cn('textarea textarea-bordered w-full resize-none', neuSurfaceClass)}
             />
           </div>
           <div className="text-xs text-base-content/70">
@@ -516,7 +533,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
               O projeto será criado com {selectedTasksForProject.size} tarefa(s) selecionada(s).
             </p>
           </div>
-          <div className="flex justify-end gap-2 border-t border-base-300 pt-2">
+          <div className={cn('flex justify-end gap-2 border-t pt-2', neuDividerClass)}>
             <button
               onClick={() => {
                 setShowProjectNameModal(false);

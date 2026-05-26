@@ -32,18 +32,24 @@ import {
 import { projectViewPanel, projectViewShell } from '../common/viewUi';
 import { taskCardFieldLabelClass, taskFormInsetPanelClass, taskTextareaClass } from '../tasks/taskActionLayout';
 import { cn } from '../../utils/cn';
+import {
+  projectNeuBorderClass,
+  projectNeuDividerClass,
+  projectNeuSurfaceStrongClass,
+} from './projectNeuUi';
 import { EmptyState } from '../common/EmptyState';
 import { Badge } from '../common/Badge';
 import { SafeMarkdown } from '../common/SafeMarkdown';
 import { BusinessRulesFiltersToolbar } from './BusinessRulesFiltersToolbar';
 import { BusinessRuleCategoryPresetsModal } from './BusinessRuleCategoryPresetsModal';
+import { AppSelect } from '../common/AppSelect';
 import {
   badgeVariantForBusinessRuleCategory,
   businessRuleCategoryLabel,
   getMergedBusinessRuleCategories,
 } from '../../utils/businessRuleCategoryPresets';
 
-/** Valor sentinela do `<select>` de categoria quando o nome não está na lista unida do projeto. */
+/** Valor sentinela do `<AppSelect>` de categoria quando o nome não está na lista unida do projeto. */
 const BR_CATEGORY_SELECT_OTHER = '__br_category_other__';
 
 function stripRuleFromProject(project: Project, deletedRule: BusinessRule): Project {
@@ -372,11 +378,11 @@ export const BusinessRulesManager: React.FC<{
                     const badgeVariant = badgeVariantForBusinessRuleCategory(catLabel);
                     return (
                       <li key={rule.id}>
-                        <div className={cn(appPanelClass, 'overflow-hidden soft-shadow')}>
+                        <div className={cn(appPanelClass, 'overflow-hidden shadow-[var(--leve-neu-raised)]')}>
                           <details className="group open:shadow-md">
-                            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 min-h-[44px] text-left transition-colors hover:bg-base-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_30%,transparent)] focus-visible:ring-inset [&::-webkit-details-marker]:hidden">
+                            <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_6%,var(--leve-neu-bg))] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_30%,transparent)] focus-visible:ring-inset [&::-webkit-details-marker]:hidden">
                               <span className="min-w-0 flex-1">
-                                <span className="block border-b border-transparent pb-1 text-base font-bold tracking-tight text-[var(--brand-text-strong)] group-open:border-[var(--brand-surface-border)]">
+                                <span className="block border-b border-transparent pb-1 text-base font-bold tracking-tight text-[var(--leve-header-text)] group-open:border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]">
                                   {rule.title}
                                 </span>
                                 <span className="mt-2 inline-flex flex-wrap items-center gap-2">
@@ -386,11 +392,11 @@ export const BusinessRulesManager: React.FC<{
                                 </span>
                               </span>
                               <ChevronDown
-                                className="h-5 w-5 shrink-0 text-[var(--brand-text-muted)] transition-transform duration-200 group-open:rotate-180"
+                                className="h-5 w-5 shrink-0 text-[var(--leve-header-text-muted)] transition-transform duration-200 group-open:rotate-180"
                                 aria-hidden
                               />
                             </summary>
-                            <div className="space-y-4 border-t border-[var(--brand-surface-border)] bg-[var(--brand-chip)] px-4 py-4 sm:px-5">
+                            <div className="space-y-4 border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))] px-4 py-4 sm:px-5">
                               <div>
                                 <p className="text-[10px] font-bold uppercase tracking-widest task-card-field-label mb-2">
                                   Descrição
@@ -399,16 +405,25 @@ export const BusinessRulesManager: React.FC<{
                                   <SafeMarkdown
                                     source={rule.description}
                                     className={cn(
-                                      'jira-rich-content prose-headings:font-heading prose-headings:text-[var(--brand-text-strong)]',
-                                      'rounded-[var(--radius)] border border-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)] px-4 py-4 shadow-inner sm:px-5 sm:py-5',
-                                      'prose-h2:border-b prose-h2:border-[var(--brand-surface-border)] prose-h2:pb-2 prose-h2:mb-3',
-                                      'prose-h3:border-b prose-h3:border-[var(--brand-surface-border)] prose-h3:pb-1.5 prose-h3:mb-2',
-                                      'prose-p:leading-relaxed prose-strong:text-[var(--brand-text-strong)]',
+                                      'jira-rich-content prose-headings:font-heading prose-headings:text-[var(--leve-header-text)]',
+                                      cn(
+                                        projectNeuSurfaceStrongClass,
+                                        'rounded-[var(--radius)] border px-4 py-4 shadow-[var(--leve-neu-inset)] sm:px-5 sm:py-5',
+                                        projectNeuBorderClass
+                                      ),
+                                      'prose-h2:border-b prose-h2:border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] prose-h2:pb-2 prose-h2:mb-3',
+                                      'prose-h3:border-b prose-h3:border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] prose-h3:pb-1.5 prose-h3:mb-2',
+                                      'prose-p:leading-relaxed prose-strong:text-[var(--leve-header-text)]',
                                       'prose-ul:list-disc prose-ul:pl-6 prose-ol:list-decimal prose-ol:pl-6'
                                     )}
                                   />
                                 ) : (
-                                  <p className="rounded-[var(--radius)] border border-dashed border-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)] px-4 py-6 text-center text-sm italic task-card-muted">
+                                  <p
+                                    className={cn(
+                                      projectNeuSurfaceStrongClass,
+                                      'neu-dashed-panel rounded-[var(--radius)] px-4 py-6 text-center text-sm italic task-card-muted'
+                                    )}
+                                  >
                                     Sem descrição
                                   </p>
                                 )}
@@ -418,14 +433,14 @@ export const BusinessRulesManager: React.FC<{
                                   <p className="text-[10px] font-bold uppercase tracking-widest task-card-field-label mb-1.5">
                                     Vinculada a
                                   </p>
-                                  <p className="text-sm leading-relaxed text-[var(--brand-text-strong)]">
+                                  <p className="text-sm leading-relaxed text-[var(--leve-header-text)]">
                                     {(rule.linkedBusinessRuleIds ?? [])
                                       .map(id => rules.find(x => x.id === id)?.title ?? id)
                                       .join(', ')}
                                   </p>
                                 </div>
                               )}
-                              <div className="flex flex-wrap items-center gap-2 border-t border-[var(--brand-surface-border)] pt-4">
+                              <div className="flex flex-wrap items-center gap-2 border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pt-4">
                                 <Button
                                   type="button"
                                   variant="outline"
@@ -478,7 +493,7 @@ export const BusinessRulesManager: React.FC<{
               id="br-title"
               type="text"
               value={title}
-              onChange={e => setTitle(e.target.value)}
+              onChange={v => setTitle(v)}
               className="app-input input input-bordered w-full min-h-[44px]"
               autoComplete="off"
             />
@@ -490,7 +505,7 @@ export const BusinessRulesManager: React.FC<{
             >
               Categoria
             </label>
-            <select
+            <AppSelect
               id="br-category"
               value={categorySelectValue}
               onChange={e => {
@@ -509,13 +524,13 @@ export const BusinessRulesManager: React.FC<{
                 </option>
               ))}
               <option value={BR_CATEGORY_SELECT_OTHER}>Outra…</option>
-            </select>
+            </AppSelect>
             {categorySelectValue === BR_CATEGORY_SELECT_OTHER && (
               <input
                 id="br-category-custom"
                 type="text"
                 value={category}
-                onChange={e => setCategory(e.target.value)}
+                onChange={v => setCategory(v)}
                 className="app-input input input-bordered w-full min-h-[44px] mt-2"
                 autoComplete="off"
                 placeholder="Digite o nome da categoria"
@@ -533,13 +548,13 @@ export const BusinessRulesManager: React.FC<{
             <textarea
               id="br-desc"
               value={description}
-              onChange={e => setDescription(e.target.value)}
+              onChange={v => setDescription(v)}
               rows={6}
               className="textarea textarea-bordered w-full text-sm min-h-[120px] app-input font-mono"
             />
           </div>
           {linkableRules.length > 0 && (
-            <div className="border-t border-base-200/80 pt-4">
+            <div className={cn('border-t pt-4', projectNeuDividerClass)}>
               <div className="mb-2 flex items-center gap-2">
                 <Link2 className="h-4 w-4 shrink-0 text-primary" aria-hidden />
                 <span className="text-[10px] font-bold uppercase tracking-widest task-card-field-label">
@@ -548,7 +563,7 @@ export const BusinessRulesManager: React.FC<{
               </div>
               <p className="text-xs task-card-muted mb-2">
                 Ao marcar, inclui{' '}
-                <code className="text-xs bg-base-200 px-1 rounded">@NomeDaRegra</code> na descrição
+                <code className={leveViewInlineCodeClass}>@NomeDaRegra</code> na descrição
                 (nome derivado do título; títulos iguais no projeto ganham sufixo para diferenciar).
               </p>
               <label
@@ -557,7 +572,7 @@ export const BusinessRulesManager: React.FC<{
               >
                 Escolher regra existente
               </label>
-              <select
+              <AppSelect
                 ref={quickLinkSelectRef}
                 id="br-quick-link-rule"
                 defaultValue=""
@@ -581,9 +596,14 @@ export const BusinessRulesManager: React.FC<{
                     </option>
                   );
                 })}
-              </select>
+              </AppSelect>
               <ul
-                className={cn(appPanelClass, 'max-h-48 overflow-y-auto divide-y divide-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)]')}
+                className={cn(
+                  appPanelClass,
+                  projectNeuSurfaceStrongClass,
+                  'max-h-48 divide-y overflow-y-auto',
+                  'divide-[color-mix(in_srgb,var(--leve-neu-light)_30%,transparent)]'
+                )}
                 role="list"
               >
                 {linkableRules.map(r => {
@@ -607,7 +627,7 @@ export const BusinessRulesManager: React.FC<{
                         htmlFor={`br-link-${r.id}`}
                         className="text-sm cursor-pointer flex-1 min-w-0"
                       >
-                        <span className="font-medium text-[var(--brand-text-strong)]">{r.title}</span>
+                        <span className="font-medium text-[var(--leve-header-text)]">{r.title}</span>
                         <span className="block text-xs task-card-muted">
                           Inserirá {preview}
                         </span>
@@ -618,7 +638,7 @@ export const BusinessRulesManager: React.FC<{
               </ul>
             </div>
           )}
-          <div className="flex flex-wrap justify-end gap-2 border-t border-base-200/80 pt-4">
+          <div className={cn('flex flex-wrap justify-end gap-2 border-t pt-4', projectNeuDividerClass)}>
             <Button
               type="button"
               variant="ghost"

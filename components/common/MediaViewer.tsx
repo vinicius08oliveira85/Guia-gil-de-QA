@@ -63,7 +63,7 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
       </button>
 
       <div
-        className="relative max-w-[90vw] max-h-[85vh] bg-base-100 rounded-lg p-4"
+        className="relative max-w-[90vw] max-h-[85vh] leve-neu-surface rounded-lg p-4"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
