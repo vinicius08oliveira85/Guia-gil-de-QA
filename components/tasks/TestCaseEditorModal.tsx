@@ -101,7 +101,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
           <label className={labelClass}>Ação necessária</label>
           <textarea
             value={action}
-            onChange={v => setAction(v)}
+            onChange={e => setAction(e.target.value)}
             className={cn(taskTextareaClass, 'min-h-[120px]')}
             placeholder="Descreva o que deve ser executado (roteiro)."
           />
@@ -117,7 +117,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
           <label className={labelClass}>Parâmetros necessários</label>
           <textarea
             value={parameters}
-            onChange={v => setParameters(v)}
+            onChange={e => setParameters(e.target.value)}
             className={cn(taskTextareaClass, 'min-h-[88px]')}
             placeholder="Dados de entrada, massa, ambientes, contas…"
           />
@@ -133,7 +133,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
           <label className={labelClass}>Resultado esperado</label>
           <textarea
             value={expectedResult}
-            onChange={v => setExpectedResult(v)}
+            onChange={e => setExpectedResult(e.target.value)}
             className={cn(taskTextareaClass, 'min-h-[88px]')}
           />
           {previewMarkdown && (
@@ -148,7 +148,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
           <label className={labelClass}>Resultado Obtido</label>
           <textarea
             value={observedResult}
-            onChange={v => setObservedResult(v)}
+            onChange={e => setObservedResult(e.target.value)}
             className={cn(taskTextareaClass, 'min-h-[88px]')}
             placeholder="Preencha após a execução."
           />

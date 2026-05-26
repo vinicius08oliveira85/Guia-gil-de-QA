@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { TestCase, TestCaseExecutionKind } from '../../types';
 import {
   getTestCaseEnvironment,
@@ -33,6 +33,9 @@ import {
 import { taskNeuDividerClass } from './taskActionLayout';
 
 const ROTEIRO_BLOCK_CLASS = leveTaskModalRoteiroBlockClass;
+
+/** Evita re-render global do projeto a cada tecla no resultado obtido. */
+const OBSERVED_RESULT_PERSIST_MS = 500;
 
 const STATUS_EMOJI: Record<TestCase['status'], string> = {
   'Not Run': '○',
@@ -119,6 +122,54 @@ export const TestCaseItem: React.FC<{
   };
 
   const [detailsOpen, setDetailsOpen] = useState(() => testCase.status === 'Failed');
+
+  const [localObservedResult, setLocalObservedResult] = useState(
+    () => testCase.observedResult ?? ''
+  );
+  const isEditingObservedRef = useRef(false);
+  const observedPersistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const persistObservedResult = useCallback(
+    (value: string) => {
+      if (!onObservedResultChange) return;
+      const committed = testCase.observedResult ?? '';
+      if (value === committed) return;
+      onObservedResultChange(value);
+    },
+    [onObservedResultChange, testCase.observedResult]
+  );
+
+  const schedulePersistObservedResult = useCallback(
+    (value: string) => {
+      if (!onObservedResultChange) return;
+      if (observedPersistTimerRef.current) {
+        clearTimeout(observedPersistTimerRef.current);
+      }
+      observedPersistTimerRef.current = setTimeout(() => {
+        persistObservedResult(value);
+        observedPersistTimerRef.current = null;
+      }, OBSERVED_RESULT_PERSIST_MS);
+    },
+    [onObservedResultChange, persistObservedResult]
+  );
+
+  useEffect(() => {
+    setLocalObservedResult(testCase.observedResult ?? '');
+  }, [testCase.id]);
+
+  useEffect(() => {
+    if (isEditingObservedRef.current) return;
+    setLocalObservedResult(testCase.observedResult ?? '');
+  }, [testCase.observedResult]);
+
+  useEffect(
+    () => () => {
+      if (observedPersistTimerRef.current) {
+        clearTimeout(observedPersistTimerRef.current);
+      }
+    },
+    []
+  );
 
   const actionSteps = useMemo(() => {
     const parsed = parseTestCaseActionSteps(testCase.action || '');
@@ -518,11 +569,34 @@ export const TestCaseItem: React.FC<{
                 Resultado obtido
               </label>
               <textarea
-                value={testCase.observedResult}
-                onChange={v => onObservedResultChange?.(v)}
-                disabled={!onObservedResultChange}
+                value={localObservedResult}
+                onChange={e => {
+                  const next = e.target.value;
+                  setLocalObservedResult(next);
+                  schedulePersistObservedResult(next);
+                }}
+                onFocus={() => {
+                  isEditingObservedRef.current = true;
+                }}
+                onBlur={e => {
+                  isEditingObservedRef.current = false;
+                  const next = e.target.value;
+                  if (observedPersistTimerRef.current) {
+                    clearTimeout(observedPersistTimerRef.current);
+                    observedPersistTimerRef.current = null;
+                  }
+                  persistObservedResult(next);
+                }}
+                onClick={e => e.stopPropagation()}
+                onKeyDown={e => e.stopPropagation()}
+                readOnly={!onObservedResultChange}
+                aria-readonly={!onObservedResultChange}
                 placeholder="Preencha durante a execução com o comportamento observado."
-                className={cn(taskTextareaClass, 'textarea-sm text-xs min-h-[72px]')}
+                className={cn(
+                  taskTextareaClass,
+                  'textarea-sm text-xs min-h-[72px]',
+                  !onObservedResultChange && 'cursor-not-allowed opacity-60'
+                )}
               />
             </div>
           </div>

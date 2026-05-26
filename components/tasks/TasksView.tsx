@@ -854,7 +854,6 @@ export const TasksView: React.FC<{
         ...project,
         tasks: project.tasks.map(t => (t.id === taskId ? updatedTask : t)),
       });
-      propagateTaskUpdate(updatedTask);
     },
     [project, onUpdateProject]
   );
