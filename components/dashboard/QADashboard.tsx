@@ -9,11 +9,12 @@ import { ListChecks, CheckCircle2, AlertTriangle, Percent, Loader2, Layers } fro
 import { countBacklogTasks, formatBacklogShareLabel } from '../../utils/backlogTasks';
 import { useProjectsStore } from '../../store/projectsStore';
 import { useDashboardMetrics } from '../../hooks/useDashboardMetrics';
+import { glassIndicatorCardClass } from '../common/projectCardUi';
 import { GlassIndicatorCards, type SmallIndicatorItem } from './GlassIndicatorCards';
+import { cn } from '../../utils/cn';
 import { ProjectDashboard } from './ProjectDashboard';
 import { RecentActivity } from './RecentActivity';
 import { QADashboardHeaderToolbar } from './QADashboardHeaderToolbar';
-import { cn } from '../../utils/cn';
 
 interface QADashboardProps {
   project: Project;
@@ -201,7 +202,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
             {Array.from({ length: showBacklogCard ? 5 : 4 }).map((_, k) => (
               <div
                 key={k}
-                className="leve-neu-surface-inset h-[4.75rem] animate-pulse rounded-[var(--rounded-box)] sm:h-[5rem]"
+                className={cn(glassIndicatorCardClass, 'h-[4.75rem] animate-pulse opacity-80 sm:h-[5rem]')}
                 aria-hidden
               />
             ))}

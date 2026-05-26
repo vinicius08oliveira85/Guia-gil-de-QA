@@ -5,6 +5,7 @@ import { cn } from '../../utils/cn';
 import {
   formatWorkspaceStatCount,
   glassIndicatorBadgeClass,
+  glassIndicatorCardActiveClass,
   glassIndicatorCardClass,
   glassIndicatorIconClass,
   glassIndicatorIconMutedClass,
@@ -62,8 +63,17 @@ function MiniRingProgress({
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   return (
-    <div className="relative" style={{ width: size, height: size }}>
-      <svg className="h-full w-full -rotate-90" viewBox={`0 0 ${size} ${size}`} aria-hidden>
+    <div
+      className="dashboard-neu-insight-inset relative flex items-center justify-center rounded-full"
+      style={{ width: size + 6, height: size + 6 }}
+    >
+      <svg
+        width={size}
+        height={size}
+        className="-rotate-90"
+        viewBox={`0 0 ${size} ${size}`}
+        aria-hidden
+      >
         <circle
           className="text-[color-mix(in_srgb,var(--workspace-stat-text)_18%,transparent)]"
           cx={size / 2}
@@ -87,10 +97,7 @@ function MiniRingProgress({
         />
       </svg>
       <span
-        className={cn(
-          glassIndicatorBadgeClass,
-          'absolute inset-0 flex items-center justify-center bg-transparent text-[9px]'
-        )}
+        className="absolute inset-0 flex items-center justify-center text-[9px] font-bold tabular-nums text-[var(--workspace-stat-accent)]"
         aria-label={`${value}%`}
       >
         {value}%
@@ -134,12 +141,10 @@ function SmallIndicatorCard({ item }: { item: SmallIndicatorItem }) {
   const displayValue = formatIndicatorValue(item.value);
 
   const interactiveClasses = isClickable
-    ? 'group cursor-pointer hover:shadow-[var(--leve-neu-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] focus-visible:ring-offset-2 motion-reduce:transform-none'
+    ? 'group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--workspace-stat-accent)_35%,transparent)] focus-visible:ring-offset-2 motion-reduce:transform-none'
     : '';
 
-  const activeClasses = item.isActive
-    ? 'ring-2 ring-[color-mix(in_srgb,var(--leve-header-accent)_28%,transparent)] shadow-[var(--leve-neu-hover)]'
-    : '';
+  const activeClasses = item.isActive ? glassIndicatorCardActiveClass : '';
 
   return (
     <div

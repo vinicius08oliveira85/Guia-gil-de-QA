@@ -848,12 +848,11 @@ export function formatWorkspaceStatCount(value: number): string {
 
 /** Cards GlassIndicatorCards / KPI — relevo neumórfico (Tarefas, dashboard). */
 export const glassIndicatorCardClass = cn(
-  'flex min-h-[4rem] flex-col items-center justify-center gap-1.5 rounded-[var(--leve-header-radius)] font-sans text-center',
-  'border border-[color-mix(in_srgb,var(--leve-neu-light)_38%,transparent)]',
-  'bg-[color-mix(in_srgb,var(--leve-neu-dark)_5%,var(--leve-neu-bg))]',
-  'px-3 py-3 shadow-[var(--leve-neu-raised)] transition-[box-shadow] duration-200',
-  'hover:shadow-[var(--leve-neu-hover)] sm:min-h-[4.25rem] sm:px-4 sm:py-3.5'
+  'dashboard-glass-indicator-card flex min-h-[4rem] flex-col items-center justify-center gap-1.5 font-sans text-center',
+  'px-3 py-3 sm:min-h-[4.25rem] sm:px-4 sm:py-3.5'
 );
+
+export const glassIndicatorCardActiveClass = 'dashboard-glass-indicator-card--active';
 
 export const glassIndicatorLabelClass = workspaceDaisyStatLabelClass;
 
@@ -874,11 +873,8 @@ export const glassIndicatorIconMutedClass =
 
 /** Badge percentual / tendência (laranja). */
 export const glassIndicatorBadgeClass = cn(
-  'inline-flex items-center justify-center rounded-full px-1.5 py-0.5',
-  'border border-[color-mix(in_srgb,var(--leve-neu-light)_30%,transparent)]',
-  'bg-[color-mix(in_srgb,var(--leve-neu-dark)_6%,var(--leve-neu-bg))]',
-  'font-sans text-[10px] font-bold tabular-nums text-[var(--leve-header-accent)]',
-  'shadow-[var(--leve-neu-inset)]'
+  'dashboard-neu-insight-inset inline-flex items-center justify-center rounded-full px-1.5 py-0.5',
+  'font-sans text-[10px] font-bold tabular-nums text-[var(--workspace-stat-accent)]'
 );
 
 /** Cards compactos da faixa superior (legado / outros usos). */
@@ -941,15 +937,15 @@ export const projectDashboardInsightCountBadgeClass = cn(
 
 /** Badge métrica secundária (laranja suave). */
 export const projectDashboardInsightMetricBadgeClass = cn(
-  'inline-flex items-center justify-center rounded-[var(--project-dashboard-insight-inner-radius)] px-2 py-0.5',
-  'bg-[color-mix(in_srgb,var(--project-dashboard-insight-accent)_12%,transparent)]',
+  'dashboard-neu-insight-inset inline-flex items-center justify-center px-2 py-0.5',
   'font-sans text-[10px] font-bold tabular-nums text-[var(--project-dashboard-insight-accent)] sm:text-[11px]'
 );
 
-export const projectDashboardInsightChipClass = cn(
-  'rounded-[var(--project-dashboard-insight-inner-radius)] border border-[var(--project-dashboard-insight-border)]',
-  'bg-[var(--project-dashboard-insight-chip)]'
-);
+export const projectDashboardInsightChipClass = 'dashboard-neu-insight-inset';
+
+export const projectDashboardInsightTrackClass = 'dashboard-neu-insight-track';
+
+export const projectDashboardInsightTrackFillClass = 'dashboard-neu-insight-track-fill';
 
 /** KPIs do topo do QADashboard (pastéis por tom). */
 /** Card de categoria de documento (Requisitos, Testes, etc.). */

@@ -14,6 +14,8 @@ import {
   projectDashboardInsightSubtitleClass,
   projectDashboardInsightTextClass,
   projectDashboardInsightTitleClass,
+  projectDashboardInsightTrackClass,
+  projectDashboardInsightTrackFillClass,
 } from '../common/projectCardUi';
 import {
   averageBugLeadTimeDays,
@@ -146,7 +148,7 @@ const MiniSparkline = React.memo(function MiniSparkline({ values }: { values: nu
   });
   const points = pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
   return (
-    <div className="relative w-full max-w-[168px]">
+    <div className={cn(projectDashboardInsightChipClass, 'relative inline-block p-2')}>
       <svg
         width={w}
         height={h}
@@ -202,7 +204,12 @@ function PassRateRing(props: { percent: number; tooltip: React.ReactNode }) {
   const c = 2 * Math.PI * r;
   const offset = c * (1 - Math.min(100, Math.max(0, percent)) / 100);
   const ring = (
-    <div className="mx-auto w-[92%] max-w-[14rem] min-w-[9rem] sm:max-w-[15rem]">
+    <div
+      className={cn(
+        projectDashboardInsightChipClass,
+        'mx-auto w-[92%] max-w-[14rem] min-w-[9rem] rounded-full p-3 sm:max-w-[15rem]'
+      )}
+    >
       <div className="relative aspect-square w-full">
         <svg viewBox="0 0 88 88" className="h-full w-full" aria-hidden>
           <circle
@@ -300,7 +307,8 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
           {Array.from({ length: 9 }).map((_, i) => (
             <div
               key={i}
-              className="h-36 w-full animate-pulse rounded-[var(--project-dashboard-insight-radius)] border border-[var(--project-dashboard-insight-border)] bg-[var(--project-dashboard-insight-bg)]"
+              className={cn(projectDashboardInsightCardClass, 'h-36 animate-pulse opacity-80')}
+              aria-hidden
             />
           ))}
         </div>
@@ -352,14 +360,10 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
             }
             delay={120}
           >
-            <div className="mt-3 flex h-2.5 w-full overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--project-dashboard-insight-text)_12%,transparent)]">
+            <div className={cn(projectDashboardInsightTrackClass, 'mt-3 h-2.5 w-full')}>
               <div
-                className="h-full rounded-full bg-[var(--project-dashboard-insight-accent)] transition-all duration-500"
+                className={cn(projectDashboardInsightTrackFillClass, 'transition-all duration-500')}
                 style={{ width: `${m.testCoverage}%` }}
-              />
-              <div
-                className="h-full flex-1 bg-[color-mix(in_srgb,var(--project-dashboard-insight-title)_10%,transparent)]"
-                aria-hidden
               />
             </div>
           </Tooltip>
@@ -409,7 +413,7 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
                     </span>
                     <span className={cn('tabular-nums font-semibold', VALUE_STRONG_CLASS)}>{count}</span>
                   </div>
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--project-dashboard-insight-text)_12%,transparent)]">
+                  <div className={cn(projectDashboardInsightTrackClass, 'h-1.5 w-full')}>
                     <div
                       className={cn('h-full rounded-full transition-all', barColor)}
                       style={{ width: `${barPct}%` }}
@@ -475,9 +479,12 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
                           <span className={cn('truncate', LABEL_CLASS)}>{row.label}</span>
                           <span className={cn('shrink-0 tabular-nums', VALUE_STRONG_CLASS)}>{row.count}</span>
                         </div>
-                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--project-dashboard-insight-text)_12%,transparent)]">
+                        <div className={cn(projectDashboardInsightTrackClass, 'h-1.5 w-full')}>
                           <div
-                            className="h-full rounded-full bg-[var(--project-dashboard-insight-accent)] transition-[filter] duration-150 hover:brightness-110"
+                            className={cn(
+                              projectDashboardInsightTrackFillClass,
+                              'transition-[filter] duration-150 hover:brightness-110'
+                            )}
                             style={{ width: `${(row.count / maxModule) * 100}%` }}
                           />
                         </div>
@@ -520,9 +527,9 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
               </div>
             </div>
           </div>
-          <div className="mt-3 flex h-3 w-full overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--project-dashboard-insight-text)_12%,transparent)]">
+          <div className={cn(projectDashboardInsightTrackClass, 'mt-3 flex h-3 w-full')}>
             <div
-              className="h-full shrink-0 bg-[var(--project-dashboard-insight-accent)]"
+              className={cn(projectDashboardInsightTrackFillClass, 'shrink-0')}
               style={{ width: `${m.automationRatio}%` }}
               title={`Automação: ${m.automatedTestCases} casos (${m.automationRatio}%)`}
             />
@@ -561,7 +568,8 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
             <>
               <div
                 className={cn(
-                  'flex h-3 w-full cursor-default overflow-hidden rounded-full border border-[var(--project-dashboard-insight-border)] transition-shadow duration-200',
+                  projectDashboardInsightTrackClass,
+                  'flex h-3 w-full cursor-default transition-shadow duration-200',
                   'hover:ring-2 hover:ring-[color-mix(in_srgb,var(--project-dashboard-insight-accent)_18%,transparent)]'
                 )}
               >
