@@ -42,7 +42,7 @@ export const backlogListSurfaceHeaderClass = cn(
 );
 
 /** Corpo da lista — fundo creme para os cards neu “saltarem”. */
-export const backlogListSurfaceBodyClass = 'min-w-0 bg-[var(--leve-neu-bg)] p-3 sm:p-4';
+export const backlogListSurfaceBodyClass = 'min-w-0 bg-[var(--leve-neu-bg)] p-2 sm:p-4';
 
 export const backlogActiveChipClass = cn(
   'leve-neu-pill inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-[var(--leve-header-text-muted)]'
@@ -51,3 +51,15 @@ export const backlogActiveChipClass = cn(
 export const backlogToolbarChipsRowClass = cn(
   'flex flex-wrap items-center gap-1 border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pt-1 mt-1'
 );
+
+/** Cabeçalho colapsável de seção da lista (Favoritos / Outras tarefas). */
+export const taskListSectionToggleClass = cn(
+  'leve-neu-surface-inset app-element-typography flex w-full min-w-0 items-center justify-between gap-2',
+  'rounded-[var(--leve-header-radius)] border border-[color-mix(in_srgb,var(--leve-neu-light)_45%,transparent)]',
+  'px-3 py-2.5 shadow-[var(--leve-neu-inset)] transition-[box-shadow,background-color] duration-200',
+  'hover:shadow-[var(--leve-neu-hover)]',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_28%,transparent)]',
+  'active:shadow-[var(--leve-neu-inset-deep)]'
+);
+
+export const taskListSectionPanelClass = 'min-w-0 pt-1';

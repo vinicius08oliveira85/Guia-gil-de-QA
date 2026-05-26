@@ -83,29 +83,3 @@ export function getTaskQaCoverageAlerts(task: JiraTask, taskTypeNorm: string): T
 
   return alerts;
 }
-
-/** Remove marcação HTML e normaliza espaços para prévia em cards. */
-function stripMarkupToPlainText(raw: string): string {
-  return raw
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-/**
- * Texto de prévia no card da listagem: prioriza resumo da análise IA, depois descrição.
- */
-export function getTaskCardPreviewText(task: JiraTask): string | null {
-  const analysisSummary = task.iaAnalysis?.summary?.trim();
-  if (analysisSummary) return analysisSummary;
-
-  const description = task.description?.trim();
-  if (!description) return null;
-
-  const plain = stripMarkupToPlainText(description);
-  return plain || null;
-}

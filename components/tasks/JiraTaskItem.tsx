@@ -87,15 +87,11 @@ import {
   taskCardBadgeTechShape,
   taskCardBadgeTechTypography,
   taskCardIdTypography,
-  taskCardMetadataStripTypography,
   taskCardTitleClass,
   taskCardSectionTitleClass,
   taskCardMutedClass,
   taskCardShellClass,
   taskCardShellLayoutClass,
-  taskCardMainColumnClass,
-  taskCardHeaderRowClass,
-  taskCardPreviewClass,
   taskCardListHoverClass,
   taskCardNestedListBgClass,
   taskCardSelectedClass,
@@ -105,7 +101,6 @@ import {
   taskCountBadgeClass,
   taskDetailsExpandClass,
   taskIconHoverClass,
-  taskMetadataStripClass,
   taskModalSectionClass,
   taskNavFooterClass,
   taskNeuDividerClass,
@@ -128,6 +123,11 @@ import {
 import { JiraStatusLozenge } from './JiraStatusLozenge';
 import { TaskJiraStatusDropdown } from './TaskJiraStatusDropdown';
 import { TaskCardQaInsights } from './TaskCardQaInsights';
+import {
+  TaskCardHeader,
+  TaskCardMetadataSeparator,
+  TaskCardMetadataStrip,
+} from './TaskCardHeader';
 import { leveSettingsSectionIconWrapClass } from '../common/projectCardUi';
 import {
   getTaskQaRiskLevel,
@@ -142,7 +142,6 @@ import {
   getTaskTypeLeftBorderClass,
   getTaskRiskBadgeClass,
   getTaskQaCoverageAlerts,
-  getTaskCardPreviewText,
 } from '../../utils/taskCardQa';
 
 /** Destaque da ação IA principal — halo via tokens Daisy (oklch) + animação existente. */
@@ -331,7 +330,6 @@ export const JiraTaskItem: React.FC<{
 
     /** Título do card: apenas o título da própria tarefa (sem prefixo Epic/História). */
     const displayTitle = task.title;
-    const cardPreviewText = useMemo(() => getTaskCardPreviewText(task), [task]);
 
     const taskRiskLevel = useMemo(() => getTaskQaRiskLevel(task), [task]);
     const taskRiskSignals = useMemo(() => getTaskQaRiskSignals(task), [task]);
@@ -793,7 +791,10 @@ export const JiraTaskItem: React.FC<{
       setIsCreatingBdd(false);
     };
 
-    const indentationStyle = { paddingLeft: `${level * 1.2}rem` };
+    const treeIndentStyle = useMemo(
+      () => ({ ['--task-tree-level' as string]: level }) as React.CSSProperties,
+      [level]
+    );
 
     /** Ícones compactos no desktop; área tocável ≥44px no mobile (WCAG) */
     const iconTouchTargetClass =
@@ -1719,7 +1720,7 @@ export const JiraTaskItem: React.FC<{
         className="relative max-md:focus-within:z-[300]"
         data-task-id={task.id}
       >
-        <div style={indentationStyle} className="py-0.5">
+        <div style={treeIndentStyle} className="task-tree-indent py-0.5">
           <div
             className={[
               taskCardShellClass,
@@ -1746,227 +1747,197 @@ export const JiraTaskItem: React.FC<{
             aria-busy={isAiProcessing}
             title={isAiProcessing && aiPhaseMessage ? aiPhaseMessage : undefined}
           >
-            <div className={taskCardMainColumnClass}>
-            <div
-              className={cn(
-                taskMetadataStripClass,
-                taskCardMetadataStripTypography
-              )}
-              role="group"
-              aria-label="Metadados da tarefa"
-            >
-              <JiraIssueTypeIcon
-                type={task.type}
-                iconUrl={task.jiraIssueTypeIconUrl}
-                size={14}
-                className="shrink-0"
-              />
-              <button
-                type="button"
-                onClick={handleOpenTaskDetails}
-                className={cn(
-                  'shrink-0 cursor-pointer rounded-sm text-[color:var(--color-primary-deep)] underline-offset-2 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
-                  taskCardIdTypography
-                )}
-                aria-label={taskDetailsTriggerLabel}
-                aria-expanded={onOpenModal ? undefined : isDetailsOpen}
-              >
-                {task.id}
-              </button>
-              <span className="shrink-0 opacity-60" aria-hidden>
-                ·
-              </span>
-              <Badge
-                appearance="pill"
-                variant={typeBadgeVariant}
-                size="xs"
-                className={cn(
-                  'badge-task-format app-nav-pill shrink-0 !px-1.5 !py-0 !text-[9px] !font-bold !leading-none',
-                  taskCardBadgePillShape,
-                  taskCardBadgePillTypography,
-                  task.type === 'Epic' && 'jira-task-epic-type-pill'
-                )}
-              >
-                {task.type}
-              </Badge>
-              <span className="shrink-0 opacity-60" aria-hidden>
-                ·
-              </span>
-              {project?.settings?.jiraStatuses && project.settings.jiraStatuses.length > 0 ? (
-                <TaskJiraStatusDropdown
-                  variant="lozenge"
-                  currentLabel={currentDisplayStatusLabel}
-                  currentStatusColor={currentStatusColor}
-                  jiraStatuses={project.settings.jiraStatuses}
-                  onSelectStatus={handleChangeStatus}
-                  disabled={isTransitioningJiraStatus}
-                  className="shrink-0"
-                />
-              ) : (
-                <JiraStatusLozenge
-                  label={currentDisplayStatusLabel}
-                  statusColor={currentStatusColor}
-                  className="shrink-0"
-                />
-              )}
-              {storyPointsDisplay > 0 ? (
-                <>
-                  <span className="shrink-0 opacity-60" aria-hidden>
-                    ·
-                  </span>
-                  <span
-                    className={cn(
-                      'shrink-0 text-[var(--leve-header-text-muted)]',
-                      taskCardBadgeTechShape,
-                      taskCardBadgeTechTypography
-                    )}
-                    title="Story Points"
-                  >
-                    {storyPointsDisplay} SP
-                  </span>
-                </>
-              ) : null}
-              {displaySprint ? (
-                <>
-                  <span className="shrink-0 opacity-60" aria-hidden>
-                    ·
-                  </span>
-                  <TaskSprintBadge sprint={displaySprint} />
-                </>
-              ) : null}
-              {showTestExecutionSummary ? (
-                <span className={getTaskRiskBadgeClass(taskRiskLevel)} title={taskRiskTooltip}>
-                  {taskRiskLevel}
-                </span>
-              ) : null}
-            </div>
-            <div className={taskCardHeaderRowClass}>
-              <div className="flex shrink-0 flex-nowrap items-center gap-tasks-panel-tight">
-                {onToggleSelect && (
-                  <input
-                    type="checkbox"
-                    checked={!!isSelected}
-                    onChange={e => {
-                      e.stopPropagation();
-                      onToggleSelect();
-                    }}
-                    onClick={e => e.stopPropagation()}
-                    className="checkbox checkbox-sm checkbox-highlight shrink-0"
-                    aria-label={
-                      isSelected
-                        ? `Tarefa ${task.id} selecionada (clique para desselecionar)`
-                        : `Selecionar tarefa ${task.id}`
-                    }
+            <TaskCardHeader
+              title={displayTitle}
+              metadata={
+                <TaskCardMetadataStrip>
+                  <JiraIssueTypeIcon
+                    type={task.type}
+                    iconUrl={task.jiraIssueTypeIconUrl}
+                    size={14}
+                    className="shrink-0"
                   />
-                )}
-                {onToggleFavorite && (
                   <button
                     type="button"
-                    onClick={e => {
-                      e.stopPropagation();
-                      onToggleFavorite();
-                    }}
-                    className={cn(iconTouchTargetClass, 'shrink-0', taskIconHoverClass)}
-                    aria-label={task.isFavorite ? 'Desmarcar favorito' : 'Marcar como favorito'}
-                  >
-                    {task.isFavorite ? (
-                      <Star
-                        className="fill-warning text-warning drop-shadow-[0_0_6px_color-mix(in_oklch,oklch(var(--wa))_45%,transparent)]"
-                        aria-hidden
-                      />
-                    ) : (
-                      <Star className="text-[var(--leve-header-text-muted)]" aria-hidden />
+                    onClick={handleOpenTaskDetails}
+                    className={cn(
+                      'shrink-0 cursor-pointer rounded-sm text-[color:var(--color-primary-deep)] underline-offset-2 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
+                      taskCardIdTypography
                     )}
+                    aria-label={taskDetailsTriggerLabel}
+                    aria-expanded={onOpenModal ? undefined : isDetailsOpen}
+                  >
+                    {task.id}
                   </button>
-                )}
-                <div className={taskCardSubtreeExpandSlotClass} aria-hidden={!hasChildren}>
-                  {hasChildren ? (
+                  <TaskCardMetadataSeparator />
+                  <Badge
+                    appearance="pill"
+                    variant={typeBadgeVariant}
+                    size="xs"
+                    className={cn(
+                      'badge-task-format app-nav-pill shrink-0 !px-1.5 !py-0 !text-[9px] !font-bold !leading-none',
+                      taskCardBadgePillShape,
+                      taskCardBadgePillTypography,
+                      task.type === 'Epic' && 'jira-task-epic-type-pill'
+                    )}
+                  >
+                    {task.type}
+                  </Badge>
+                  <TaskCardMetadataSeparator />
+                  {project?.settings?.jiraStatuses && project.settings.jiraStatuses.length > 0 ? (
+                    <TaskJiraStatusDropdown
+                      variant="lozenge"
+                      currentLabel={currentDisplayStatusLabel}
+                      currentStatusColor={currentStatusColor}
+                      jiraStatuses={project.settings.jiraStatuses}
+                      onSelectStatus={handleChangeStatus}
+                      disabled={isTransitioningJiraStatus}
+                      className="shrink-0"
+                    />
+                  ) : (
+                    <JiraStatusLozenge
+                      label={currentDisplayStatusLabel}
+                      statusColor={currentStatusColor}
+                      className="shrink-0"
+                    />
+                  )}
+                  {storyPointsDisplay > 0 ? (
+                    <>
+                      <TaskCardMetadataSeparator />
+                      <span
+                        className={cn(
+                          'shrink-0 text-[var(--leve-header-text-muted)]',
+                          taskCardBadgeTechShape,
+                          taskCardBadgeTechTypography
+                        )}
+                        title="Story Points"
+                      >
+                        {storyPointsDisplay} SP
+                      </span>
+                    </>
+                  ) : null}
+                  {displaySprint ? (
+                    <>
+                      <TaskCardMetadataSeparator />
+                      <TaskSprintBadge sprint={displaySprint} />
+                    </>
+                  ) : null}
+                  {showTestExecutionSummary ? (
+                    <span className={getTaskRiskBadgeClass(taskRiskLevel)} title={taskRiskTooltip}>
+                      {taskRiskLevel}
+                    </span>
+                  ) : null}
+                </TaskCardMetadataStrip>
+              }
+              controls={
+                <>
+                  {onToggleSelect && (
+                    <input
+                      type="checkbox"
+                      checked={!!isSelected}
+                      onChange={e => {
+                        e.stopPropagation();
+                        onToggleSelect();
+                      }}
+                      onClick={e => e.stopPropagation()}
+                      className="checkbox checkbox-sm checkbox-highlight shrink-0"
+                      aria-label={
+                        isSelected
+                          ? `Tarefa ${task.id} selecionada (clique para desselecionar)`
+                          : `Selecionar tarefa ${task.id}`
+                      }
+                    />
+                  )}
+                  {onToggleFavorite && (
                     <button
                       type="button"
                       onClick={e => {
                         e.stopPropagation();
-                        setIsChildrenOpen(!isChildrenOpen);
+                        onToggleFavorite();
                       }}
-                      className={cn(
-                        'btn btn-ghost btn-xs flex h-full min-h-0 w-full min-w-0 items-center justify-center gap-0.5 rounded-[inherit] border-0 bg-transparent px-0 py-0 shadow-none',
-                        taskIconHoverClass,
-                        '[&_svg:first-child]:size-[18px] sm:[&_svg:first-child]:size-4'
-                      )}
-                      aria-label={
-                        isChildrenOpen
-                          ? `Colapsar ${task.children.length} subtarefas de ${task.id}`
-                          : `Expandir ${task.children.length} subtarefas de ${task.id}`
-                      }
+                      className={cn(iconTouchTargetClass, 'shrink-0', taskIconHoverClass)}
+                      aria-label={task.isFavorite ? 'Desmarcar favorito' : 'Marcar como favorito'}
                     >
-                      <ChevronDown
-                        className={cn(
-                          'shrink-0 transition-transform',
-                          isChildrenOpen && 'rotate-180'
-                        )}
-                        aria-hidden="true"
-                      />
-                      <span className={taskChipCountClass}>{task.children.length}</span>
+                      {task.isFavorite ? (
+                        <Star
+                          className="fill-warning text-warning drop-shadow-[0_0_6px_color-mix(in_oklch,oklch(var(--wa))_45%,transparent)]"
+                          aria-hidden
+                        />
+                      ) : (
+                        <Star className="text-[var(--leve-header-text-muted)]" aria-hidden />
+                      )}
                     </button>
-                  ) : (
-                    <span className="pointer-events-none flex items-center gap-0.5 opacity-0 select-none">
-                      <ChevronDown className="size-[18px] shrink-0 sm:size-4" aria-hidden="true" />
-                      <span className={cn(taskChipCountClass, 'min-w-[1.25rem]')}>0</span>
-                    </span>
                   )}
-                </div>
-              </div>
-              <div className="flex min-w-0 flex-1 flex-col gap-tasks-panel-tight overflow-hidden">
-                <div className="flex min-w-0 w-full flex-col gap-tasks-panel-tight overflow-hidden sm:flex-row sm:items-center sm:gap-2">
-                  <span
-                    className={cn(
-                      'block min-w-0 w-full flex-1 break-words line-clamp-2 sm:line-clamp-1',
-                      taskCardTitleClass
-                    )}
-                    title={displayTitle}
-                  >
-                    {displayTitle}
-                  </span>
-                  <div className="flex w-full shrink-0 flex-wrap items-center justify-end gap-tasks-panel-tight sm:w-auto sm:flex-nowrap">
-                    {(task.type === 'Tarefa' || task.type === 'Bug') && (
-                      <TestCasesFreshnessIndicator
-                        task={task}
-                        variant="compact"
-                        isGenerating={isGeneratingTests || !!isGeneratingAll || isGenerating}
-                        className="inline-flex shrink-0"
-                      />
-                    )}
-                    {showTaskQaInsights ? (
-                      <TaskCardQaInsights
-                        variant="inline"
-                        counts={{
-                          total: testExecutionSummary.total,
-                          passed: testExecutionSummary.passed,
-                          failed: testExecutionSummary.failed,
-                          pending: testExecutionSummary.pending,
+                  <div className={taskCardSubtreeExpandSlotClass} aria-hidden={!hasChildren}>
+                    {hasChildren ? (
+                      <button
+                        type="button"
+                        onClick={e => {
+                          e.stopPropagation();
+                          setIsChildrenOpen(!isChildrenOpen);
                         }}
-                        qaAlerts={taskQaAlerts}
-                        iaAnalysisStale={iaAnalysisStale}
-                        className="shrink-0"
-                      />
-                    ) : null}
+                        className={cn(
+                          'btn btn-ghost btn-xs flex h-full min-h-0 w-full min-w-0 items-center justify-center gap-0.5 rounded-[inherit] border-0 bg-transparent px-0 py-0 shadow-none',
+                          taskIconHoverClass,
+                          '[&_svg:first-child]:size-[18px] sm:[&_svg:first-child]:size-4'
+                        )}
+                        aria-label={
+                          isChildrenOpen
+                            ? `Colapsar ${task.children.length} subtarefas de ${task.id}`
+                            : `Expandir ${task.children.length} subtarefas de ${task.id}`
+                        }
+                      >
+                        <ChevronDown
+                          className={cn(
+                            'shrink-0 transition-transform',
+                            isChildrenOpen && 'rotate-180'
+                          )}
+                          aria-hidden="true"
+                        />
+                        <span className={taskChipCountClass}>{task.children.length}</span>
+                      </button>
+                    ) : (
+                      <span className="pointer-events-none flex items-center gap-0.5 opacity-0 select-none">
+                        <ChevronDown className="size-[18px] shrink-0 sm:size-4" aria-hidden="true" />
+                        <span className={cn(taskChipCountClass, 'min-w-[1.25rem]')}>0</span>
+                      </span>
+                    )}
                   </div>
-                </div>
-              </div>
-            </div>
-            {cardPreviewText ? (
-              <p
-                className={cn(taskCardPreviewClass, 'max-sm:block sm:hidden')}
-                title={cardPreviewText}
-              >
-                {cardPreviewText}
-              </p>
-            ) : null}
-            </div>
+                </>
+              }
+              titleTrailing={
+                <>
+                  {(task.type === 'Tarefa' || task.type === 'Bug') && (
+                    <TestCasesFreshnessIndicator
+                      task={task}
+                      variant="compact"
+                      isGenerating={isGeneratingTests || !!isGeneratingAll || isGenerating}
+                      className="inline-flex shrink-0"
+                    />
+                  )}
+                  {showTaskQaInsights ? (
+                    <TaskCardQaInsights
+                      variant="inline"
+                      counts={{
+                        total: testExecutionSummary.total,
+                        passed: testExecutionSummary.passed,
+                        failed: testExecutionSummary.failed,
+                        pending: testExecutionSummary.pending,
+                      }}
+                      qaAlerts={taskQaAlerts}
+                      iaAnalysisStale={iaAnalysisStale}
+                      className="shrink-0"
+                    />
+                  ) : null}
+                </>
+              }
+            />
 
             <div
               className={cn(
                 'flex w-full shrink-0 flex-nowrap items-center justify-end gap-tasks-panel-tight',
-                'z-20 min-w-0 overflow-visible sm:w-auto'
+                'z-20 min-w-0 overflow-visible max-sm:border-t max-sm:border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] max-sm:pt-1',
+                'sm:w-auto sm:border-0 sm:pt-0'
               )}
               onClick={e => e.stopPropagation()}
             >

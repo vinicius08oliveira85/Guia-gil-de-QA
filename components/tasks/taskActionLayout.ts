@@ -26,23 +26,11 @@ export const TASK_ACTION_SLOT_CLASSNAMES = {
 
 /** Shell visual do card na listagem (tokens em index.css `.task-card-shell`). */
 export const taskCardShellClass =
-  'task-card-shell px-2 py-2 transition-[box-shadow] duration-200 sm:px-3 sm:py-2';
+  'task-card-shell px-1.5 py-2 transition-[box-shadow] duration-200 max-sm:min-w-0 sm:px-3 sm:py-2';
 
 /** Layout do shell: coluna no mobile (< sm), linha a partir de sm. */
 export const taskCardShellLayoutClass =
   'flex min-w-0 flex-col items-stretch gap-tasks-panel-tight overflow-visible sm:flex-row sm:items-center sm:gap-3';
-
-/** Coluna principal de conteúdo (metadados, título, prévia). */
-export const taskCardMainColumnClass =
-  'flex min-w-0 w-full flex-1 flex-col gap-tasks-panel-tight overflow-hidden';
-
-/** Linha de controles (checkbox, favorito, subtarefas) + título/insights. */
-export const taskCardHeaderRowClass =
-  'flex min-w-0 w-full items-start gap-tasks-panel-tight';
-
-/** Prévia de descrição ou análise IA no card. */
-export const taskCardPreviewClass =
-  'task-card-muted line-clamp-4 text-xs leading-snug sm:text-[0.8125rem]';
 
 /** Plus Jakarta Sans + tracking do tema (identidade tipográfica do app). */
 export const taskCardTypography = 'font-sans tracking-[var(--letter-spacing)]';
@@ -181,7 +169,8 @@ export const taskCardTestStatusChipLayout = cn(
 /** Largura fixa do chevron + contador de subtarefas (alinha metadados entre cards). */
 export const taskCardSubtreeExpandSlotClass = cn(
   taskNeuChipRaisedClass,
-  'inline-flex shrink-0 items-center justify-center gap-0.5 px-1.5 min-h-[44px] min-w-[44px] max-md:px-2 sm:min-h-8 sm:min-w-[3.25rem]'
+  'inline-flex shrink-0 items-center justify-center gap-0.5 px-1.5',
+  'min-h-9 min-w-9 max-sm:min-h-8 max-sm:min-w-[2.75rem] sm:min-h-8 sm:min-w-[3.25rem]'
 );
 
 /** Hover / seleção do card na listagem. */
@@ -229,8 +218,12 @@ export const taskDetailsExpandClass =
 
 export const taskMetadataStripClass = 'task-card-metadata-strip [scrollbar-width:thin]';
 
+/** Filhos expandidos — indentação leve no mobile para preservar largura útil. */
 export const taskSubtreeChildrenClass = [
-  'ml-6 mt-1 border-l-2 pl-3 max-md:rounded-r-lg max-md:pr-2',
+  'task-subtree-children mt-1 border-l-2',
+  'ml-0 pl-2 max-sm:ml-0 max-sm:pl-2',
+  'sm:ml-3 sm:pl-2.5 md:ml-6 md:pl-3',
+  'max-md:rounded-r-lg max-md:pr-1',
   'border-[color-mix(in_srgb,var(--leve-neu-light)_40%,transparent)]',
 ].join(' ');
 

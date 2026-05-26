@@ -112,6 +112,7 @@ import {
   type TasksListMode,
 } from '../../utils/backlogTasks';
 import { BacklogListSurface } from './BacklogListSurface';
+import { TaskListCollapsibleSection } from './TaskListCollapsibleSection';
 import {
   BACKLOG_SPRINT_FILTER_ALL,
   buildBacklogSprintFilterOptions,
@@ -177,6 +178,14 @@ export const TasksView: React.FC<{
       `backlog_sp_filter_${project.id}`,
       BACKLOG_SECONDARY_FILTER_DEFAULTS.storyPoints
     );
+  const [favoritesSectionOpen, setFavoritesSectionOpen] = useLocalStorage(
+    `tasks_favorites_open_${project.id}`,
+    true
+  );
+  const [otherTasksSectionOpen, setOtherTasksSectionOpen] = useLocalStorage(
+    `tasks_other_open_${project.id}`,
+    true
+  );
 
   const clearBacklogSecondaryFilters = useCallback(() => {
     setBacklogTypeFilter(BACKLOG_SECONDARY_FILTER_DEFAULTS.type);
@@ -2583,35 +2592,44 @@ export const TasksView: React.FC<{
                       ))}
                     </div>
                   ) : (
-                    <>
+                    <div className="flex flex-col gap-4">
                       {favoriteRoots.length > 0 && (
-                        <section aria-label="Favoritos">
-                          <h3 className="mb-3 flex items-center gap-2 font-heading text-xs font-bold uppercase tracking-wider text-[var(--brand-cta)]">
-                            <Star className="w-4 h-4 fill-amber-400 text-amber-400" aria-hidden />
-                            Favoritos
-                          </h3>
+                        <TaskListCollapsibleSection
+                          sectionId={`tasks-favorites-${project.id}`}
+                          title="Favoritos"
+                          icon={
+                            <Star className="h-4 w-4 shrink-0 fill-amber-400 text-amber-400" aria-hidden />
+                          }
+                          count={countTasksInBacklogTree(favoriteRoots)}
+                          isOpen={favoritesSectionOpen}
+                          onToggle={() => setFavoritesSectionOpen(prev => !prev)}
+                          titleClassName="text-[var(--brand-cta)]"
+                        >
                           {renderRootTaskList(
                             favoriteRoots,
                             'Lista de tarefas favoritas',
                             favoriteSectionA11y
                           )}
-                        </section>
+                        </TaskListCollapsibleSection>
                       )}
-                      {favoriteRoots.length > 0 && otherRoots.length > 0 && (
-                        <div className="border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] my-4" aria-hidden />
+                      {otherRoots.length > 0 && (
+                        <TaskListCollapsibleSection
+                          sectionId={`tasks-other-${project.id}`}
+                          title="Outras Tarefas"
+                          icon={<List className="h-4 w-4 shrink-0" aria-hidden />}
+                          count={countTasksInBacklogTree(otherRoots)}
+                          isOpen={otherTasksSectionOpen}
+                          onToggle={() => setOtherTasksSectionOpen(prev => !prev)}
+                          titleClassName="text-[var(--leve-header-text-muted)]"
+                        >
+                          {renderRootTaskList(
+                            otherRoots,
+                            'Lista de outras tarefas',
+                            otherSectionA11y
+                          )}
+                        </TaskListCollapsibleSection>
                       )}
-                      <section aria-label="Outras tarefas">
-                        <h3 className="mb-3 flex items-center gap-2 task-card-field-label">
-                          <List className="w-4 h-4" aria-hidden />
-                          Outras Tarefas
-                        </h3>
-                        {renderRootTaskList(
-                          otherRoots,
-                          'Lista de outras tarefas',
-                          otherSectionA11y
-                        )}
-                      </section>
-                    </>
+                    </div>
                   )}
                 </div>
                 </BacklogListSurface>

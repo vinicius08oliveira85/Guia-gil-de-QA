@@ -8,12 +8,11 @@ import type { JiraTask } from '../../types';
 import { cn } from '../../utils/cn';
 import {
   taskCardMutedClass,
-  taskCardPreviewClass,
   taskCardShellLayoutClass,
   taskCardTitleClass,
   taskNeuDividerClass,
 } from './taskActionLayout';
-import { getTaskCardPreviewText } from '../../utils/taskCardQa';
+import { TaskCardHeader, TaskCardMetadataStrip } from './TaskCardHeader';
 
 interface TaskCardProps {
   task: JiraTask;
@@ -86,42 +85,36 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
   }, [task.type]);
 
   const handleToggleExpand = () => setIsExpanded(!isExpanded);
-  const cardPreviewText = useMemo(() => getTaskCardPreviewText(task), [task]);
 
   return (
     <Card className="p-4 transition-all duration-300">
       <div className={cn(taskCardShellLayoutClass, 'items-start')}>
         <div
-          className="flex min-w-0 flex-1 flex-col gap-tasks-panel-tight cursor-pointer"
+          className="flex min-w-0 flex-1 cursor-pointer"
           onClick={handleToggleExpand}
         >
-          <div
-            className="task-card-metadata-strip flex flex-nowrap items-center gap-1.5 px-1.5 py-0.5"
-            role="group"
-            aria-label="Metadados da tarefa"
-          >
-            <Badge variant={taskTypeBadge.variant} size="sm" className="shrink-0">
-              {taskTypeBadge.label}
-            </Badge>
-            <span className={cn(taskCardTitleClass, 'shrink-0 text-sm font-semibold')}>
-              {task.id}
-            </span>
-            <Badge
-              variant={jiraStatusBadge.variant}
-              size="sm"
-              className="inline-flex shrink-0 justify-center"
-            >
-              {jiraStatusBadge.label}
-            </Badge>
-          </div>
-          <h3 className={cn(taskCardTitleClass, 'text-base leading-tight sm:text-lg line-clamp-2 sm:line-clamp-1')}>
-            {task.title}
-          </h3>
-          {cardPreviewText ? (
-            <p className={cn(taskCardPreviewClass, 'max-sm:block sm:hidden')} title={cardPreviewText}>
-              {cardPreviewText}
-            </p>
-          ) : null}
+          <TaskCardHeader
+            className="flex-1"
+            title={task.title}
+            titleAs="h3"
+            metadata={
+              <TaskCardMetadataStrip>
+                <Badge variant={taskTypeBadge.variant} size="sm" className="shrink-0">
+                  {taskTypeBadge.label}
+                </Badge>
+                <span className={cn(taskCardTitleClass, 'shrink-0 text-sm font-semibold')}>
+                  {task.id}
+                </span>
+                <Badge
+                  variant={jiraStatusBadge.variant}
+                  size="sm"
+                  className="inline-flex shrink-0 justify-center"
+                >
+                  {jiraStatusBadge.label}
+                </Badge>
+              </TaskCardMetadataStrip>
+            }
+          />
         </div>
         <button
           type="button"

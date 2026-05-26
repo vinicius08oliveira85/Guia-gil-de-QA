@@ -704,6 +704,25 @@
     @apply task-element-typography font-bold uppercase tracking-wider text-[10px] rounded-full;
   }
 
+  /**
+   * Indentação por nível na árvore de tarefas.
+   * Mobile: passo menor (0.5rem/nível); desktop: 1.2rem/nível.
+   */
+  .task-tree-indent {
+    --task-tree-indent-step: 0.5rem;
+    padding-left: calc(var(--task-tree-level, 0) * var(--task-tree-indent-step));
+    min-width: 0;
+  }
+  @media (min-width: 640px) {
+    .task-tree-indent {
+      --task-tree-indent-step: 1.2rem;
+    }
+  }
+
+  .task-subtree-children {
+    min-width: 0;
+  }
+
   /** Shell do card de tarefa na listagem (JiraTaskItem). Fundo fixo — não alterar cor base. */
   .task-card-shell {
     --task-card-surface-bg: var(--leve-neu-bg);
@@ -752,8 +771,9 @@
     flex-shrink: 0;
     white-space: nowrap;
   }
-  @media (min-width: 768px) {
+  @media (min-width: 640px) {
     .task-card-metadata-strip {
+      width: auto;
       max-width: min(100%, 42rem);
     }
   }
