@@ -92,6 +92,10 @@ import {
   taskCardSectionTitleClass,
   taskCardMutedClass,
   taskCardShellClass,
+  taskCardShellLayoutClass,
+  taskCardMainColumnClass,
+  taskCardHeaderRowClass,
+  taskCardPreviewClass,
   taskCardListHoverClass,
   taskCardNestedListBgClass,
   taskCardSelectedClass,
@@ -138,6 +142,7 @@ import {
   getTaskTypeLeftBorderClass,
   getTaskRiskBadgeClass,
   getTaskQaCoverageAlerts,
+  getTaskCardPreviewText,
 } from '../../utils/taskCardQa';
 
 /** Destaque da ação IA principal — halo via tokens Daisy (oklch) + animação existente. */
@@ -326,6 +331,7 @@ export const JiraTaskItem: React.FC<{
 
     /** Título do card: apenas o título da própria tarefa (sem prefixo Epic/História). */
     const displayTitle = task.title;
+    const cardPreviewText = useMemo(() => getTaskCardPreviewText(task), [task]);
 
     const taskRiskLevel = useMemo(() => getTaskQaRiskLevel(task), [task]);
     const taskRiskSignals = useMemo(() => getTaskQaRiskSignals(task), [task]);
@@ -1717,7 +1723,7 @@ export const JiraTaskItem: React.FC<{
           <div
             className={[
               taskCardShellClass,
-              'flex min-w-0 flex-col items-stretch gap-2 overflow-visible max-sm:flex-col sm:flex-row sm:items-center sm:gap-3',
+              taskCardShellLayoutClass,
               taskCardListHoverClass,
               level > 0 ? taskCardNestedListBgClass : '',
               activeTaskId === task.id ? 'ring-2 ring-primary/40' : '',
@@ -1740,95 +1746,7 @@ export const JiraTaskItem: React.FC<{
             aria-busy={isAiProcessing}
             title={isAiProcessing && aiPhaseMessage ? aiPhaseMessage : undefined}
           >
-            <div className="flex shrink-0 flex-nowrap items-center gap-1.5 md:gap-2">
-                {onToggleSelect && (
-                  <input
-                    type="checkbox"
-                    checked={!!isSelected}
-                    onChange={e => {
-                      e.stopPropagation();
-                      onToggleSelect();
-                    }}
-                    onClick={e => e.stopPropagation()}
-                    className="checkbox checkbox-sm checkbox-highlight shrink-0"
-                    aria-label={
-                      isSelected
-                        ? `Tarefa ${task.id} selecionada (clique para desselecionar)`
-                        : `Selecionar tarefa ${task.id}`
-                    }
-                  />
-                )}
-                {onToggleFavorite && (
-                  <button
-                    type="button"
-                    onClick={e => {
-                      e.stopPropagation();
-                      onToggleFavorite();
-                    }}
-                    className={cn(iconTouchTargetClass, 'shrink-0', taskIconHoverClass)}
-                    aria-label={task.isFavorite ? 'Desmarcar favorito' : 'Marcar como favorito'}
-                  >
-                    {task.isFavorite ? (
-                      <Star
-                        className="fill-warning text-warning drop-shadow-[0_0_6px_color-mix(in_oklch,oklch(var(--wa))_45%,transparent)]"
-                        aria-hidden
-                      />
-                    ) : (
-                      <Star className="text-[var(--leve-header-text-muted)]" aria-hidden />
-                    )}
-                  </button>
-                )}
-                <div
-                  className={taskCardSubtreeExpandSlotClass}
-                  aria-hidden={!hasChildren}
-                >
-                  {hasChildren ? (
-                    <button
-                      type="button"
-                      onClick={e => {
-                        e.stopPropagation();
-                        setIsChildrenOpen(!isChildrenOpen);
-                      }}
-                      className={cn(
-                        'btn btn-ghost btn-xs flex h-full min-h-0 w-full min-w-0 items-center justify-center gap-0.5 rounded-[inherit] border-0 bg-transparent px-0 py-0 shadow-none',
-                        taskIconHoverClass,
-                        '[&_svg:first-child]:size-[18px] sm:[&_svg:first-child]:size-4'
-                      )}
-                      aria-label={
-                        isChildrenOpen
-                          ? `Colapsar ${task.children.length} subtarefas de ${task.id}`
-                          : `Expandir ${task.children.length} subtarefas de ${task.id}`
-                      }
-                    >
-                      <ChevronDown
-                        className={cn(
-                          'shrink-0 transition-transform',
-                          isChildrenOpen && 'rotate-180'
-                        )}
-                        aria-hidden="true"
-                      />
-                      <span className={taskChipCountClass}>
-                        {task.children.length}
-                      </span>
-                    </button>
-                  ) : (
-                    <span className="pointer-events-none flex items-center gap-0.5 opacity-0 select-none">
-                      <ChevronDown
-                        className="size-[18px] shrink-0 sm:size-4"
-                        aria-hidden="true"
-                      />
-                      <span className={cn(taskChipCountClass, 'min-w-[1.25rem]')}>
-                        0
-                      </span>
-                    </span>
-                  )}
-                </div>
-            </div>
-            <div
-              className={cn(
-                'flex min-w-0 w-full flex-1 flex-col gap-1 overflow-hidden max-sm:min-w-0 sm:flex-1 md:flex-row md:items-center md:gap-2'
-              )}
-            >
+            <div className={taskCardMainColumnClass}>
             <div
               className={cn(
                 taskMetadataStripClass,
@@ -1922,51 +1840,133 @@ export const JiraTaskItem: React.FC<{
                 </span>
               ) : null}
             </div>
-            <div
-              className={cn(
-                'flex min-w-0 w-full flex-1 flex-col gap-1.5 overflow-hidden max-sm:w-full sm:flex-row sm:items-center sm:gap-2'
-              )}
-            >
-              <span
-                className={cn(
-                  'block min-w-0 w-full flex-1 break-words line-clamp-3 sm:line-clamp-1',
-                  taskCardTitleClass
-                )}
-                title={displayTitle}
-              >
-                {displayTitle}
-              </span>
-              <div className="flex w-full shrink-0 flex-wrap items-center justify-end gap-1.5 max-sm:pt-0.5 sm:w-auto sm:flex-nowrap">
-                {(task.type === 'Tarefa' || task.type === 'Bug') && (
-                  <TestCasesFreshnessIndicator
-                    task={task}
-                    variant="compact"
-                    isGenerating={isGeneratingTests || !!isGeneratingAll || isGenerating}
-                    className="inline-flex shrink-0"
-                  />
-                )}
-                {showTaskQaInsights ? (
-                  <TaskCardQaInsights
-                    variant="inline"
-                    counts={{
-                      total: testExecutionSummary.total,
-                      passed: testExecutionSummary.passed,
-                      failed: testExecutionSummary.failed,
-                      pending: testExecutionSummary.pending,
+            <div className={taskCardHeaderRowClass}>
+              <div className="flex shrink-0 flex-nowrap items-center gap-tasks-panel-tight">
+                {onToggleSelect && (
+                  <input
+                    type="checkbox"
+                    checked={!!isSelected}
+                    onChange={e => {
+                      e.stopPropagation();
+                      onToggleSelect();
                     }}
-                    qaAlerts={taskQaAlerts}
-                    iaAnalysisStale={iaAnalysisStale}
-                    className="shrink-0"
+                    onClick={e => e.stopPropagation()}
+                    className="checkbox checkbox-sm checkbox-highlight shrink-0"
+                    aria-label={
+                      isSelected
+                        ? `Tarefa ${task.id} selecionada (clique para desselecionar)`
+                        : `Selecionar tarefa ${task.id}`
+                    }
                   />
-                ) : null}
+                )}
+                {onToggleFavorite && (
+                  <button
+                    type="button"
+                    onClick={e => {
+                      e.stopPropagation();
+                      onToggleFavorite();
+                    }}
+                    className={cn(iconTouchTargetClass, 'shrink-0', taskIconHoverClass)}
+                    aria-label={task.isFavorite ? 'Desmarcar favorito' : 'Marcar como favorito'}
+                  >
+                    {task.isFavorite ? (
+                      <Star
+                        className="fill-warning text-warning drop-shadow-[0_0_6px_color-mix(in_oklch,oklch(var(--wa))_45%,transparent)]"
+                        aria-hidden
+                      />
+                    ) : (
+                      <Star className="text-[var(--leve-header-text-muted)]" aria-hidden />
+                    )}
+                  </button>
+                )}
+                <div className={taskCardSubtreeExpandSlotClass} aria-hidden={!hasChildren}>
+                  {hasChildren ? (
+                    <button
+                      type="button"
+                      onClick={e => {
+                        e.stopPropagation();
+                        setIsChildrenOpen(!isChildrenOpen);
+                      }}
+                      className={cn(
+                        'btn btn-ghost btn-xs flex h-full min-h-0 w-full min-w-0 items-center justify-center gap-0.5 rounded-[inherit] border-0 bg-transparent px-0 py-0 shadow-none',
+                        taskIconHoverClass,
+                        '[&_svg:first-child]:size-[18px] sm:[&_svg:first-child]:size-4'
+                      )}
+                      aria-label={
+                        isChildrenOpen
+                          ? `Colapsar ${task.children.length} subtarefas de ${task.id}`
+                          : `Expandir ${task.children.length} subtarefas de ${task.id}`
+                      }
+                    >
+                      <ChevronDown
+                        className={cn(
+                          'shrink-0 transition-transform',
+                          isChildrenOpen && 'rotate-180'
+                        )}
+                        aria-hidden="true"
+                      />
+                      <span className={taskChipCountClass}>{task.children.length}</span>
+                    </button>
+                  ) : (
+                    <span className="pointer-events-none flex items-center gap-0.5 opacity-0 select-none">
+                      <ChevronDown className="size-[18px] shrink-0 sm:size-4" aria-hidden="true" />
+                      <span className={cn(taskChipCountClass, 'min-w-[1.25rem]')}>0</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="flex min-w-0 flex-1 flex-col gap-tasks-panel-tight overflow-hidden">
+                <div className="flex min-w-0 w-full flex-col gap-tasks-panel-tight overflow-hidden sm:flex-row sm:items-center sm:gap-2">
+                  <span
+                    className={cn(
+                      'block min-w-0 w-full flex-1 break-words line-clamp-2 sm:line-clamp-1',
+                      taskCardTitleClass
+                    )}
+                    title={displayTitle}
+                  >
+                    {displayTitle}
+                  </span>
+                  <div className="flex w-full shrink-0 flex-wrap items-center justify-end gap-tasks-panel-tight sm:w-auto sm:flex-nowrap">
+                    {(task.type === 'Tarefa' || task.type === 'Bug') && (
+                      <TestCasesFreshnessIndicator
+                        task={task}
+                        variant="compact"
+                        isGenerating={isGeneratingTests || !!isGeneratingAll || isGenerating}
+                        className="inline-flex shrink-0"
+                      />
+                    )}
+                    {showTaskQaInsights ? (
+                      <TaskCardQaInsights
+                        variant="inline"
+                        counts={{
+                          total: testExecutionSummary.total,
+                          passed: testExecutionSummary.passed,
+                          failed: testExecutionSummary.failed,
+                          pending: testExecutionSummary.pending,
+                        }}
+                        qaAlerts={taskQaAlerts}
+                        iaAnalysisStale={iaAnalysisStale}
+                        className="shrink-0"
+                      />
+                    ) : null}
+                  </div>
+                </div>
               </div>
             </div>
+            {cardPreviewText ? (
+              <p
+                className={cn(taskCardPreviewClass, 'max-sm:block sm:hidden')}
+                title={cardPreviewText}
+              >
+                {cardPreviewText}
+              </p>
+            ) : null}
             </div>
 
             <div
               className={cn(
-                'flex w-full shrink-0 flex-nowrap items-center justify-end gap-2',
-                'z-20 min-w-0 overflow-visible max-sm:pt-0.5 sm:w-auto'
+                'flex w-full shrink-0 flex-nowrap items-center justify-end gap-tasks-panel-tight',
+                'z-20 min-w-0 overflow-visible sm:w-auto'
               )}
               onClick={e => e.stopPropagation()}
             >

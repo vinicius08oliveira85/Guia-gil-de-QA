@@ -6,7 +6,14 @@ import { TestMetricBadge } from '../common/TestMetricBadge';
 import { TaskTestStatusBadge } from '../common/TaskTestStatusBadge';
 import type { JiraTask } from '../../types';
 import { cn } from '../../utils/cn';
-import { taskCardMutedClass, taskCardTitleClass, taskNeuDividerClass } from './taskActionLayout';
+import {
+  taskCardMutedClass,
+  taskCardPreviewClass,
+  taskCardShellLayoutClass,
+  taskCardTitleClass,
+  taskNeuDividerClass,
+} from './taskActionLayout';
+import { getTaskCardPreviewText } from '../../utils/taskCardQa';
 
 interface TaskCardProps {
   task: JiraTask;
@@ -79,23 +86,47 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
   }, [task.type]);
 
   const handleToggleExpand = () => setIsExpanded(!isExpanded);
+  const cardPreviewText = useMemo(() => getTaskCardPreviewText(task), [task]);
 
   return (
-    <Card className="p-4 space-y-3 transition-all duration-300">
-      <div className="flex justify-between items-start">
-        <div className="flex-1 pr-4 cursor-pointer" onClick={handleToggleExpand}>
-          <div className="flex items-center gap-2 mb-2">
-            <Badge variant={taskTypeBadge.variant} size="sm">
+    <Card className="p-4 transition-all duration-300">
+      <div className={cn(taskCardShellLayoutClass, 'items-start')}>
+        <div
+          className="flex min-w-0 flex-1 flex-col gap-tasks-panel-tight cursor-pointer"
+          onClick={handleToggleExpand}
+        >
+          <div
+            className="task-card-metadata-strip flex flex-nowrap items-center gap-1.5 px-1.5 py-0.5"
+            role="group"
+            aria-label="Metadados da tarefa"
+          >
+            <Badge variant={taskTypeBadge.variant} size="sm" className="shrink-0">
               {taskTypeBadge.label}
             </Badge>
-            <span className={cn(taskCardTitleClass, 'font-semibold')}>{task.id}</span>
+            <span className={cn(taskCardTitleClass, 'shrink-0 text-sm font-semibold')}>
+              {task.id}
+            </span>
+            <Badge
+              variant={jiraStatusBadge.variant}
+              size="sm"
+              className="inline-flex shrink-0 justify-center"
+            >
+              {jiraStatusBadge.label}
+            </Badge>
           </div>
-          <h3 className={cn(taskCardTitleClass, 'text-lg leading-tight')}>{task.title}</h3>
+          <h3 className={cn(taskCardTitleClass, 'text-base leading-tight sm:text-lg line-clamp-2 sm:line-clamp-1')}>
+            {task.title}
+          </h3>
+          {cardPreviewText ? (
+            <p className={cn(taskCardPreviewClass, 'max-sm:block sm:hidden')} title={cardPreviewText}>
+              {cardPreviewText}
+            </p>
+          ) : null}
         </div>
         <button
           type="button"
           onClick={handleToggleExpand}
-          className="btn btn-ghost btn-sm btn-circle min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 p-0 [&_svg]:size-[18px] sm:[&_svg]:size-5"
+          className="btn btn-ghost btn-sm btn-circle shrink-0 min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 p-0 [&_svg]:size-[18px] sm:[&_svg]:size-5"
           aria-expanded={isExpanded}
           aria-controls={contentId}
           aria-label={isExpanded ? 'Recolher detalhes' : 'Expandir detalhes'}
@@ -104,8 +135,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
         </button>
       </div>
 
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-center gap-2 flex-wrap lg:flex-nowrap">
+      <div className="mt-3 flex flex-col gap-tasks-panel-tight sm:gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-wrap items-center gap-tasks-panel-tight lg:flex-nowrap">
           <TaskTestStatusBadge
             status={testStatus.status}
             className="min-w-[8.25rem] justify-center"
@@ -120,14 +151,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
           </div>
         </div>
 
-        <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:flex-nowrap lg:justify-end">
-          <Badge
-            variant={jiraStatusBadge.variant}
-            size="sm"
-            className="inline-flex min-w-[7.5rem] justify-center"
-          >
-            {jiraStatusBadge.label}
-          </Badge>
+        <div className="flex w-full flex-wrap items-center gap-tasks-panel-tight lg:w-auto lg:flex-nowrap lg:justify-end">
           {testStatus.status !== 'teste_concluido' && testStatus.status !== 'sem_testes' && (
             <button
               className={cn(
@@ -155,11 +179,18 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
       </div>
 
       {isExpanded && (
-        <div id={contentId} className={cn('mt-4 border-t pt-4', taskNeuDividerClass)}>
-          <h4 className={cn(taskCardTitleClass, 'mb-2 text-sm')}>Descrição</h4>
-          <p className={cn(taskCardMutedClass, 'whitespace-pre-wrap text-sm')}>
-            {task.description || 'Esta tarefa não possui uma descrição detalhada.'}
-          </p>
+        <div id={contentId} className={cn('mt-4 space-y-4 border-t pt-4', taskNeuDividerClass)}>
+          <div>
+            <h4 className={cn(taskCardTitleClass, 'mb-2 text-sm')}>Descrição</h4>
+            <p
+              className={cn(
+                taskCardMutedClass,
+                'whitespace-pre-wrap text-sm line-clamp-4 max-sm:line-clamp-4 sm:line-clamp-none'
+              )}
+            >
+              {task.description || 'Esta tarefa não possui uma descrição detalhada.'}
+            </p>
+          </div>
 
           <div className="mt-4">
             <h4 className={cn(taskCardTitleClass, 'mb-2 text-sm')}>

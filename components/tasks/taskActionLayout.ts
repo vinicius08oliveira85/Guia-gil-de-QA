@@ -28,6 +28,22 @@ export const TASK_ACTION_SLOT_CLASSNAMES = {
 export const taskCardShellClass =
   'task-card-shell px-2 py-2 transition-[box-shadow] duration-200 sm:px-3 sm:py-2';
 
+/** Layout do shell: coluna no mobile (< sm), linha a partir de sm. */
+export const taskCardShellLayoutClass =
+  'flex min-w-0 flex-col items-stretch gap-tasks-panel-tight overflow-visible sm:flex-row sm:items-center sm:gap-3';
+
+/** Coluna principal de conteúdo (metadados, título, prévia). */
+export const taskCardMainColumnClass =
+  'flex min-w-0 w-full flex-1 flex-col gap-tasks-panel-tight overflow-hidden';
+
+/** Linha de controles (checkbox, favorito, subtarefas) + título/insights. */
+export const taskCardHeaderRowClass =
+  'flex min-w-0 w-full items-start gap-tasks-panel-tight';
+
+/** Prévia de descrição ou análise IA no card. */
+export const taskCardPreviewClass =
+  'task-card-muted line-clamp-4 text-xs leading-snug sm:text-[0.8125rem]';
+
 /** Plus Jakarta Sans + tracking do tema (identidade tipográfica do app). */
 export const taskCardTypography = 'font-sans tracking-[var(--letter-spacing)]';
 
