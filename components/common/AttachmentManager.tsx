@@ -11,7 +11,7 @@ import {
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { cn } from '../../utils/cn';
 import {
-  leveTaskModalInsetClass,
+  leveTaskModalDropZoneClass,
   leveTaskModalMutedClass,
   leveTaskModalMutedXsClass,
   leveTaskModalSectionClass,
@@ -112,12 +112,7 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
       )}
 
       {/* Upload */}
-      <div
-        className={cn(
-          'rounded-[var(--leve-header-radius)] border-2 border-dashed border-[var(--leve-header-border)] transition-all hover:border-[color-mix(in_srgb,var(--leve-header-accent)_40%,transparent)] hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_6%,var(--leve-header-bg))]',
-          compact ? 'p-3 rounded-lg' : 'p-4'
-        )}
-      >
+      <div className={cn(leveTaskModalDropZoneClass, compact && 'p-3')}>
         <input
           ref={fileInputRef}
           type="file"

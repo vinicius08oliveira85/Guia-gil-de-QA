@@ -12,11 +12,13 @@ import {
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { cn } from '../../utils/cn';
 import {
+  leveTaskModalAlertClass,
   leveTaskModalFieldLabelClass,
   leveTaskModalInsetClass,
   leveTaskModalMutedClass,
   leveTaskModalSectionClass,
   leveTaskModalStatPillActiveClass,
+  leveTaskModalStatPillIdleClass,
   leveTaskModalStrongClass,
   leveViewOutlineBtnClass,
   leveViewPrimaryBtnClass,
@@ -261,14 +263,7 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
     <div className="space-y-3">
       {/* Status da tarefa */}
       {(isBlocked || isReady) && (
-        <div
-          className={cn(
-            'rounded-[var(--leve-header-radius)] border px-3 py-2',
-            isBlocked
-              ? 'border-[color-mix(in_srgb,oklch(var(--wa))_40%,transparent)] bg-[color-mix(in_srgb,oklch(var(--wa))_10%,var(--leve-header-bg))]'
-              : 'border-[color-mix(in_srgb,oklch(var(--su))_40%,transparent)] bg-[color-mix(in_srgb,oklch(var(--su))_10%,var(--leve-header-bg))]'
-          )}
-        >
+        <div className={leveTaskModalAlertClass(isBlocked ? 'warning' : 'success')}>
           {isBlocked && (
             <div className="flex items-center gap-1.5 text-warning text-sm">
               <span className="text-base">⚠️</span>
@@ -292,7 +287,15 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
           <h3 className={cn(leveTaskModalFieldLabelClass, 'flex items-center gap-2 !normal-case')}>
             <span className="text-base">🔒</span>
             <span>Bloqueado Por</span>
-            <span className={leveTaskModalStatPillActiveClass}>{dependencies.length}</span>
+            <span
+              className={
+                dependencies.length > 0
+                  ? leveTaskModalStatPillActiveClass
+                  : leveTaskModalStatPillIdleClass
+              }
+            >
+              {dependencies.length}
+            </span>
           </h3>
           {!showAddDependency && (
             <button
@@ -403,7 +406,15 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
           <h3 className={cn(leveTaskModalFieldLabelClass, 'flex items-center gap-2 !normal-case')}>
             <span className="text-base">⚡</span>
             <span>Bloqueando</span>
-            <span className={leveTaskModalStatPillActiveClass}>{dependents.length}</span>
+            <span
+              className={
+                dependents.length > 0
+                  ? leveTaskModalStatPillActiveClass
+                  : leveTaskModalStatPillIdleClass
+              }
+            >
+              {dependents.length}
+            </span>
           </h3>
         </div>
 

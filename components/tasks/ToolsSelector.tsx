@@ -2,7 +2,12 @@ import React from 'react';
 import { SUGGESTED_TOOLS, SuggestedTool } from '../../types';
 import { CheckIcon } from '../common/Icons';
 import { cn } from '../../utils/cn';
-import { taskSelectControlClass, taskToolChipIdleClass } from './taskActionLayout';
+import {
+  leveTaskModalInputClass,
+  leveTaskModalMetaBadgeClass,
+  leveTaskModalMutedXsClass,
+  leveTaskModalToolChipClass,
+} from '../common/projectCardUi';
 
 interface ToolsSelectorProps {
   selectedTools: string[];
@@ -45,17 +50,19 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
   const customTools = selectedTools.filter(t => !SUGGESTED_TOOLS.includes(t as SuggestedTool));
 
   return (
-    <div className={`space-y-3 ${compact ? 'space-y-2' : ''}`}>
+    <div className={cn('space-y-3', compact && 'space-y-2')}>
       {label ? (
         <label
-          className={`block font-semibold text-base-content/70 ${compact ? 'text-xs' : 'text-sm'}`}
+          className={cn(
+            'block font-semibold text-[var(--leve-header-text-muted)]',
+            compact ? 'text-xs' : 'text-sm'
+          )}
         >
           {label}
         </label>
       ) : null}
 
-      {/* Ferramentas Sugeridas */}
-      <div className={`flex flex-wrap gap-2 ${compact ? 'gap-1.5' : ''}`}>
+      <div className={cn('flex flex-wrap gap-2', compact && 'gap-1.5')}>
         {SUGGESTED_TOOLS.map(tool => {
           const isSelected = selectedTools.includes(tool);
           return (
@@ -63,21 +70,13 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
               key={tool}
               type="button"
               onClick={() => handleToolToggle(tool)}
-              className={`
-                rounded-lg font-semibold border transition-all flex items-center gap-1.5
-                ${compact ? 'px-2 py-0.5 text-[10px] gap-1' : 'px-3 py-1.5 text-xs'}
-                ${
-                  isSelected
-                    ? 'bg-primary text-primary-content border-primary shadow-sm'
-                    : taskToolChipIdleClass
-                }
-              `}
+              className={leveTaskModalToolChipClass(isSelected, compact)}
               title={toolDescriptions[tool]}
             >
-              {isSelected && <CheckIcon className={compact ? 'w-2.5 h-2.5' : 'w-3 h-3'} />}
+              {isSelected && <CheckIcon className={compact ? 'h-2.5 w-2.5' : 'h-3 w-3'} />}
               <span>{tool}</span>
               {toolDescriptions[tool] && (
-                <span className={compact ? 'text-[9px] opacity-75' : 'text-[10px] opacity-75'}>
+                <span className={cn(compact ? 'text-[9px] opacity-75' : 'text-[10px] opacity-75')}>
                   ({toolDescriptions[tool]})
                 </span>
               )}
@@ -86,28 +85,24 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
         })}
       </div>
 
-      {/* Ferramentas Customizadas */}
       {customTools.length > 0 && (
         <div className="space-y-1">
-          <p className="text-xs text-base-content/70">Ferramentas customizadas:</p>
-          <div className={`flex flex-wrap gap-2 ${compact ? 'gap-1.5' : ''}`}>
+          <p className={leveTaskModalMutedXsClass}>Ferramentas customizadas:</p>
+          <div className={cn('flex flex-wrap gap-2', compact && 'gap-1.5')}>
             {customTools.map(tool => (
               <div
                 key={tool}
-                className={`
-                  rounded-lg font-semibold bg-primary/10 text-primary border border-primary/20
-                  flex items-center gap-2 transition-all
-                  ${compact ? 'px-2 py-0.5 text-[10px] gap-1' : 'px-3 py-1.5 text-xs'}
-                `}
+                className={cn(leveTaskModalMetaBadgeClass, 'inline-flex items-center gap-2', compact && 'text-[10px]')}
               >
                 <span>{tool}</span>
                 <button
                   type="button"
                   onClick={() => handleRemoveTool(tool)}
-                  className="btn btn-ghost btn-xs btn-circle hover:text-error"
+                  className="inline-flex h-5 w-5 items-center justify-center rounded-full text-[var(--leve-header-text-muted)] transition-[box-shadow,color] hover:text-[color-mix(in_srgb,oklch(var(--er))_90%,transparent)] hover:shadow-[var(--leve-neu-raised)]"
                   title="Remover"
+                  aria-label={`Remover ferramenta ${tool}`}
                 >
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -122,7 +117,6 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
         </div>
       )}
 
-      {/* Campo para adicionar ferramenta customizada */}
       <div>
         <input
           type="text"
@@ -139,13 +133,10 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
               e.target.value = '';
             }
           }}
-          className={cn(
-            taskSelectControlClass,
-            'transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20',
-            compact && 'py-1.5 text-xs'
-          )}
+          className={cn(leveTaskModalInputClass, compact && 'py-1.5 text-xs')}
+          aria-label="Adicionar ferramenta customizada"
         />
-        <p className="text-[0.65rem] text-base-content/70 mt-1">
+        <p className={cn(leveTaskModalMutedXsClass, 'mt-1')}>
           Pressione Enter ou clique fora para adicionar
         </p>
       </div>

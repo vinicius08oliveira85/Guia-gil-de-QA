@@ -124,6 +124,7 @@ import {
 import { JiraStatusLozenge } from './JiraStatusLozenge';
 import { TaskJiraStatusDropdown } from './TaskJiraStatusDropdown';
 import { TaskCardQaInsights } from './TaskCardQaInsights';
+import { leveSettingsSectionIconWrapClass } from '../common/projectCardUi';
 import {
   getTaskQaRiskLevel,
   getTaskQaRiskSignals,
@@ -1224,12 +1225,12 @@ export const JiraTaskItem: React.FC<{
 
       return (
         <div className="space-y-4">
-          <header className="mb-4">
-            <h2 className="text-xl font-bold text-base-content">Cenários de Teste BDD</h2>
-            <p className="text-sm text-base-content/70 mt-1">
+          <header className={cn(taskModalSectionClass, 'mb-4 p-4')}>
+            <h2 className={taskCardSectionTitleClass}>Cenários de Teste BDD</h2>
+            <p className={cn(taskCardMutedClass, 'mt-1 text-sm')}>
               Gerencie e visualize seus critérios de aceite em formato Gherkin.
             </p>
-            <span className="text-xs text-base-content/60 mt-1 block">{bddCount} cenário(s)</span>
+            <span className={cn(taskCardMutedClass, 'mt-1 block text-xs')}>{bddCount} cenário(s)</span>
           </header>
 
           <div className="space-y-4">
@@ -1316,13 +1317,11 @@ export const JiraTaskItem: React.FC<{
           {/* Conteúdo da sub-aba "Estratégia de Teste" */}
           {activeTestSubSection === 'strategy' && (
             <div>
-              <header className="flex items-center gap-3 mb-4">
-                <div className="rounded-[var(--radius)] bg-primary/10 p-1.5">
-                  <BarChart3 className="w-5 h-5 text-primary" aria-hidden />
-                </div>
-                <h2 className="text-lg font-bold text-base-content text-balance">
-                  Estratégia de Teste
-                </h2>
+              <header className={cn(taskModalSectionClass, 'mb-4 flex flex-wrap items-center gap-3 p-4')}>
+                <span className={leveSettingsSectionIconWrapClass}>
+                  <BarChart3 className="h-5 w-5" aria-hidden />
+                </span>
+                <h2 className={cn(taskCardSectionTitleClass, 'text-balance')}>Estratégia de Teste</h2>
                 <span className={taskCountBadgeClass}>
                   {task.testStrategy?.length || 0} item(ns)
                 </span>

@@ -49,9 +49,9 @@ export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
     <div
       className={cn(
         leveTaskModalSectionClass,
-        'flex flex-col overflow-hidden transition-all duration-300 ease-out',
+        'flex flex-col overflow-hidden transition-[box-shadow,border-color] duration-300 ease-out',
         'hover:border-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)]',
-        'hover:shadow-[0_4px_18px_rgba(252,76,2,0.1)] motion-reduce:transform-none'
+        'hover:shadow-[var(--leve-neu-hover)] motion-reduce:transform-none'
       )}
     >
       <div className="flex-grow p-5">
@@ -71,7 +71,19 @@ export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
                   onChange={handleToggleExecuted}
                   className="peer sr-only"
                 />
-                <div className="h-5 w-9 rounded-full bg-[color-mix(in_srgb,var(--leve-header-text)_18%,transparent)] transition-colors after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:bg-white after:transition-all peer-checked:bg-[color-mix(in_srgb,oklch(var(--su))_75%,transparent)] peer-checked:after:translate-x-full peer-focus:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)]" />
+                <div
+                  className={cn(
+                    'h-6 w-11 rounded-full shadow-[var(--leve-neu-inset)] transition-[box-shadow,background-color]',
+                    'bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))]',
+                    'after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full',
+                    'after:border after:border-[color-mix(in_srgb,var(--leve-neu-light)_40%,transparent)]',
+                    'after:bg-[var(--leve-neu-surface)] after:shadow-[var(--leve-neu-raised)] after:transition-all',
+                    'peer-checked:bg-[color-mix(in_srgb,oklch(var(--su))_72%,var(--leve-neu-bg))]',
+                    'peer-checked:shadow-[2px_2px_6px_color-mix(in_srgb,oklch(var(--su))_35%,transparent)]',
+                    'peer-checked:after:translate-x-full',
+                    'peer-focus:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)]'
+                  )}
+                />
               </label>
             </div>
           )}
@@ -87,7 +99,7 @@ export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
               <ListChecks className="h-3.5 w-3.5" aria-hidden />
               Como Executar:
             </h3>
-            <ul className="space-y-1.5">
+            <ul className={cn(leveTaskModalInsetClass, 'space-y-1.5')}>
               {strategy.howToExecute.map((step, i) => (
                 <li key={i} className={cn('flex items-start gap-2 text-xs', leveTaskModalStrongClass)}>
                   {isExecuted ? (
@@ -114,7 +126,7 @@ export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
       </div>
 
       {onToolsChange && (
-        <div className={cn(leveTaskModalInsetClass, 'border-t border-[var(--leve-header-border)] px-5 py-4')}>
+        <div className={cn(leveTaskModalInsetClass, 'mx-3 mb-3 sm:mx-4 sm:mb-4')}>
           <p className={cn(leveTaskModalFieldLabelClass, 'mb-3')}>Ferramentas Utilizadas</p>
           {toolsUsed.length === 0 && (
             <p className={cn('mb-3 text-xs italic', leveTaskModalMutedXsClass)}>

@@ -700,18 +700,52 @@
     @apply task-element-typography font-bold uppercase tracking-wider text-[10px] rounded-full;
   }
 
-  /** Shell do card de tarefa na listagem (JiraTaskItem). */
+  /** Shell do card de tarefa na listagem (JiraTaskItem). Fundo fixo — não alterar cor base. */
   .task-card-shell {
-    border: 1px solid color-mix(in srgb, var(--leve-neu-light) 45%, transparent);
+    --task-card-surface-bg: var(--leve-neu-bg);
+    border: 1px solid color-mix(in srgb, var(--leve-neu-light) 52%, transparent);
     border-radius: var(--leve-header-radius);
-    background: var(--leve-neu-bg);
+    background-color: var(--task-card-surface-bg);
     box-shadow: var(--leve-neu-raised);
     font-family: var(--font-sans);
     letter-spacing: var(--letter-spacing);
-    transition: box-shadow 200ms ease;
+    transition:
+      box-shadow 200ms ease,
+      border-color 200ms ease;
   }
   .task-card-shell:hover {
+    border-color: color-mix(in srgb, var(--leve-header-accent) 22%, transparent);
     box-shadow: var(--leve-neu-hover);
+  }
+  .task-card-shell:focus-visible {
+    outline: none;
+    border-color: color-mix(in srgb, var(--leve-header-accent) 30%, transparent);
+    box-shadow: var(--leve-neu-hover);
+  }
+
+  /** Faixa de metadados (ID, tipo, status) — relevo inset no card. */
+  .task-card-metadata-strip {
+    display: inline-flex;
+    width: fit-content;
+    max-width: 100%;
+    flex-shrink: 0;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.375rem;
+    overflow-x: auto;
+    overflow-y: visible;
+    padding: 0.125rem 0.375rem;
+    border: 1px solid color-mix(in srgb, var(--leve-neu-light) 40%, transparent);
+    border-radius: var(--leve-header-radius);
+    background: color-mix(in srgb, var(--leve-neu-dark) 5%, var(--task-card-surface-bg, var(--leve-neu-bg)));
+    box-shadow: var(--leve-neu-inset);
+    color: var(--leve-header-text-muted);
+    scrollbar-width: thin;
+  }
+  @media (min-width: 768px) {
+    .task-card-metadata-strip {
+      max-width: min(100%, 42rem);
+    }
   }
 
   .task-card-title {
@@ -738,6 +772,9 @@
     box-shadow: var(--leve-neu-raised);
     font-family: var(--font-sans);
     letter-spacing: var(--letter-spacing);
+  }
+
+  .task-modal-section-scrollable {
     width: 100%;
     max-width: min(100%, 90vw);
     max-height: min(90vh, 100dvh);
@@ -745,10 +782,12 @@
   }
 
   .task-modal-section-accent {
-    border: 1px solid color-mix(in srgb, var(--leve-header-accent) 35%, transparent);
+    border: 2px solid color-mix(in srgb, var(--leve-header-accent) 32%, transparent);
     background: color-mix(in srgb, var(--leve-header-accent) 8%, var(--leve-neu-bg));
     border-radius: var(--leve-header-radius);
-    box-shadow: var(--leve-neu-inset);
+    box-shadow:
+      var(--leve-neu-inset),
+      0 0 0 1px color-mix(in srgb, var(--leve-header-accent) 10%, transparent);
     font-family: var(--font-sans);
     letter-spacing: var(--letter-spacing);
   }
@@ -778,9 +817,10 @@
     flex-wrap: wrap;
     gap: 0.1875rem;
     padding: 0.1875rem;
-    border: 1px solid var(--brand-surface-border);
-    border-radius: var(--radius);
-    background: color-mix(in srgb, var(--brand-chip) 65%, transparent);
+    border: 1px solid color-mix(in srgb, var(--leve-neu-light) 40%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--leve-neu-dark) 6%, var(--leve-neu-bg));
+    box-shadow: var(--leve-neu-inset);
   }
 
   .task-card-shadow {
@@ -1838,8 +1878,7 @@
 
   /** Painéis de tarefa em viewports estreitos — evita overflow vertical excessivo. */
   @media (max-width: 639px) {
-    .task-modal-section,
-    .task-modal-section-accent {
+    .task-modal-section-scrollable {
       max-height: min(85vh, 100dvh);
     }
   }

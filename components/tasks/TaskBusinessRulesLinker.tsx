@@ -192,7 +192,7 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className={cn(leveTaskModalInsetClass, 'space-y-3')}>
               <h4 className={cn('text-sm font-semibold', leveTaskModalStrongClass)}>Vincular por regra</h4>
               <p className={leveTaskModalMutedXsClass}>
                 Escolha regras individuais. Clique no título de cada cartão para expandir a
@@ -240,8 +240,8 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
                               aria-label={`Desvincular regra: ${rule.title}`}
                             />
                           </label>
-                          <details className="group min-w-0 flex-1 border-l border-[var(--leve-header-border)]">
-                            <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-2 py-3 pr-3 text-left text-sm font-medium text-[var(--leve-header-text)] hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_6%,var(--leve-header-bg))] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] [&::-webkit-details-marker]:hidden">
+                          <details className="group min-w-0 flex-1 border-l border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]">
+                            <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-2 py-3 pr-3 text-left text-sm font-medium text-[var(--leve-header-text)] transition-[background-color,box-shadow] hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_6%,var(--leve-neu-bg))] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] [&::-webkit-details-marker]:hidden">
                               <span className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
                                 <span>{rule.title}</span>
                                 <span className={leveTaskModalCategoryBadgeClass}>
@@ -305,8 +305,8 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
                               aria-label={`${checked ? 'Desmarcar' : 'Marcar'} vínculo da regra: ${rule.title}`}
                             />
                           </label>
-                          <details className="group min-w-0 flex-1 border-l border-[var(--leve-header-border)]">
-                            <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-2 py-3 pr-3 text-left text-sm font-medium text-[var(--leve-header-text)] hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_6%,var(--leve-header-bg))] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] [&::-webkit-details-marker]:hidden">
+                          <details className="group min-w-0 flex-1 border-l border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]">
+                            <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-2 py-3 pr-3 text-left text-sm font-medium text-[var(--leve-header-text)] transition-[background-color,box-shadow] hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_6%,var(--leve-neu-bg))] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] [&::-webkit-details-marker]:hidden">
                               <span className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
                                 <span>{rule.title}</span>
                                 <span className={leveTaskModalCategoryBadgeClass}>

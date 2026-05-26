@@ -3,9 +3,9 @@ import { Sparkles } from 'lucide-react';
 import { PlusIcon } from '../common/Icons';
 import { cn } from '../../utils/cn';
 import {
-  leveTaskModalSectionClass,
-  leveViewOutlineBtnClass,
-  leveViewPrimaryBtnClass,
+  leveTaskModalBddActionBarClass,
+  leveTaskModalGhostBtnClass,
+  leveTaskModalPrimaryBtnClass,
 } from '../common/projectCardUi';
 
 export type BddScenarioActionBarProps = {
@@ -26,19 +26,13 @@ export const BddScenarioActionBar: React.FC<BddScenarioActionBarProps> = ({
   className,
 }) => {
   return (
-    <div
-      className={cn(
-        leveTaskModalSectionClass,
-        'flex flex-col gap-2 p-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-3 sm:p-4',
-        className
-      )}
-    >
+    <div className={cn(leveTaskModalBddActionBarClass, className)}>
       <button
         type="button"
         onClick={onGenerate}
         disabled={disabled}
         className={cn(
-          leveViewOutlineBtnClass,
+          leveTaskModalGhostBtnClass,
           'min-h-[44px] w-full gap-2 disabled:cursor-not-allowed sm:min-h-9 sm:w-auto sm:max-w-xs sm:flex-1'
         )}
       >
@@ -50,7 +44,7 @@ export const BddScenarioActionBar: React.FC<BddScenarioActionBarProps> = ({
         onClick={onAddManual}
         disabled={disabled}
         className={cn(
-          leveViewPrimaryBtnClass,
+          leveTaskModalPrimaryBtnClass,
           'min-h-[44px] w-full gap-2 disabled:cursor-not-allowed sm:min-h-9 sm:w-auto sm:max-w-xs sm:flex-1'
         )}
       >

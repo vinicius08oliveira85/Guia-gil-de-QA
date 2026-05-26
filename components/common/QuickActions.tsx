@@ -6,9 +6,11 @@ import { cn } from '../../utils/cn';
 import {
   leveTaskModalFieldLabelClass,
   leveTaskModalMutedXsClass,
+  leveTaskModalSecondaryBtnClass,
   leveTaskModalSectionClass,
   leveTaskModalStatusPillClass,
   leveTaskModalStrongClass,
+  leveViewSecondaryToolbarClass,
 } from './projectCardUi';
 
 interface QuickActionsProps {
@@ -53,7 +55,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ task, project, onUpd
     <div className="flex flex-col gap-3">
       <div>
         <p className={cn(leveTaskModalFieldLabelClass, 'mb-2 block')}>Mudar status</p>
-        <div className="flex flex-wrap gap-1.5">
+        <div className={cn(leveViewSecondaryToolbarClass, 'flex flex-wrap gap-1')}>
           {statusOptions.map(status => {
             const isActive = currentStatus === status;
             return (
@@ -79,11 +81,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ task, project, onUpd
         <button
           type="button"
           onClick={handleComplete}
-          className={cn(
-            leveTaskModalStatusPillClass(true),
-            'border-[color-mix(in_srgb,var(--leve-header-text)_25%,transparent)]',
-            'bg-[color-mix(in_srgb,var(--leve-header-text)_8%,var(--leve-header-bg))] text-[var(--leve-header-text)]'
-          )}
+          className={leveTaskModalSecondaryBtnClass}
         >
           Concluir Teste
         </button>
@@ -127,7 +125,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ task, project, onUpd
           {task.tags.slice(0, 3).map(tag => (
             <span
               key={tag}
-              className="rounded-[0.65rem] px-2 py-0.5 text-xs text-base-content"
+              className="leve-neu-pill px-2 py-0.5 text-xs text-base-content"
               style={{ backgroundColor: `var(--tag-${tag}, var(--muted))` }}
             >
               {tag}

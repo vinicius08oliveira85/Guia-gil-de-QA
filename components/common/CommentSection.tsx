@@ -10,7 +10,7 @@ import {
   leveTaskModalInsetClass,
   leveTaskModalMutedClass,
   leveTaskModalMutedXsClass,
-  leveTaskModalSectionClass,
+  leveTaskModalMetaBadgeClass,
   leveTaskModalStrongClass,
   leveTaskModalTextareaClass,
   leveViewOutlineBtnClass,
@@ -127,9 +127,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                   <div className="flex flex-wrap items-center gap-2">
                     <span className={cn('font-semibold', leveTaskModalStrongClass)}>{comment.author}</span>
                     {comment.fromJira && (
-                      <span className="rounded-full border border-[color-mix(in_srgb,var(--leve-header-accent)_30%,transparent)] bg-[color-mix(in_srgb,var(--leve-header-accent)_12%,var(--leve-header-bg))] px-2 py-0.5 font-sans text-xs font-semibold text-[var(--leve-header-accent)]">
-                        Jira
-                      </span>
+                      <span className={leveTaskModalMetaBadgeClass}>Jira</span>
                     )}
                     <span className={leveTaskModalMutedXsClass}>
                       {formatCommentDate(comment.createdAt)}
@@ -175,10 +173,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                 {comment.mentions && comment.mentions.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1">
                     {comment.mentions.map(mention => (
-                      <span
-                        key={mention}
-                        className="rounded-full bg-[color-mix(in_srgb,var(--leve-header-accent)_12%,var(--leve-header-bg))] px-2 py-1 font-sans text-xs text-[var(--leve-header-accent)]"
-                      >
+                      <span key={mention} className={cn(leveTaskModalMetaBadgeClass, 'py-1')}>
                         @{mention}
                       </span>
                     ))}

@@ -4,6 +4,7 @@ import { suggestEstimation, estimateTaskComplexity } from '../../utils/estimatio
 import { Save } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import {
+  leveTaskModalCategoryBadgeClass,
   leveTaskModalFieldLabelClass,
   leveTaskModalInputClass,
   leveTaskModalMutedClass,
@@ -44,14 +45,7 @@ export const EstimationInput: React.FC<EstimationInputProps> = ({ task, onSave, 
           <div>
             <span className={leveTaskModalFieldLabelClass}>Sugestão Automática</span>
             <div className="mt-1 flex items-center gap-1.5">
-              <span
-                className={cn(
-                  leveTaskModalMutedXsClass,
-                  'rounded-full border border-[var(--leve-header-border)] px-1.5 py-0.5'
-                )}
-              >
-                Complexidade: {complexity}
-              </span>
+              <span className={leveTaskModalCategoryBadgeClass}>Complexidade: {complexity}</span>
             </div>
           </div>
           <button

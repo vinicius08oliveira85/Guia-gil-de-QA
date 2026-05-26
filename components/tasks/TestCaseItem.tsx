@@ -21,14 +21,18 @@ import { appMenuPanelClass, appSelectClass } from '../common/viewUi';
 import { taskTextareaClass } from './taskActionLayout';
 import { AppSelect } from '../common/AppSelect';
 import {
+  leveTaskModalActionToolbarClass,
   leveTaskModalCollapsibleHeaderClass,
   leveTaskModalCollapsibleShellClass,
   leveTaskModalMutedClass,
   leveTaskModalMutedXsClass,
+  leveTaskModalRoteiroBlockClass,
   leveTaskModalSectionClass,
   leveTaskModalStrongClass,
 } from '../common/projectCardUi';
-const ROTEIRO_BLOCK_CLASS = cn(leveTaskModalSectionClass, 'p-3 text-xs text-[var(--leve-header-text)]');
+import { taskNeuDividerClass } from './taskActionLayout';
+
+const ROTEIRO_BLOCK_CLASS = leveTaskModalRoteiroBlockClass;
 
 const STATUS_EMOJI: Record<TestCase['status'], string> = {
   'Not Run': '○',
@@ -92,7 +96,6 @@ export const TestCaseItem: React.FC<{
   onEdit?: () => void;
   onDelete?: () => void;
   onDuplicate?: () => void;
-  detailsOpenOverride?: boolean;
   onBatchSelect?: boolean;
   selected?: boolean;
   onToggleSelect?: () => void;
@@ -104,7 +107,6 @@ export const TestCaseItem: React.FC<{
   onEdit,
   onDelete,
   onDuplicate,
-  detailsOpenOverride,
   onBatchSelect,
   selected,
   onToggleSelect,
@@ -117,9 +119,6 @@ export const TestCaseItem: React.FC<{
   };
 
   const [detailsOpen, setDetailsOpen] = useState(() => testCase.status === 'Failed');
-
-  const effectiveDetailsOpen =
-    detailsOpenOverride !== undefined ? detailsOpenOverride : detailsOpen;
 
   const actionSteps = useMemo(() => {
     const parsed = parseTestCaseActionSteps(testCase.action || '');
@@ -239,7 +238,7 @@ export const TestCaseItem: React.FC<{
 
         {/* Grupo de ações: Editar, Duplicar, Excluir — integrados numa toolbar única */}
         <div
-          className="hidden shrink-0 items-center rounded-full border border-[var(--leve-header-border)] bg-[color-mix(in_srgb,var(--leve-header-text)_4%,var(--leve-header-bg))] p-0.5 md:flex"
+          className={cn(leveTaskModalActionToolbarClass, 'hidden md:inline-flex')}
           role="toolbar"
           aria-label="Ações do caso de teste"
         >
@@ -283,7 +282,7 @@ export const TestCaseItem: React.FC<{
 
         {/* Grupo de status: Aprovar, Reprovar, Bloquear — integrados numa toolbar única */}
         <div
-          className="hidden shrink-0 items-center rounded-full border border-[var(--leve-header-border)] bg-[color-mix(in_srgb,var(--leve-header-text)_4%,var(--leve-header-bg))] p-0.5 md:flex"
+          className={cn(leveTaskModalActionToolbarClass, 'hidden md:inline-flex')}
           role="group"
           aria-label="Marcar resultado da execução"
         >
@@ -449,13 +448,9 @@ export const TestCaseItem: React.FC<{
       <div className={cn(leveTaskModalCollapsibleShellClass, 'mt-2 overflow-hidden')}>
         <button
           type="button"
-          onClick={() => {
-            if (detailsOpenOverride === undefined) {
-              setDetailsOpen(o => !o);
-            }
-          }}
+          onClick={() => setDetailsOpen(o => !o)}
           className={cn(leveTaskModalCollapsibleHeaderClass, 'px-3 py-2')}
-          aria-expanded={effectiveDetailsOpen}
+          aria-expanded={detailsOpen}
         >
           <div className="flex min-w-0 items-center gap-2">
             <ListIcon className="h-4 w-4 shrink-0 task-card-muted" />
@@ -464,13 +459,18 @@ export const TestCaseItem: React.FC<{
             </span>
           </div>
           <ChevronDownIcon
-            className={`h-4 w-4 shrink-0 task-card-muted transition-transform duration-200 ${effectiveDetailsOpen ? 'rotate-180' : ''}`}
+            className={`h-4 w-4 shrink-0 task-card-muted transition-transform duration-200 ${detailsOpen ? 'rotate-180' : ''}`}
           />
         </button>
-        {effectiveDetailsOpen && (
-          <div className="space-y-3 border-t border-[var(--leve-header-border)] px-3 pb-3 pt-2">
+        {detailsOpen && (
+          <div
+            className={cn(
+              'space-y-3 border-t px-3 pb-3 pt-2',
+              taskNeuDividerClass
+            )}
+          >
             <div>
-              <h3 className="mb-1 font-body text-[10px] font-bold uppercase tracking-widest text-muted">
+              <h3 className={cn(leveTaskModalMutedXsClass, 'mb-1 block font-bold uppercase tracking-widest')}>
                 Ação necessária
               </h3>
               <div className={ROTEIRO_BLOCK_CLASS}>
@@ -493,7 +493,7 @@ export const TestCaseItem: React.FC<{
               </div>
             </div>
             <div>
-              <h3 className="mb-1 font-body text-[10px] font-bold uppercase tracking-widest text-muted">
+              <h3 className={cn(leveTaskModalMutedXsClass, 'mb-1 block font-bold uppercase tracking-widest')}>
                 Parâmetros necessários
               </h3>
               <div className={ROTEIRO_BLOCK_CLASS}>
@@ -501,7 +501,7 @@ export const TestCaseItem: React.FC<{
               </div>
             </div>
             <div>
-              <h3 className="mb-1 font-body text-[10px] font-bold uppercase tracking-widest text-muted">
+              <h3 className={cn(leveTaskModalMutedXsClass, 'mb-1 block font-bold uppercase tracking-widest')}>
                 Resultado esperado
               </h3>
               <div className={ROTEIRO_BLOCK_CLASS}>
@@ -509,7 +509,12 @@ export const TestCaseItem: React.FC<{
               </div>
             </div>
             <div>
-              <label className="mb-1 block font-body text-[10px] font-bold uppercase tracking-widest text-muted">
+              <label
+                className={cn(
+                  leveTaskModalMutedXsClass,
+                  'mb-1 block font-bold uppercase tracking-widest'
+                )}
+              >
                 Resultado obtido
               </label>
               <textarea

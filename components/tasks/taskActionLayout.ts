@@ -41,9 +41,9 @@ export const taskCardFieldLabelClass = 'task-card-field-label';
 
 export const taskCardSectionTitleClass = 'task-card-section-title flex items-center gap-2';
 
-export const taskModalSectionClass = 'leve-neu-surface task-modal-section';
+export const taskModalSectionClass = 'task-modal-section';
 
-export const taskModalSectionAccentClass = 'task-modal-section-accent leve-neu-surface';
+export const taskModalSectionAccentClass = 'task-modal-section-accent';
 
 export const taskUiTagClass = 'task-ui-tag';
 
@@ -123,9 +123,9 @@ export const taskCardButtonShape = 'rounded-full px-2 py-0';
 
 /** Relevo neumórfico — chips da faixa de ações do card (Gerar Tudo, status de teste). */
 export const taskNeuChipRaisedClass = cn(
-  'border border-[color-mix(in_srgb,var(--leve-neu-light)_38%,transparent)]',
-  'bg-[color-mix(in_srgb,var(--leve-neu-dark)_5%,var(--leve-neu-bg))]',
-  'shadow-[var(--leve-neu-raised)] transition-[box-shadow,color,background-color] duration-200',
+  'border border-[color-mix(in_srgb,var(--leve-neu-light)_45%,transparent)]',
+  'bg-[color-mix(in_srgb,var(--leve-neu-dark)_4%,var(--task-card-surface-bg,var(--leve-neu-bg)))]',
+  'shadow-[var(--leve-neu-raised)] transition-[box-shadow,color] duration-200',
   'hover:shadow-[var(--leve-neu-hover)] active:shadow-[var(--leve-neu-inset)]'
 );
 
@@ -170,10 +170,12 @@ export const taskCardSubtreeExpandSlotClass = cn(
 
 /** Hover / seleção do card na listagem. */
 export const taskCardListHoverClass = 'hover:shadow-[var(--leve-neu-hover)]';
-export const taskCardNestedListBgClass =
-  'bg-[color-mix(in_srgb,var(--leve-neu-dark)_6%,var(--leve-neu-bg))]';
-export const taskCardSelectedClass =
-  'ring-1 ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] bg-[color-mix(in_srgb,var(--leve-header-accent)_8%,var(--leve-neu-bg))]';
+/** Hierarquia por indentação — mesma cor de fundo do card pai. */
+export const taskCardNestedListBgClass = '';
+export const taskCardSelectedClass = cn(
+  'ring-1 ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)]',
+  'shadow-[var(--leve-neu-hover)]'
+);
 
 export const taskNeuDividerClass =
   'border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]';
@@ -209,16 +211,11 @@ export const taskCountBadgeClass =
 export const taskDetailsExpandClass =
   'leve-neu-surface-inset overflow-visible rounded-b-[var(--rounded-box)] border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]';
 
-export const taskMetadataStripClass = [
-  taskPanelBorderClass,
-  'inline-flex w-fit max-w-full shrink-0 flex-nowrap items-center gap-x-1.5 overflow-x-auto overflow-y-visible px-1.5 py-0.5',
-  'text-[var(--leve-header-text-muted)] [scrollbar-width:thin] md:max-w-[min(100%,42rem)]',
-].join(' ');
+export const taskMetadataStripClass = 'task-card-metadata-strip [scrollbar-width:thin]';
 
 export const taskSubtreeChildrenClass = [
   'ml-6 mt-1 border-l-2 pl-3 max-md:rounded-r-lg max-md:pr-2',
   'border-[color-mix(in_srgb,var(--leve-neu-light)_40%,transparent)]',
-  'max-md:bg-[color-mix(in_srgb,var(--leve-neu-dark)_6%,var(--leve-neu-bg))]',
 ].join(' ');
 
 export const taskNavFooterClass = cn(leveTaskModalNavFooterClass, 'mt-5');
@@ -247,8 +244,10 @@ export const taskTypeDefaultBadgeClass =
   'badge badge-sm border-0 bg-[color-mix(in_srgb,var(--leve-neu-dark)_18%,var(--leve-neu-bg))] text-[var(--leve-header-text-muted)]';
 
 /** Bloco mono compacto (prévia de teste, logs). */
-export const taskMonoInsetClass =
-  'rounded bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] p-xs font-mono text-xs text-base-content/80';
+export const taskMonoInsetClass = cn(
+  'leve-neu-surface-inset rounded-[var(--leve-header-radius)] p-xs font-mono text-xs',
+  'text-[var(--leve-header-text-muted)]'
+);
 
 export const taskNeuTrackClass = 'workspace-stat-neu-track';
 

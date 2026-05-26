@@ -1,52 +1,34 @@
 import React, { useMemo, useState, useCallback } from 'react';
-import { useDebounceValue } from 'usehooks-ts';
 import { JiraTask, TestCase, TestCaseDetailLevel } from '../../types';
 import { TestCaseItem } from './TestCaseItem';
 import { EmptyState } from '../common/EmptyState';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { Spinner } from '../common/Spinner';
 import { FileExportModal } from '../common/FileExportModal';
-import { Badge } from '../common/Badge';
-import {
-  ClipboardList,
-  ChevronDown,
-  ChevronUp,
-  Search,
-  Download,
-  X,
-  Filter,
-  SlidersHorizontal,
-} from 'lucide-react';
+import { ClipboardList, Download, X, SlidersHorizontal } from 'lucide-react';
 import { cn } from '../../utils/cn';
-import { AppSelect } from '../common/AppSelect';
 import {
   leveSettingsSectionIconWrapClass,
-  leveSettingsSelectClass,
+  leveTaskModalGhostBtnClass,
+  leveTaskModalInsetClass,
+  leveTaskModalKpiStripClass,
   leveTaskModalMutedClass,
   leveTaskModalMutedXsClass,
+  leveTaskModalProgressShellClass,
   leveTaskModalSectionAccentClass,
+  leveTaskModalSectionClass,
   leveTaskModalStatPillActiveClass,
   leveTaskModalStatPillIdleClass,
   leveTaskModalStrongClass,
   leveTaskModalTabBadgeIdleClass,
-  leveViewOutlineBtnClass,
-  leveViewSearchInputClass,
 } from '../common/projectCardUi';
 
-const STATUS_OPTIONS: Array<TestCase['status']> = ['Not Run', 'Passed', 'Failed', 'Blocked'];
 const STATUS_LABEL: Record<TestCase['status'], string> = {
   'Not Run': 'Não Executado',
   Passed: 'Aprovado',
   Failed: 'Reprovado',
   Blocked: 'Bloqueado',
 };
-
-const SORT_OPTIONS = [
-  { value: 'default', label: 'Padrão' },
-  { value: 'status', label: 'Status' },
-  { value: 'action', label: 'Ação necessária (A–Z)' },
-] as const;
-type SortBy = (typeof SORT_OPTIONS)[number]['value'];
 
 function getTestCaseStats(cases: TestCase[]) {
   const total = cases.length;
@@ -56,16 +38,6 @@ function getTestCaseStats(cases: TestCase[]) {
   const blocked = cases.filter(c => c.status === 'Blocked').length;
   const executed = passed + failed + blocked;
   return { total, notRun, passed, failed, blocked, executed };
-}
-
-function matchesSearch(tc: TestCase, q: string): boolean {
-  if (!q.trim()) return true;
-  const lower = q.trim().toLowerCase();
-  const text = [tc.action, tc.parameters, tc.expectedResult, tc.observedResult]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase();
-  return text.includes(lower);
 }
 
 export interface TestCasesSectionProps {
@@ -97,45 +69,21 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
 }) => {
   const cases = task.testCases || [];
   const [statusFilter, setStatusFilter] = useState<TestCase['status'][]>([]);
-  const [searchInput, setSearchInput] = useState('');
-  const [debouncedSearch] = useDebounceValue(searchInput, 300);
-  const [sortBy, setSortBy] = useState<SortBy>('default');
   const [showExportModal, setShowExportModal] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  /** Controla expandir/recolher todos os "Detalhes". null = cada item usa estado interno. */
-  const [detailsOpenOverride, setDetailsOpenOverride] = useState<boolean | null>(null);
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   const stats = useMemo(() => getTestCaseStats(cases), [cases]);
 
-  const filteredAndSorted = useMemo(() => {
-    let list = cases.filter(tc => {
-      if (statusFilter.length > 0 && !statusFilter.includes(tc.status)) return false;
-      if (!matchesSearch(tc, debouncedSearch)) return false;
-      return true;
-    });
-
-    if (sortBy === 'status') {
-      const order: Record<TestCase['status'], number> = {
-        'Not Run': 0,
-        Blocked: 1,
-        Failed: 2,
-        Passed: 3,
-      };
-      list = [...list].sort((a, b) => order[a.status] - order[b.status]);
-    } else if (sortBy === 'action') {
-      list = [...list].sort((a, b) => a.action.localeCompare(b.action, 'pt-BR'));
-    }
-
-    return list;
-  }, [cases, statusFilter, debouncedSearch, sortBy]);
-
-  const activeFiltersCount =
-    statusFilter.length + (debouncedSearch.trim() ? 1 : 0);
+  const filteredCases = useMemo(
+    () =>
+      cases.filter(
+        tc => statusFilter.length === 0 || statusFilter.includes(tc.status)
+      ),
+    [cases, statusFilter]
+  );
 
   const clearAllFilters = useCallback(() => {
     setStatusFilter([]);
-    setSearchInput('');
   }, []);
 
   const toggleStatusFilter = useCallback((status: TestCase['status']) => {
@@ -200,31 +148,36 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
   }, []);
 
   const toggleSelectAll = useCallback(() => {
-    if (selectedIds.size === filteredAndSorted.length) {
+    if (selectedIds.size === filteredCases.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(filteredAndSorted.map(tc => tc.id)));
+      setSelectedIds(new Set(filteredCases.map(tc => tc.id)));
     }
-  }, [filteredAndSorted, selectedIds.size]);
+  }, [filteredCases, selectedIds.size]);
 
   if (!task.id) return null;
 
   return (
     <div className="font-sans tracking-[var(--letter-spacing)] text-[var(--leve-header-text)]">
       <header className="mb-4 flex flex-col gap-3">
-        <div className="flex flex-wrap items-center gap-3">
+        <div
+          className={cn(
+            leveTaskModalSectionClass,
+            'flex flex-wrap items-center gap-3 p-4'
+          )}
+        >
           <span className={leveSettingsSectionIconWrapClass}>
             <ClipboardList className="h-5 w-5" aria-hidden />
           </span>
           <h2 className={cn('text-lg font-bold', leveTaskModalStrongClass)}>Casos de Teste</h2>
-          <span className={cn(leveTaskModalTabBadgeIdleClass, 'rounded-full px-3 py-1 normal-case')}>
+          <span className={cn(leveTaskModalTabBadgeIdleClass, 'px-3 py-1 normal-case')}>
             {stats.total} caso(s)
           </span>
           {cases.length > 0 && (
             <button
               type="button"
               onClick={() => setShowExportModal(true)}
-              className={cn(leveViewOutlineBtnClass, 'btn-sm gap-1.5')}
+              className={cn(leveTaskModalGhostBtnClass, 'ml-auto gap-1.5')}
               aria-label="Exportar lista de casos de teste"
             >
               <Download className="w-4 h-4" />
@@ -236,7 +189,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
         {cases.length > 0 && (
           <>
             {/* Indicadores clicáveis */}
-            <div className="flex flex-wrap items-center gap-2">
+            <div className={leveTaskModalKpiStripClass}>
               {indicatorItems.map(item => (
                 <button
                   key={item.label}
@@ -267,7 +220,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
             </div>
 
             {/* Barra de progresso */}
-            <div className="flex flex-col gap-1">
+            <div className={cn(leveTaskModalInsetClass, 'flex flex-col gap-1.5')}>
               <div className={cn('flex items-center justify-between text-xs', leveTaskModalMutedXsClass)}>
                 <span>
                   {stats.executed} de {stats.total} executados
@@ -275,106 +228,18 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                 </span>
                 <span>{stats.passed} aprovados</span>
               </div>
-              <progress
-                className="progress h-2 w-full [&::-moz-progress-bar]:bg-[var(--leve-header-accent)] [&::-webkit-progress-value]:bg-[var(--leve-header-accent)]"
-                value={stats.total > 0 ? stats.executed : 0}
-                max={stats.total || 1}
-                aria-label="Progresso de execução dos casos de teste"
-              />
-            </div>
-
-            {/* Filtros, ordenação, busca, expandir/recolher */}
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="relative flex-1 min-w-[140px] max-w-xs">
-                <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--leve-header-text-muted)]" />
-                <input
-                  type="search"
-                  placeholder="Buscar na descrição, passos ou resultado..."
-                  value={searchInput}
-                  onChange={v => setSearchInput(v)}
-                  className={cn(leveViewSearchInputClass, 'input-sm w-full pl-8 text-sm')}
-                  aria-label="Buscar nos casos de teste"
+              <div className={leveTaskModalProgressShellClass}>
+                <progress
+                  className="progress w-full bg-transparent"
+                  value={stats.total > 0 ? stats.executed : 0}
+                  max={stats.total || 1}
+                  aria-label="Progresso de execução dos casos de teste"
                 />
               </div>
-              <AppSelect
-                value={sortBy}
-                onChange={v => setSortBy(v as SortBy)}
-                className={cn(leveSettingsSelectClass, 'select-sm h-9 min-h-0 text-sm')}
-                aria-label="Ordenar casos por"
-              >
-                {SORT_OPTIONS.map(opt => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </AppSelect>
-              <button
-                type="button"
-                onClick={() => setShowAdvancedFilters(p => !p)}
-                className={cn(
-                  leveViewOutlineBtnClass,
-                  'btn-sm gap-1.5 text-xs',
-                  showAdvancedFilters &&
-                    'border-[var(--leve-header-accent)] bg-[color-mix(in_srgb,var(--leve-header-accent)_12%,var(--leve-header-bg))]'
-                )}
-                aria-expanded={showAdvancedFilters}
-                aria-label="Abrir filtros avançados"
-              >
-                <Filter className="w-3.5 h-3.5" />
-                Filtros
-                {activeFiltersCount > 0 && (
-                  <Badge size="xs" appearance="pill" variant="primary">
-                    {activeFiltersCount}
-                  </Badge>
-                )}
-              </button>
-              <div className="flex gap-1">
-                <button
-                  type="button"
-                  onClick={() => setDetailsOpenOverride(true)}
-                  className="win-icon-button"
-                  aria-label="Expandir detalhes de todos"
-                  title="Expandir detalhes"
-                >
-                  <ChevronDown className="h-5 w-5" aria-hidden />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDetailsOpenOverride(false)}
-                  className="win-icon-button"
-                  aria-label="Recolher detalhes de todos"
-                  title="Recolher detalhes"
-                >
-                  <ChevronUp className="h-5 w-5" aria-hidden />
-                </button>
-              </div>
             </div>
 
-            {/* Filtros avançados: painel colapsável */}
-            {showAdvancedFilters && (
-              <div
-                className={cn(
-                  'flex flex-wrap items-center gap-2 rounded-[var(--leve-header-radius)] border border-[var(--leve-header-border)]',
-                  'bg-[color-mix(in_srgb,var(--leve-header-text)_4%,var(--leve-header-bg))] p-2.5'
-                )}
-              >
-                <span className={cn('text-xs font-medium', leveTaskModalMutedXsClass)}>Status:</span>
-                {STATUS_OPTIONS.map(s => (
-                  <label key={s} className="label cursor-pointer gap-1.5 py-0">
-                    <input
-                      type="checkbox"
-                      checked={statusFilter.includes(s)}
-                      onChange={() => toggleStatusFilter(s)}
-                      className="checkbox checkbox-sm checkbox-highlight"
-                    />
-                    <span className="text-xs">{STATUS_LABEL[s]}</span>
-                  </label>
-                ))}
-              </div>
-            )}
-
-            {/* Chips de filtros ativos */}
-            {activeFiltersCount > 0 && (
+            {/* Chips de filtros ativos (status via KPIs) */}
+            {statusFilter.length > 0 && (
               <div className="flex flex-wrap items-center gap-2">
                 {statusFilter.map(s => (
                   <span
@@ -392,19 +257,6 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                     </button>
                   </span>
                 ))}
-                {debouncedSearch.trim() && (
-                  <span className="badge badge-primary badge-outline gap-1 pr-1 py-1.5 text-xs">
-                    Busca
-                    <button
-                      type="button"
-                      onClick={() => setSearchInput('')}
-                      className="btn btn-ghost btn-xs btn-circle p-0 min-h-0 h-4 w-4"
-                      aria-label="Limpar busca"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
-                )}
                 <button
                   type="button"
                   onClick={clearAllFilters}
@@ -416,9 +268,9 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
             )}
 
             {/* Contador exibindo X de Y */}
-            {(activeFiltersCount > 0 || filteredAndSorted.length !== cases.length) && (
+            {statusFilter.length > 0 && filteredCases.length !== cases.length && (
               <p className={leveTaskModalMutedXsClass}>
-                Exibindo {filteredAndSorted.length} de {cases.length} caso(s)
+                Exibindo {filteredCases.length} de {cases.length} caso(s)
               </p>
             )}
           </>
@@ -458,11 +310,11 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
               : undefined
           }
         />
-      ) : filteredAndSorted.length === 0 ? (
+      ) : filteredCases.length === 0 ? (
         <EmptyState
           icon="🔍"
           title="Nenhum caso corresponde aos filtros"
-          description="Tente alterar os filtros ou a busca."
+          description="Tente outro indicador de status acima ou limpe os filtros."
           action={{
             label: 'Limpar filtros',
             onClick: clearAllFilters,
@@ -498,12 +350,12 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
             </div>
           )}
 
-          <div className="flex items-center gap-2 py-1">
+          <div className={cn(leveTaskModalInsetClass, 'flex items-center gap-2 py-2')}>
             <label className="label cursor-pointer gap-2 py-0">
               <input
                 type="checkbox"
                 checked={
-                  filteredAndSorted.length > 0 && selectedIds.size === filteredAndSorted.length
+                  filteredCases.length > 0 && selectedIds.size === filteredCases.length
                 }
                 onChange={toggleSelectAll}
                 className="checkbox checkbox-sm checkbox-highlight"
@@ -513,7 +365,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
             </label>
           </div>
 
-          {filteredAndSorted.map(tc => (
+          {filteredCases.map(tc => (
             <TestCaseItem
               key={tc.id}
               testCase={tc}
@@ -529,7 +381,6 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
               onEdit={onEditTestCase ? () => onEditTestCase(task.id, tc) : undefined}
               onDelete={onDeleteTestCase ? () => onDeleteTestCase(task.id, tc.id) : undefined}
               onDuplicate={onDuplicateTestCase ? () => onDuplicateTestCase(task.id, tc) : undefined}
-              detailsOpenOverride={detailsOpenOverride !== null ? detailsOpenOverride : undefined}
               selected={selectedIds.has(tc.id)}
               onToggleSelect={() => toggleSelect(tc.id)}
               onBatchSelect={true}

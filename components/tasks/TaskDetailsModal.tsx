@@ -64,6 +64,7 @@ import {
   leveTaskModalTabClass,
   leveTaskModalTabsStripClass,
   leveTaskModalGhostBtnClass,
+  leveTaskModalPanelShellClass,
   leveTaskModalWatchersBoxClass,
   leveViewOutlineBtnClass,
 } from '../common/projectCardUi';
@@ -684,12 +685,14 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
 
     return (
       <div className="space-y-4">
-        <header className="mb-4">
+        <header className={cn(leveTaskModalSectionClass, 'mb-4 space-y-1 p-4')}>
           <h2 className={leveTaskModalPageTitleClass}>Cenários de Teste BDD</h2>
           <p className={cn(leveTaskModalMutedClass, 'mt-1 text-sm')}>
             Gerencie e visualize seus critérios de aceite em formato Gherkin.
           </p>
-          <span className={cn(leveTaskModalMutedXsClass, 'mt-1 block')}>{bddCount} cenário(s)</span>
+          <span className={cn(leveTaskModalTabBadgeIdleClass, 'mt-2 inline-flex px-2.5 py-1')}>
+            {bddCount} cenário(s)
+          </span>
         </header>
 
         <div className="space-y-4">
@@ -776,17 +779,12 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
 
         {activeTestSubSection === 'strategy' && (
           <div>
-            <header className="mb-4 flex items-center gap-3">
+            <header className={cn(leveTaskModalSectionClass, 'mb-4 flex flex-wrap items-center gap-3 p-4')}>
               <span className={leveSettingsSectionIconWrapClass}>
                 <BarChart3 className="h-5 w-5" aria-hidden />
               </span>
               <h2 className={cn('text-lg font-bold', leveTaskModalStrongClass)}>Estratégia de Teste</h2>
-              <span
-                className={cn(
-                  leveTaskModalTabBadgeIdleClass,
-                  'rounded-full px-3 py-1 text-xs font-medium'
-                )}
-              >
+              <span className={cn(leveTaskModalTabBadgeIdleClass, 'px-3 py-1')}>
                 {task.testStrategy?.length || 0} item(ns)
               </span>
             </header>
@@ -916,7 +914,9 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
 
     return (
       <div className="space-y-4">
-        <h2 className={leveTaskModalPageTitleClass}>Planejamento</h2>
+        <header className={cn(leveTaskModalSectionClass, 'p-4')}>
+          <h2 className={leveTaskModalPageTitleClass}>Planejamento</h2>
+        </header>
         <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-12">
         <div className="min-w-0 space-y-3 sm:space-y-4 lg:col-span-7">
           <section className={cn(leveTaskModalSectionClass, 'p-3 sm:p-4')}>
@@ -1004,7 +1004,9 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
 
     return (
       <div className="space-y-4">
-        <h2 className={leveTaskModalPageTitleClass}>Colaboração</h2>
+        <header className={cn(leveTaskModalSectionClass, 'p-4')}>
+          <h2 className={leveTaskModalPageTitleClass}>Colaboração</h2>
+        </header>
         <CommentSection
           comments={task.comments || []}
           onAddComment={content => onAddComment(content)}
@@ -1078,14 +1080,18 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     sectionTabs.find(tab => tab.id === activeSection)?.label ?? 'Detalhes da tarefa';
 
   const modalTitle = (
-    <span className="flex min-w-0 w-full items-center gap-2 pr-10 sm:pr-12">
-      <span className={cn('truncate font-sans text-sm font-bold', leveTaskModalStrongClass)}>
-        {activeSectionLabel}
+    <div className="flex min-w-0 w-full flex-col gap-1 pr-10 sm:pr-12">
+      <span className={cn(leveTaskModalFieldLabelClass, 'truncate')}>{activeSectionLabel}</span>
+      <span
+        className={cn(
+          'min-w-0 truncate font-sans text-sm font-bold sm:text-base',
+          leveTaskModalStrongClass
+        )}
+        title={`${task.id} - ${task.title || 'Sem título'}`}
+      >
+        {task.id} - {task.title || 'Sem título'}
       </span>
-      <span className="sr-only">
-        {task.id}: {task.title}
-      </span>
-    </span>
+    </div>
   );
 
   return (
@@ -1093,7 +1099,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
       <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} size="full">
         <div className="flex flex-col gap-4">
           <BackButton
-            className="self-start -ml-1"
+            className={cn('self-start -ml-1', leveTaskModalGhostBtnClass)}
             onClick={onClose}
             aria-label="Voltar para a lista de tarefas"
           />
@@ -1138,7 +1144,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             id={`task-${safeDomId}-panel-${activeSection}`}
             role="tabpanel"
             aria-labelledby={`task-${safeDomId}-tab-${activeSection}`}
-            className="overflow-x-hidden"
+            className={cn(leveTaskModalPanelShellClass, 'overflow-x-hidden')}
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.div

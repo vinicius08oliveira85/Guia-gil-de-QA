@@ -4,14 +4,17 @@ import { EditIcon, TrashIcon } from '../common/Icons';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { cn } from '../../utils/cn';
 import {
+  leveTaskModalActionToolbarClass,
   leveTaskModalFieldLabelClass,
+  leveTaskModalGhostBtnClass,
   leveTaskModalInputClass,
+  leveTaskModalInsetClass,
   leveTaskModalMutedClass,
+  leveTaskModalPrimaryBtnClass,
   leveTaskModalSectionClass,
+  leveTaskModalSectionHeaderClass,
   leveTaskModalStrongClass,
   leveTaskModalTextareaClass,
-  leveViewOutlineBtnClass,
-  leveViewPrimaryBtnClass,
 } from '../common/projectCardUi';
 
 /** Palavras-chave Gherkin em português (ordem: mais longas primeiro para match correto). */
@@ -145,10 +148,10 @@ Então ele deve ser redirecionado para o dashboard`}
         />
       </div>
       <div className="flex justify-end gap-2 pt-2">
-        <button type="button" onClick={onCancel} className={leveViewOutlineBtnClass}>
+        <button type="button" onClick={onCancel} className={leveTaskModalGhostBtnClass}>
           Cancelar
         </button>
-        <button type="submit" className={leveViewPrimaryBtnClass}>
+        <button type="submit" className={leveTaskModalPrimaryBtnClass}>
           Salvar Cenário
         </button>
       </div>
@@ -165,18 +168,24 @@ export const BddScenarioItem: React.FC<{
     <div
       className={cn(
         leveTaskModalSectionClass,
-        'flex flex-col overflow-hidden border-l-4 border-l-[var(--leve-header-accent)] transition-all hover:shadow-[0_4px_18px_rgba(252,76,2,0.1)]'
+        'flex flex-col overflow-hidden border-l-4 border-l-[var(--leve-header-accent)]',
+        'transition-[box-shadow] hover:shadow-[var(--leve-neu-hover)]'
       )}
     >
-      <div className="flex items-center justify-between border-b border-[var(--leve-header-border)] px-5 py-4">
+      <div
+        className={cn(
+          leveTaskModalSectionHeaderClass,
+          'justify-between border-l-0 px-4 py-3 sm:px-5 sm:py-4'
+        )}
+      >
         <h3 className={cn('min-w-0 flex-1 pr-2 font-semibold', leveTaskModalStrongClass)}>
           {scenario.title}
         </h3>
-        <div className="flex shrink-0 gap-1">
+        <div className={leveTaskModalActionToolbarClass}>
           <button
             type="button"
             onClick={onEdit}
-            className="rounded-full p-2 text-[var(--leve-header-text-muted)] transition-colors hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_10%,transparent)] hover:text-[var(--leve-header-accent)]"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--leve-header-text-muted)] transition-[box-shadow,color] hover:text-[var(--leve-header-accent)] hover:shadow-[var(--leve-neu-raised)]"
             aria-label="Editar cenário BDD"
           >
             <EditIcon />
@@ -184,7 +193,7 @@ export const BddScenarioItem: React.FC<{
           <button
             type="button"
             onClick={onDelete}
-            className="rounded-full p-2 text-[var(--leve-header-text-muted)] transition-colors hover:bg-[color-mix(in_srgb,oklch(var(--er))_12%,transparent)] hover:text-[color-mix(in_srgb,oklch(var(--er))_90%,transparent)]"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--leve-header-text-muted)] transition-[box-shadow,color] hover:text-[color-mix(in_srgb,oklch(var(--er))_90%,transparent)] hover:shadow-[var(--leve-neu-raised)]"
             aria-label="Excluir cenário BDD"
           >
             <TrashIcon />
@@ -193,7 +202,8 @@ export const BddScenarioItem: React.FC<{
       </div>
       <div
         className={cn(
-          'whitespace-pre-wrap bg-[color-mix(in_srgb,var(--leve-header-text)_4%,var(--leve-header-bg))] p-5 font-mono text-sm leading-relaxed',
+          leveTaskModalInsetClass,
+          'mx-3 mb-3 whitespace-pre-wrap font-mono text-sm leading-relaxed sm:mx-4 sm:mb-4',
           leveTaskModalMutedClass
         )}
       >
