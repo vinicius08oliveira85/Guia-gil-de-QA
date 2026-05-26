@@ -6,12 +6,11 @@ export const projectsDashboardPageClass = 'app-page projects-dash-page animate-f
 /** Badge "Workspace" e chips do cabeçalho */
 export const projectsDashboardHeaderBadgeClass = cn(
   'projects-dash-neu-badge shrink-0 px-2.5 py-0.5',
-  'text-[10px] font-bold uppercase tracking-widest text-[var(--brand-highlight)]'
+  'text-[10px] font-bold uppercase tracking-widest'
 );
 
 export const projectsDashboardSearchBtnClass = cn(
-  'projects-dash-neu-icon-btn shrink-0 text-[var(--leve-header-text-muted)]',
-  'hover:text-[var(--leve-header-text)]'
+  'projects-dash-neu-icon-btn shrink-0'
 );
 
 export const projectsDashboardSelectClass = cn(

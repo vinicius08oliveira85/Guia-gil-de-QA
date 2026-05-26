@@ -1044,8 +1044,10 @@
   }
   .projects-dash-neu-badge {
     border-radius: 9999px;
-    background: var(--projects-dash-surface);
-    box-shadow: var(--projects-dash-neu-raised);
+    border: 1px solid color-mix(in srgb, var(--workspace-panel-neu-light) 30%, transparent);
+    background: var(--workspace-panel-bg);
+    color: var(--workspace-panel-accent);
+    box-shadow: var(--workspace-panel-neu-raised);
   }
   .projects-dash-neu-icon-btn {
     display: inline-flex;
@@ -1054,16 +1056,19 @@
     min-height: 2.25rem;
     min-width: 2.25rem;
     border-radius: 9999px;
-    background: var(--projects-dash-surface);
-    box-shadow: var(--projects-dash-neu-raised);
+    border: 1px solid color-mix(in srgb, var(--workspace-panel-neu-light) 30%, transparent);
+    background: var(--workspace-panel-bg);
+    color: var(--workspace-panel-text-muted);
+    box-shadow: var(--workspace-panel-neu-raised);
     transition:
       box-shadow 200ms ease,
       color 200ms ease;
   }
   .projects-dash-neu-icon-btn:hover {
+    color: var(--workspace-panel-text);
     box-shadow:
-      7px 7px 16px var(--projects-dash-neu-dark),
-      -5px -5px 12px var(--projects-dash-neu-light);
+      7px 7px 16px var(--workspace-panel-neu-dark),
+      -5px -5px 12px var(--workspace-panel-neu-light);
   }
   .projects-dash-neu-select {
     box-shadow: var(--projects-dash-neu-inset);
@@ -1076,27 +1081,118 @@
     min-height: 2.25rem;
     padding: 0.375rem 0.875rem;
     border-radius: 9999px;
-    border: 1px solid color-mix(in srgb, var(--projects-dash-neu-light) 40%, transparent);
-    background: var(--projects-dash-surface);
+    border: 1px solid color-mix(in srgb, var(--workspace-panel-neu-light) 30%, transparent);
+    background: color-mix(in srgb, var(--workspace-panel-neu-dark) 12%, var(--workspace-panel-bg));
     font-family: var(--font-sans);
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--brand-text-muted);
-    box-shadow: var(--projects-dash-neu-raised);
+    color: var(--workspace-panel-text-muted);
+    box-shadow: var(--workspace-panel-neu-inset);
     transition:
       box-shadow 200ms ease,
       background-color 200ms ease,
       color 200ms ease;
   }
   .projects-dash-filter-pill:hover:not(:disabled) {
-    color: var(--brand-text-strong);
+    background: color-mix(in srgb, var(--workspace-panel-neu-dark) 8%, var(--workspace-panel-bg));
+    color: var(--workspace-panel-text);
+    box-shadow: var(--workspace-panel-neu-inset);
   }
   .projects-dash-filter-pill-active {
-    border-color: color-mix(in srgb, var(--workspace-stat-accent) 35%, transparent);
-    background: color-mix(in srgb, var(--workspace-stat-accent) 12%, var(--projects-dash-surface));
-    color: var(--workspace-stat-accent);
-    box-shadow: var(--projects-dash-neu-inset);
+    border-color: transparent;
+    background: var(--workspace-panel-badge-bg);
+    color: var(--workspace-panel-badge-text);
+    box-shadow:
+      2px 2px 6px var(--workspace-panel-neu-dark),
+      -1px -1px 4px var(--workspace-panel-neu-light);
   }
+  .projects-dash-filter-pill-active:hover:not(:disabled) {
+    color: var(--workspace-panel-badge-text);
+  }
+
+  /** Chrome neumórfico escuro — ProjectView / QADashboard (paleta do painel de alertas) */
+  .workspace-chrome-inset {
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--workspace-panel-neu-dark) 15%, var(--workspace-panel-bg));
+    box-shadow: var(--workspace-panel-neu-inset);
+  }
+  .workspace-chrome-pill {
+    border: 1px solid color-mix(in srgb, var(--workspace-panel-neu-light) 30%, transparent);
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--workspace-panel-neu-dark) 12%, var(--workspace-panel-bg));
+    color: var(--workspace-panel-text-muted);
+    box-shadow: var(--workspace-panel-neu-inset);
+    transition:
+      box-shadow 200ms ease,
+      background-color 200ms ease,
+      color 200ms ease;
+  }
+  .workspace-chrome-pill:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--workspace-panel-neu-dark) 8%, var(--workspace-panel-bg));
+    color: var(--workspace-panel-text);
+    box-shadow: var(--workspace-panel-neu-inset);
+  }
+  .workspace-chrome-pill-active {
+    border-color: transparent;
+    background: var(--workspace-panel-badge-bg);
+    color: var(--workspace-panel-badge-text);
+    box-shadow:
+      2px 2px 6px var(--workspace-panel-neu-dark),
+      -1px -1px 4px var(--workspace-panel-neu-light);
+  }
+  .workspace-chrome-pill-active:hover:not(:disabled) {
+    color: var(--workspace-panel-badge-text);
+  }
+  .workspace-chrome-pill-danger {
+    color: oklch(var(--er));
+  }
+  .workspace-chrome-pill-danger:hover:not(:disabled) {
+    color: oklch(var(--er));
+  }
+  .workspace-chrome-tab-active {
+    border-radius: 9999px;
+    background: var(--workspace-panel-badge-bg);
+    color: var(--workspace-panel-badge-text);
+    box-shadow:
+      2px 2px 6px var(--workspace-panel-neu-dark),
+      -1px -1px 4px var(--workspace-panel-neu-light);
+  }
+  .workspace-chrome-tab-idle {
+    border-radius: 9999px;
+    color: var(--workspace-panel-text-muted);
+    transition:
+      background-color 200ms ease,
+      color 200ms ease,
+      box-shadow 200ms ease;
+  }
+  .workspace-chrome-tab-idle:hover {
+    background: color-mix(in srgb, var(--workspace-panel-neu-dark) 8%, var(--workspace-panel-bg));
+    color: var(--workspace-panel-text);
+    box-shadow: var(--workspace-panel-neu-inset);
+  }
+  .workspace-chrome-badge {
+    border-radius: 9999px;
+    border: 1px solid color-mix(in srgb, var(--workspace-panel-neu-light) 30%, transparent);
+    background: var(--workspace-panel-bg);
+    color: var(--workspace-panel-accent);
+    box-shadow: var(--workspace-panel-neu-raised);
+  }
+  .workspace-chrome-count-active {
+    border: 1px solid color-mix(in srgb, var(--workspace-panel-text) 55%, transparent);
+    border-radius: 9999px;
+    background: var(--workspace-panel-text);
+    color: var(--workspace-panel-bg);
+    box-shadow:
+      2px 2px 6px var(--workspace-panel-neu-dark),
+      -1px -1px 4px var(--workspace-panel-neu-light);
+  }
+  .workspace-chrome-count-idle {
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--workspace-panel-neu-dark) 12%, var(--workspace-panel-bg));
+    color: var(--workspace-panel-text-muted);
+    box-shadow: var(--workspace-panel-neu-inset);
+  }
+
   .projects-dash-alert {
     border: 1px solid transparent;
     box-shadow: var(--projects-dash-neu-inset);

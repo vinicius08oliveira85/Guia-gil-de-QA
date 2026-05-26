@@ -151,53 +151,55 @@ export const projectViewHeaderBreadcrumbsClass = cn(
 );
 
 export const projectViewHeaderToolbarClass = cn(
-  'leve-neu-surface-inset flex shrink-0 items-center rounded-full'
+  'workspace-chrome-inset flex shrink-0 items-center rounded-full'
 );
 
 export const projectViewHeaderToolbarDividerClass =
-  'mx-0.5 h-5 w-px shrink-0 bg-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]';
+  'mx-0.5 h-5 w-px shrink-0 bg-[color-mix(in_srgb,var(--workspace-panel-neu-light)_35%,transparent)]';
 
 export const projectViewHeaderTabsDividerClass = 'relative mt-2.5 sm:mt-3';
 
 export const projectViewHeaderTabsNavClass = cn(
-  'leve-neu-surface-inset no-scrollbar flex min-w-0 flex-1 flex-nowrap gap-1.5 overflow-x-auto scroll-smooth snap-x snap-mandatory rounded-full p-1.5'
+  'workspace-chrome-inset no-scrollbar flex min-w-0 flex-1 flex-nowrap gap-1.5 overflow-x-auto scroll-smooth snap-x snap-mandatory rounded-full p-1.5'
 );
 
 export const projectViewHeaderTabClass = (active: boolean) =>
   active
     ? cn(
-        'inline-flex min-h-[2.25rem] shrink-0 snap-start items-center whitespace-nowrap rounded-full px-3 py-2 sm:min-h-0',
-        'font-sans text-sm font-semibold text-white shadow-[0_2px_8px_rgba(252,76,2,0.22)]',
-        'bg-[var(--leve-header-accent)]'
+        'workspace-chrome-tab-active inline-flex min-h-[2.25rem] shrink-0 snap-start items-center whitespace-nowrap px-3 py-2 sm:min-h-0',
+        'font-sans text-sm font-semibold'
       )
     : cn(
-        'inline-flex min-h-[2.25rem] shrink-0 snap-start items-center whitespace-nowrap rounded-full px-3 py-2 sm:min-h-0',
-        'font-sans text-sm font-medium text-[var(--leve-header-text-muted)] transition-colors',
-        'hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_8%,var(--leve-header-bg))] hover:text-[var(--leve-header-text)]'
+        'workspace-chrome-tab-idle inline-flex min-h-[2.25rem] shrink-0 snap-start items-center whitespace-nowrap px-3 py-2 sm:min-h-0',
+        'font-sans text-sm font-medium'
       );
 
 export const projectViewHeaderScrollFadeFromClass =
-  'pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-8 rounded-l-full bg-gradient-to-r from-[var(--leve-neu-bg)] to-transparent';
+  'pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-8 rounded-l-full bg-gradient-to-r from-[var(--workspace-panel-bg)] to-transparent';
 
 export const projectViewHeaderScrollFadeToClass =
-  'pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-8 rounded-r-full bg-gradient-to-l from-[var(--leve-neu-bg)] to-transparent';
+  'pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-8 rounded-r-full bg-gradient-to-l from-[var(--workspace-panel-bg)] to-transparent';
 
 export const projectViewHeaderScrollHintClass =
-  'mt-1 text-center font-sans text-[11px] text-[var(--leve-header-text-muted)] md:hidden';
+  'mt-1 text-center font-sans text-[11px] text-[var(--workspace-panel-text-muted)] md:hidden';
 
 export const projectViewHeaderBacklogBtnClass = (active: boolean) =>
   cn(
-    'leve-neu-pill mb-0.5 inline-flex shrink-0 items-center gap-1.5 px-2.5 py-1',
-    'font-sans text-xs font-semibold transition-all duration-150 min-h-[40px] sm:min-h-7',
-    active
-      ? 'leve-neu-pill-active text-[var(--leve-header-accent)]'
-      : 'text-[var(--leve-header-text-muted)] hover:text-[var(--leve-header-accent)]'
+    'workspace-chrome-pill mb-0.5 inline-flex shrink-0 items-center gap-1.5 px-2.5 py-1',
+    'font-sans text-xs font-semibold min-h-[40px] sm:min-h-7',
+    active && 'workspace-chrome-pill-active'
   );
 
 export const projectViewHeaderBacklogCountClass = (active: boolean) =>
   active
-    ? cn(leveTaskModalTabBadgeActiveClass, 'px-1.5 py-0')
-    : cn(leveTaskModalTabBadgeIdleClass, 'px-1.5 py-0');
+    ? cn(
+        'workspace-chrome-count-active inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center px-1.5 py-0',
+        'font-sans text-[10px] font-bold tabular-nums leading-none'
+      )
+    : cn(
+        'workspace-chrome-count-idle inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center px-1.5 py-0',
+        'font-sans text-[10px] font-bold tabular-nums leading-none'
+      );
 
 export const projectViewHeaderSyncBtnClass = cn(
   'leve-neu-pill inline-flex min-h-9 items-center gap-1.5 px-3 py-1.5',
@@ -207,10 +209,8 @@ export const projectViewHeaderSyncBtnClass = cn(
 );
 
 export const projectViewHeaderDangerBtnClass = cn(
-  'leve-neu-pill inline-flex min-h-9 items-center gap-1.5 px-3 py-1.5',
-  'font-sans text-xs font-semibold text-error',
-  'shadow-[var(--leve-neu-raised)] transition-[box-shadow,color]',
-  'hover:shadow-[var(--leve-neu-hover)] hover:text-error sm:min-h-0'
+  'workspace-chrome-pill workspace-chrome-pill-danger text-error inline-flex min-h-9 items-center gap-1.5 px-3 py-1.5',
+  'font-sans text-xs font-semibold sm:min-h-0'
 );
 
 /** Cabeçalho QADashboardHeaderToolbar. */
@@ -221,10 +221,8 @@ export const qaDashboardHeaderTitleClass = cn(
 );
 
 export const qaDashboardHeaderJiraBadgeClass = cn(
-  'inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5',
-  'border border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]',
-  'bg-[color-mix(in_srgb,var(--leve-neu-dark)_5%,var(--leve-neu-bg))]',
-  'font-sans text-xs font-bold text-[var(--leve-header-accent)] shadow-[var(--leve-neu-inset)]'
+  'workspace-chrome-badge inline-flex shrink-0 items-center px-2.5 py-0.5',
+  'font-sans text-xs font-bold'
 );
 
 export const qaDashboardHeaderSubtitleClass = cn(
@@ -235,10 +233,8 @@ export const qaDashboardHeaderMutedClass =
   'font-sans text-[var(--leve-header-text-muted)]';
 
 export const qaDashboardHeaderActionBtnClass = cn(
-  'leve-neu-pill inline-flex min-h-[44px] items-center gap-2 px-3 py-2',
-  'font-sans text-sm font-semibold text-[var(--leve-header-text)]',
-  'shadow-[var(--leve-neu-raised)] transition-[box-shadow,color] duration-200',
-  'hover:shadow-[var(--leve-neu-hover)] hover:text-[var(--leve-header-accent)] disabled:opacity-50 sm:min-h-9'
+  'workspace-chrome-pill inline-flex min-h-[44px] items-center gap-2 px-3 py-2',
+  'font-sans text-sm font-semibold disabled:opacity-50 sm:min-h-9'
 );
 
 export const qaDashboardHeaderFilterChipClass = cn(
