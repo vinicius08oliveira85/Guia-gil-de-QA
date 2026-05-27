@@ -1,4 +1,5 @@
 import React from 'react';
+import { helpTooltipTriggerClass } from './viewUi';
 import { Tooltip } from './Tooltip';
 
 interface HelpTooltipProps {
@@ -38,7 +39,7 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
       {children ?? (
         <button
           type="button"
-          className="btn btn-ghost btn-xs btn-circle ml-1 text-base-content/70 hover:text-base-content"
+          className={helpTooltipTriggerClass}
           aria-label={typeof title === 'string' ? title : (ariaLabel ?? 'Ajuda')}
         >
           <svg

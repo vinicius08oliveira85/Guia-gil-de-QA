@@ -17,13 +17,14 @@ import {
 } from '../../utils/businessRulesImport';
 import { Modal } from '../common/Modal';
 import { ConfirmDialog } from '../common/ConfirmDialog';
+import { leveViewInlineCodeClass } from '../common/projectCardUi';
 import {
-  leveViewInlineCodeClass,
-  leveViewPageHeaderShellClass,
-  leveViewPageJiraBadgeClass,
-  leveViewPageSubtitleClass,
-  leveViewPageTitleClass,
-} from '../common/projectCardUi';
+  viewHeroChromeClass,
+  viewHeroHeaderShellClass,
+  viewHeroJiraBadgeClass,
+  viewHeroSubtitleClass,
+  viewHeroTitleClass,
+} from '../common/viewHeroChromeUi';
 import {
   businessRulesCardActionsClass,
   businessRulesCardBodyClass,
@@ -302,80 +303,82 @@ export const BusinessRulesManager: React.FC<{
         role="main"
         aria-label="Regras de negócio do projeto"
       >
-        <header className={leveViewPageHeaderShellClass}>
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-            <div className="min-w-0">
-              <div className="mb-1.5 flex flex-wrap items-center gap-2">
-                <h1
-                  id="business-rules-heading"
-                  className={cn(leveViewPageTitleClass, 'inline-flex items-center gap-2')}
-                >
-                  <Scale
-                    className="h-7 w-7 shrink-0 text-[var(--leve-header-accent)]"
-                    aria-hidden
-                  />
-                  Regras de negócio
-                </h1>
-                {jiraProjectKey ? (
-                  <span className={leveViewPageJiraBadgeClass}>Jira: {jiraProjectKey}</span>
-                ) : null}
+        <div className={viewHeroChromeClass}>
+          <header className={viewHeroHeaderShellClass}>
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                  <h1
+                    id="business-rules-heading"
+                    className={cn(viewHeroTitleClass, 'inline-flex items-center gap-2')}
+                  >
+                    <Scale
+                      className="h-7 w-7 shrink-0 text-[var(--workspace-panel-accent)]"
+                      aria-hidden
+                    />
+                    Regras de negócio
+                  </h1>
+                  {jiraProjectKey ? (
+                    <span className={viewHeroJiraBadgeClass}>Jira: {jiraProjectKey}</span>
+                  ) : null}
+                </div>
+                <p className={cn(viewHeroSubtitleClass, 'max-w-3xl')}>
+                  Defina regras por categoria e vincule-as às tarefas para a IA gerar BDD e casos mais
+                  assertivos. Use <code className={leveViewInlineCodeClass}>@NomeDaRegra</code> na
+                  descrição ao vincular regras entre si.
+                </p>
               </div>
-              <p className={cn(leveViewPageSubtitleClass, 'max-w-3xl')}>
-                Defina regras por categoria e vincule-as às tarefas para a IA gerar BDD e casos mais
-                assertivos. Use <code className={leveViewInlineCodeClass}>@NomeDaRegra</code> na descrição
-                ao vincular regras entre si.
-              </p>
-            </div>
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-              <input
-                ref={importInputRef}
-                id="business-rules-import-json"
-                type="file"
-                accept="application/json,.json"
-                className="hidden"
-                aria-label="Importar regras de negócio de arquivo JSON"
-                onChange={handleImportFile}
-              />
-              <div
-                className={cn(tasksViewHeaderSecondaryToolbarClass, 'w-full sm:w-auto')}
-                role="group"
-                aria-label="Importar e exportar regras"
-              >
+              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+                <input
+                  ref={importInputRef}
+                  id="business-rules-import-json"
+                  type="file"
+                  accept="application/json,.json"
+                  className="hidden"
+                  aria-label="Importar regras de negócio de arquivo JSON"
+                  onChange={handleImportFile}
+                />
+                <div
+                  className={cn(tasksViewHeaderSecondaryToolbarClass, 'w-full sm:w-auto')}
+                  role="group"
+                  aria-label="Importar e exportar regras"
+                >
+                  <button
+                    type="button"
+                    className={cn(tasksViewHeaderSecondaryBtnClass, 'min-h-[44px] sm:min-h-0')}
+                    onClick={() => importInputRef.current?.click()}
+                    title="Mescla regras a partir de JSON (mesmo id atualiza título/descrição)"
+                  >
+                    <span className={tasksViewHeaderIconWrapClass} aria-hidden>
+                      <Upload className={tasksViewHeaderFilterIconClass} />
+                    </span>
+                    <span>Importar JSON</span>
+                  </button>
+                  <div className={tasksViewHeaderSecondaryToolbarDividerClass} aria-hidden />
+                  <button
+                    type="button"
+                    className={cn(tasksViewHeaderSecondaryBtnClass, 'min-h-[44px] sm:min-h-0')}
+                    onClick={handleExportJson}
+                    title="Exporta todas as regras do projeto em JSON"
+                  >
+                    <span className={tasksViewHeaderIconWrapClass} aria-hidden>
+                      <Download className={tasksViewHeaderFilterIconClass} />
+                    </span>
+                    <span>Exportar JSON</span>
+                  </button>
+                </div>
                 <button
                   type="button"
-                  className={cn(tasksViewHeaderSecondaryBtnClass, 'min-h-[44px] rounded-l-full sm:min-h-0')}
-                  onClick={() => importInputRef.current?.click()}
-                  title="Mescla regras a partir de JSON (mesmo id atualiza título/descrição)"
+                  className={cn(tasksViewHeaderPrimaryBtnClass, 'w-full sm:w-auto')}
+                  onClick={openCreate}
                 >
-                  <span className={tasksViewHeaderIconWrapClass} aria-hidden>
-                    <Upload className={tasksViewHeaderFilterIconClass} />
-                  </span>
-                  <span>Importar JSON</span>
-                </button>
-                <div className={tasksViewHeaderSecondaryToolbarDividerClass} aria-hidden />
-                <button
-                  type="button"
-                  className={cn(tasksViewHeaderSecondaryBtnClass, 'min-h-[44px] rounded-r-full sm:min-h-0')}
-                  onClick={handleExportJson}
-                  title="Exporta todas as regras do projeto em JSON"
-                >
-                  <span className={tasksViewHeaderIconWrapClass} aria-hidden>
-                    <Download className={tasksViewHeaderFilterIconClass} />
-                  </span>
-                  <span>Exportar JSON</span>
+                  <Plus className="h-4 w-4 shrink-0" aria-hidden />
+                  Nova regra
                 </button>
               </div>
-              <button
-                type="button"
-                className={cn(tasksViewHeaderPrimaryBtnClass, 'w-full sm:w-auto')}
-                onClick={openCreate}
-              >
-                <Plus className="h-4 w-4 shrink-0" aria-hidden />
-                Nova regra
-              </button>
             </div>
-          </div>
-        </header>
+          </header>
+        </div>
 
         <section className={tasksPanelCardClass} aria-label="Filtros de regras de negócio">
           <BusinessRulesFiltersToolbar

@@ -67,10 +67,7 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
         title={defaultTooltip}
         className={cn(
           grouped
-            ? cn(
-                groupedBtnClassName ?? leveViewSecondaryToolbarBtnClass,
-                'rounded-l-full'
-              )
+            ? (groupedBtnClassName ?? leveViewSecondaryToolbarBtnClass)
             : cn(
                 'btn btn-ghost btn-sm flex min-h-[44px] items-center gap-1.5 rounded-[var(--radius)] border px-3 text-xs font-semibold transition-colors duration-300 sm:min-h-0',
                 taskNeuBorderDividerClass,

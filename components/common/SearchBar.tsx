@@ -139,18 +139,17 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               }}
               className={cn(
                 appMenuItemClass,
-                index === selectedIndex && 'bg-[color-mix(in_srgb,var(--leve-header-accent)_12%,var(--leve-neu-bg))]',
-                index > 0 && 'border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]'
+                index === selectedIndex && 'app-menu-item-active'
               )}
             >
               <span className="text-xl">{getTypeIcon(result.type)}</span>
               <div className="flex-1 min-w-0">
                 <div className="font-semibold truncate">{result.title}</div>
-                <div className="text-sm text-[var(--leve-header-text-muted)] truncate">
+                <div className="text-sm text-[var(--app-menu-text-muted)] truncate">
                   {result.description}
                 </div>
                 {result.projectName && (
-                  <div className="text-xs text-[var(--leve-header-text-muted)] mt-1">
+                  <div className="text-xs text-[var(--app-menu-text-muted)] mt-1">
                     Projeto: {result.projectName}
                   </div>
                 )}
@@ -164,7 +163,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         <div
           className={cn(
             appMenuPanelClass,
-            'absolute z-50 w-full mt-2 p-4 text-center text-[var(--leve-header-text-muted)]'
+            'absolute z-50 w-full mt-2 p-4 text-center text-[var(--app-menu-text-muted)]'
           )}
         >
           Nenhum resultado encontrado

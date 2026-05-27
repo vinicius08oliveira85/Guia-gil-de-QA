@@ -12,7 +12,7 @@ import { useDashboardMetrics } from '../../hooks/useDashboardMetrics';
 import { glassIndicatorCardClass } from '../common/projectCardUi';
 import { GlassIndicatorCards, type SmallIndicatorItem } from './GlassIndicatorCards';
 import { cn } from '../../utils/cn';
-import { dashboardNeuScopeClass } from './dashboardNeuUi';
+import { dashboardHeroChromeClass, dashboardNeuScopeClass } from './dashboardNeuUi';
 import { ProjectDashboard } from './ProjectDashboard';
 import { RecentActivity } from './RecentActivity';
 import { QADashboardHeaderToolbar } from './QADashboardHeaderToolbar';
@@ -186,39 +186,44 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
         </div>
       )}
 
-      <QADashboardHeaderToolbar
-        jiraProjectKey={jiraKey}
-        lastUpdatedText={lastUpdatedText}
-        activeFiltersCount={activeFiltersCount}
-        filters={dashboardFilters}
-        onFiltersChange={setDashboardFilters}
-        onOpenFiltersModal={() => setShowFilters(true)}
-        onOpenExportModal={() => setShowExportModal(true)}
-      />
+      <div className={dashboardHeroChromeClass}>
+        <QADashboardHeaderToolbar
+          jiraProjectKey={jiraKey}
+          lastUpdatedText={lastUpdatedText}
+          activeFiltersCount={activeFiltersCount}
+          filters={dashboardFilters}
+          onFiltersChange={setDashboardFilters}
+          onOpenFiltersModal={() => setShowFilters(true)}
+          onOpenExportModal={() => setShowExportModal(true)}
+        />
 
-      <section aria-label="Indicadores principais de tarefas">
-        {showLoadingBanner && !filteredProject.tasks?.length ? (
-          <div
-            className={cn(
-              'grid grid-cols-2 gap-1.5 sm:gap-2',
-              showBacklogCard ? 'sm:grid-cols-3 lg:grid-cols-5' : 'sm:grid-cols-2 lg:grid-cols-4'
-            )}
-          >
-            {Array.from({ length: showBacklogCard ? 5 : 4 }).map((_, k) => (
-              <div
-                key={k}
-                className={cn(glassIndicatorCardClass, 'h-[4.75rem] animate-pulse opacity-80 sm:h-[5rem]')}
-                aria-hidden
-              />
-            ))}
-          </div>
-        ) : (
-          <GlassIndicatorCards
-            items={qaIndicatorItems}
-            columns={showBacklogCard ? 5 : 4}
-          />
-        )}
-      </section>
+        <section aria-label="Indicadores principais de tarefas">
+          {showLoadingBanner && !filteredProject.tasks?.length ? (
+            <div
+              className={cn(
+                'grid grid-cols-2 gap-1.5 sm:gap-2',
+                showBacklogCard ? 'sm:grid-cols-3 lg:grid-cols-5' : 'sm:grid-cols-2 lg:grid-cols-4'
+              )}
+            >
+              {Array.from({ length: showBacklogCard ? 5 : 4 }).map((_, k) => (
+                <div
+                  key={k}
+                  className={cn(
+                    glassIndicatorCardClass,
+                    'h-[4.75rem] animate-pulse opacity-80 sm:h-[5rem]'
+                  )}
+                  aria-hidden
+                />
+              ))}
+            </div>
+          ) : (
+            <GlassIndicatorCards
+              items={qaIndicatorItems}
+              columns={showBacklogCard ? 5 : 4}
+            />
+          )}
+        </section>
+      </div>
 
       <ProjectDashboard
         project={filteredProject}

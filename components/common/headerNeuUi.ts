@@ -1,13 +1,37 @@
 import { cn } from '../../utils/cn';
 
-/** Trilho inset (faixa clara) — Configurações, glossário, tema, Jira/Salvar. */
+/** Trilho rebaixado (roxo profundo + inset) — abas, Jira/Salvar no header. */
 export const headerNeuTrackClass = cn(
-  'app-header-neu-track leve-neu-surface-inset',
-  'flex flex-wrap items-center gap-1.5 overflow-visible rounded-full p-0.5',
+  'app-header-neu-track',
+  'flex flex-wrap items-center gap-1.5 overflow-visible rounded-full p-1',
   'transition-[background-color,border-color,box-shadow] duration-300 ease-out'
 );
 
-/** Chip elevado dentro do trilho cream. */
+/** Base compartilhada — pills da toolbar (Novo projeto, Sincronizar, Projetos). */
+export const headerNeuToolbarPillBaseClass = cn(
+  'app-header-neu-toolbar-pill app-element-typography',
+  'inline-flex min-h-9 items-center justify-center gap-1.5 rounded-full px-3 py-1.5',
+  'text-xs font-semibold whitespace-nowrap',
+  'border border-transparent',
+  'transition-[box-shadow,color,background-color,border-color,transform] duration-200',
+  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+  'focus-visible:outline-[color-mix(in_srgb,var(--project-card-accent)_45%,transparent)]',
+  'disabled:cursor-not-allowed disabled:opacity-50'
+);
+
+/** Ação secundária (ex.: Sincronizar) — inset no roxo do header. */
+export const headerNeuToolbarPillSecondaryClass = cn(
+  headerNeuToolbarPillBaseClass,
+  'app-header-neu-toolbar-pill--secondary'
+);
+
+/** CTA primária (ex.: Novo projeto) — mantém gradiente laranja Leve. */
+export const headerNeuToolbarPillPrimaryClass = cn(
+  headerNeuToolbarPillBaseClass,
+  'app-header-neu-toolbar-pill--primary'
+);
+
+/** Chip elevado dentro do trilho rebaixado. */
 export const headerNeuChipClass = cn(
   'app-header-neu-chip',
   'relative z-[1] flex min-h-[44px] min-w-[44px] shrink-0 cursor-pointer items-center justify-center',
@@ -25,18 +49,15 @@ export const headerNeuChipActiveClass = cn(
 
 export const headerNeuChipIdleClass = cn(
   headerNeuChipClass,
-  'text-[#6B5E5E] hover:text-[#401C31]'
+  'text-[var(--project-card-text-muted)] hover:text-[var(--project-card-text)]'
 );
 
 /** Separador vertical no trilho. */
 export const headerNeuTrackSeparatorClass =
   'app-header-neu-track-separator mx-0.5 h-5 w-px shrink-0';
 
-/** Pill «Projetos» sobre o fundo roxo do header. */
+/** Pill «Projetos» — mesma base das ações da toolbar. */
 export const headerNeuNavPillClass = cn(
-  'app-header-neu-nav-pill app-element-typography',
-  'inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 py-1.5',
-  'text-xs font-semibold transition-[box-shadow,color,background-color,border-color] duration-200',
-  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-  'focus-visible:outline-[color-mix(in_srgb,var(--project-card-accent)_45%,transparent)]'
+  headerNeuToolbarPillBaseClass,
+  'app-header-neu-nav-pill'
 );

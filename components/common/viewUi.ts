@@ -63,6 +63,13 @@ export const neuSelectTriggerClass = cn(
   'disabled:cursor-not-allowed disabled:opacity-50'
 );
 
+/** Ícone (?) de ajuda — evita `btn-ghost` (halo claro) em modais escuros. */
+export const helpTooltipTriggerClass = cn(
+  'help-tooltip-trigger ml-1 inline-flex h-5 w-5 min-h-5 min-w-5 shrink-0 cursor-pointer items-center justify-center',
+  'rounded-full border p-0 font-sans transition-[box-shadow,color,background-color] duration-150',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_28%,transparent)]'
+);
+
 export const appMenuPanelClass = 'app-menu-panel';
 
 export const appMenuItemClass = 'app-menu-item text-left';

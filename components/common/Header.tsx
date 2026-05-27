@@ -40,6 +40,10 @@ import { cn } from '../../utils/cn';
 import { isAnalysisOutdated } from '../../utils/analysisFreshness';
 import { getGeneralIAAnalysisSnapshotHash } from '../../services/ai/generalAnalysisService';
 import { AppSelect } from '../common/AppSelect';
+import {
+  headerNeuToolbarPillPrimaryClass,
+  headerNeuToolbarPillSecondaryClass,
+} from './headerNeuUi';
 
 interface HeaderProps {
   onProjectImported?: (project: Project) => void;
@@ -494,14 +498,12 @@ export const Header: React.FC<HeaderProps> = ({
 
           <div className="relative flex min-w-0 max-w-[min(100%,52%)] shrink-0 items-center justify-end gap-1.5 overflow-hidden sm:max-w-[min(100%,58%)] md:gap-2">
             {showDashboardActions && (
-              <div className="hidden shrink-0 flex-col items-stretch gap-1 border-r border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pr-2 md:flex md:flex-row md:items-center md:gap-1">
+              <div className="hidden shrink-0 items-center gap-1.5 md:flex">
                 {onOpenCreateModal && (
                   <button
                     type="button"
                     onClick={onOpenCreateModal}
-                    className={cn(
-                      'app-toolbar-action app-toolbar-action-primary btn btn-sm gap-1.5 whitespace-nowrap rounded-[var(--radius)] shadow-sm'
-                    )}
+                    className={headerNeuToolbarPillPrimaryClass}
                   >
                     <Plus className="h-4 w-4 shrink-0" aria-hidden />
                     Novo projeto
@@ -511,9 +513,7 @@ export const Header: React.FC<HeaderProps> = ({
                   type="button"
                   onClick={() => void handleSyncSupabase()}
                   disabled={isSyncingSupabase || !isSupabaseAvailable()}
-                  className={cn(
-                    'app-toolbar-action app-element-typography btn btn-ghost btn-sm whitespace-nowrap font-medium rounded-[var(--radius)]'
-                  )}
+                  className={headerNeuToolbarPillSecondaryClass}
                   title={
                     !isSupabaseAvailable()
                       ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.'
@@ -521,7 +521,7 @@ export const Header: React.FC<HeaderProps> = ({
                   }
                 >
                   {isSyncingSupabase ? (
-                    <span className="inline-flex items-center gap-1">
+                    <span className="inline-flex items-center gap-1.5">
                       <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden />
                       Sincronizando…
                     </span>

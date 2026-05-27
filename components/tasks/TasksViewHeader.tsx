@@ -14,6 +14,7 @@ import {
   tasksViewHeaderSecondaryBtnClass,
   tasksViewHeaderSecondaryToolbarClass,
   tasksViewHeaderSecondaryToolbarDividerClass,
+  tasksViewHeaderActionsClass,
   tasksViewPageHeaderShellClass,
   tasksViewPageJiraBadgeClass,
   tasksViewPageSubtitleClass,
@@ -58,7 +59,7 @@ export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
         </p>
       </div>
 
-      <div className="flex w-full items-center gap-2 lg:w-auto lg:justify-end">
+      <div className={tasksViewHeaderActionsClass}>
         <button
           type="button"
           onClick={onAddTask}
@@ -95,12 +96,11 @@ export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
             onClick={onOpenFilters}
             disabled={isRunningGeneralAnalysis}
             title={isRunningGeneralAnalysis ? 'Conclua a análise em andamento' : undefined}
-            className={cn(
-              'rounded-r-full',
+            className={
               activeFiltersCount > 0
                 ? tasksViewHeaderSecondaryBtnActiveClass
                 : tasksViewHeaderSecondaryBtnClass
-            )}
+            }
             aria-label={`Filtros${activeFiltersCount > 0 ? `, ${activeFiltersCount} ativos` : ''}`}
           >
             <span className={tasksViewHeaderIconWrapClass} aria-hidden>

@@ -2,20 +2,20 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { cn } from '../../utils/cn';
+import { taskModalSectionClass } from './taskActionLayout';
 import {
-  taskCardFieldLabelClass,
-  taskIconHoverClass,
-  taskModalSectionClass,
-  taskNeuBorderDividerClass,
-  taskSelectControlClass,
-} from './taskActionLayout';
+  tasksPanelFormCancelBtnClass,
+  tasksPanelFormFieldLabelClass,
+  tasksPanelFormInputClass,
+  tasksPanelFormSaveBtnClass,
+  tasksPanelFormSelectClass,
+} from './tasksPanelNeuStyles';
 import { JiraTask, JiraTaskType, BugSeverity, TeamRole, TaskPriority } from '../../types';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { TagInput } from '../common/TagInput';
 import { RichTextEditor } from '../common/RichTextEditor';
 import { HelpTooltip } from '../common/HelpTooltip';
 import { Input } from '../common/Input';
-import { Button } from '../common/Button';
 import { helpContent } from '../../utils/helpContent';
 import { isValidJiraKey } from '../../utils/jiraFieldMapper';
 import type { JiraTaskFormData } from '../../services/jiraService';
@@ -161,11 +161,12 @@ export const TaskForm: React.FC<{
     setValidationErrors({});
   };
 
-  const labelClass = cn('mb-1 flex items-center gap-1.5 text-xs font-medium', taskCardFieldLabelClass);
-  const selectClass = cn(
-    'select select-bordered select-sm w-full text-sm focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-primary)_22%,transparent)]',
-    taskSelectControlClass
+  const labelClass = cn(
+    'mb-1 flex items-center gap-1.5 !normal-case !tracking-normal',
+    tasksPanelFormFieldLabelClass
   );
+  const selectClass = cn('tasks-panel-neu-select w-full text-sm', tasksPanelFormSelectClass);
+  const inputClass = cn('input-sm w-full', tasksPanelFormInputClass);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
@@ -206,14 +207,14 @@ export const TaskForm: React.FC<{
               error={validationErrors.id}
               success={taskData.id.length >= 3 && !validationErrors.id}
               required
-              className={cn('input-sm rounded-xl border', taskNeuBorderDividerClass)}
+              className={inputClass}
             />
             {!existingTask && onImportFromJira && (
               <button
                 type="button"
                 onClick={handleImportFromJira}
                 disabled={importingFromJira}
-                className="mt-2 btn btn-outline btn-sm btn-primary rounded-xl flex items-center gap-1.5"
+                className={cn(tasksPanelFormSaveBtnClass, 'mt-2 min-h-9 px-4 text-xs')}
               >
                 {importingFromJira ? 'Importando…' : 'Importar do Jira'}
               </button>
@@ -249,7 +250,7 @@ export const TaskForm: React.FC<{
               error={validationErrors.title}
               success={taskData.title.length >= 5 && !validationErrors.title}
               required
-              className={cn('input-sm rounded-xl border', taskNeuBorderDividerClass)}
+              className={inputClass}
             />
           </div>
           <div>
@@ -425,23 +426,10 @@ export const TaskForm: React.FC<{
       </div>
 
       <div className="flex flex-wrap justify-end gap-2 pt-1">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className={cn(
-            'rounded-xl border text-base-content',
-            taskNeuBorderDividerClass,
-            taskIconHoverClass
-          )}
-          onClick={onCancel}
-        >
+        <button type="button" className={tasksPanelFormCancelBtnClass} onClick={onCancel}>
           Cancelar
-        </Button>
-        <button
-          type="submit"
-          className="btn btn-primary btn-sm rounded-xl shadow-md shadow-primary/20"
-        >
+        </button>
+        <button type="submit" className={tasksPanelFormSaveBtnClass}>
           Salvar Tarefa
         </button>
       </div>

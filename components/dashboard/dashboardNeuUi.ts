@@ -1,50 +1,47 @@
 import { cn } from '../../utils/cn';
 import {
-  leveViewSecondaryToolbarBtnActiveClass,
-  leveViewSecondaryToolbarBtnClass,
-  leveViewSecondaryToolbarDividerClass,
-  qaDashboardHeaderActionBtnClass,
-} from '../common/projectCardUi';
+  viewHeroChromeClass,
+  viewHeroFilterChipClass,
+  viewHeroHeaderShellClass,
+  viewHeroJiraBadgeClass,
+  viewHeroMobileActionBtnClass,
+  viewHeroMutedClass,
+  viewHeroSubtitleClass,
+  viewHeroTitleClass,
+  viewHeroToolbarBtnActiveClass,
+  viewHeroToolbarBtnClass,
+  viewHeroToolbarClass,
+  viewHeroToolbarCountClass,
+  viewHeroToolbarDividerClass,
+  viewHeroToolbarIconClass,
+  viewHeroToolbarIconWrapClass,
+} from '../common/viewHeroChromeUi';
 import {
   neuCardClass,
   neuCardCompactClass,
   neuCardInsetClass,
   neuDividerClass,
-  neuPillActiveClass,
-  neuPillClass,
-  neuSurfaceInsetClass,
   neuTrackClass,
 } from '../common/neuUi';
 
 /** Escopo bege do dashboard — ativa --app-neu-* e sombras em index.css. */
 export const dashboardNeuScopeClass = cn('dashboard-neu-scope', 'app-neu-scope');
 
-/** Toolbar Filtrar / Exportar (trilho inset + chips raised). */
-export const dashboardFilterToolbarClass = cn(
-  'dashboard-neu-filter-toolbar',
-  neuSurfaceInsetClass,
-  'inline-flex items-stretch gap-0.5 rounded-full p-1'
-);
-
-export const dashboardFilterToolbarDividerClass = leveViewSecondaryToolbarDividerClass;
-
-export const dashboardFilterBtnClass = cn(
-  'dashboard-neu-filter-btn',
-  neuPillClass,
-  leveViewSecondaryToolbarBtnClass
-);
-
-export const dashboardFilterBtnActiveClass = cn(
-  'dashboard-neu-filter-btn dashboard-neu-filter-btn--active',
-  neuPillActiveClass,
-  leveViewSecondaryToolbarBtnActiveClass
-);
-
-export const dashboardMobileActionBtnClass = cn(
-  'dashboard-neu-action-btn',
-  neuPillClass,
-  qaDashboardHeaderActionBtnClass
-);
+export const dashboardHeroChromeClass = viewHeroChromeClass;
+export const dashboardHeroHeaderShellClass = viewHeroHeaderShellClass;
+export const dashboardHeroTitleClass = viewHeroTitleClass;
+export const dashboardHeroJiraBadgeClass = viewHeroJiraBadgeClass;
+export const dashboardHeroSubtitleClass = viewHeroSubtitleClass;
+export const dashboardHeroMutedClass = viewHeroMutedClass;
+export const dashboardHeroFilterChipClass = viewHeroFilterChipClass;
+export const dashboardFilterToolbarClass = viewHeroToolbarClass;
+export const dashboardFilterToolbarDividerClass = viewHeroToolbarDividerClass;
+export const dashboardFilterBtnClass = viewHeroToolbarBtnClass;
+export const dashboardFilterBtnActiveClass = viewHeroToolbarBtnActiveClass;
+export const dashboardFilterIconWrapClass = viewHeroToolbarIconWrapClass;
+export const dashboardFilterIconClass = viewHeroToolbarIconClass;
+export const dashboardFilterCountClass = viewHeroToolbarCountClass;
+export const dashboardHeroMobileActionBtnClass = viewHeroMobileActionBtnClass;
 
 /** Poço inset do donut «Taxa de aprovação». */
 export const dashboardDonutWellClass = cn(

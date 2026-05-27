@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Project } from '../types';
 import { Modal } from './common/Modal';
-import { Card } from './common/Card';
 import { Input } from './common/Input';
 import { ProjectTemplateSelector } from './common/ProjectTemplateSelector';
 import { FileImportModal } from './common/FileImportModal';
@@ -17,8 +16,26 @@ import { logger } from '../utils/logger';
 import { RefreshCw } from 'lucide-react';
 import { BackButton } from './common/BackButton';
 import { cn } from '../utils/cn';
-import { neuSurfaceClass, neuTrackClass } from './common/neuUi';
+import { neuTrackClass } from './common/neuUi';
 import { AppSelect } from './common/AppSelect';
+import {
+  createProjectCancelBtnClass,
+  createProjectFieldLabelClass,
+  createProjectFormSelectClass,
+  createProjectInsetPanelClass,
+  createProjectInputClass,
+  createProjectModalBodyClass,
+  createProjectModalDescClass,
+  createProjectModalFooterClass,
+  createProjectModalShellClass,
+  createProjectModalTitleClass,
+  createProjectOptionCardClass,
+  createProjectOptionDescClass,
+  createProjectOptionTitleClass,
+  createProjectPrimaryBtnClass,
+  createProjectSectionLabelClass,
+  createProjectTextareaClass,
+} from './createProject/createProjectModalNeuUi';
 
 export interface CreateProjectModalProps {
   isOpen: boolean;
@@ -204,21 +221,25 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
         onClose={handleClose}
         title="Criar Novo Projeto"
         size="2xl"
+        panelClassName={createProjectModalShellClass}
+        bodyClassName={createProjectModalBodyClass}
+        titleClassName={createProjectModalTitleClass}
         ariaDescribedBy={!showTemplates && !showJiraImport ? 'create-project-desc' : undefined}
         footer={
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="btn btn-ghost rounded-full w-full sm:w-auto"
-            >
+          <div
+            className={cn(
+              'flex flex-col-reverse gap-2 sm:flex-row sm:justify-end',
+              createProjectModalFooterClass
+            )}
+          >
+            <button type="button" onClick={handleClose} className={createProjectCancelBtnClass}>
               Cancelar
             </button>
             {!showJiraImport && (
               <button
                 type="button"
                 onClick={handleCreate}
-                className="btn btn-primary rounded-full w-full sm:w-auto"
+                className={createProjectPrimaryBtnClass}
                 disabled={!newName.trim() || newName.length > 100}
               >
                 {showTemplates ? 'Criar com Template' : 'Criar'}
@@ -230,25 +251,22 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
         <div className="space-y-4">
           {!showTemplates && !showJiraImport ? (
             <>
-              <p
-                id="create-project-desc"
-                className="font-body text-sm text-base-content/70"
-              >
+              <p id="create-project-desc" className={createProjectModalDescClass}>
                 Crie um projeto do zero, use um template ou importe do Jira ou de um arquivo.
               </p>
               <div className="space-y-3">
                 <button
                   onClick={() => setShowTemplates(true)}
                   type="button"
-                  className="neu-dashed-panel w-full p-4 text-left"
+                  className={createProjectOptionCardClass}
                 >
                   <div className="flex items-start gap-3">
                     <span className="text-xl" aria-hidden>
                       📋
                     </span>
                     <div className="space-y-0.5">
-                      <p className="font-heading font-semibold">Usar Template</p>
-                      <p className="font-body text-sm text-base-content/70">
+                      <p className={createProjectOptionTitleClass}>Usar Template</p>
+                      <p className={createProjectOptionDescClass}>
                         Recomendado para começar mais rápido com um checklist inicial.
                       </p>
                     </div>
@@ -261,15 +279,15 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                     else setJiraConfigStatus('missing');
                   }}
                   type="button"
-                  className="neu-dashed-panel w-full p-4 text-left"
+                  className={createProjectOptionCardClass}
                 >
                   <div className="flex items-start gap-3">
                     <span className="text-xl" aria-hidden>
                       🔗
                     </span>
                     <div className="space-y-0.5">
-                      <p className="font-heading font-semibold">Importar do Jira</p>
-                      <p className="font-body text-sm text-base-content/70">
+                      <p className={createProjectOptionTitleClass}>Importar do Jira</p>
+                      <p className={createProjectOptionDescClass}>
                         Importe um projeto existente do Jira com todas as tarefas e casos de teste.
                       </p>
                     </div>
@@ -278,15 +296,15 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                 <button
                   onClick={() => setShowFileImportModal(true)}
                   type="button"
-                  className="neu-dashed-panel w-full p-4 text-left"
+                  className={createProjectOptionCardClass}
                 >
                   <div className="flex items-start gap-3">
                     <span className="text-xl" aria-hidden>
                       📁
                     </span>
                     <div className="space-y-0.5">
-                      <p className="font-heading font-semibold">Importar de arquivo</p>
-                      <p className="font-body text-sm text-base-content/70">
+                      <p className={createProjectOptionTitleClass}>Importar de arquivo</p>
+                      <p className={createProjectOptionDescClass}>
                         Importe um projeto a partir de um arquivo JSON exportado anteriormente.
                       </p>
                     </div>
@@ -296,11 +314,12 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
               <div className="grid gap-4">
                 <Input
                   id="proj-name"
-                  label="Nome do Projeto *"
+                  label={<span className={createProjectFieldLabelClass}>Nome do Projeto *</span>}
                   type="text"
                   value={newName}
                   onChange={v => setNewName(v)}
                   placeholder="Ex: E-commerce App"
+                  className={createProjectInputClass}
                   maxLength={100}
                   error={
                     newName.length > 100 ? 'O nome deve ter no máximo 100 caracteres' : undefined
@@ -308,15 +327,15 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                   helperText={newName.length > 80 ? `${newName.length}/100 caracteres` : undefined}
                 />
                 <label className="form-control w-full">
-                  <div className="label">
-                    <span className="label-text">Descrição</span>
+                  <div className="label py-0 pb-1.5">
+                    <span className={createProjectFieldLabelClass}>Descrição</span>
                   </div>
                   <textarea
                     id="proj-desc"
                     value={newDesc}
-                    onChange={v => setNewDesc(v)}
+                    onChange={e => setNewDesc(e.target.value)}
                     rows={3}
-                    className="textarea textarea-bordered w-full"
+                    className={createProjectTextareaClass}
                     placeholder="Breve descrição do projeto..."
                   />
                 </label>
@@ -343,7 +362,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                     </div>
                     <button
                       type="button"
-                      className="btn btn-primary rounded-full w-full sm:w-auto"
+                      className={createProjectPrimaryBtnClass}
                       onClick={() => {
                         onOpenSettings?.();
                         handleClose();
@@ -354,18 +373,15 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                   </div>
                 </div>
               )}
-              <Card
-                className="leve-neu-surface-inset p-4 sm:p-6"
-                hoverable={false}
-              >
+              <div className={createProjectInsetPanelClass}>
                 <div className="space-y-4">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <label className="block text-sm font-medium text-base-content">
+                    <label className={createProjectSectionLabelClass}>
                       Selecione o projeto para importar:
                     </label>
                     <button
                       onClick={() => loadJiraProjects(false)}
-                      className="text-xs text-primary hover:underline inline-flex items-center gap-1 self-start sm:self-auto disabled:opacity-60"
+                      className="inline-flex items-center gap-1 self-start text-xs font-semibold text-[#d85414] hover:text-[#fdf6e3] hover:underline sm:self-auto disabled:opacity-60"
                       title="Atualizar lista de projetos"
                       disabled={isLoadingJiraProjects || jiraConfigStatus !== 'configured'}
                       aria-label="Atualizar lista de projetos do Jira"
@@ -395,10 +411,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                       <AppSelect
                         value={selectedJiraProjectKey}
                         onChange={v => setSelectedJiraProjectKey(v)}
-                        className={cn(
-                          'select select-bordered app-select w-full text-base-content focus:border-primary focus:outline-none',
-                          neuSurfaceClass
-                        )}
+                        className={createProjectFormSelectClass}
                       >
                         <option value="">Selecione um projeto...</option>
                         {jiraProjects.map(project => (
@@ -410,7 +423,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                       <button
                         onClick={handleImportJiraProject}
                         disabled={!selectedJiraProjectKey || isImportingJira}
-                        className="btn btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                        className={cn(createProjectPrimaryBtnClass, 'w-full')}
                       >
                         {isImportingJira
                           ? importProgress?.total
@@ -442,7 +455,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                     </div>
                   )}
                 </div>
-              </Card>
+              </div>
             </div>
           ) : (
             <div className="space-y-4">
@@ -464,28 +477,26 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                 </div>
               )}
               <div className="grid gap-4">
+                <Input
+                  id="proj-name-template"
+                  label={<span className={createProjectFieldLabelClass}>Nome do Projeto</span>}
+                  type="text"
+                  value={newName}
+                  onChange={v => setNewName(v)}
+                  className={createProjectInputClass}
+                  maxLength={100}
+                />
                 <label className="form-control w-full">
-                  <div className="label">
-                    <span className="label-text">Nome do Projeto</span>
-                  </div>
-                  <input
-                    id="proj-name-template"
-                    type="text"
-                    value={newName}
-                    onChange={v => setNewName(v)}
-                    className="input input-bordered w-full"
-                  />
-                </label>
-                <label className="form-control w-full">
-                  <div className="label">
-                    <span className="label-text">Descrição</span>
+                  <div className="label py-0 pb-1.5">
+                    <span className={createProjectFieldLabelClass}>Descrição</span>
                   </div>
                   <textarea
                     id="proj-desc-template"
                     value={newDesc}
-                    onChange={v => setNewDesc(v)}
+                    onChange={e => setNewDesc(e.target.value)}
                     rows={3}
-                    className="textarea textarea-bordered w-full"
+                    className={createProjectTextareaClass}
+                    placeholder="Breve descrição do projeto..."
                   />
                 </label>
               </div>

@@ -20,14 +20,12 @@ const badgeRaised =
 /* ── Painel / card ───────────────────────────────────────────── */
 
 export const tasksPanelCardClass = cn(
-  'tasks-panel-dark-surface relative flex flex-col overflow-hidden rounded-[var(--leve-header-radius)] p-3 font-sans sm:p-4',
-  'border border-[color-mix(in_srgb,#fdf6e3_14%,transparent)]',
-  'bg-[#4a423e]',
-  neuRaised
+  'project-chrome-neu-shell tasks-panel-dark-surface tasks-panel-neu-card',
+  'relative flex flex-col overflow-hidden rounded-[var(--leve-header-radius)] p-3 font-sans sm:p-4'
 );
 
 export const tasksPanelSectionDividerClass = cn(
-  'mt-4 border-t border-[color-mix(in_srgb,#fdf6e3_14%,transparent)] pt-3'
+  'mt-4 border-t border-[var(--workspace-panel-divider)] pt-3'
 );
 
 /** Envelope da lista (toolbar + Favoritos / Outras) — card #4a423e. */
@@ -36,51 +34,33 @@ export const tasksPanelListShellClass = cn(tasksPanelCardClass, 'tasks-panel-dar
 /* ── Header (3 CTAs) ─────────────────────────────────────────── */
 
 export const tasksViewHeaderPrimaryBtnClass = cn(
-  'inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-full px-4 py-2',
+  'workspace-chrome-pill-active inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-full px-4 py-2',
   'font-sans text-sm font-bold sm:min-h-9',
-  'border border-[color-mix(in_srgb,#fdf6e3_22%,transparent)]',
-  'bg-[#d85414] text-[#ffffff]',
-  badgeRaised,
   'transition-[filter,transform,box-shadow] duration-150',
   'hover:brightness-110 hover:-translate-y-px',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,#d85414_45%,transparent)]',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--workspace-panel-accent)_45%,transparent)]',
   'disabled:cursor-not-allowed disabled:opacity-50'
 );
 
 export const tasksViewHeaderSecondaryToolbarClass = cn(
-  'inline-flex items-stretch gap-0.5 rounded-full p-1',
-  'border border-[color-mix(in_srgb,#fdf6e3_14%,transparent)]',
-  'bg-[#4a423e]',
-  neuInsetDeep
+  'workspace-chrome-inset inline-flex items-stretch gap-0.5 p-0.5'
 );
 
 export const tasksViewHeaderSecondaryToolbarDividerClass =
-  'my-1.5 w-px shrink-0 self-stretch bg-[color-mix(in_srgb,#fdf6e3_18%,transparent)]';
+  'my-1.5 w-px shrink-0 self-stretch bg-[var(--workspace-panel-divider)]';
 
 export const tasksViewHeaderSecondaryBtnClass = cn(
-  'inline-flex min-h-[36px] items-center gap-1.5 rounded-full px-3 py-1.5 font-sans text-sm font-semibold sm:min-h-0',
-  'border border-[color-mix(in_srgb,#fdf6e3_10%,transparent)]',
-  'bg-[#423b37] text-[#dcdcdc]',
-  neuInset,
-  'transition-[box-shadow,color,background-color] duration-200',
-  'hover:text-[#fdf6e3]',
+  'workspace-chrome-pill inline-flex min-h-[36px] items-center gap-1.5 rounded-full px-3 py-1.5 font-sans text-sm font-semibold sm:min-h-0',
   'disabled:cursor-not-allowed disabled:opacity-50'
 );
 
 export const tasksViewHeaderSecondaryBtnActiveClass = cn(
-  'inline-flex min-h-[36px] items-center gap-1.5 rounded-full px-3 py-1.5 font-sans text-sm font-semibold sm:min-h-0',
-  'border border-transparent bg-[#d85414] text-[#ffffff]',
-  badgeRaised,
-  'transition-[filter,box-shadow] duration-200',
-  'hover:brightness-110',
+  'workspace-chrome-pill-active inline-flex min-h-[36px] items-center gap-1.5 rounded-full px-3 py-1.5 font-sans text-sm font-semibold sm:min-h-0',
   'disabled:cursor-not-allowed disabled:opacity-50'
 );
 
 export const tasksViewHeaderIconWrapClass = cn(
-  'flex h-7 w-7 shrink-0 items-center justify-center rounded-full',
-  'border border-[color-mix(in_srgb,#fdf6e3_35%,transparent)]',
-  'bg-[#fdf6e3] text-[#d85414]',
-  neuRaised
+  'workspace-chrome-badge flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[var(--workspace-panel-accent)]'
 );
 
 export const tasksViewHeaderIaIconClass = 'h-3.5 w-3.5';
@@ -88,80 +68,68 @@ export const tasksViewHeaderIaIconClass = 'h-3.5 w-3.5';
 export const tasksViewHeaderFilterIconClass = 'h-3.5 w-3.5';
 
 export const tasksViewHeaderFilterCountClass = cn(
-  'inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full px-0.5 sm:hidden',
-  'border border-[color-mix(in_srgb,#ffffff_35%,transparent)]',
-  'bg-[#d85414] font-sans text-[10px] font-bold tabular-nums leading-none text-[#ffffff]',
-  badgeRaised
+  'workspace-chrome-count-active inline-flex h-4 min-w-[1rem] items-center justify-center px-0.5 sm:hidden',
+  'font-sans text-[10px] font-bold tabular-nums leading-none'
 );
 
 export const tasksViewHeaderProgressTrackClass = cn(
-  'h-1 w-full overflow-hidden rounded-full bg-[#777777]',
-  neuInset
+  'h-1 w-full overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_55%,var(--workspace-panel-bg))]',
+  'shadow-[inset_2px_2px_4px_var(--workspace-panel-neu-dark)]'
 );
 
-export const tasksViewHeaderProgressFillClass = 'h-1 rounded-full bg-[#d85414] transition-all duration-500';
+export const tasksViewHeaderProgressFillClass =
+  'h-1 rounded-full bg-[var(--workspace-panel-accent)] transition-all duration-500';
 
 /* ── Abas Todas / Backlog ────────────────────────────────────── */
 
 export const tasksPanelModeTabsClass = cn(
-  'inline-flex w-fit max-w-full shrink-0 flex-wrap items-center gap-1 rounded-full p-1',
-  'border border-[color-mix(in_srgb,#fdf6e3_12%,transparent)]',
-  'bg-[color-mix(in_srgb,#423b37_35%,#4a423e)]',
-  neuInsetDeep
+  'workspace-chrome-inset inline-flex w-fit max-w-full shrink-0 flex-wrap items-center gap-1 p-1'
 );
 
 export const tasksPanelModeTabActiveClass = cn(
-  'inline-flex min-h-[2rem] items-center gap-1.5 rounded-full px-3 py-1.5',
-  'font-sans text-xs font-semibold text-[#ffffff] transition-colors',
-  'bg-[#d85414]',
-  badgeRaised,
+  'workspace-chrome-tab-active inline-flex min-h-[2rem] items-center gap-1.5 px-3 py-1.5',
+  'font-sans text-xs font-semibold',
   'disabled:cursor-not-allowed disabled:opacity-50'
 );
 
 export const tasksPanelModeTabIdleClass = cn(
-  'inline-flex min-h-[2rem] items-center gap-1.5 rounded-full px-3 py-1.5',
-  'font-sans text-xs font-medium text-[#dcdcdc] transition-colors',
-  'hover:text-[#fdf6e3]',
+  'workspace-chrome-tab-idle inline-flex min-h-[2rem] items-center gap-1.5 px-3 py-1.5',
+  'font-sans text-xs font-medium',
   'disabled:cursor-not-allowed disabled:opacity-50'
 );
 
 export const tasksPanelModeCountActiveClass = cn(
-  'inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full px-1 py-0',
-  'border border-[color-mix(in_srgb,#ffffff_45%,transparent)]',
-  'bg-[#ffffff] font-sans text-[10px] font-bold tabular-nums leading-none text-[#d85414]'
+  'workspace-chrome-count-active inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center px-1 py-0',
+  'font-sans text-[10px] font-bold tabular-nums leading-none'
 );
 
 export const tasksPanelModeCountIdleClass = cn(
-  'inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full px-1 py-0',
-  'bg-[color-mix(in_srgb,#423b37_80%,#4a423e)] font-sans text-[10px] font-bold tabular-nums leading-none text-[#777777]',
-  neuInset
+  'workspace-chrome-count-idle inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center px-1 py-0',
+  'font-sans text-[10px] font-bold tabular-nums leading-none'
 );
 
 /* ── Busca rápida ────────────────────────────────────────────── */
 
 export const tasksPanelSearchLabelClass =
-  'mb-2 block font-sans text-sm font-medium text-[#dcdcdc]';
+  'mb-2 block font-sans text-sm font-medium text-[var(--workspace-panel-text-muted)]';
 
 export const tasksPanelSearchInputClass = cn(
-  'h-11 w-full rounded-full border py-2 pl-10 pr-10 font-sans text-sm sm:h-10',
-  'border-[color-mix(in_srgb,#fdf6e3_10%,transparent)]',
-  'bg-[#423b37] text-[#fdf6e3] placeholder:text-[#777777]',
-  neuInset,
-  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,#d85414_40%,transparent)]'
+  'tasks-panel-neu-search-input workspace-chrome-inset h-11 w-full border-0 py-2 pl-10 pr-10 font-sans text-sm sm:h-10',
+  'text-[var(--workspace-panel-text)] placeholder:text-[var(--workspace-panel-text-muted)]',
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--workspace-panel-accent)_40%,transparent)]'
 );
 
 export const tasksPanelSearchIconClass =
-  'pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#777777]';
+  'pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--workspace-panel-text-muted)] opacity-80';
 
 export const tasksPanelSearchClearBtnClass = cn(
-  'absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full',
-  'border border-[color-mix(in_srgb,#fdf6e3_20%,transparent)]',
-  'bg-[#4a423e] text-[#dcdcdc] transition-[box-shadow,color]',
-  neuRaised,
-  'hover:text-[#d85414]'
+  'workspace-chrome-pill absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center',
+  'text-[var(--workspace-panel-text-muted)] transition-[box-shadow,color]',
+  'hover:text-[var(--workspace-panel-accent)]'
 );
 
-export const tasksPanelSearchHintClass = 'mt-1.5 font-sans text-xs text-[#777777]';
+export const tasksPanelSearchHintClass =
+  'mt-1.5 font-sans text-xs text-[var(--workspace-panel-text-muted)]';
 
 /* ── Chips de filtros ativos (lista de tarefas) ──────────────── */
 
@@ -382,32 +350,26 @@ export const tasksPanelFormSaveBtnClass = cn(tasksViewHeaderPrimaryBtnClass, 'mi
 /* ── Toolbar (exportar, ordenar, agrupar) ────────────────────── */
 
 export const tasksPanelToolbarShellClass = cn(
-  'flex flex-wrap items-end justify-end gap-3 rounded-[var(--leve-header-radius)]',
-  'px-2.5 pt-3.5 pb-2.5 sm:px-3 sm:pt-4 sm:pb-3',
-  'border border-[color-mix(in_srgb,#fdf6e3_10%,transparent)]',
-  'bg-[#423b37]',
-  neuInset
+  'workspace-chrome-inset flex flex-wrap items-end justify-end gap-3 rounded-[var(--leve-header-radius)]',
+  'px-2.5 pt-3.5 pb-2.5 sm:px-3 sm:pt-4 sm:pb-3'
 );
 
 export const tasksPanelToolbarExportBtnClass = cn(
-  'inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full px-4 py-2',
-  'font-sans text-sm font-semibold',
-  'border border-[color-mix(in_srgb,#fdf6e3_12%,transparent)]',
-  'bg-[#423b37] text-[#ffffff]',
-  neuInset,
-  'transition-[box-shadow,filter] duration-200',
-  'hover:brightness-110',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,#d85414_35%,transparent)]'
+  'workspace-chrome-pill inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full px-4 py-2',
+  'font-sans text-sm font-semibold text-[var(--workspace-panel-text)]',
+  'transition-[box-shadow,color] duration-200',
+  'hover:text-[var(--workspace-panel-accent)]',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--workspace-panel-accent)_35%,transparent)]'
 );
 
 export const tasksPanelToolbarFieldClass = 'flex min-w-0 flex-col gap-1.5';
 
 export const tasksPanelToolbarLabelClass =
-  'font-sans text-[10px] font-semibold uppercase leading-snug tracking-wide text-[#dcdcdc]';
+  'font-sans text-[10px] font-semibold uppercase leading-snug tracking-wide text-[var(--workspace-panel-text-muted)]';
 
 export const tasksPanelToolbarSelectClass = cn(
   'tasks-panel-neu-select app-element-typography h-9 min-h-0 w-auto min-w-[6.5rem]',
-  'border-[color-mix(in_srgb,#fdf6e3_10%,transparent)] text-[#fdf6e3]'
+  'border-0 text-[var(--workspace-panel-text)]'
 );
 
 /* ── Seções colapsáveis (Favoritos / Outras) ─────────────────── */
@@ -435,119 +397,97 @@ export const tasksPanelSectionChevronClass =
 /* ── Chrome do ProjectView (breadcrumbs, abas, backlog) ──────── */
 
 export const projectChromeHeaderShellClass = cn(
+  'project-chrome-neu-shell tasks-panel-dark-surface',
   'mb-3 min-w-0 max-w-full font-sans px-3 py-2 sm:mb-4 sm:px-4 sm:py-3',
-  'rounded-[var(--leve-header-radius)]',
-  'border border-[color-mix(in_srgb,#fdf6e3_14%,transparent)]',
-  'bg-[#4a423e]',
-  neuRaised
+  'rounded-[var(--leve-header-radius)]'
 );
 
 export const projectChromeBreadcrumbsClass = cn(
-  'rounded-full px-2.5 py-1.5 sm:px-3 sm:py-2',
-  'border border-[color-mix(in_srgb,#fdf6e3_10%,transparent)]',
-  'bg-[#423b37]',
-  neuInset,
-  '[&_button]:rounded-full [&_button]:font-sans [&_button]:font-medium [&_button]:text-[#dcdcdc]',
-  '[&_button:hover]:text-[#d85414]',
-  '[&_span[aria-current=page]]:font-sans [&_span[aria-current=page]]:font-bold [&_span[aria-current=page]]:text-[#fdf6e3]',
-  '[&_svg]:text-[#777777]'
+  'project-chrome-breadcrumbs workspace-chrome-inset',
+  'rounded-full px-2.5 py-1.5 sm:px-3 sm:py-2'
 );
 
 export const projectChromeToolbarClass = cn(
-  'flex shrink-0 items-center rounded-full',
-  'border border-[color-mix(in_srgb,#fdf6e3_10%,transparent)]',
-  'bg-[#423b37]',
-  neuInset
+  'workspace-chrome-inset flex shrink-0 items-center gap-0.5 p-0.5'
 );
 
 export const projectChromeToolbarDividerClass =
-  'mx-0.5 h-5 w-px shrink-0 bg-[color-mix(in_srgb,#fdf6e3_18%,transparent)]';
+  'mx-0.5 h-5 w-px shrink-0 bg-[var(--workspace-panel-divider)]';
 
-export const projectChromeToolbarStatusClass = 'text-[#dcdcdc]';
+export const projectChromeToolbarStatusClass = 'text-[var(--workspace-panel-text-muted)]';
 
-export const projectChromeTabsDividerClass = 'relative mt-2.5 sm:mt-3';
+export const projectChromeTabsDividerClass = cn(
+  'relative mt-2.5 border-t border-[var(--workspace-panel-divider)] pt-2.5 sm:mt-3 sm:pt-3'
+);
 
 export const projectChromeTabsNavClass = cn(
-  'no-scrollbar flex min-w-0 flex-1 flex-nowrap gap-1 overflow-x-auto scroll-smooth snap-x snap-mandatory rounded-full p-1',
-  'border border-[color-mix(in_srgb,#fdf6e3_10%,transparent)]',
-  'bg-[#423b37]',
-  neuInsetDeep
+  'workspace-chrome-inset no-scrollbar flex min-w-0 flex-1 flex-nowrap gap-1 overflow-x-auto scroll-smooth snap-x snap-mandatory p-1'
 );
 
 export const projectChromeTabActiveClass = cn(
-  'inline-flex min-h-[2.25rem] shrink-0 snap-start items-center whitespace-nowrap rounded-full px-3 py-2 sm:min-h-0',
-  'border border-[color-mix(in_srgb,#ffffff_32%,transparent)]',
-  'bg-[#d85414] font-sans text-sm font-semibold text-[#ffffff]',
-  badgeRaised,
-  'transition-[filter,box-shadow] duration-150'
+  'workspace-chrome-tab-active inline-flex min-h-[2.25rem] shrink-0 snap-start items-center whitespace-nowrap px-3 py-2 sm:min-h-0',
+  'font-sans text-sm font-semibold'
 );
 
 export const projectChromeTabIdleClass = cn(
-  'inline-flex min-h-[2.25rem] shrink-0 snap-start items-center whitespace-nowrap rounded-full px-3 py-2 sm:min-h-0',
-  'font-sans text-sm font-medium text-[#dcdcdc] transition-colors',
-  'hover:text-[#fdf6e3]'
+  'workspace-chrome-tab-idle inline-flex min-h-[2.25rem] shrink-0 snap-start items-center whitespace-nowrap px-3 py-2 sm:min-h-0',
+  'font-sans text-sm font-medium'
 );
 
 export const projectChromeScrollFadeFromClass =
-  'pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-8 rounded-l-full bg-gradient-to-r from-[#4a423e] to-transparent';
+  'pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-8 rounded-l-full bg-gradient-to-r from-[var(--workspace-panel-bg)] to-transparent';
 
 export const projectChromeScrollFadeToClass =
-  'pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-8 rounded-r-full bg-gradient-to-l from-[#4a423e] to-transparent';
+  'pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-8 rounded-r-full bg-gradient-to-l from-[var(--workspace-panel-bg)] to-transparent';
 
 export const projectChromeScrollHintClass =
-  'mt-1 text-center font-sans text-[11px] text-[#777777] md:hidden';
+  'mt-1 text-center font-sans text-[11px] text-[var(--workspace-panel-text-muted)] md:hidden';
 
 export const projectChromeBacklogBtnClass = (active: boolean) =>
   cn(
-    'mb-0.5 inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 font-sans text-xs font-semibold min-h-[40px] sm:min-h-7',
-    'border border-[color-mix(in_srgb,#fdf6e3_10%,transparent)]',
-    active
-      ? cn('bg-[#d85414] text-[#ffffff]', badgeRaised)
-      : cn('bg-[#423b37] text-[#dcdcdc]', neuInset, 'hover:text-[#fdf6e3]')
+    'workspace-chrome-pill mb-0.5 inline-flex shrink-0 items-center gap-1.5 px-2.5 py-1 font-sans text-xs font-semibold min-h-[40px] sm:min-h-7',
+    active && 'workspace-chrome-pill-active'
   );
 
 export const projectChromeBacklogCountClass = (active: boolean) =>
-  active
-    ? cn(
-        'inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full px-1.5 py-0',
-        'border border-[color-mix(in_srgb,#ffffff_40%,transparent)]',
-        'bg-[#ffffff] font-sans text-[10px] font-bold tabular-nums leading-none text-[#d85414]'
-      )
-    : cn(
-        'inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full px-1.5 py-0',
-        'bg-[color-mix(in_srgb,#4a423e_80%,#423b37)] font-sans text-[10px] font-bold tabular-nums leading-none text-[#ffffff]',
-        neuInset
-      );
+  cn(
+    'inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center px-1.5 py-0',
+    'font-sans text-[10px] font-bold tabular-nums leading-none',
+    active ? 'workspace-chrome-count-active' : 'workspace-chrome-count-idle'
+  );
 
 export const projectChromeSyncBtnClass = cn(
-  'inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 py-1.5 sm:min-h-0',
-  'font-sans text-xs font-semibold text-[#d85414]',
-  'transition-[box-shadow,color] duration-200',
-  'hover:text-[#fdf6e3] disabled:opacity-50'
+  'workspace-chrome-pill project-chrome-sync-btn inline-flex min-h-9 items-center gap-1.5 px-3 py-1.5 sm:min-h-0',
+  'font-sans text-xs font-semibold disabled:opacity-50'
 );
 
 export const projectChromeDangerBtnClass = cn(
-  'inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 py-1.5 sm:min-h-0',
-  'font-sans text-xs font-semibold text-error',
-  'transition-opacity hover:opacity-90'
+  'workspace-chrome-pill workspace-chrome-pill-danger inline-flex min-h-9 items-center gap-1.5 px-3 py-1.5 sm:min-h-0',
+  'font-sans text-xs font-semibold'
 );
 
 /* ── Cabeçalho da aba Tarefas (título + subtítulo) ───────────── */
 
-export const tasksViewPageHeaderShellClass = 'mb-3 flex flex-col gap-4 font-sans sm:mb-4 sm:gap-5';
+export const tasksViewPageHeaderShellClass = cn(
+  'project-chrome-neu-shell tasks-panel-dark-surface tasks-view-header-neu-shell',
+  'mb-3 flex flex-col gap-4 rounded-[var(--leve-header-radius)] px-3 py-3 font-sans sm:mb-4 sm:gap-5 sm:px-4 sm:py-4'
+);
+
+export const tasksViewHeaderActionsClass = cn(
+  'flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end'
+);
 
 export const tasksViewPageTitleClass = cn(
-  'font-sans text-2xl font-bold tracking-tight text-[#4a423e] sm:text-[1.65rem]'
+  'font-sans text-2xl font-bold tracking-tight text-[var(--workspace-panel-text)] sm:text-[1.65rem]'
 );
 
 export const tasksViewPageJiraBadgeClass = cn(
-  'inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5',
-  'border border-[color-mix(in_srgb,#d85414_35%,transparent)]',
-  'bg-[#423b37] font-sans text-xs font-bold text-[#d85414]',
-  neuInset
+  'workspace-chrome-badge inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5',
+  'font-sans text-xs font-bold'
 );
 
-export const tasksViewPageSubtitleClass = 'font-sans text-sm text-[#777777]';
+export const tasksViewPageSubtitleClass =
+  'font-sans text-sm text-[var(--workspace-panel-text-muted)]';
 
 /* ── Backlog (filtros + lista) ───────────────────────────────── */
 

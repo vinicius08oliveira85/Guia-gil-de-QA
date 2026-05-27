@@ -84,6 +84,7 @@ import { FailedTestsReportModal } from './FailedTestsReportModal';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useTaskFilters } from '../../hooks/useTaskFilters';
 import { GlassIndicatorCards } from '../dashboard/GlassIndicatorCards';
+import { viewHeroChromeClass } from '../common/viewHeroChromeUi';
 import { getDisplayStatus } from '../../utils/taskHelpers';
 import { FileExportModal } from '../common/FileExportModal';
 import {
@@ -2237,9 +2238,11 @@ export const TasksView: React.FC<{
         />
 
         {!backlogOnly ? (
-          <section aria-label="Indicadores principais de tarefas">
-            <GlassIndicatorCards items={indicatorItems} columns={5} />
-          </section>
+          <div className={viewHeroChromeClass}>
+            <section aria-label="Indicadores principais de tarefas">
+              <GlassIndicatorCards items={indicatorItems} columns={5} />
+            </section>
+          </div>
         ) : null}
 
         <section className={tasksPanelCardClass} aria-label="Filtros e busca de tarefas">
@@ -2451,7 +2454,7 @@ export const TasksView: React.FC<{
                       .map(p => (
                         <label
                           key={p.id}
-                          className="app-menu-item flex items-center gap-2 p-2 rounded-[var(--radius)] cursor-pointer"
+                          className="app-menu-item flex cursor-pointer items-center gap-2"
                         >
                           <input
                             type="checkbox"

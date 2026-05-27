@@ -24,6 +24,14 @@ import { DocumentCard } from './documents/DocumentCard';
 import { Search, Upload, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { documentCardGrid, projectViewPanel, projectViewShell } from './common/viewUi';
+import {
+  viewHeroChromeClass,
+  viewHeroHeaderShellClass,
+  viewHeroJiraBadgeClass,
+  viewHeroPrimaryBtnClass,
+  viewHeroSubtitleClass,
+  viewHeroTitleClass,
+} from './common/viewHeroChromeUi';
 import { documentsCardListPanelClass } from './documents/documentsCardNeuUi';
 import {
   documentsEyebrowClass,
@@ -31,7 +39,6 @@ import {
   documentsFilterPillsGroupClass,
   documentsFilterRowClass,
   documentsFiltersPanelClass,
-  documentsJiraBadgeClass,
   documentsModalAnalysisBodyClass,
   documentsModalBodyClass,
   documentsModalFieldLabelClass,
@@ -52,10 +59,7 @@ import {
   documentsModalTextareaClass,
   documentsModalTitleClass,
   documentsOutlineBtnClass,
-  documentsPageHeaderClass,
   documentsPageMutedClass,
-  documentsPageSubtitleClass,
-  documentsPageTitleClass,
   documentsSearchIconClass,
   documentsSearchInputClass,
   documentsSummaryStatIconAccentClass,
@@ -64,7 +68,7 @@ import {
   documentsSummaryStatStrongClass,
   documentsSummaryStripClass,
 } from './documents/documentsNeuUi';
-import { documentsPrimaryBtnClass, documentsViewScopeClass } from './documents/documentsNeuUi';
+import { documentsViewScopeClass } from './documents/documentsNeuUi';
 import { DocumentAnalysisBody } from './documents/DocumentAnalysisBody';
 
 interface DocumentWithMetadata extends ProjectDocument {
@@ -402,42 +406,44 @@ export const DocumentsView: React.FC<{
       role="main"
       aria-label="Documentos do projeto"
     >
-      <header className={documentsPageHeaderClass}>
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0">
-            <div className="mb-1 flex flex-wrap items-center gap-2">
-              <h1 id="documents-section-heading" className={documentsPageTitleClass}>
-                Documentos
-              </h1>
-              {jiraProjectKey ? (
-                <span className={documentsJiraBadgeClass}>Jira: {jiraProjectKey}</span>
-              ) : null}
+      <div className={viewHeroChromeClass}>
+        <header className={viewHeroHeaderShellClass}>
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div className="min-w-0">
+              <div className="mb-1 flex flex-wrap items-center gap-2">
+                <h1 id="documents-section-heading" className={viewHeroTitleClass}>
+                  Documentos
+                </h1>
+                {jiraProjectKey ? (
+                  <span className={viewHeroJiraBadgeClass}>Jira: {jiraProjectKey}</span>
+                ) : null}
+              </div>
+              <p className={viewHeroSubtitleClass}>{documentsDescription}</p>
             </div>
-            <p className={documentsPageSubtitleClass}>{documentsDescription}</p>
+            <label className={cn(viewHeroPrimaryBtnClass, 'shrink-0 cursor-pointer')}>
+              <Upload className="h-4 w-4 shrink-0" aria-hidden />
+              Carregar
+              <input
+                ref={uploadInputRef}
+                type="file"
+                accept=".txt,.md,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.json,.csv,.xml,.jpg,.jpeg,.png,.gif,.webp,.svg"
+                onChange={handleFileUpload}
+                className="hidden"
+                aria-label="Carregar documento"
+              />
+            </label>
           </div>
-          <label className={cn(documentsPrimaryBtnClass, 'shrink-0 cursor-pointer')}>
-            <Upload className="h-4 w-4 shrink-0" aria-hidden />
-            Carregar
-            <input
-              ref={uploadInputRef}
-              type="file"
-              accept=".txt,.md,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.json,.csv,.xml,.jpg,.jpeg,.png,.gif,.webp,.svg"
-              onChange={handleFileUpload}
-              className="hidden"
-              aria-label="Carregar documento"
-            />
-          </label>
-        </div>
-      </header>
+        </header>
 
-      <section aria-label="Indicadores de documentos por categoria">
-        <DocumentStatsCards
-          categoryCounts={stats.categoryCounts}
-          totalDocuments={stats.total}
-          selectedCategory={selectedCategory}
-          onCategorySelect={setSelectedCategory}
-        />
-      </section>
+        <section aria-label="Indicadores de documentos por categoria">
+          <DocumentStatsCards
+            categoryCounts={stats.categoryCounts}
+            totalDocuments={stats.total}
+            selectedCategory={selectedCategory}
+            onCategorySelect={setSelectedCategory}
+          />
+        </section>
+      </div>
 
       <section aria-label="Documento de especificação para contexto de IA">
         <SpecificationDocumentProcessor project={project} onUpdateProject={onUpdateProject} />

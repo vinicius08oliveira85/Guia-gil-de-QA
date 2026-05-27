@@ -30,6 +30,7 @@ import { NewProjectCard } from './projectsDashboard/NewProjectCard';
 import { ProjectsDashboardSidebar } from './projectsDashboard/ProjectsDashboardSidebar';
 import { useAriaLive } from '../hooks/useAriaLive';
 import { projectsListShell } from './common/viewUi';
+import { viewHeroChromeClass } from './common/viewHeroChromeUi';
 import {
   tasksViewHeaderFilterIconClass,
   tasksViewHeaderIconWrapClass,
@@ -248,47 +249,49 @@ export const ProjectsDashboard: React.FC<{
     <>
       <div className={projectsDashboardPageClass}>
         <div className={projectsListShell}>
-          <ProjectsDashboardHeader
-            projectCount={projects.length}
-            sortBy={sortBy}
-            onSortByChange={handleSortByChange}
-            lastActivityText={lastActivityText}
-          />
-
-          {projects.length > 0 && (
-            <div
-              className={projectsDashboardStatsRegionClass}
-              role="region"
-              aria-label="Resumo do workspace"
-            >
-              <WorkspaceDaisyStats
-                className="contents"
-                projectCount={projects.length}
-                testSuccessPercent={workspaceTestMetrics.testSuccessPercent}
-                taskDonePercent={taskDonePercentGlobal}
-                lastSaveToSupabase={lastSaveToSupabase}
-                supabaseAvailable={isSupabaseAvailable()}
-                supabaseLoadFailed={supabaseLoadFailed}
-              />
-              <GlobalEfficiencyMetric
-                className="col-span-2 sm:col-span-4 lg:col-span-1"
-                percent={workspaceTestMetrics.executionEfficiencyPercent}
-                executedCount={workspaceTestMetrics.executedTestCases}
-                totalCount={workspaceTestMetrics.totalTestCases}
-              />
-            </div>
-          )}
-
-          {projects.length > 1 && (
-            <ProjectQuickFiltersGroup
-              quickFilter={quickFilter}
-              setQuickFilter={setQuickFilter}
-              showBugsFilter={projectsWithBugs.length > 0}
-              showAttentionFilter={projectsNeedingAttention.length > 0}
-              bugsCount={projectsWithBugs.length}
-              attentionCount={projectsNeedingAttention.length}
+          <div className={cn(viewHeroChromeClass, 'gap-3 sm:gap-4')}>
+            <ProjectsDashboardHeader
+              projectCount={projects.length}
+              sortBy={sortBy}
+              onSortByChange={handleSortByChange}
+              lastActivityText={lastActivityText}
             />
-          )}
+
+            {projects.length > 0 && (
+              <div
+                className={cn(projectsDashboardStatsRegionClass, 'mb-0 mt-0')}
+                role="region"
+                aria-label="Resumo do workspace"
+              >
+                <WorkspaceDaisyStats
+                  className="contents"
+                  projectCount={projects.length}
+                  testSuccessPercent={workspaceTestMetrics.testSuccessPercent}
+                  taskDonePercent={taskDonePercentGlobal}
+                  lastSaveToSupabase={lastSaveToSupabase}
+                  supabaseAvailable={isSupabaseAvailable()}
+                  supabaseLoadFailed={supabaseLoadFailed}
+                />
+                <GlobalEfficiencyMetric
+                  className="col-span-2 sm:col-span-4 lg:col-span-1"
+                  percent={workspaceTestMetrics.executionEfficiencyPercent}
+                  executedCount={workspaceTestMetrics.executedTestCases}
+                  totalCount={workspaceTestMetrics.totalTestCases}
+                />
+              </div>
+            )}
+
+            {projects.length > 1 && (
+              <ProjectQuickFiltersGroup
+                quickFilter={quickFilter}
+                setQuickFilter={setQuickFilter}
+                showBugsFilter={projectsWithBugs.length > 0}
+                showAttentionFilter={projectsNeedingAttention.length > 0}
+                bugsCount={projectsWithBugs.length}
+                attentionCount={projectsNeedingAttention.length}
+              />
+            )}
+          </div>
 
           {/* Com projetos no workspace: banner não depende do filtro (evita sumir quando o filtro zera a lista) */}
           {supabaseLoadFailed && projects.length > 0 && !syncBannerDismissed && (
@@ -511,7 +514,7 @@ function ProjectQuickFiltersGroup({
 
   return (
     <div
-      className={projectsDashboardQuickFiltersToolbarClass}
+      className={cn(projectsDashboardQuickFiltersToolbarClass, 'mb-0')}
       role="group"
       aria-label="Filtrar projetos"
     >
