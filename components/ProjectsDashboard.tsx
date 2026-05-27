@@ -31,6 +31,14 @@ import { ProjectsDashboardSidebar } from './projectsDashboard/ProjectsDashboardS
 import { useAriaLive } from '../hooks/useAriaLive';
 import { projectsListShell } from './common/viewUi';
 import {
+  tasksViewHeaderFilterIconClass,
+  tasksViewHeaderIconWrapClass,
+  tasksViewHeaderSecondaryBtnActiveClass,
+  tasksViewHeaderSecondaryBtnClass,
+  tasksViewHeaderSecondaryToolbarClass,
+  tasksViewHeaderSecondaryToolbarDividerClass,
+} from './tasks/tasksPanelNeuStyles';
+import {
   projectsDashboardFilterPillClass,
   projectsDashboardMainGridClass,
   projectsDashboardMessagePanelClass,
@@ -273,44 +281,14 @@ export const ProjectsDashboard: React.FC<{
           )}
 
           {projects.length > 1 && (
-            <div
-              className="mb-4 flex flex-wrap items-center gap-2"
-              role="group"
-              aria-label="Filtrar projetos"
-            >
-              <button
-                type="button"
-                onClick={() => setQuickFilter('all')}
-                className={projectsDashboardFilterPillClass(quickFilter === 'all')}
-                aria-pressed={quickFilter === 'all'}
-              >
-                Todos
-              </button>
-              {projectsWithBugs.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setQuickFilter(quickFilter === 'withBugs' ? 'all' : 'withBugs')}
-                  className={projectsDashboardFilterPillClass(quickFilter === 'withBugs')}
-                  aria-pressed={quickFilter === 'withBugs'}
-                >
-                  <Bug className="h-3.5 w-3.5" aria-hidden />
-                  Com bugs ({projectsWithBugs.length})
-                </button>
-              )}
-              {projectsNeedingAttention.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    setQuickFilter(quickFilter === 'needsAttention' ? 'all' : 'needsAttention')
-                  }
-                  className={projectsDashboardFilterPillClass(quickFilter === 'needsAttention')}
-                  aria-pressed={quickFilter === 'needsAttention'}
-                >
-                  <AlertTriangle className="h-3.5 w-3.5" aria-hidden />
-                  Atenção ({projectsNeedingAttention.length})
-                </button>
-              )}
-            </div>
+            <ProjectQuickFiltersGroup
+              quickFilter={quickFilter}
+              setQuickFilter={setQuickFilter}
+              showBugsFilter={projectsWithBugs.length > 0}
+              showAttentionFilter={projectsNeedingAttention.length > 0}
+              bugsCount={projectsWithBugs.length}
+              attentionCount={projectsNeedingAttention.length}
+            />
           )}
 
           {/* Com projetos no workspace: banner não depende do filtro (evita sumir quando o filtro zera a lista) */}
@@ -496,3 +474,94 @@ export const ProjectsDashboard: React.FC<{
     </>
   );
 };
+
+type ProjectFilterSegment = 'todos' | 'bugs' | 'attention';
+
+function projectFilterSegmentRound(segments: ProjectFilterSegment[], slot: ProjectFilterSegment): string {
+  if (segments.length === 1) return 'rounded-full';
+  const idx = segments.indexOf(slot);
+  if (idx === 0) return 'rounded-l-full';
+  if (idx === segments.length - 1) return 'rounded-r-full';
+  return 'rounded-none';
+}
+
+function ProjectQuickFiltersGroup({
+  quickFilter,
+  setQuickFilter,
+  showBugsFilter,
+  showAttentionFilter,
+  bugsCount,
+  attentionCount,
+}: {
+  quickFilter: QuickFilter;
+  setQuickFilter: React.Dispatch<React.SetStateAction<QuickFilter>>;
+  showBugsFilter: boolean;
+  showAttentionFilter: boolean;
+  bugsCount: number;
+  attentionCount: number;
+}) {
+  const segments = useMemo(() => {
+    const list: ProjectFilterSegment[] = ['todos'];
+    if (showBugsFilter) list.push('bugs');
+    if (showAttentionFilter) list.push('attention');
+    return list;
+  }, [showBugsFilter, showAttentionFilter]);
+
+  const pillClass = (active: boolean, slot: ProjectFilterSegment) =>
+    cn(
+      active ? tasksViewHeaderSecondaryBtnActiveClass : tasksViewHeaderSecondaryBtnClass,
+      'min-h-[44px] sm:min-h-0',
+      projectFilterSegmentRound(segments, slot)
+    );
+
+  return (
+    <div
+      className={cn(tasksViewHeaderSecondaryToolbarClass, 'mb-4 w-full sm:w-auto')}
+      role="group"
+      aria-label="Filtrar projetos"
+    >
+      <button
+        type="button"
+        onClick={() => setQuickFilter('all')}
+        className={pillClass(quickFilter === 'all', 'todos')}
+        aria-pressed={quickFilter === 'all'}
+      >
+        Todos
+      </button>
+      {showBugsFilter ? (
+        <>
+          <div className={tasksViewHeaderSecondaryToolbarDividerClass} aria-hidden />
+          <button
+            type="button"
+            onClick={() => setQuickFilter(quickFilter === 'withBugs' ? 'all' : 'withBugs')}
+            className={pillClass(quickFilter === 'withBugs', 'bugs')}
+            aria-pressed={quickFilter === 'withBugs'}
+          >
+            <span className={tasksViewHeaderIconWrapClass} aria-hidden>
+              <Bug className={tasksViewHeaderFilterIconClass} />
+            </span>
+            Com bugs ({bugsCount})
+          </button>
+        </>
+      ) : null}
+      {showAttentionFilter ? (
+        <>
+          <div className={tasksViewHeaderSecondaryToolbarDividerClass} aria-hidden />
+          <button
+            type="button"
+            onClick={() =>
+              setQuickFilter(quickFilter === 'needsAttention' ? 'all' : 'needsAttention')
+            }
+            className={pillClass(quickFilter === 'needsAttention', 'attention')}
+            aria-pressed={quickFilter === 'needsAttention'}
+          >
+            <span className={tasksViewHeaderIconWrapClass} aria-hidden>
+              <AlertTriangle className={tasksViewHeaderFilterIconClass} />
+            </span>
+            Atenção ({attentionCount})
+          </button>
+        </>
+      ) : null}
+    </div>
+  );
+}

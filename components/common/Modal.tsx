@@ -32,6 +32,8 @@ interface ModalProps {
   panelClassName?: string;
   /** Classes extras no título do cabeçalho. */
   titleClassName?: string;
+  /** Classes extras na área rolável do corpo. */
+  bodyClassName?: string;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -46,6 +48,7 @@ export const Modal: React.FC<ModalProps> = ({
   ariaDescribedBy,
   panelClassName,
   titleClassName,
+  bodyClassName,
 }) => {
   const previousActiveElementRef = useRef<HTMLElement | null>(null);
   const reactId = useId();
@@ -223,7 +226,8 @@ export const Modal: React.FC<ModalProps> = ({
         <div
           className={cn(
             'custom-scrollbar flex-1 overflow-y-auto overscroll-contain px-3 py-3 scrollbar-thin scrollbar-track-transparent sm:px-5 sm:py-5',
-            leveModalBodyClass
+            leveModalBodyClass,
+            bodyClassName
           )}
         >
           {children}

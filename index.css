@@ -1094,6 +1094,214 @@
     background: color-mix(in srgb, #ded7cd 28%, #f2eee8);
   }
 
+  /** Lista de documentos — cards e ações (Analisar, Gerar…). */
+  .documents-card-list-panel .documents-card {
+    border-color: #ded7cd;
+    background-color: #f2eee8;
+  }
+
+  .documents-card-list-panel .documents-card-action-primary {
+    border-color: color-mix(in srgb, #ff5c1b 45%, transparent) !important;
+    background-color: #ff5c1b !important;
+    color: #ffffff !important;
+    box-shadow:
+      3px 3px 8px color-mix(in srgb, #ded7cd 50%, transparent),
+      -2px -2px 6px color-mix(in srgb, #ffffff 18%, #f2eee8) !important;
+  }
+
+  .documents-card-list-panel .documents-card-action-primary:hover:not(:disabled) {
+    filter: brightness(1.05);
+  }
+
+  .documents-card-list-panel .documents-card-action-outline {
+    border-color: #ded7cd;
+    background-color: #f2eee8;
+    color: #401c31;
+    box-shadow:
+      3px 3px 8px color-mix(in srgb, #ded7cd 45%, transparent),
+      -2px -2px 6px color-mix(in srgb, #ffffff 18%, #f2eee8);
+  }
+
+  .documents-card-list-panel .documents-card-action-outline:hover:not(:disabled) {
+    color: #ff5c1b;
+  }
+
+  .documents-card-list-panel .app-btn-primary-inline,
+  .documents-card-list-panel .app-btn-outline {
+    box-shadow:
+      3px 3px 8px color-mix(in srgb, #ded7cd 45%, transparent),
+      -2px -2px 6px color-mix(in srgb, #ffffff 18%, #f2eee8) !important;
+  }
+
+  /** Modal de detalhe da tarefa (Resumo, BDD, Testes…) — paleta clara neumórfica. */
+  .task-details-neu-modal {
+    --leve-header-text: #401c31;
+    --leve-header-text-muted: #6b5e5e;
+    --leve-header-accent: #ff5c1b;
+    --leve-header-bg: #ebe6de;
+    --leve-header-cream: #f2eee8;
+    --leve-header-border: #ded7cd;
+    --leve-neu-bg: #f2eee8;
+    --leve-neu-surface: #e5dfd5;
+    --workspace-panel-accent: #ff5c1b;
+    --color-primary: #ff5c1b;
+    --color-primary-deep: #401c31;
+    --leve-neu-light: color-mix(in srgb, #ffffff 22%, #f2eee8);
+    --leve-neu-dark: color-mix(in srgb, #ded7cd 70%, #e5dfd5);
+    --leve-neu-raised:
+      3px 3px 8px color-mix(in srgb, #ded7cd 45%, transparent),
+      -2px -2px 6px color-mix(in srgb, #ffffff 18%, #f2eee8);
+    --leve-neu-inset:
+      inset 3px 3px 8px color-mix(in srgb, #ded7cd 50%, transparent),
+      inset -2px -2px 6px color-mix(in srgb, #ffffff 18%, #e5dfd5);
+    --leve-neu-hover:
+      4px 4px 10px color-mix(in srgb, #ded7cd 52%, transparent),
+      -2px -2px 7px color-mix(in srgb, #ffffff 20%, #f2eee8);
+  }
+
+  .task-details-neu-modal .leve-modal-neu-header {
+    border-color: #ded7cd;
+    background: #f2eee8;
+    color: #401c31;
+  }
+
+  .task-details-neu-modal .leve-modal-neu-close {
+    border: 1px solid #ded7cd;
+    background: #f2eee8;
+    color: #6b5e5e;
+    box-shadow:
+      3px 3px 8px color-mix(in srgb, #ded7cd 45%, transparent),
+      -2px -2px 6px color-mix(in srgb, #ffffff 18%, #f2eee8);
+  }
+
+  .task-details-neu-modal .leve-modal-neu-close:hover {
+    color: #ff5c1b;
+    box-shadow:
+      inset 3px 3px 8px color-mix(in srgb, #ded7cd 50%, transparent),
+      inset -2px -2px 6px color-mix(in srgb, #ffffff 18%, #e5dfd5);
+  }
+
+  .task-details-neu-modal .task-modal-section {
+    border-color: #ded7cd;
+    background: #f2eee8;
+    box-shadow:
+      5px 5px 12px color-mix(in srgb, #ded7cd 55%, transparent),
+      -3px -3px 8px color-mix(in srgb, #ffffff 20%, #f2eee8);
+  }
+
+  .task-details-neu-modal .task-modal-section-accent {
+    border-color: color-mix(in srgb, #ff5c1b 32%, #ded7cd);
+    background: color-mix(in srgb, #ff5c1b 8%, #f2eee8);
+    box-shadow:
+      inset 3px 3px 8px color-mix(in srgb, #ded7cd 50%, transparent),
+      inset -2px -2px 6px color-mix(in srgb, #ffffff 18%, #e5dfd5);
+  }
+
+  .task-details-neu-modal .leve-neu-surface-inset {
+    border: 1px solid #ded7cd;
+    background: #e5dfd5;
+    box-shadow:
+      inset 3px 3px 8px color-mix(in srgb, #ded7cd 50%, transparent),
+      inset -2px -2px 6px color-mix(in srgb, #ffffff 18%, #e5dfd5);
+  }
+
+  .task-details-neu-modal .leve-neu-pill {
+    border-color: #ded7cd;
+    background: #f2eee8;
+    box-shadow:
+      3px 3px 8px color-mix(in srgb, #ded7cd 45%, transparent),
+      -2px -2px 6px color-mix(in srgb, #ffffff 18%, #f2eee8);
+  }
+
+  .task-details-neu-modal [role='tab'][aria-selected='true'] {
+    border: 1px solid #ded7cd !important;
+    background: #e2d9d0 !important;
+    color: #401c31 !important;
+    box-shadow:
+      3px 3px 8px color-mix(in srgb, #ded7cd 45%, transparent),
+      -2px -2px 6px color-mix(in srgb, #ffffff 18%, #f2eee8) !important;
+  }
+
+  .task-details-neu-modal [role='tab']:not([aria-selected='true']) {
+    color: #6b5e5e;
+  }
+
+  .task-details-neu-modal [role='tab']:not([aria-selected='true']):hover {
+    color: #401c31;
+  }
+
+  .task-details-neu-modal .btn-primary,
+  .task-details-neu-modal .app-btn-primary-inline {
+    border: 1px solid color-mix(in srgb, #ff5c1b 45%, transparent) !important;
+    background: #ff5c1b !important;
+    color: #ffffff !important;
+    box-shadow:
+      3px 3px 8px color-mix(in srgb, #ded7cd 50%, transparent),
+      -2px -2px 6px color-mix(in srgb, #ffffff 20%, #f2eee8) !important;
+  }
+
+  .task-details-neu-modal .btn-primary:hover,
+  .task-details-neu-modal .app-btn-primary-inline:hover {
+    filter: brightness(1.05);
+  }
+
+  .task-details-neu-modal .app-btn-outline {
+    border: 1px solid #ded7cd;
+    background: #f2eee8;
+    color: #401c31;
+    box-shadow:
+      3px 3px 8px color-mix(in srgb, #ded7cd 45%, transparent),
+      -2px -2px 6px color-mix(in srgb, #ffffff 18%, #f2eee8);
+  }
+
+  .task-details-neu-modal .app-btn-outline:hover {
+    color: #ff5c1b;
+    border-color: color-mix(in srgb, #ff5c1b 35%, #ded7cd);
+  }
+
+  .task-details-neu-modal [role='tab'] .badge {
+    border: 1px solid #938a81;
+    background: #f7f4f0;
+    color: #401c31;
+  }
+
+  .task-details-neu-modal .btn-ghost,
+  .task-details-neu-modal .btn-outline,
+  .task-details-neu-modal .win-icon-button:not(.leve-modal-neu-close) {
+    border: 1px solid #ded7cd;
+    background: #f2eee8;
+    color: #401c31;
+    box-shadow:
+      3px 3px 8px color-mix(in srgb, #ded7cd 45%, transparent),
+      -2px -2px 6px color-mix(in srgb, #ffffff 18%, #f2eee8);
+  }
+
+  .task-details-neu-modal .btn-ghost:hover,
+  .task-details-neu-modal .btn-outline:hover {
+    color: #ff5c1b;
+  }
+
+  .task-details-neu-modal .input,
+  .task-details-neu-modal .textarea,
+  .task-details-neu-modal .select:not(.select-ghost) {
+    border-color: #ded7cd;
+    background: #e5dfd5;
+    color: #401c31;
+    box-shadow:
+      inset 3px 3px 8px color-mix(in srgb, #ded7cd 50%, transparent),
+      inset -2px -2px 6px color-mix(in srgb, #ffffff 18%, #e5dfd5);
+  }
+
+  .task-details-neu-modal .text-primary {
+    color: #ff5c1b;
+  }
+
+  .task-details-neu-modal .text-base-content,
+  .task-details-neu-modal .text-muted,
+  .task-details-neu-modal .text-base-content\/70 {
+    color: #6b5e5e;
+  }
+
   /** Faixa de metadados (ID, tipo, status) — relevo inset no card. */
   .task-card-metadata-strip {
     display: flex;

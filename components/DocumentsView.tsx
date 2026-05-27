@@ -24,6 +24,7 @@ import { DocumentCard } from './documents/DocumentCard';
 import { Search, Upload, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { documentCardGrid, projectViewPanel, projectViewShell } from './common/viewUi';
+import { documentsCardListPanelClass } from './documents/documentsCardNeuUi';
 import {
   documentsEyebrowClass,
   documentsFilterPillClass,
@@ -31,6 +32,8 @@ import {
   documentsFilterRowClass,
   documentsFiltersPanelClass,
   documentsJiraBadgeClass,
+  documentsModalAnalysisBodyClass,
+  documentsModalBodyClass,
   documentsModalFieldLabelClass,
   documentsModalFooterCancelClass,
   documentsModalFooterClass,
@@ -39,16 +42,20 @@ import {
   documentsModalInputClass,
   documentsModalMediaClass,
   documentsModalMetaClass,
+  documentsModalMutedTextClass,
   documentsModalPreClass,
   documentsModalPreviewInsetClass,
+  documentsModalPrimaryBtnClass,
+  documentsModalSecondaryBtnClass,
   documentsModalSectionLabelClass,
+  documentsModalShellClass,
   documentsModalTextareaClass,
+  documentsModalTitleClass,
   documentsOutlineBtnClass,
   documentsPageHeaderClass,
   documentsPageMutedClass,
   documentsPageSubtitleClass,
   documentsPageTitleClass,
-  documentsPrimaryBtnClass,
   documentsSearchIconClass,
   documentsSearchInputClass,
   documentsSummaryStatIconAccentClass,
@@ -57,6 +64,7 @@ import {
   documentsSummaryStatStrongClass,
   documentsSummaryStripClass,
 } from './documents/documentsNeuUi';
+import { tasksViewHeaderPrimaryBtnClass } from './tasks/tasksPanelNeuStyles';
 import { DocumentAnalysisBody } from './documents/DocumentAnalysisBody';
 
 interface DocumentWithMetadata extends ProjectDocument {
@@ -403,7 +411,7 @@ export const DocumentsView: React.FC<{
             </div>
             <p className={documentsPageSubtitleClass}>{documentsDescription}</p>
           </div>
-          <label className={cn(documentsPrimaryBtnClass, 'shrink-0 cursor-pointer')}>
+          <label className={cn(tasksViewHeaderPrimaryBtnClass, 'shrink-0 cursor-pointer')}>
             <Upload className="h-4 w-4 shrink-0" aria-hidden />
             Carregar
             <input
@@ -542,7 +550,7 @@ export const DocumentsView: React.FC<{
         <div className="flex flex-col gap-3">
         {filteredDocuments.length > 0 ? (
           <div
-            className={documentCardGrid}
+            className={cn(documentsCardListPanelClass, documentCardGrid)}
             role="list"
             aria-label="Lista de documentos do projeto"
           >
@@ -617,6 +625,9 @@ export const DocumentsView: React.FC<{
             setSelectedDoc(null);
           }}
           title={selectedDoc.name}
+          panelClassName={documentsModalShellClass}
+          bodyClassName={documentsModalBodyClass}
+          titleClassName={documentsModalTitleClass}
         >
           <div className="space-y-4">
             <div className="flex items-center gap-2 flex-wrap">
@@ -642,14 +653,14 @@ export const DocumentsView: React.FC<{
                   />
                   <div className={documentsModalMetaClass}>
                     <p>
-                      <strong className="text-[var(--leve-header-text)]">Nome:</strong> {selectedDoc.name}
+                      <strong className="text-[#401C31]">Nome:</strong> {selectedDoc.name}
                     </p>
                     <p>
-                      <strong className="text-[var(--leve-header-text)]">Tamanho:</strong>{' '}
+                      <strong className="text-[#401C31]">Tamanho:</strong>{' '}
                       {formatFileSize(selectedDoc.size || 0)}
                     </p>
                     <p>
-                      <strong className="text-[var(--leve-header-text)]">Tipo:</strong>{' '}
+                      <strong className="text-[#401C31]">Tipo:</strong>{' '}
                       {selectedDoc.category || 'Não categorizado'}
                     </p>
                   </div>
@@ -663,10 +674,10 @@ export const DocumentsView: React.FC<{
                   />
                   <div className={documentsModalMetaClass}>
                     <p>
-                      <strong className="text-[var(--leve-header-text)]">Nome:</strong> {selectedDoc.name}
+                      <strong className="text-[#401C31]">Nome:</strong> {selectedDoc.name}
                     </p>
                     <p>
-                      <strong className="text-[var(--leve-header-text)]">Tamanho:</strong>{' '}
+                      <strong className="text-[#401C31]">Tamanho:</strong>{' '}
                       {formatFileSize(selectedDoc.size || 0)}
                     </p>
                   </div>
@@ -678,7 +689,10 @@ export const DocumentsView: React.FC<{
             {selectedDoc.analysis && (
               <div className="space-y-2">
                 <p className={documentsModalSectionLabelClass}>Análise IA</p>
-                <DocumentAnalysisBody html={selectedDoc.analysis} />
+                <DocumentAnalysisBody
+                  html={selectedDoc.analysis}
+                  className={documentsModalAnalysisBodyClass}
+                />
               </div>
             )}
           </div>
@@ -706,6 +720,14 @@ export const DocumentsView: React.FC<{
           onClose={() => setViewingDocument(null)}
           showDownload={true}
           showViewInNewTab={true}
+          panelClassName={documentsModalShellClass}
+          bodyClassName={documentsModalBodyClass}
+          titleClassName={documentsModalTitleClass}
+          mutedTextClassName={documentsModalMutedTextClass}
+          primaryBtnClassName={documentsModalPrimaryBtnClass}
+          secondaryBtnClassName={documentsModalSecondaryBtnClass}
+          dividerClassName="border-[#DED7CD]"
+          contentInsetClassName={documentsModalPreviewInsetClass}
         />
       )}
 
@@ -715,10 +737,16 @@ export const DocumentsView: React.FC<{
           isOpen={!!analysisResult}
           onClose={() => setAnalysisResult(null)}
           title={`Análise de ${analysisResult.name}`}
+          panelClassName={documentsModalShellClass}
+          bodyClassName={documentsModalBodyClass}
+          titleClassName={documentsModalTitleClass}
         >
           <div className="space-y-3">
             <p className={documentsModalSectionLabelClass}>Resultado da análise</p>
-            <DocumentAnalysisBody html={analysisResult.content} />
+            <DocumentAnalysisBody
+              html={analysisResult.content}
+              className={documentsModalAnalysisBodyClass}
+            />
           </div>
         </Modal>
       )}
@@ -729,6 +757,9 @@ export const DocumentsView: React.FC<{
           isOpen={!!editingDoc}
           onClose={() => setEditingDoc(null)}
           title={`Editar: ${editingDoc.name}`}
+          panelClassName={documentsModalShellClass}
+          bodyClassName={documentsModalBodyClass}
+          titleClassName={documentsModalTitleClass}
         >
           <div className="space-y-4">
             <div>

@@ -11,6 +11,15 @@ import {
   qaDashboardHeaderSubtitleClass,
   qaDashboardHeaderTitleClass,
 } from '../common/projectCardUi';
+import {
+  tasksViewHeaderFilterCountClass,
+  tasksViewHeaderFilterIconClass,
+  tasksViewHeaderIconWrapClass,
+  tasksViewHeaderSecondaryBtnActiveClass,
+  tasksViewHeaderSecondaryBtnClass,
+  tasksViewHeaderSecondaryToolbarClass,
+  tasksViewHeaderSecondaryToolbarDividerClass,
+} from '../tasks/tasksPanelNeuStyles';
 import { appMenuItemClass, appMenuPanelClass } from '../common/viewUi';
 
 export interface QADashboardHeaderToolbarProps {
@@ -77,24 +86,43 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
         </div>
 
         <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
-          <div className="hidden items-center gap-2 md:flex">
+          <div
+            className={cn(tasksViewHeaderSecondaryToolbarClass, 'hidden md:inline-flex')}
+            role="group"
+            aria-label="Filtrar e exportar"
+          >
             <button
               type="button"
-              className={qaDashboardHeaderActionBtnClass}
               onClick={onOpenFiltersModal}
-              aria-label="Filtrar dados do dashboard"
+              className={cn(
+                'rounded-l-full',
+                activeFiltersCount > 0
+                  ? tasksViewHeaderSecondaryBtnActiveClass
+                  : tasksViewHeaderSecondaryBtnClass
+              )}
+              aria-label={`Filtrar dados do dashboard${activeFiltersCount > 0 ? `, ${activeFiltersCount} ativos` : ''}`}
             >
-              <Filter className="h-4 w-4 shrink-0 text-[var(--leve-header-accent)]" aria-hidden />
-              Filtrar{activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}
+              <span className={tasksViewHeaderIconWrapClass} aria-hidden>
+                <Filter className={tasksViewHeaderFilterIconClass} />
+              </span>
+              <span>Filtrar{activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}</span>
+              {activeFiltersCount > 0 ? (
+                <span className={tasksViewHeaderFilterCountClass}>{activeFiltersCount}</span>
+              ) : null}
             </button>
+
+            <div className={tasksViewHeaderSecondaryToolbarDividerClass} aria-hidden />
+
             <button
               type="button"
-              className={qaDashboardHeaderActionBtnClass}
               onClick={onOpenExportModal}
+              className={cn(tasksViewHeaderSecondaryBtnClass, 'rounded-r-full')}
               aria-label="Exportar dados do projeto"
             >
-              <Download className="h-4 w-4 shrink-0 text-[var(--leve-header-accent)]" aria-hidden />
-              Exportar
+              <span className={tasksViewHeaderIconWrapClass} aria-hidden>
+                <Download className={tasksViewHeaderFilterIconClass} />
+              </span>
+              <span>Exportar</span>
             </button>
           </div>
 

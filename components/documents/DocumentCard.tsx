@@ -14,7 +14,7 @@ import {
   documentsCardTitleClass,
   documentsCategoryBadgeClass,
   type DocumentCategoryId,
-} from './documentsNeuUi';
+} from './documentsCardNeuUi';
 
 export interface DocumentCardDoc {
   name: string;

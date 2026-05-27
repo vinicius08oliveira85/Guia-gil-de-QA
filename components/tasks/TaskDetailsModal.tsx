@@ -68,6 +68,11 @@ import {
   leveTaskModalWatchersBoxClass,
   leveViewOutlineBtnClass,
 } from '../common/projectCardUi';
+import {
+  taskDetailsModalBodyClass,
+  taskDetailsModalShellClass,
+  taskDetailsModalTitleClass,
+} from './taskDetailsNeuUi';
 import { BackButton } from '../common/BackButton';
 import { Badge } from '../common/Badge';
 import { useJiraAttachmentViewer } from '../../hooks/useJiraAttachmentViewer';
@@ -1096,7 +1101,15 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} size="full">
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={modalTitle}
+        size="full"
+        panelClassName={taskDetailsModalShellClass}
+        titleClassName={taskDetailsModalTitleClass}
+        bodyClassName={taskDetailsModalBodyClass}
+      >
         <div className="flex flex-col gap-4">
           <BackButton
             className={cn('self-start -ml-1', leveTaskModalGhostBtnClass)}

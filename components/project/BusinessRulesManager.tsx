@@ -40,9 +40,13 @@ import {
   businessRulesListPanelClass,
 } from './businessRulesNeuUi';
 import {
-  documentsOutlineBtnClass,
-  documentsPrimaryBtnClass,
   tasksPanelCardClass,
+  tasksViewHeaderFilterIconClass,
+  tasksViewHeaderIconWrapClass,
+  tasksViewHeaderPrimaryBtnClass,
+  tasksViewHeaderSecondaryBtnClass,
+  tasksViewHeaderSecondaryToolbarClass,
+  tasksViewHeaderSecondaryToolbarDividerClass,
   tasksPanelFormCancelBtnClass,
   tasksPanelFormFieldLabelAccentClass,
   tasksPanelFormFieldLabelClass,
@@ -318,7 +322,7 @@ export const BusinessRulesManager: React.FC<{
                 ao vincular regras entre si.
               </p>
             </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
               <input
                 ref={importInputRef}
                 id="business-rules-import-json"
@@ -328,33 +332,38 @@ export const BusinessRulesManager: React.FC<{
                 aria-label="Importar regras de negócio de arquivo JSON"
                 onChange={handleImportFile}
               />
-              <button
-                type="button"
-                className={cn(
-                  documentsOutlineBtnClass,
-                  'w-full min-h-[44px] sm:w-auto sm:min-h-9'
-                )}
-                onClick={() => importInputRef.current?.click()}
-                title="Mescla regras a partir de JSON (mesmo id atualiza título/descrição)"
+              <div
+                className={cn(tasksViewHeaderSecondaryToolbarClass, 'w-full sm:w-auto')}
+                role="group"
+                aria-label="Importar e exportar regras"
               >
-                <Upload className="h-4 w-4 shrink-0" aria-hidden />
-                Importar JSON
-              </button>
+                <button
+                  type="button"
+                  className={cn(tasksViewHeaderSecondaryBtnClass, 'min-h-[44px] rounded-l-full sm:min-h-0')}
+                  onClick={() => importInputRef.current?.click()}
+                  title="Mescla regras a partir de JSON (mesmo id atualiza título/descrição)"
+                >
+                  <span className={tasksViewHeaderIconWrapClass} aria-hidden>
+                    <Upload className={tasksViewHeaderFilterIconClass} />
+                  </span>
+                  <span>Importar JSON</span>
+                </button>
+                <div className={tasksViewHeaderSecondaryToolbarDividerClass} aria-hidden />
+                <button
+                  type="button"
+                  className={cn(tasksViewHeaderSecondaryBtnClass, 'min-h-[44px] rounded-r-full sm:min-h-0')}
+                  onClick={handleExportJson}
+                  title="Exporta todas as regras do projeto em JSON"
+                >
+                  <span className={tasksViewHeaderIconWrapClass} aria-hidden>
+                    <Download className={tasksViewHeaderFilterIconClass} />
+                  </span>
+                  <span>Exportar JSON</span>
+                </button>
+              </div>
               <button
                 type="button"
-                className={cn(
-                  documentsOutlineBtnClass,
-                  'w-full min-h-[44px] sm:w-auto sm:min-h-9'
-                )}
-                onClick={handleExportJson}
-                title="Exporta todas as regras do projeto em JSON"
-              >
-                <Download className="h-4 w-4 shrink-0" aria-hidden />
-                Exportar JSON
-              </button>
-              <button
-                type="button"
-                className={cn(documentsPrimaryBtnClass, 'w-full sm:w-auto')}
+                className={cn(tasksViewHeaderPrimaryBtnClass, 'w-full sm:w-auto')}
                 onClick={openCreate}
               >
                 <Plus className="h-4 w-4 shrink-0" aria-hidden />

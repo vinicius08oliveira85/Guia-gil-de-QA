@@ -9,6 +9,7 @@ import {
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { Modal } from './Modal';
 import { Spinner } from './Spinner';
+import { cn } from '../../utils/cn';
 
 /**
  * Componente para visualização de imagens com zoom e navegação
@@ -146,6 +147,15 @@ export interface FileViewerProps {
   onClose: () => void;
   showDownload?: boolean;
   showViewInNewTab?: boolean;
+  /** Classes opcionais do modal (ex.: paleta neumórfica clara em Documentos). */
+  panelClassName?: string;
+  bodyClassName?: string;
+  titleClassName?: string;
+  mutedTextClassName?: string;
+  primaryBtnClassName?: string;
+  secondaryBtnClassName?: string;
+  dividerClassName?: string;
+  contentInsetClassName?: string;
 }
 
 /**
@@ -153,7 +163,22 @@ export interface FileViewerProps {
  * Suporta visualização inline e em nova aba
  */
 export const FileViewer: React.FC<FileViewerProps> = React.memo(
-  ({ content, fileName, mimeType, onClose, showDownload = true, showViewInNewTab = true }) => {
+  ({
+    content,
+    fileName,
+    mimeType,
+    onClose,
+    showDownload = true,
+    showViewInNewTab = true,
+    panelClassName,
+    bodyClassName,
+    titleClassName,
+    mutedTextClassName,
+    primaryBtnClassName,
+    secondaryBtnClassName,
+    dividerClassName,
+    contentInsetClassName,
+  }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [viewerURL, setViewerURL] = useState<string | null>(null);
     const { handleError, handleSuccess } = useErrorHandler();
@@ -223,23 +248,34 @@ export const FileViewer: React.FC<FileViewerProps> = React.memo(
     // Se não pode visualizar inline, mostrar apenas opções de download/view
     if (!canView) {
       return (
-        <Modal isOpen={true} onClose={onClose} title={`Visualizar: ${fileName}`}>
+        <Modal
+          isOpen={true}
+          onClose={onClose}
+          title={`Visualizar: ${fileName}`}
+          panelClassName={panelClassName}
+          bodyClassName={bodyClassName}
+          titleClassName={titleClassName}
+        >
           <div className="p-4">
-            <p className="text-text-secondary mb-4">
+            <p className={cn('mb-4', mutedTextClassName ?? 'text-text-secondary')}>
               Este tipo de arquivo não pode ser visualizado diretamente no navegador.
             </p>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {showViewInNewTab && (
                 <button
                   onClick={handleViewInNewTab}
                   disabled={isLoading}
-                  className="btn btn-primary"
+                  className={primaryBtnClassName ?? 'btn btn-primary'}
                 >
                   {isLoading ? <Spinner small /> : 'Abrir em Nova Aba'}
                 </button>
               )}
               {showDownload && (
-                <button onClick={handleDownload} disabled={isLoading} className="btn btn-secondary">
+                <button
+                  onClick={handleDownload}
+                  disabled={isLoading}
+                  className={secondaryBtnClassName ?? 'btn btn-secondary'}
+                >
                   {isLoading ? <Spinner small /> : 'Baixar'}
                 </button>
               )}
@@ -251,7 +287,15 @@ export const FileViewer: React.FC<FileViewerProps> = React.memo(
 
     // Visualização inline para PDF, imagens, texto, etc.
     return (
-      <Modal isOpen={true} onClose={onClose} title={fileName} size="2xl">
+      <Modal
+        isOpen={true}
+        onClose={onClose}
+        title={fileName}
+        size="2xl"
+        panelClassName={panelClassName}
+        bodyClassName={bodyClassName}
+        titleClassName={titleClassName}
+      >
         <div className="relative">
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-surface/80 z-10">
@@ -261,12 +305,17 @@ export const FileViewer: React.FC<FileViewerProps> = React.memo(
 
           <div className="flex flex-col gap-4">
             {/* Barra de ações */}
-            <div className="flex gap-2 justify-end border-b border-surface-border pb-2">
+            <div
+              className={cn(
+                'flex gap-2 justify-end border-b pb-2',
+                dividerClassName ?? 'border-surface-border'
+              )}
+            >
               {showViewInNewTab && (
                 <button
                   onClick={handleViewInNewTab}
                   disabled={isLoading}
-                  className="btn btn-sm btn-secondary"
+                  className={cn(secondaryBtnClassName ?? 'btn btn-sm btn-secondary')}
                 >
                   Abrir em Nova Aba
                 </button>
@@ -275,7 +324,7 @@ export const FileViewer: React.FC<FileViewerProps> = React.memo(
                 <button
                   onClick={handleDownload}
                   disabled={isLoading}
-                  className="btn btn-sm btn-secondary"
+                  className={cn(secondaryBtnClassName ?? 'btn btn-sm btn-secondary')}
                 >
                   Baixar
                 </button>
@@ -295,7 +344,12 @@ export const FileViewer: React.FC<FileViewerProps> = React.memo(
               {fileType === 'image' && viewerURL && <ImageViewer src={viewerURL} alt={fileName} />}
 
               {(fileType === 'text' || fileType === 'json' || fileType === 'csv') && viewerURL && (
-                <pre className="p-4 bg-surface-hover rounded overflow-auto text-sm">
+                <pre
+                  className={cn(
+                    'overflow-auto rounded p-4 text-sm',
+                    contentInsetClassName ?? 'bg-surface-hover'
+                  )}
+                >
                   {typeof content === 'string'
                     ? content.startsWith('data:')
                       ? content.split(',')[1]
