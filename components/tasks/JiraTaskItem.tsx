@@ -75,7 +75,6 @@ import {
 import { logger } from '../../utils/logger';
 import { cn } from '../../utils/cn';
 import { Button } from '../common/Button';
-import { Badge } from '../common/Badge';
 import { useJiraAttachmentViewer } from '../../hooks/useJiraAttachmentViewer';
 import { TestCasesFreshnessIndicator } from './TestCasesFreshnessIndicator';
 import { TestCaseDetailLevelControl } from './TestCaseDetailLevelControl';
@@ -83,10 +82,6 @@ import { BddScenarioActionBar } from './BddScenarioActionBar';
 import { TaskActionStrip } from './TaskActionStrip';
 import {
   TASK_ACTION_SLOT_CLASSNAMES,
-  taskCardBadgePillShape,
-  taskCardBadgePillTypography,
-  taskCardBadgeTechShape,
-  taskCardBadgeTechTypography,
   taskCardIdTypography,
   taskCardSectionTitleClass,
   taskCardShellLayoutClass,
@@ -129,6 +124,10 @@ import {
   tasksListSubtreeExpandPlaceholderClass,
   tasksListSubtreeExpandSlotClass,
   tasksListTestStatusChipLayout,
+  tasksListMetadataBadgeClass,
+  tasksListTechBadgeClass,
+  tasksListTypeBadgeClass,
+  type TasksListTypeBadgeVariant,
 } from './tasksListNeuUi';
 import { JiraStatusLozenge } from './JiraStatusLozenge';
 import { TaskJiraStatusDropdown } from './TaskJiraStatusDropdown';
@@ -370,7 +369,7 @@ export const JiraTaskItem: React.FC<{
       if (task.isFavorite) return 'border-l-4 border-l-amber-500';
       return getTaskTypeLeftBorderClass(task.type);
     }, [task.isFavorite, task.type]);
-    const typeBadgeVariant = useMemo((): React.ComponentProps<typeof Badge>['variant'] => {
+    const typeBadgeVariant = useMemo((): TasksListTypeBadgeVariant => {
       if (['tarefa', 'task'].includes(taskTypeNorm)) return 'info';
       if (taskTypeNorm === 'bug') return 'error';
       if (['história', 'story'].includes(taskTypeNorm)) return 'success';
@@ -1782,19 +1781,15 @@ export const JiraTaskItem: React.FC<{
                     {task.id}
                   </button>
                   <TaskCardMetadataSeparator />
-                  <Badge
-                    appearance="pill"
-                    variant={typeBadgeVariant}
-                    size="xs"
+                  <span
                     className={cn(
-                      'badge-task-format app-nav-pill shrink-0 !px-1.5 !py-0 !text-[9px] !font-bold !leading-none',
-                      taskCardBadgePillShape,
-                      taskCardBadgePillTypography,
+                      tasksListTypeBadgeClass(typeBadgeVariant),
                       task.type === 'Epic' && 'jira-task-epic-type-pill'
                     )}
+                    role="status"
                   >
                     {task.type}
-                  </Badge>
+                  </span>
                   <TaskCardMetadataSeparator />
                   {project?.settings?.jiraStatuses && project.settings.jiraStatuses.length > 0 ? (
                     <TaskJiraStatusDropdown
@@ -1805,26 +1800,19 @@ export const JiraTaskItem: React.FC<{
                       onSelectStatus={handleChangeStatus}
                       disabled={isTransitioningJiraStatus}
                       className="shrink-0"
+                      lozengeClassName={tasksListMetadataBadgeClass}
                     />
                   ) : (
                     <JiraStatusLozenge
                       label={currentDisplayStatusLabel}
                       statusColor={currentStatusColor}
-                      className="shrink-0"
+                      className={cn(tasksListMetadataBadgeClass, 'shrink-0')}
                     />
                   )}
                   {storyPointsDisplay > 0 ? (
                     <>
                       <TaskCardMetadataSeparator />
-                      <span
-                        className={cn(
-                          'shrink-0',
-                          tasksListCardIconMutedClass,
-                          taskCardBadgeTechShape,
-                          taskCardBadgeTechTypography
-                        )}
-                        title="Story Points"
-                      >
+                      <span className={tasksListTechBadgeClass} title="Story Points">
                         {storyPointsDisplay} SP
                       </span>
                     </>
@@ -1832,11 +1820,17 @@ export const JiraTaskItem: React.FC<{
                   {displaySprint ? (
                     <>
                       <TaskCardMetadataSeparator />
-                      <TaskSprintBadge sprint={displaySprint} />
+                      <TaskSprintBadge
+                        sprint={displaySprint}
+                        className={tasksListMetadataBadgeClass}
+                      />
                     </>
                   ) : null}
                   {showTestExecutionSummary ? (
-                    <span className={getTaskRiskBadgeClass(taskRiskLevel)} title={taskRiskTooltip}>
+                    <span
+                      className={cn(getTaskRiskBadgeClass(taskRiskLevel), tasksListMetadataBadgeClass)}
+                      title={taskRiskTooltip}
+                    >
                       {taskRiskLevel}
                     </span>
                   ) : null}

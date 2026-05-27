@@ -1081,6 +1081,74 @@
     background-color: color-mix(in srgb, #e8e2da 45%, #f2eee8);
   }
 
+  .tasks-list-panel .task-list-card-shell .task-list-action-chip:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow:
+      inset 2px 2px 6px color-mix(in srgb, #ded7cd 48%, transparent),
+      inset -1px -1px 4px color-mix(in srgb, #ffffff 12%, #f2eee8) !important;
+  }
+
+  /** Badges da faixa de metadados — relevo raised (cores semânticas preservadas). */
+  .tasks-list-panel .task-card-metadata-strip .task-list-neu-badge {
+    --tw-ring-width: 0 !important;
+    --tw-ring-color: transparent !important;
+    border: 1px solid #ded7cd !important;
+    box-shadow:
+      2px 2px 6px color-mix(in srgb, #ded7cd 42%, transparent),
+      -1px -1px 4px color-mix(in srgb, #ffffff 14%, #f2eee8) !important;
+  }
+
+  .tasks-list-panel .task-list-neu-badge--info {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    border-color: color-mix(in srgb, #2563eb 35%, #ded7cd) !important;
+  }
+
+  .tasks-list-panel .task-list-neu-badge--error {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+    border-color: color-mix(in srgb, #dc2626 35%, #ded7cd) !important;
+  }
+
+  .tasks-list-panel .task-list-neu-badge--success {
+    background: #16a34a !important;
+    color: #ffffff !important;
+    border-color: color-mix(in srgb, #16a34a 35%, #ded7cd) !important;
+  }
+
+  .tasks-list-panel .task-list-neu-badge--primary,
+  .tasks-list-panel .task-list-neu-badge--primary.jira-task-epic-type-pill {
+    background: #421d3a !important;
+    color: #f5f1e6 !important;
+    border-color: color-mix(in srgb, #421d3a 28%, #ded7cd) !important;
+  }
+
+  .tasks-list-panel .task-list-neu-badge--neutral {
+    background: #f2eee8 !important;
+    color: #401c31 !important;
+    border-color: #ded7cd !important;
+  }
+
+  .tasks-list-panel .task-list-neu-badge--tech {
+    background: #f2eee8 !important;
+    color: #401c31 !important;
+    border-color: #ded7cd !important;
+  }
+
+  .tasks-list-panel .task-card-metadata-strip button.task-list-neu-badge:hover:not(:disabled) {
+    filter: brightness(1.04);
+    box-shadow:
+      3px 3px 8px color-mix(in srgb, #ded7cd 48%, transparent),
+      -2px -2px 5px color-mix(in srgb, #ffffff 16%, #f2eee8) !important;
+  }
+
+  .tasks-list-panel .task-card-metadata-strip button.task-list-neu-badge:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow:
+      inset 2px 2px 6px color-mix(in srgb, #ded7cd 45%, transparent),
+      inset -1px -1px 4px color-mix(in srgb, #ffffff 12%, #f2eee8) !important;
+  }
+
   .tasks-list-panel .task-list-subtree-expand-placeholder {
     border-color: #ded7cd;
     background-color: #e5dfd5;

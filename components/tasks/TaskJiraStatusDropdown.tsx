@@ -27,6 +27,8 @@ interface TaskJiraStatusDropdownProps {
   variant?: 'pill' | 'lozenge';
   disabled?: boolean;
   className?: string;
+  /** Classes extras no gatilho lozenge (ex.: neumorfismo na listagem). */
+  lozengeClassName?: string;
   onSelectStatus: (statusName: string) => void;
 }
 
@@ -50,6 +52,7 @@ export const TaskJiraStatusDropdown: React.FC<TaskJiraStatusDropdownProps> = ({
   variant = 'pill',
   disabled = false,
   className,
+  lozengeClassName,
   onSelectStatus,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -227,7 +230,12 @@ export const TaskJiraStatusDropdown: React.FC<TaskJiraStatusDropdownProps> = ({
           className={cn(
             'inline-flex min-w-0 shrink-0 items-center border-0 transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-wait disabled:opacity-60',
             isLozenge
-              ? cn('gap-0.5', taskCardBadgePillShape, taskCardBadgePillTypography)
+              ? cn(
+                  'task-list-neu-badge gap-0.5',
+                  taskCardBadgePillShape,
+                  taskCardBadgePillTypography,
+                  lozengeClassName
+                )
               : cn(
                   'w-full min-h-[44px] justify-between gap-2 bg-primary text-primary-content sm:min-h-0 sm:min-w-[120px] sm:px-4 sm:py-1.5',
                   taskCardButtonShape,

@@ -22,7 +22,7 @@ export const JiraStatusLozenge: React.FC<JiraStatusLozengeProps> = ({
   return (
     <span
       className={cn(
-        'badge-task-format min-w-0 shrink-0 gap-0.5',
+        'task-list-neu-badge badge-task-format min-w-0 shrink-0 gap-0.5',
         taskCardBadgePillShape,
         taskCardBadgePillTypography,
         className

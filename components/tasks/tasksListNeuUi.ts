@@ -1,5 +1,14 @@
 import { cn } from '../../utils/cn';
-import { taskCardButtonTypography, taskCardTypography } from './taskActionLayout';
+import {
+  taskCardBadgePillShape,
+  taskCardBadgePillTypography,
+  taskCardBadgeTechShape,
+  taskCardBadgeTechTypography,
+  taskCardButtonTypography,
+  taskCardTypography,
+} from './taskActionLayout';
+
+export type TasksListTypeBadgeVariant = 'info' | 'error' | 'success' | 'primary' | 'neutral';
 
 /**
  * Paleta neumórfica clara — cards da lista de tarefas (mesma base das regras de negócio).
@@ -67,8 +76,23 @@ export const tasksListCardMutedClass = 'text-[#6B5E5E]';
 
 export const tasksListCardIconMutedClass = 'text-[#6B5E5E]';
 
+/** Trilho inset que envolve subtarefas expandidas. */
+export const tasksListSubtreeTrackClass = cn(
+  'task-list-subtree-track',
+  'rounded-[var(--leve-header-radius)] border border-[#DED7CD] bg-[#E5DFD5] p-1 sm:p-1.5',
+  tlInset
+);
+
 export const tasksListSubtreeBorderClass =
   'border-[color-mix(in_srgb,#DED7CD_85%,transparent)]';
+
+/** Card de subtarefa (nível > 0) — superfície rebaixada dentro do trilho. */
+export const tasksListNestedCardShellClass = cn(
+  'task-card-shell task-list-card-shell task-list-nested-card-shell',
+  'px-1.5 py-2 transition-[box-shadow,border-color] duration-200 max-sm:min-w-0 sm:px-3 sm:py-2',
+  'border border-[#DED7CD] bg-[#E5DFD5]',
+  tlInset
+);
 
 /** Chip elevado no card claro (ações, métricas). */
 export const tasksListChipRaisedClass = cn(
@@ -78,6 +102,32 @@ export const tasksListChipRaisedClass = cn(
   'transition-[box-shadow,background-color,color] duration-200',
   'hover:bg-[color-mix(in_srgb,#E8E2DA_45%,#F2EEE8)]',
   'active:shadow-[inset_2px_2px_6px_color-mix(in_srgb,#DED7CD_48%,transparent),inset_-1px_-1px_4px_color-mix(in_srgb,#FFFFFF_12%,#F2EEE8)]'
+);
+
+/** Badge da faixa de metadados (tipo, status, risco, sprint…) — relevo raised. */
+export const tasksListMetadataBadgeClass = cn(
+  'task-list-neu-badge badge-task-format shrink-0',
+  'border border-[#DED7CD]',
+  tlChipRaised,
+  'transition-[box-shadow,background-color,color] duration-200'
+);
+
+/** Tipo Jira (História, Bug, Tarefa, Epic) na listagem. */
+export const tasksListTypeBadgeClass = (variant: TasksListTypeBadgeVariant) =>
+  cn(
+    tasksListMetadataBadgeClass,
+    taskCardBadgePillShape,
+    taskCardBadgePillTypography,
+    `task-list-neu-badge--${variant}`
+  );
+
+/** Story points e chips técnicos compactos. */
+export const tasksListTechBadgeClass = cn(
+  tasksListMetadataBadgeClass,
+  'task-list-neu-badge--tech',
+  taskCardBadgeTechShape,
+  taskCardBadgeTechTypography,
+  'text-[#401C31]'
 );
 
 /** Botão "Gerar Tudo" e chips de ação na listagem. */
