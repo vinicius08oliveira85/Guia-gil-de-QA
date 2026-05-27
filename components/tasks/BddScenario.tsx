@@ -4,18 +4,21 @@ import { EditIcon, TrashIcon } from '../common/Icons';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { cn } from '../../utils/cn';
 import {
-  leveTaskModalActionToolbarClass,
   leveTaskModalFieldLabelClass,
   leveTaskModalGhostBtnClass,
   leveTaskModalInputClass,
-  leveTaskModalInsetClass,
   leveTaskModalMutedClass,
   leveTaskModalPrimaryBtnClass,
-  leveTaskModalSectionClass,
   leveTaskModalSectionHeaderClass,
   leveTaskModalStrongClass,
   leveTaskModalTextareaClass,
 } from '../common/projectCardUi';
+import {
+  taskDetailsModalActionToolbarClass,
+  taskDetailsModalIconBtnClass,
+  taskDetailsModalInsetPanelClass,
+  taskDetailsModalSectionClass,
+} from './taskDetailsNeuUi';
 
 /** Palavras-chave Gherkin em português (ordem: mais longas primeiro para match correto). */
 const GHERKIN_KEYWORDS = [
@@ -111,7 +114,7 @@ export const BddScenarioForm: React.FC<{
     <form
       onSubmit={handleSubmit}
       className={cn(
-        leveTaskModalSectionClass,
+        taskDetailsModalSectionClass,
         'my-2 space-y-4 border-l-4 border-l-[var(--leve-header-accent)] p-5'
       )}
     >
@@ -167,9 +170,8 @@ export const BddScenarioItem: React.FC<{
   return (
     <div
       className={cn(
-        leveTaskModalSectionClass,
-        'flex flex-col overflow-hidden border-l-4 border-l-[var(--leve-header-accent)]',
-        'transition-[box-shadow] hover:shadow-[var(--leve-neu-hover)]'
+        taskDetailsModalSectionClass,
+        'flex flex-col overflow-visible border-l-4 border-l-[var(--leve-header-accent)]'
       )}
     >
       <div
@@ -181,11 +183,11 @@ export const BddScenarioItem: React.FC<{
         <h3 className={cn('min-w-0 flex-1 pr-2 font-semibold', leveTaskModalStrongClass)}>
           {scenario.title}
         </h3>
-        <div className={leveTaskModalActionToolbarClass}>
+        <div className={taskDetailsModalActionToolbarClass}>
           <button
             type="button"
             onClick={onEdit}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--leve-header-text-muted)] transition-[box-shadow,color] hover:text-[var(--leve-header-accent)] hover:shadow-[var(--leve-neu-raised)]"
+            className={cn(taskDetailsModalIconBtnClass, 'h-8 w-8 min-h-8 min-w-8')}
             aria-label="Editar cenário BDD"
           >
             <EditIcon />
@@ -193,7 +195,10 @@ export const BddScenarioItem: React.FC<{
           <button
             type="button"
             onClick={onDelete}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--leve-header-text-muted)] transition-[box-shadow,color] hover:text-[color-mix(in_srgb,oklch(var(--er))_90%,transparent)] hover:shadow-[var(--leve-neu-raised)]"
+            className={cn(
+              taskDetailsModalIconBtnClass,
+              'h-8 w-8 min-h-8 min-w-8 hover:text-[color-mix(in_srgb,oklch(var(--er))_90%,transparent)]'
+            )}
             aria-label="Excluir cenário BDD"
           >
             <TrashIcon />
@@ -202,7 +207,7 @@ export const BddScenarioItem: React.FC<{
       </div>
       <div
         className={cn(
-          leveTaskModalInsetClass,
+          taskDetailsModalInsetPanelClass,
           'mx-3 mb-3 whitespace-pre-wrap font-mono text-sm leading-relaxed sm:mx-4 sm:mb-4',
           leveTaskModalMutedClass
         )}

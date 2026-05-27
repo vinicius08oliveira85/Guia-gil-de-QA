@@ -5,12 +5,16 @@ import { ToolsSelector } from './ToolsSelector';
 import { cn } from '../../utils/cn';
 import {
   leveTaskModalFieldLabelClass,
-  leveTaskModalInsetClass,
   leveTaskModalMutedClass,
   leveTaskModalMutedXsClass,
-  leveTaskModalSectionClass,
   leveTaskModalStrongClass,
 } from '../common/projectCardUi';
+import {
+  testStrategyCardClass,
+  testStrategyStepsListClass,
+  testStrategyToggleTrackClass,
+  testStrategyInsetPanelClass,
+} from './taskDetailsNeuUi';
 
 interface TestStrategyCardProps {
   strategy: TestStrategy;
@@ -46,22 +50,15 @@ export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
   };
 
   return (
-    <div
-      className={cn(
-        leveTaskModalSectionClass,
-        'flex flex-col overflow-hidden transition-[box-shadow,border-color] duration-300 ease-out',
-        'hover:border-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)]',
-        'hover:shadow-[var(--leve-neu-hover)] motion-reduce:transform-none'
-      )}
-    >
+    <div className={testStrategyCardClass}>
       <div className="flex-grow p-5">
-        <div className="mb-3 flex items-start justify-between">
+        <div className="mb-3 flex items-start justify-between gap-3">
           <h2 className="flex-1 pr-2 font-sans text-base font-bold leading-tight text-[var(--leve-header-accent)]">
             {strategy.testType}
           </h2>
           {onToggleExecuted && (
             <div className="flex shrink-0 items-center gap-2">
-              <span className={leveTaskModalFieldLabelClass}>
+              <span className={cn(leveTaskModalFieldLabelClass, 'whitespace-nowrap')}>
                 {isExecuted ? 'Concluir Teste' : 'Iniciar Teste'}
               </span>
               <label className="relative inline-flex cursor-pointer items-center">
@@ -70,20 +67,9 @@ export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
                   checked={isExecuted}
                   onChange={handleToggleExecuted}
                   className="peer sr-only"
+                  aria-label={isExecuted ? 'Marcar teste como não iniciado' : 'Marcar teste como iniciado'}
                 />
-                <div
-                  className={cn(
-                    'h-6 w-11 rounded-full shadow-[var(--leve-neu-inset)] transition-[box-shadow,background-color]',
-                    'bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))]',
-                    'after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full',
-                    'after:border after:border-[color-mix(in_srgb,var(--leve-neu-light)_40%,transparent)]',
-                    'after:bg-[var(--leve-neu-surface)] after:shadow-[var(--leve-neu-raised)] after:transition-all',
-                    'peer-checked:bg-[color-mix(in_srgb,oklch(var(--su))_72%,var(--leve-neu-bg))]',
-                    'peer-checked:shadow-[2px_2px_6px_color-mix(in_srgb,oklch(var(--su))_35%,transparent)]',
-                    'peer-checked:after:translate-x-full',
-                    'peer-focus:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)]'
-                  )}
-                />
+                <div className={testStrategyToggleTrackClass} aria-hidden />
               </label>
             </div>
           )}
@@ -99,7 +85,7 @@ export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
               <ListChecks className="h-3.5 w-3.5" aria-hidden />
               Como Executar:
             </h3>
-            <ul className={cn(leveTaskModalInsetClass, 'space-y-1.5')}>
+            <ul className={testStrategyStepsListClass}>
               {strategy.howToExecute.map((step, i) => (
                 <li key={i} className={cn('flex items-start gap-2 text-xs', leveTaskModalStrongClass)}>
                   {isExecuted ? (
@@ -126,7 +112,7 @@ export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
       </div>
 
       {onToolsChange && (
-        <div className={cn(leveTaskModalInsetClass, 'mx-3 mb-3 sm:mx-4 sm:mb-4')}>
+        <div className={cn(testStrategyInsetPanelClass, 'mx-3 mb-3 sm:mx-4 sm:mb-4')}>
           <p className={cn(leveTaskModalFieldLabelClass, 'mb-3')}>Ferramentas Utilizadas</p>
           {toolsUsed.length === 0 && (
             <p className={cn('mb-3 text-xs italic', leveTaskModalMutedXsClass)}>
@@ -138,6 +124,7 @@ export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
             onToolsChange={handleToolsChange}
             label=""
             compact={true}
+            neuVariant="taskModal"
           />
         </div>
       )}

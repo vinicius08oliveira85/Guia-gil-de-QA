@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { headerNeuNavPillClass } from './headerNeuUi';
 
 export interface NavigationMenuItem {
   id: string;
@@ -159,6 +160,7 @@ export interface NavigationMenuRailProps {
   items: NavigationMenuItem[];
   currentId?: string;
   className?: string;
+  neuVariant?: 'default' | 'header';
 }
 
 /** Menu horizontal (desktop) — itens como pills. */
@@ -166,6 +168,7 @@ export const NavigationMenuRail: React.FC<NavigationMenuRailProps> = ({
   items,
   currentId,
   className,
+  neuVariant = 'default',
 }) => (
   <nav
     className={cn('hidden flex-wrap items-center gap-1 md:flex', className)}
@@ -177,7 +180,9 @@ export const NavigationMenuRail: React.FC<NavigationMenuRailProps> = ({
         type="button"
         onClick={item.onClick}
         className={cn(
-          'app-nav-pill app-element-typography btn btn-ghost btn-sm rounded-[var(--radius)] px-2.5 transition-colors duration-200 sm:px-3'
+          neuVariant === 'header'
+            ? headerNeuNavPillClass
+            : 'app-nav-pill app-element-typography btn btn-ghost btn-sm rounded-[var(--radius)] px-2.5 transition-colors duration-200 sm:px-3'
         )}
         data-active={currentId === item.id ? 'true' : 'false'}
         aria-current={currentId === item.id ? 'page' : undefined}

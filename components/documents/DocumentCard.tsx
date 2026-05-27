@@ -1,14 +1,13 @@
 import React from 'react';
 import { Eye, ExternalLink, Bot, Wand2, Pencil, Trash2 } from 'lucide-react';
 import { Spinner } from '../common/Spinner';
-import { Button } from '../common/Button';
 import { cn } from '../../utils/cn';
 import {
   documentsActionOutlineClass,
   documentsActionPrimaryClass,
   documentsActionRemoveClass,
   documentsAnalysisBadgeClass,
-  documentsCardActionsClass,
+  documentsCardActionsGridClass,
   documentsCardClass,
   documentsCardMetaClass,
   documentsCardTitleClass,
@@ -77,33 +76,27 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
         )}
       </div>
       <p className={documentsCardMetaClass}>{metaText}</p>
-      <div className={documentsCardActionsClass} role="group" aria-label="Ações do documento">
-        <Button
+      <div className={documentsCardActionsGridClass} role="group" aria-label="Ações do documento">
+        <button
           type="button"
-          variant="brandOutline"
-          size="panelXs"
           className={documentsActionOutlineClass}
           onClick={onView}
           aria-label="Ver documento"
         >
           <Eye aria-hidden />
           Ver
-        </Button>
-        <Button
+        </button>
+        <button
           type="button"
-          variant="brandOutline"
-          size="panelXs"
           className={documentsActionOutlineClass}
           onClick={onPreview}
           aria-label="Abrir preview"
         >
           <ExternalLink aria-hidden />
           Preview
-        </Button>
-        <Button
+        </button>
+        <button
           type="button"
-          variant="brand"
-          size="panelXs"
           className={documentsActionPrimaryClass}
           onClick={onAnalyze}
           disabled={loadingState === 'analyze'}
@@ -112,11 +105,9 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
         >
           {loadingState === 'analyze' ? <Spinner small /> : <Bot aria-hidden />}
           Analisar
-        </Button>
-        <Button
+        </button>
+        <button
           type="button"
-          variant="brand"
-          size="panelXs"
           className={documentsActionPrimaryClass}
           onClick={onGenerate}
           disabled={loadingState === 'generate'}
@@ -125,29 +116,25 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
         >
           {loadingState === 'generate' ? <Spinner small /> : <Wand2 aria-hidden />}
           Gerar
-        </Button>
-        <Button
+        </button>
+        <button
           type="button"
-          variant="brandOutline"
-          size="panelXs"
           className={documentsActionOutlineClass}
           onClick={onEdit}
           aria-label="Editar documento"
         >
           <Pencil aria-hidden />
           Editar
-        </Button>
-        <Button
+        </button>
+        <button
           type="button"
-          variant="brandOutline"
-          size="panelXs"
-          className={cn(documentsActionRemoveClass)}
+          className={documentsActionRemoveClass}
           onClick={onRemove}
           aria-label="Remover documento"
         >
           <Trash2 aria-hidden />
           Remover
-        </Button>
+        </button>
       </div>
     </article>
   );

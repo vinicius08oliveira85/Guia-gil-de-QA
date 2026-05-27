@@ -64,7 +64,7 @@ import {
   documentsSummaryStatStrongClass,
   documentsSummaryStripClass,
 } from './documents/documentsNeuUi';
-import { tasksViewHeaderPrimaryBtnClass } from './tasks/tasksPanelNeuStyles';
+import { documentsPrimaryBtnClass, documentsViewScopeClass } from './documents/documentsNeuUi';
 import { DocumentAnalysisBody } from './documents/DocumentAnalysisBody';
 
 interface DocumentWithMetadata extends ProjectDocument {
@@ -397,7 +397,11 @@ export const DocumentsView: React.FC<{
   const jiraProjectKey = project.settings?.jiraProjectKey;
 
   return (
-    <div className={projectViewShell} role="main" aria-label="Documentos do projeto">
+    <div
+      className={cn(projectViewShell, documentsViewScopeClass)}
+      role="main"
+      aria-label="Documentos do projeto"
+    >
       <header className={documentsPageHeaderClass}>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
@@ -411,7 +415,7 @@ export const DocumentsView: React.FC<{
             </div>
             <p className={documentsPageSubtitleClass}>{documentsDescription}</p>
           </div>
-          <label className={cn(tasksViewHeaderPrimaryBtnClass, 'shrink-0 cursor-pointer')}>
+          <label className={cn(documentsPrimaryBtnClass, 'shrink-0 cursor-pointer')}>
             <Upload className="h-4 w-4 shrink-0" aria-hidden />
             Carregar
             <input

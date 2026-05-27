@@ -17,22 +17,26 @@ import { ChevronDownIcon, EditIcon, ListIcon, TrashIcon } from '../common/Icons'
 import { Badge } from '../common/Badge';
 import { Copy, MoreVertical } from 'lucide-react';
 import { cn } from '../../utils/cn';
-import { appMenuPanelClass, appSelectClass } from '../common/viewUi';
-import { taskTextareaClass } from './taskActionLayout';
+import { appMenuPanelClass } from '../common/viewUi';
 import { AppSelect } from '../common/AppSelect';
 import {
-  leveTaskModalActionToolbarClass,
-  leveTaskModalCollapsibleHeaderClass,
-  leveTaskModalCollapsibleShellClass,
   leveTaskModalMutedClass,
   leveTaskModalMutedXsClass,
-  leveTaskModalRoteiroBlockClass,
-  leveTaskModalSectionClass,
   leveTaskModalStrongClass,
 } from '../common/projectCardUi';
-import { taskNeuDividerClass } from './taskActionLayout';
-
-const ROTEIRO_BLOCK_CLASS = leveTaskModalRoteiroBlockClass;
+import {
+  taskDetailsModalActionToolbarClass,
+  taskDetailsModalExecBadgeClass,
+  taskDetailsModalRoteiroBlockClass,
+  taskDetailsModalRoteiroHeaderClass,
+  taskDetailsModalRoteiroInnerClass,
+  taskDetailsModalRoteiroShellClass,
+  taskDetailsModalSelectClass,
+  taskDetailsModalStatusBtnClass,
+  taskDetailsModalTestCaseCardClass,
+  taskDetailsModalTextareaClass,
+  taskDetailsModalToolbarIconClass,
+} from './taskDetailsNeuUi';
 
 /** Evita re-render global do projeto a cada tecla no resultado obtido. */
 const OBSERVED_RESULT_PERSIST_MS = 500;
@@ -242,8 +246,8 @@ export const TestCaseItem: React.FC<{
   return (
     <div
       className={cn(
-        leveTaskModalSectionClass,
-        'py-2 px-3 transition-colors duration-200 hover:border-[color-mix(in_srgb,var(--leve-header-accent)_30%,transparent)]',
+        taskDetailsModalTestCaseCardClass,
+        'hover:border-[color-mix(in_srgb,var(--leve-header-accent)_30%,transparent)]',
         selected &&
           'ring-2 ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] ring-offset-2 ring-offset-[var(--leve-header-bg)]'
       )}
@@ -289,7 +293,7 @@ export const TestCaseItem: React.FC<{
 
         {/* Grupo de ações: Editar, Duplicar, Excluir — integrados numa toolbar única */}
         <div
-          className={cn(leveTaskModalActionToolbarClass, 'hidden md:inline-flex')}
+          className={cn(taskDetailsModalActionToolbarClass, 'hidden md:inline-flex')}
           role="toolbar"
           aria-label="Ações do caso de teste"
         >
@@ -297,7 +301,7 @@ export const TestCaseItem: React.FC<{
             <button
               type="button"
               onClick={onEdit}
-              className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[var(--leve-header-accent)] transition-all duration-150 hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_12%,transparent)]"
+              className={cn(taskDetailsModalToolbarIconClass, 'text-[var(--leve-header-accent)]')}
               aria-label="Editar caso de teste"
               title="Editar"
             >
@@ -308,7 +312,7 @@ export const TestCaseItem: React.FC<{
             <button
               type="button"
               onClick={onDuplicate}
-              className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[var(--leve-header-text-muted)] transition-all duration-150 hover:bg-[color-mix(in_srgb,var(--leve-header-text)_8%,var(--leve-header-bg))] hover:text-[var(--leve-header-text)]"
+              className={taskDetailsModalToolbarIconClass}
               aria-label="Duplicar caso de teste"
               title="Duplicar"
             >
@@ -321,7 +325,7 @@ export const TestCaseItem: React.FC<{
               <button
                 type="button"
                 onClick={onDelete}
-                className="inline-flex h-7 w-7 items-center justify-center rounded-md text-error/70 transition-all duration-150 hover:bg-error/10 hover:text-error hover:scale-105"
+                className={cn(taskDetailsModalToolbarIconClass, 'text-error/80 hover:text-error')}
                 aria-label="Excluir caso de teste"
                 title="Excluir"
               >
@@ -333,7 +337,7 @@ export const TestCaseItem: React.FC<{
 
         {/* Grupo de status: Aprovar, Reprovar, Bloquear — integrados numa toolbar única */}
         <div
-          className={cn(leveTaskModalActionToolbarClass, 'hidden md:inline-flex')}
+          className={cn(taskDetailsModalActionToolbarClass, 'hidden md:inline-flex')}
           role="group"
           aria-label="Marcar resultado da execução"
         >
@@ -343,10 +347,8 @@ export const TestCaseItem: React.FC<{
             title="Aprovar"
             aria-label="Marcar como Aprovado"
             className={cn(
-              'inline-flex h-7 w-7 items-center justify-center rounded-md transition-all duration-150',
-              testCase.status === 'Passed'
-                ? 'bg-success/20 text-success ring-1 ring-success/30 scale-105'
-                : 'text-success/60 hover:bg-success/10 hover:text-success hover:scale-105'
+              taskDetailsModalStatusBtnClass(testCase.status === 'Passed'),
+              testCase.status === 'Passed' ? 'text-success' : 'text-success/70'
             )}
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -359,10 +361,8 @@ export const TestCaseItem: React.FC<{
             title="Reprovar"
             aria-label="Marcar como Reprovado"
             className={cn(
-              'inline-flex h-7 w-7 items-center justify-center rounded-md transition-all duration-150',
-              testCase.status === 'Failed'
-                ? 'bg-error/20 text-error ring-1 ring-error/30 scale-105'
-                : 'text-error/60 hover:bg-error/10 hover:text-error hover:scale-105'
+              taskDetailsModalStatusBtnClass(testCase.status === 'Failed'),
+              testCase.status === 'Failed' ? 'text-error' : 'text-error/70'
             )}
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -375,10 +375,8 @@ export const TestCaseItem: React.FC<{
             title="Bloquear"
             aria-label="Marcar como Bloqueado"
             className={cn(
-              'inline-flex h-7 w-7 items-center justify-center rounded-md transition-all duration-150',
-              testCase.status === 'Blocked'
-                ? 'bg-warning/20 text-warning ring-1 ring-warning/30 scale-105'
-                : 'text-warning/60 hover:bg-warning/10 hover:text-warning hover:scale-105'
+              taskDetailsModalStatusBtnClass(testCase.status === 'Blocked'),
+              testCase.status === 'Blocked' ? 'text-warning' : 'text-warning/70'
             )}
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -456,7 +454,12 @@ export const TestCaseItem: React.FC<{
       </div>
 
       <div className="mt-1.5 flex min-w-0 flex-wrap items-center gap-2 px-0.5">
-        <Badge variant={executionBadge.variant} size="sm" appearance="pill" className="shrink-0">
+        <Badge
+          variant="neu"
+          size="sm"
+          appearance="pill"
+          className={taskDetailsModalExecBadgeClass}
+        >
           <span className="normal-case tracking-normal">{executionBadge.label}</span>
         </Badge>
         <div className="flex min-w-0 flex-1 flex-col gap-0.5 sm:max-w-[16rem] sm:flex-initial">
@@ -483,8 +486,7 @@ export const TestCaseItem: React.FC<{
             }
             aria-label="Tipo de execução do caso de teste"
             className={cn(
-              appSelectClass,
-              'select-bordered select-xs min-w-0 w-full text-xs',
+              taskDetailsModalSelectClass,
               !onExecutionKindChange && 'cursor-not-allowed opacity-70'
             )}
           >
@@ -496,11 +498,11 @@ export const TestCaseItem: React.FC<{
         </div>
       </div>
 
-      <div className={cn(leveTaskModalCollapsibleShellClass, 'mt-2 overflow-hidden')}>
+      <div className={taskDetailsModalRoteiroShellClass}>
         <button
           type="button"
           onClick={() => setDetailsOpen(o => !o)}
-          className={cn(leveTaskModalCollapsibleHeaderClass, 'px-3 py-2')}
+          className={taskDetailsModalRoteiroHeaderClass}
           aria-expanded={detailsOpen}
         >
           <div className="flex min-w-0 items-center gap-2">
@@ -514,17 +516,12 @@ export const TestCaseItem: React.FC<{
           />
         </button>
         {detailsOpen && (
-          <div
-            className={cn(
-              'space-y-3 border-t px-3 pb-3 pt-2',
-              taskNeuDividerClass
-            )}
-          >
+          <div className={taskDetailsModalRoteiroInnerClass}>
             <div>
               <h3 className={cn(leveTaskModalMutedXsClass, 'mb-1 block font-bold uppercase tracking-widest')}>
                 Ação necessária
               </h3>
-              <div className={ROTEIRO_BLOCK_CLASS}>
+              <div className={taskDetailsModalRoteiroBlockClass}>
                 {hasStructuredSteps ? (
                   <ol className="list-decimal list-outside ml-5 space-y-2 pl-1 text-sm font-medium leading-snug marker:font-bold marker:text-[var(--leve-header-accent)]">
                     {actionSteps.map((step, i) => (
@@ -547,7 +544,7 @@ export const TestCaseItem: React.FC<{
               <h3 className={cn(leveTaskModalMutedXsClass, 'mb-1 block font-bold uppercase tracking-widest')}>
                 Parâmetros necessários
               </h3>
-              <div className={ROTEIRO_BLOCK_CLASS}>
+              <div className={taskDetailsModalRoteiroBlockClass}>
                 <RoteiroStructuredBody view={parametersView} />
               </div>
             </div>
@@ -555,7 +552,7 @@ export const TestCaseItem: React.FC<{
               <h3 className={cn(leveTaskModalMutedXsClass, 'mb-1 block font-bold uppercase tracking-widest')}>
                 Resultado esperado
               </h3>
-              <div className={ROTEIRO_BLOCK_CLASS}>
+              <div className={taskDetailsModalRoteiroBlockClass}>
                 <RoteiroStructuredBody view={expectedView} />
               </div>
             </div>
@@ -593,8 +590,8 @@ export const TestCaseItem: React.FC<{
                 aria-readonly={!onObservedResultChange}
                 placeholder="Preencha durante a execução com o comportamento observado."
                 className={cn(
-                  taskTextareaClass,
-                  'textarea-sm text-xs min-h-[72px]',
+                  taskDetailsModalTextareaClass,
+                  'min-h-[72px]',
                   !onObservedResultChange && 'cursor-not-allowed opacity-60'
                 )}
               />

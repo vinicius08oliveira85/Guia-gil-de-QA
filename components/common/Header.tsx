@@ -361,6 +361,7 @@ export const Header: React.FC<HeaderProps> = ({
   const leadingContent = selectedProject ? (
     <>
       <ExpansibleButton
+        neuVariant="header"
         icon={
           isSyncingJira ? (
             <Loader2 className="h-[18px] w-[18px] flex-shrink-0 animate-spin" aria-hidden />
@@ -412,6 +413,7 @@ export const Header: React.FC<HeaderProps> = ({
         onExpandedChange={expanded => setExpandedButton(expanded ? 'jira' : null)}
       />
       <ExpansibleButton
+        neuVariant="header"
         icon={
           isSaving ? (
             <Loader2
@@ -533,11 +535,13 @@ export const Header: React.FC<HeaderProps> = ({
               <NavigationMenuRail
                 items={mainNavRailItems}
                 currentId={selectedProjectId == null ? 'projects' : undefined}
-                className="shrink-0 border-l border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] pl-2"
+                neuVariant="header"
+                className="shrink-0 border-l border-[color-mix(in_srgb,var(--project-card-neu-light)_22%,transparent)] pl-2"
               />
             )}
             <div className="relative hidden min-w-0 overflow-hidden md:block">
               <ExpandableTabs
+                neuVariant="header"
                 className="flex max-w-full flex-nowrap items-center gap-1.5"
                 tabs={tabs}
                 activeColor={activeColor}

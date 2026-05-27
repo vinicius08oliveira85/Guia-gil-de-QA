@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Spinner } from '../common/Spinner';
-import { Button } from '../common/Button';
 import { cn } from '../../utils/cn';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import {
@@ -165,18 +164,16 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
                 aria-label="Selecionar novo arquivo .docx para reprocessar"
               />
             </label>
-            <Button
+            <button
               type="button"
-              variant="brandOutline"
-              size="panelXs"
               className={documentsSpecRemoveBtnClass}
               onClick={handleClear}
               disabled={isProcessing}
               aria-label="Remover documento de especificação"
             >
-              <Trash2 className="h-4 w-4" aria-hidden />
+              <Trash2 className="h-4 w-4 shrink-0" aria-hidden />
               Remover
-            </Button>
+            </button>
           </div>
         </div>
       ) : (

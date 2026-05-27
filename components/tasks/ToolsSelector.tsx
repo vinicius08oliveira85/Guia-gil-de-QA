@@ -8,12 +8,15 @@ import {
   leveTaskModalMutedXsClass,
   leveTaskModalToolChipClass,
 } from '../common/projectCardUi';
+import { testStrategyToolChipClass, testStrategyToolInputClass } from './taskDetailsNeuUi';
 
 interface ToolsSelectorProps {
   selectedTools: string[];
   onToolsChange: (tools: string[]) => void;
   label?: string;
   compact?: boolean;
+  /** Usa chips/input neumórficos do modal de tarefa. */
+  neuVariant?: 'default' | 'taskModal';
 }
 
 const toolDescriptions: Record<SuggestedTool, string> = {
@@ -28,7 +31,17 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
   onToolsChange,
   label = 'Ferramentas Utilizadas',
   compact = false,
+  neuVariant = 'default',
 }) => {
+  const chipClass = (selected: boolean) =>
+    neuVariant === 'taskModal'
+      ? testStrategyToolChipClass(selected, compact)
+      : leveTaskModalToolChipClass(selected, compact);
+
+  const inputClass =
+    neuVariant === 'taskModal'
+      ? cn(testStrategyToolInputClass, compact && 'py-1.5 text-xs')
+      : cn(leveTaskModalInputClass, compact && 'py-1.5 text-xs');
   const handleToolToggle = (tool: string) => {
     if (selectedTools.includes(tool)) {
       onToolsChange(selectedTools.filter(t => t !== tool));
@@ -70,7 +83,7 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
               key={tool}
               type="button"
               onClick={() => handleToolToggle(tool)}
-              className={leveTaskModalToolChipClass(isSelected, compact)}
+              className={chipClass(isSelected)}
               title={toolDescriptions[tool]}
             >
               {isSelected && <CheckIcon className={compact ? 'h-2.5 w-2.5' : 'h-3 w-3'} />}
@@ -92,13 +105,20 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
             {customTools.map(tool => (
               <div
                 key={tool}
-                className={cn(leveTaskModalMetaBadgeClass, 'inline-flex items-center gap-2', compact && 'text-[10px]')}
+                className={cn(
+                  neuVariant === 'taskModal' ? 'task-details-neu-chip' : leveTaskModalMetaBadgeClass,
+                  'inline-flex items-center gap-2',
+                  compact && 'text-[10px]'
+                )}
               >
                 <span>{tool}</span>
                 <button
                   type="button"
                   onClick={() => handleRemoveTool(tool)}
-                  className="inline-flex h-5 w-5 items-center justify-center rounded-full text-[var(--leve-header-text-muted)] transition-[box-shadow,color] hover:text-[color-mix(in_srgb,oklch(var(--er))_90%,transparent)] hover:shadow-[var(--leve-neu-raised)]"
+                  className={cn(
+                    neuVariant === 'taskModal' ? 'task-details-neu-chip' : '',
+                    'inline-flex h-5 w-5 min-h-5 min-w-5 items-center justify-center rounded-full text-[var(--leve-header-text-muted)] transition-[box-shadow,color] hover:text-[color-mix(in_srgb,oklch(var(--er))_90%,transparent)]'
+                  )}
                   title="Remover"
                   aria-label={`Remover ferramenta ${tool}`}
                 >
@@ -133,7 +153,7 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
               e.target.value = '';
             }
           }}
-          className={cn(leveTaskModalInputClass, compact && 'py-1.5 text-xs')}
+          className={inputClass}
           aria-label="Adicionar ferramenta customizada"
         />
         <p className={cn(leveTaskModalMutedXsClass, 'mt-1')}>

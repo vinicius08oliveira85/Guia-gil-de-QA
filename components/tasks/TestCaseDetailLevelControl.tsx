@@ -3,6 +3,10 @@ import type { TestCaseDetailLevel } from '../../types';
 import { cn } from '../../utils/cn';
 import { leveTaskModalFieldLabelClass, leveTaskModalMutedXsClass } from '../common/projectCardUi';
 import {
+  testCaseDetailLevelOptionClass,
+  testCaseDetailLevelTrackClass,
+} from './taskDetailsNeuUi';
+import {
   taskSegmentedControlClass,
   taskSegmentedOptionActiveClass,
   taskSegmentedOptionIdleClass,
@@ -15,6 +19,8 @@ export type TestCaseDetailLevelControlProps = {
   onChange: (level: TestCaseDetailLevel) => void;
   disabled?: boolean;
   className?: string;
+  /** Estilo neumórfico do modal de tarefa (trilho inset + chips). */
+  neuVariant?: 'default' | 'taskModal';
 };
 
 const RESUMIDO_TITLE =
@@ -31,21 +37,36 @@ export const TestCaseDetailLevelControl: React.FC<TestCaseDetailLevelControlProp
   onChange,
   disabled = false,
   className,
+  neuVariant = 'default',
 }) => {
   const groupId = `detail-level-${idPrefix}`;
+  const isModal = neuVariant === 'taskModal';
+
+  const trackClass = isModal ? testCaseDetailLevelTrackClass : taskSegmentedControlClass;
+
+  const optionClass = (active: boolean) =>
+    isModal
+      ? testCaseDetailLevelOptionClass(active)
+      : cn(
+          'min-h-[44px] sm:min-h-0',
+          active ? taskSegmentedOptionActiveClass : taskSegmentedOptionIdleClass
+        );
+
   return (
     <fieldset
-      className={cn('space-y-1.5', className)}
+      className={cn('min-w-0 space-y-2', className)}
       disabled={disabled}
       aria-describedby={`${groupId}-hint`}
     >
       <legend
         id={`${groupId}-legend`}
-        className={cn(leveTaskModalFieldLabelClass, 'mb-1.5 block px-0.5 normal-case')}
+        className={cn(leveTaskModalFieldLabelClass, 'mb-0 block w-full px-0.5 normal-case')}
       >
         Nível de detalhe
       </legend>
-      <div className={taskSegmentedControlClass} role="radiogroup"
+      <div
+        className={trackClass}
+        role="radiogroup"
         aria-labelledby={`${groupId}-legend`}
       >
         <button
@@ -56,10 +77,7 @@ export const TestCaseDetailLevelControl: React.FC<TestCaseDetailLevelControlProp
           title={RESUMIDO_TITLE}
           disabled={disabled}
           onClick={() => onChange('Resumido')}
-          className={cn(
-            'min-h-[44px] sm:min-h-0',
-            value === 'Resumido' ? taskSegmentedOptionActiveClass : taskSegmentedOptionIdleClass
-          )}
+          className={optionClass(value === 'Resumido')}
         >
           Resumido
         </button>
@@ -71,15 +89,12 @@ export const TestCaseDetailLevelControl: React.FC<TestCaseDetailLevelControlProp
           title={ESTRUTURADO_TITLE}
           disabled={disabled}
           onClick={() => onChange('Estruturado')}
-          className={cn(
-            'min-h-[44px] sm:min-h-0',
-            value === 'Estruturado' ? taskSegmentedOptionActiveClass : taskSegmentedOptionIdleClass
-          )}
+          className={optionClass(value === 'Estruturado')}
         >
           Estruturado
         </button>
       </div>
-      <p id={`${groupId}-hint`} className={cn(leveTaskModalMutedXsClass, 'px-0.5')}>
+      <p id={`${groupId}-hint`} className={cn(leveTaskModalMutedXsClass, 'px-0.5 leading-relaxed')}>
         Resumido: menos passos. Estruturado: roteiro completo e checagens intermediárias (passe o
         mouse nos botões para detalhes).
       </p>

@@ -1094,47 +1094,310 @@
     background: color-mix(in srgb, #ded7cd 28%, #f2eee8);
   }
 
-  /** Lista de documentos — cards e ações (Analisar, Gerar…). */
-  .documents-card-list-panel .documents-card {
-    border-color: #ded7cd;
-    background-color: #f2eee8;
+  /**
+   * View Documentos — paleta clara neumórfica (#EBE6DE / #F2EEE8 / #E5DFD5).
+   * Trilhos inset · chips/botões raised · ativo inset.
+   */
+  .documents-view-scope {
+    --doc-neu-dark: #b8aea3;
+    --doc-neu-light: #faf7f2;
+    --doc-neu-raised: 6px 6px 14px var(--doc-neu-dark), -5px -5px 12px var(--doc-neu-light);
+    --doc-neu-inset: inset 4px 4px 10px var(--doc-neu-dark), inset -3px -3px 8px var(--doc-neu-light);
+    --doc-neu-inset-deep: inset 5px 5px 14px var(--doc-neu-dark), inset -4px -4px 10px var(--doc-neu-light);
   }
 
-  .documents-card-list-panel .documents-card-action-primary {
-    border-color: color-mix(in srgb, #ff5c1b 45%, transparent) !important;
-    background-color: #ff5c1b !important;
-    color: #ffffff !important;
+  .documents-view-scope .documents-neu-section,
+  .documents-view-scope .documents-neu-panel,
+  .documents-view-scope .documents-neu-card,
+  .documents-view-scope .documents-card {
+    border: 1px solid #ded7cd !important;
+    border-radius: var(--leve-header-radius);
+    background: #f2eee8 !important;
+    box-shadow: var(--doc-neu-raised) !important;
+  }
+
+  .documents-view-scope .documents-neu-summary-track,
+  .documents-view-scope .documents-neu-alert-success,
+  .documents-view-scope .documents-neu-alert-info,
+  .documents-view-scope .documents-neu-search,
+  .documents-view-scope .documents-neu-filter-track,
+  .documents-view-scope .documents-neu-progress-track {
+    border: 1px solid #ded7cd !important;
+    background: #e5dfd5 !important;
+    box-shadow: var(--doc-neu-inset-deep) !important;
+  }
+
+  .documents-view-scope .documents-neu-filter-track {
+    border-radius: 9999px;
+  }
+
+  .documents-view-scope .documents-neu-progress-track {
+    border-radius: 9999px;
+    background: color-mix(in srgb, #ded7cd 28%, #e5dfd5) !important;
+  }
+
+  .documents-view-scope .documents-neu-progress-fill {
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, #10b981 72%, white) 0%,
+      #10b981 100%
+    ) !important;
+    box-shadow: inset 0 1px 2px color-mix(in srgb, #047857 22%, transparent);
+  }
+
+  .documents-view-scope .documents-neu-list-track {
+    border: 1px solid color-mix(in srgb, #ded7cd 55%, transparent) !important;
+    background: #ebe6de !important;
+    box-shadow: var(--doc-neu-inset-deep) !important;
+  }
+
+  .documents-view-scope .documents-neu-section:hover,
+  .documents-view-scope .documents-neu-card:hover,
+  .documents-view-scope .documents-card:hover {
+    border-color: color-mix(in srgb, #ff5c1b 22%, #ded7cd) !important;
+  }
+
+  .documents-view-scope .dashboard-glass-indicator-card {
+    border: 1px solid #ded7cd !important;
+    background: #f2eee8 !important;
+    box-shadow: var(--doc-neu-raised) !important;
+  }
+
+  .documents-view-scope .dashboard-glass-indicator-card:hover {
+    border-color: color-mix(in srgb, #ff5c1b 28%, #ded7cd) !important;
     box-shadow:
-      3px 3px 8px color-mix(in srgb, #ded7cd 50%, transparent),
-      -2px -2px 6px color-mix(in srgb, #ffffff 18%, #f2eee8) !important;
+      7px 7px 16px var(--doc-neu-dark),
+      -5px -5px 12px var(--doc-neu-light),
+      0 0 0 1px color-mix(in srgb, #ff5c1b 12%, transparent) !important;
   }
 
-  .documents-card-list-panel .documents-card-action-primary:hover:not(:disabled) {
+  .documents-view-scope .dashboard-glass-indicator-card--active {
+    border-color: color-mix(in srgb, #ff5c1b 38%, #ded7cd) !important;
+    background: color-mix(in srgb, #ff5c1b 8%, #f2eee8) !important;
+    box-shadow: var(--doc-neu-inset) !important;
+  }
+
+  .documents-view-scope .documents-neu-spec-remove {
+    border: 1px solid color-mix(in srgb, oklch(var(--er)) 28%, #ded7cd) !important;
+    background: #f2eee8 !important;
+    color: oklch(var(--er)) !important;
+    box-shadow: var(--doc-neu-raised) !important;
+  }
+
+  .documents-view-scope .documents-neu-spec-remove:hover:not(:disabled) {
+    border-color: color-mix(in srgb, oklch(var(--er)) 42%, #ded7cd) !important;
+    color: oklch(var(--er)) !important;
+    box-shadow: var(--doc-neu-raised) !important;
+  }
+
+  .documents-view-scope .documents-neu-btn-primary:active:not(:disabled),
+  .documents-view-scope .documents-neu-spec-remove:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: var(--doc-neu-inset) !important;
+  }
+
+  .documents-view-scope .documents-card .documents-neu-chip:not(.documents-card-action-btn) {
+    box-shadow: var(--doc-neu-raised) !important;
+  }
+
+  .documents-view-scope .documents-neu-chip,
+  .documents-view-scope .documents-neu-filter-pill.leve-neu-pill:not(.leve-neu-pill-active) {
+    border: 1px solid #ded7cd !important;
+    background: #f2eee8 !important;
+    box-shadow: var(--doc-neu-raised) !important;
+  }
+
+  .documents-view-scope .documents-neu-filter-pill.leve-neu-pill-active {
+    border: 1px solid #ded7cd !important;
+    background: color-mix(in srgb, #ff5c1b 14%, #e5dfd5) !important;
+    color: #ff5c1b !important;
+    box-shadow: var(--doc-neu-inset) !important;
+  }
+
+  .documents-view-scope .documents-neu-btn-primary,
+  .documents-view-scope .documents-card-action-primary {
+    border: 1px solid color-mix(in srgb, #ff5c1b 45%, transparent) !important;
+    background: #ff5c1b !important;
+    color: #ffffff !important;
+    box-shadow: var(--doc-neu-raised) !important;
+  }
+
+  .documents-view-scope .documents-neu-btn-primary:hover:not(:disabled),
+  .documents-view-scope .documents-card-action-primary:hover:not(:disabled) {
     filter: brightness(1.05);
   }
 
-  .documents-card-list-panel .documents-card-action-outline {
-    border-color: #ded7cd;
-    background-color: #f2eee8;
-    color: #401c31;
-    box-shadow:
-      3px 3px 8px color-mix(in srgb, #ded7cd 45%, transparent),
-      -2px -2px 6px color-mix(in srgb, #ffffff 18%, #f2eee8);
+  .documents-view-scope .documents-card-action-outline,
+  .documents-view-scope .documents-neu-chip.documents-card-action-outline {
+    border: 1px solid #ded7cd !important;
+    background: #f2eee8 !important;
+    color: #401c31 !important;
+    box-shadow: var(--doc-neu-raised) !important;
   }
 
-  .documents-card-list-panel .documents-card-action-outline:hover:not(:disabled) {
-    color: #ff5c1b;
+  .documents-view-scope .documents-card-action-outline:hover:not(:disabled) {
+    color: #ff5c1b !important;
   }
 
-  .documents-card-list-panel .app-btn-primary-inline,
-  .documents-card-list-panel .app-btn-outline {
-    box-shadow:
-      3px 3px 8px color-mix(in srgb, #ded7cd 45%, transparent),
-      -2px -2px 6px color-mix(in srgb, #ffffff 18%, #f2eee8) !important;
+  .documents-view-scope .documents-card-list-panel .app-btn-primary-inline,
+  .documents-view-scope .documents-card-list-panel .app-btn-outline {
+    box-shadow: var(--doc-neu-raised) !important;
+  }
+
+  .documents-view-scope .documents-neu-chip:active,
+  .documents-view-scope .documents-card-action-outline:active,
+  .documents-view-scope .documents-card-action-primary:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: var(--doc-neu-inset) !important;
+  }
+
+  .documents-view-scope .documents-card-actions .documents-card-action-btn {
+    border-radius: 9999px !important;
+    box-shadow: var(--doc-neu-raised) !important;
+  }
+
+  .documents-view-scope .documents-card-actions .documents-card-action-outline {
+    border: 1px solid #ded7cd !important;
+    background: #f2eee8 !important;
+    color: #401c31 !important;
+  }
+
+  .documents-view-scope .documents-card-actions .documents-card-action-outline:hover:not(:disabled) {
+    color: #ff5c1b !important;
+    box-shadow: var(--doc-neu-raised) !important;
+  }
+
+  .documents-view-scope .documents-card-actions .documents-card-action-primary {
+    border: 1px solid color-mix(in srgb, #ff5c1b 45%, transparent) !important;
+    background: #ff5c1b !important;
+    color: #ffffff !important;
+    box-shadow: var(--doc-neu-raised) !important;
+  }
+
+  .documents-view-scope .documents-card-actions .documents-card-action-primary:hover:not(:disabled) {
+    filter: brightness(1.05);
+  }
+
+  .documents-view-scope .documents-card-actions .documents-card-action-remove:hover:not(:disabled) {
+    color: oklch(var(--er)) !important;
+    border-color: color-mix(in srgb, oklch(var(--er)) 35%, #ded7cd) !important;
+  }
+
+  :is(.documents-neu-modal, .leve-modal-neu-shell) .documents-neu-inset,
+  :is(.documents-neu-modal, .leve-modal-neu-shell) .documents-modal-input {
+    border: 1px solid #ded7cd !important;
+    border-radius: var(--leve-header-radius);
+    background: #e5dfd5 !important;
+    box-shadow: var(--td-neu-inset, var(--doc-neu-inset)) !important;
+  }
+
+  /**
+   * Regras de negócio — paleta clara (#EBE6DE / #F2EEE8 / #E5DFD5).
+   */
+  .business-rules-view-scope {
+    --br-neu-dark: #b8aea3;
+    --br-neu-light: #faf7f2;
+    --br-neu-raised: 6px 6px 14px var(--br-neu-dark), -5px -5px 12px var(--br-neu-light);
+    --br-neu-inset: inset 4px 4px 10px var(--br-neu-dark), inset -3px -3px 8px var(--br-neu-light);
+    --br-neu-inset-deep: inset 5px 5px 14px var(--br-neu-dark), inset -4px -4px 10px var(--br-neu-light);
+    --app-neu-bg: #f5f1e6;
+    --leve-neu-bg: #f5f1e6;
+  }
+
+  .business-rules-view-scope .business-rules-neu-list-track {
+    border: 1px solid color-mix(in srgb, #ded7cd 55%, transparent) !important;
+    background: #ebe6de !important;
+    box-shadow: var(--br-neu-inset-deep) !important;
+  }
+
+  .business-rules-view-scope .business-rules-neu-card {
+    border: 1px solid #ded7cd !important;
+    background: #f2eee8 !important;
+    box-shadow: var(--br-neu-raised) !important;
+  }
+
+  .business-rules-view-scope .business-rules-neu-card:hover {
+    border-color: color-mix(in srgb, #ff5c1b 20%, #ded7cd) !important;
+  }
+
+  .business-rules-view-scope .business-rules-neu-inset {
+    border: 1px solid #ded7cd !important;
+    background: #e5dfd5 !important;
+    box-shadow: var(--br-neu-inset-deep) !important;
+  }
+
+  .business-rules-view-scope .business-rules-neu-chip,
+  .business-rules-view-scope .business-rules-card-action-btn {
+    border: 1px solid #ded7cd !important;
+    background: #f2eee8 !important;
+    box-shadow: var(--br-neu-raised) !important;
+  }
+
+  .business-rules-view-scope .business-rules-card-action-btn:hover:not(:disabled) {
+    color: #ff5c1b !important;
+  }
+
+  .business-rules-view-scope .business-rules-card-action-btn.text-error {
+    color: oklch(var(--er)) !important;
+    border-color: color-mix(in srgb, oklch(var(--er)) 30%, #ded7cd) !important;
+  }
+
+  .business-rules-view-scope .business-rules-card-action-btn.text-error:hover:not(:disabled) {
+    color: oklch(var(--er)) !important;
+    border-color: color-mix(in srgb, oklch(var(--er)) 42%, #ded7cd) !important;
+  }
+
+  .business-rules-view-scope .business-rules-neu-chip:active,
+  .business-rules-view-scope .business-rules-card-action-btn:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: var(--br-neu-inset) !important;
+  }
+
+  .business-rules-view-scope .business-rules-neu-category-badge {
+    box-shadow: var(--br-neu-raised) !important;
+    border-width: 1px !important;
+    border-style: solid;
+  }
+
+  .business-rules-view-scope .business-rules-neu-category-badge--primary {
+    background: #ff5c1b !important;
+    color: #ffffff !important;
+    border-color: color-mix(in srgb, #ff5c1b 35%, #ded7cd) !important;
+  }
+
+  .business-rules-view-scope .business-rules-neu-category-badge--secondary,
+  .business-rules-view-scope .business-rules-neu-category-badge--purple {
+    background: #421d3a !important;
+    color: #f5f1e6 !important;
+    border-color: color-mix(in srgb, #421d3a 28%, #ded7cd) !important;
+  }
+
+  .business-rules-view-scope .business-rules-neu-category-badge--accent {
+    background: #f2eee8 !important;
+    color: #401c31 !important;
+    border-color: color-mix(in srgb, #ff5c1b 38%, #ded7cd) !important;
+  }
+
+  .business-rules-view-scope .business-rules-neu-category-badge--info {
+    background: #f2eee8 !important;
+    color: #6b5e5e !important;
+    border-color: #ded7cd !important;
+  }
+
+  .business-rules-view-scope .business-rules-neu-category-badge--success {
+    background: #f2eee8 !important;
+    color: #047857 !important;
+    border-color: color-mix(in srgb, #047857 28%, #ded7cd) !important;
+  }
+
+  .business-rules-view-scope .business-rules-neu-category-badge--warning {
+    background: #f2eee8 !important;
+    color: #92400e !important;
+    border-color: color-mix(in srgb, #ca8a04 35%, #ded7cd) !important;
   }
 
   /** Modal de detalhe da tarefa (Resumo, BDD, Testes…) — paleta clara neumórfica. */
-  .task-details-neu-modal {
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) {
     --leve-header-text: #401c31;
     --leve-header-text-muted: #6b5e5e;
     --leve-header-accent: #ff5c1b;
@@ -1149,23 +1412,35 @@
     --leve-neu-light: color-mix(in srgb, #ffffff 22%, #f2eee8);
     --leve-neu-dark: color-mix(in srgb, #ded7cd 70%, #e5dfd5);
     --leve-neu-raised:
-      3px 3px 8px color-mix(in srgb, #ded7cd 45%, transparent),
-      -2px -2px 6px color-mix(in srgb, #ffffff 18%, #f2eee8);
+      6px 6px 14px color-mix(in srgb, #ded7cd 72%, transparent),
+      -4px -4px 10px color-mix(in srgb, #ffffff 52%, #f2eee8);
     --leve-neu-inset:
-      inset 3px 3px 8px color-mix(in srgb, #ded7cd 50%, transparent),
-      inset -2px -2px 6px color-mix(in srgb, #ffffff 18%, #e5dfd5);
+      inset 4px 4px 10px color-mix(in srgb, #ded7cd 58%, transparent),
+      inset -3px -3px 8px color-mix(in srgb, #ffffff 24%, #e5dfd5);
+    --leve-neu-inset-deep:
+      inset 5px 5px 14px color-mix(in srgb, #ded7cd 64%, transparent),
+      inset -4px -4px 10px color-mix(in srgb, #ffffff 22%, #e5dfd5);
     --leve-neu-hover:
-      4px 4px 10px color-mix(in srgb, #ded7cd 52%, transparent),
-      -2px -2px 7px color-mix(in srgb, #ffffff 20%, #f2eee8);
+      7px 7px 18px color-mix(in srgb, #ded7cd 68%, transparent),
+      -5px -5px 12px color-mix(in srgb, #ffffff 55%, #f2eee8);
   }
 
-  .task-details-neu-modal .leve-modal-neu-header {
+  :is(.leve-modal-neu-shell, .task-details-neu-modal).leve-modal-neu-shell {
+    border-color: #ded7cd;
+    background: #ebe6de;
+    box-shadow:
+      10px 10px 28px color-mix(in srgb, #ded7cd 68%, transparent),
+      -6px -6px 16px color-mix(in srgb, #ffffff 30%, #f2eee8),
+      0 24px 48px color-mix(in srgb, #401c31 14%, transparent);
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .leve-modal-neu-header {
     border-color: #ded7cd;
     background: #f2eee8;
     color: #401c31;
   }
 
-  .task-details-neu-modal .leve-modal-neu-close {
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .leve-modal-neu-close {
     border: 1px solid #ded7cd;
     background: #f2eee8;
     color: #6b5e5e;
@@ -1174,64 +1449,171 @@
       -2px -2px 6px color-mix(in srgb, #ffffff 18%, #f2eee8);
   }
 
-  .task-details-neu-modal .leve-modal-neu-close:hover {
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .leve-modal-neu-close:hover {
     color: #ff5c1b;
     box-shadow:
       inset 3px 3px 8px color-mix(in srgb, #ded7cd 50%, transparent),
       inset -2px -2px 6px color-mix(in srgb, #ffffff 18%, #e5dfd5);
   }
 
-  .task-details-neu-modal .task-modal-section {
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-modal-section {
     border-color: #ded7cd;
     background: #f2eee8;
-    box-shadow:
-      5px 5px 12px color-mix(in srgb, #ded7cd 55%, transparent),
-      -3px -3px 8px color-mix(in srgb, #ffffff 20%, #f2eee8);
+    box-shadow: var(--leve-neu-raised);
+    transition:
+      box-shadow 200ms ease,
+      border-color 200ms ease;
   }
 
-  .task-details-neu-modal .task-modal-section-accent {
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-modal-section:hover {
+    box-shadow: var(--leve-neu-hover);
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-modal-section-accent {
     border-color: color-mix(in srgb, #ff5c1b 32%, #ded7cd);
     background: color-mix(in srgb, #ff5c1b 8%, #f2eee8);
-    box-shadow:
-      inset 3px 3px 8px color-mix(in srgb, #ded7cd 50%, transparent),
-      inset -2px -2px 6px color-mix(in srgb, #ffffff 18%, #e5dfd5);
+    box-shadow: var(--leve-neu-inset);
   }
 
-  .task-details-neu-modal .leve-neu-surface-inset {
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-section-header {
+    border-color: color-mix(in srgb, #ded7cd 80%, transparent);
+    background: color-mix(in srgb, #ded7cd 18%, #f2eee8);
+    box-shadow:
+      inset 0 2px 4px color-mix(in srgb, #ded7cd 35%, transparent),
+      inset 0 -1px 0 color-mix(in srgb, #ffffff 30%, #f2eee8);
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-nav-footer {
+    border-color: #ded7cd;
+    background: #e5dfd5;
+    box-shadow: var(--leve-neu-inset-deep);
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-back-btn,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-ghost-btn {
+    border: 1px solid #ded7cd;
+    background: #f2eee8;
+    color: #401c31;
+    box-shadow: var(--leve-neu-raised);
+    transition:
+      box-shadow 200ms ease,
+      color 200ms ease,
+      transform 150ms ease;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-back-btn:hover,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-ghost-btn:hover {
+    color: #ff5c1b;
+    box-shadow: var(--leve-neu-hover);
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-back-btn:active,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-ghost-btn:active {
+    transform: translateY(1px);
+    box-shadow: var(--leve-neu-inset);
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .leve-neu-surface-inset {
     border: 1px solid #ded7cd;
     background: #e5dfd5;
-    box-shadow:
-      inset 3px 3px 8px color-mix(in srgb, #ded7cd 50%, transparent),
-      inset -2px -2px 6px color-mix(in srgb, #ffffff 18%, #e5dfd5);
+    box-shadow: var(--leve-neu-inset-deep);
   }
 
-  .task-details-neu-modal .leve-neu-pill {
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .leve-neu-pill {
     border-color: #ded7cd;
     background: #f2eee8;
-    box-shadow:
-      3px 3px 8px color-mix(in srgb, #ded7cd 45%, transparent),
-      -2px -2px 6px color-mix(in srgb, #ffffff 18%, #f2eee8);
+    box-shadow: var(--leve-neu-raised);
+    transition:
+      box-shadow 200ms ease,
+      color 200ms ease,
+      background-color 200ms ease,
+      transform 150ms ease;
   }
 
-  .task-details-neu-modal [role='tab'][aria-selected='true'] {
-    border: 1px solid #ded7cd !important;
-    background: #e2d9d0 !important;
-    color: #401c31 !important;
-    box-shadow:
-      3px 3px 8px color-mix(in srgb, #ded7cd 45%, transparent),
-      -2px -2px 6px color-mix(in srgb, #ffffff 18%, #f2eee8) !important;
-  }
-
-  .task-details-neu-modal [role='tab']:not([aria-selected='true']) {
-    color: #6b5e5e;
-  }
-
-  .task-details-neu-modal [role='tab']:not([aria-selected='true']):hover {
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .leve-neu-pill:hover {
+    box-shadow: var(--leve-neu-hover);
     color: #401c31;
   }
 
-  .task-details-neu-modal .btn-primary,
-  .task-details-neu-modal .app-btn-primary-inline {
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .leve-neu-pill:active {
+    transform: translateY(1px);
+    box-shadow: var(--leve-neu-inset);
+  }
+
+  /** Abas segmentadas — trilho rebaixado + aba ativa pressionada */
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-tabs-track {
+    border: 1px solid #ded7cd;
+    border-radius: 9999px;
+    background: #e5dfd5;
+    box-shadow: var(--leve-neu-inset-deep);
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-tab.leve-neu-pill {
+    color: #6b5e5e;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-tab.leve-neu-pill:hover {
+    color: #401c31;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-tab--active {
+    border: 1px solid #ded7cd;
+    border-radius: 9999px;
+    background: #e2d9d0;
+    color: #401c31;
+    box-shadow: var(--leve-neu-inset);
+    transition:
+      box-shadow 200ms ease,
+      background-color 200ms ease,
+      color 200ms ease;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-tab--active:hover {
+    color: #401c31;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-tab.leve-neu-pill:active {
+    transform: translateY(1px);
+    box-shadow: var(--leve-neu-inset);
+  }
+
+  /** Status rápido — trilho inset + pílula ativa em relevo laranja */
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-status-track {
+    border: 1px solid #ded7cd;
+    border-radius: 9999px;
+    padding: 0.25rem;
+    background: #e5dfd5;
+    box-shadow: var(--leve-neu-inset-deep);
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-status-pill.leve-neu-pill {
+    color: #6b5e5e;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-status-pill.leve-neu-pill:hover {
+    color: #401c31;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-status-pill.leve-neu-pill:active {
+    transform: translateY(1px);
+    box-shadow: var(--leve-neu-inset);
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-status-pill.leve-neu-pill-active,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-status-pill--active {
+    border-color: color-mix(in srgb, #ff5c1b 40%, transparent);
+    background: color-mix(in srgb, #ff5c1b 14%, #f2eee8);
+    color: #ff5c1b;
+    box-shadow: var(--leve-neu-inset);
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-status-pill.leve-neu-pill-active:hover,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-status-pill--active:hover {
+    color: #ff5c1b;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .btn-primary,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .app-btn-primary-inline {
     border: 1px solid color-mix(in srgb, #ff5c1b 45%, transparent) !important;
     background: #ff5c1b !important;
     color: #ffffff !important;
@@ -1240,12 +1622,12 @@
       -2px -2px 6px color-mix(in srgb, #ffffff 20%, #f2eee8) !important;
   }
 
-  .task-details-neu-modal .btn-primary:hover,
-  .task-details-neu-modal .app-btn-primary-inline:hover {
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .btn-primary:hover,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .app-btn-primary-inline:hover {
     filter: brightness(1.05);
   }
 
-  .task-details-neu-modal .app-btn-outline {
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .app-btn-outline {
     border: 1px solid #ded7cd;
     background: #f2eee8;
     color: #401c31;
@@ -1254,20 +1636,61 @@
       -2px -2px 6px color-mix(in srgb, #ffffff 18%, #f2eee8);
   }
 
-  .task-details-neu-modal .app-btn-outline:hover {
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .app-btn-outline:hover {
     color: #ff5c1b;
     border-color: color-mix(in srgb, #ff5c1b 35%, #ded7cd);
+    box-shadow: var(--leve-neu-hover);
   }
 
-  .task-details-neu-modal [role='tab'] .badge {
-    border: 1px solid #938a81;
-    background: #f7f4f0;
-    color: #401c31;
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .app-btn-outline:active {
+    transform: translateY(1px);
+    box-shadow: var(--leve-neu-inset);
   }
 
-  .task-details-neu-modal .btn-ghost,
-  .task-details-neu-modal .btn-outline,
-  .task-details-neu-modal .win-icon-button:not(.leve-modal-neu-close) {
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .leve-neu-surface-inset.task-details-neu-description,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-watchers {
+    border-color: #ded7cd;
+    background: #e5dfd5;
+    box-shadow: var(--leve-neu-inset-deep);
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-tab .badge,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) [role='tab'] .badge,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) [role='tab'] [role='status'],
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-tab-count {
+    border: 0;
+    background: color-mix(in srgb, var(--leve-neu-dark) 8%, var(--leve-neu-bg)) !important;
+    color: #401c31 !important;
+    box-shadow: var(--leve-neu-raised);
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-tab--active .badge,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-tab--active .task-details-neu-tab-count,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) [role='tab'][aria-selected='true'] .task-details-neu-tab-count {
+    border: 0;
+    background: color-mix(in srgb, var(--leve-neu-dark) 8%, var(--leve-neu-bg)) !important;
+    color: #401c31 !important;
+    box-shadow: var(--leve-neu-inset);
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) [role='tab']:not([aria-selected='true']) .task-details-neu-tab-count {
+    color: #6b5e5e !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-header-section {
+    border: 1px solid #ded7cd;
+    background: #f2eee8;
+    color: #401c31 !important;
+    box-shadow: var(--leve-neu-raised);
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-exec-badge {
+    color: #401c31 !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .btn-ghost,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .btn-outline,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .win-icon-button:not(.leve-modal-neu-close) {
     border: 1px solid #ded7cd;
     background: #f2eee8;
     color: #401c31;
@@ -1276,14 +1699,14 @@
       -2px -2px 6px color-mix(in srgb, #ffffff 18%, #f2eee8);
   }
 
-  .task-details-neu-modal .btn-ghost:hover,
-  .task-details-neu-modal .btn-outline:hover {
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .btn-ghost:hover,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .btn-outline:hover {
     color: #ff5c1b;
   }
 
-  .task-details-neu-modal .input,
-  .task-details-neu-modal .textarea,
-  .task-details-neu-modal .select:not(.select-ghost) {
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .input,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .textarea,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .select:not(.select-ghost) {
     border-color: #ded7cd;
     background: #e5dfd5;
     color: #401c31;
@@ -1292,13 +1715,13 @@
       inset -2px -2px 6px color-mix(in srgb, #ffffff 18%, #e5dfd5);
   }
 
-  .task-details-neu-modal .text-primary {
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .text-primary {
     color: #ff5c1b;
   }
 
-  .task-details-neu-modal .text-base-content,
-  .task-details-neu-modal .text-muted,
-  .task-details-neu-modal .text-base-content\/70 {
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .text-base-content,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .text-muted,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .text-base-content\/70 {
     color: #6b5e5e;
   }
 
@@ -1666,6 +2089,111 @@
     color: var(--workspace-panel-badge-text);
   }
 
+  /** Filtros rápidos Meus Projetos — neumorfismo escuro (cores #4a423e / #423b37 / #d85414) */
+  .projects-dash-quick-filters-toolbar {
+    display: inline-flex;
+    align-items: stretch;
+    gap: 0.125rem;
+    padding: 0.25rem;
+    border-radius: 9999px;
+    border: 1px solid color-mix(in srgb, #fdf6e3 14%, transparent);
+    background: #4a423e;
+    box-shadow:
+      inset 5px 5px 12px color-mix(in srgb, #423b37 75%, transparent),
+      inset -4px -4px 10px color-mix(in srgb, #fdf6e3 8%, #4a423e);
+  }
+
+  .projects-dash-quick-filters-divider {
+    align-self: stretch;
+    width: 1px;
+    margin-block: 0.375rem;
+    flex-shrink: 0;
+    background: color-mix(in srgb, #fdf6e3 18%, transparent);
+  }
+
+  .projects-dash-quick-filters-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 9999px;
+    border: 1px solid color-mix(in srgb, #fdf6e3 10%, transparent);
+    background: #423b37;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.25;
+    color: #dcdcdc;
+    box-shadow:
+      inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
+      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e);
+    transition:
+      box-shadow 200ms ease,
+      background-color 200ms ease,
+      color 200ms ease,
+      border-color 200ms ease,
+      transform 150ms ease,
+      filter 150ms ease;
+  }
+
+  .projects-dash-quick-filters-pill:hover:not(:disabled) {
+    color: #fdf6e3;
+    border-color: color-mix(in srgb, #fdf6e3 18%, transparent);
+    box-shadow:
+      inset 3px 3px 8px color-mix(in srgb, #423b37 65%, transparent),
+      inset -2px -2px 6px color-mix(in srgb, #fdf6e3 12%, #4a423e),
+      0 1px 0 color-mix(in srgb, #fdf6e3 6%, transparent);
+  }
+
+  .projects-dash-quick-filters-pill:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow:
+      inset 5px 5px 12px color-mix(in srgb, #423b37 80%, transparent),
+      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 8%, #4a423e);
+  }
+
+  .projects-dash-quick-filters-pill:focus-visible {
+    outline: none;
+    box-shadow:
+      inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
+      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e),
+      0 0 0 2px color-mix(in srgb, #d85414 45%, transparent);
+  }
+
+  .projects-dash-quick-filters-pill--active {
+    border-color: transparent;
+    background: #d85414;
+    color: #ffffff;
+    box-shadow:
+      2px 2px 6px color-mix(in srgb, #423b37 55%, transparent),
+      -1px -1px 4px color-mix(in srgb, #fdf6e3 14%, #4a423e);
+  }
+
+  .projects-dash-quick-filters-pill--active:hover:not(:disabled) {
+    color: #ffffff;
+    filter: brightness(1.08);
+    box-shadow:
+      3px 3px 8px color-mix(in srgb, #423b37 50%, transparent),
+      -2px -2px 6px color-mix(in srgb, #fdf6e3 16%, #4a423e);
+  }
+
+  .projects-dash-quick-filters-pill--active:active:not(:disabled) {
+    transform: translateY(1px);
+    filter: none;
+    box-shadow:
+      inset 2px 2px 5px color-mix(in srgb, #423b37 60%, transparent),
+      inset -1px -1px 3px color-mix(in srgb, #fdf6e3 10%, #d85414);
+  }
+
+  .projects-dash-quick-filters-pill--active:focus-visible {
+    outline: none;
+    box-shadow:
+      2px 2px 6px color-mix(in srgb, #423b37 55%, transparent),
+      -1px -1px 4px color-mix(in srgb, #fdf6e3 14%, #4a423e),
+      0 0 0 2px color-mix(in srgb, #d85414 45%, transparent);
+  }
+
   /** Chrome neumórfico escuro — ProjectView / QADashboard (paleta do painel de alertas) */
   .workspace-chrome-inset {
     border-radius: 9999px;
@@ -1978,6 +2506,11 @@
     --leve-header-text: var(--project-card-text);
     --leve-header-text-muted: var(--project-card-text-muted);
     --leve-header-border: var(--project-card-border);
+    --leve-header-cream: #f5f1e6;
+    --leve-header-accent: var(--project-card-accent);
+    --header-track-bg: color-mix(in srgb, var(--leve-header-cream) 94%, white);
+    --header-track-neu-light: color-mix(in srgb, white 78%, var(--header-track-bg));
+    --header-track-neu-dark: color-mix(in srgb, var(--project-card-bg) 14%, var(--header-track-bg));
     --leve-neu-bg: var(--project-card-bg);
     --leve-neu-surface: color-mix(in srgb, white 10%, var(--project-card-bg));
     --leve-neu-light: var(--project-card-neu-light);
@@ -2049,37 +2582,98 @@
     color: var(--leve-header-text);
   }
 
-  /** Faixa inset (Configurações, glossário, tema) — ícones e rótulos legíveis. */
-  .app-header-shell .leve-neu-surface-inset {
+  /** Trilho cream inset — abas e ações Jira/Salvar. */
+  .app-header-shell .app-header-neu-track,
+  .app-header-shell .leve-neu-surface-inset.app-header-neu-track {
+    border: 1px solid color-mix(in srgb, var(--header-track-neu-dark) 22%, transparent) !important;
+    background: var(--header-track-bg) !important;
+    box-shadow:
+      inset 4px 4px 10px color-mix(in srgb, var(--header-track-neu-dark) 55%, transparent),
+      inset -3px -3px 8px color-mix(in srgb, var(--header-track-neu-light) 85%, transparent) !important;
+  }
+
+  .app-header-shell .app-header-neu-track-separator {
+    background: color-mix(in srgb, var(--header-track-neu-dark) 28%, transparent);
+  }
+
+  .app-header-shell .app-header-neu-chip {
+    border: 1px solid color-mix(in srgb, var(--header-track-neu-dark) 16%, transparent) !important;
+    background: var(--header-track-bg) !important;
+    color: #6b5e5e;
+    box-shadow:
+      2px 2px 6px color-mix(in srgb, var(--header-track-neu-dark) 42%, transparent),
+      -1px -1px 4px color-mix(in srgb, var(--header-track-neu-light) 90%, transparent) !important;
+  }
+
+  .app-header-shell .app-header-neu-chip:hover:not(:disabled) {
+    color: #401c31 !important;
+    background: color-mix(in srgb, var(--header-track-neu-light) 35%, var(--header-track-bg)) !important;
+    box-shadow:
+      3px 3px 8px color-mix(in srgb, var(--header-track-neu-dark) 48%, transparent),
+      -2px -2px 5px color-mix(in srgb, var(--header-track-neu-light) 92%, transparent) !important;
+  }
+
+  .app-header-shell .app-header-neu-chip:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  .app-header-shell .app-header-neu-chip--active,
+  .app-header-shell .app-header-neu-chip[aria-pressed='true'] {
+    color: var(--project-card-accent) !important;
+    border-color: color-mix(in srgb, var(--project-card-accent) 48%, transparent) !important;
+    background: color-mix(in srgb, var(--project-card-accent) 10%, var(--header-track-bg)) !important;
+    box-shadow:
+      inset 3px 3px 8px color-mix(in srgb, var(--header-track-neu-dark) 50%, transparent),
+      inset -2px -2px 6px color-mix(in srgb, var(--header-track-neu-light) 80%, transparent) !important;
+  }
+
+  .app-header-shell .app-header-neu-chip svg {
+    color: currentColor;
+    stroke: currentColor;
+  }
+
+  /** Pills sobre o roxo (ex.: Projetos). */
+  .app-header-shell .app-header-neu-nav-pill {
+    border: 1px solid color-mix(in srgb, var(--project-card-neu-light) 24%, transparent);
+    background: color-mix(in srgb, var(--project-card-neu-dark) 18%, var(--project-card-bg));
+    color: var(--project-card-text-muted);
+    box-shadow: var(--project-card-neu-inset);
+  }
+
+  .app-header-shell .app-header-neu-nav-pill:hover {
+    color: var(--project-card-text);
+    background: color-mix(in srgb, white 8%, var(--project-card-bg));
+    box-shadow: var(--project-card-neu-raised-sm);
+  }
+
+  .app-header-shell .app-header-neu-nav-pill[data-active='true'] {
+    color: var(--project-card-text);
+    border-color: color-mix(in srgb, var(--project-card-accent) 38%, transparent);
+    background: color-mix(in srgb, var(--project-card-accent) 12%, var(--project-card-bg));
+    box-shadow: var(--project-card-neu-inset);
+  }
+
+  /** Legado: faixa inset sem classe dedicada. */
+  .app-header-shell .leve-neu-surface-inset:not(.app-header-neu-track) {
     border-color: color-mix(in srgb, var(--project-card-neu-light) 26%, transparent);
     background: color-mix(in srgb, var(--project-card-neu-dark) 20%, var(--project-card-bg));
     box-shadow: var(--project-card-neu-inset-deep);
   }
 
-  .app-header-shell .leve-neu-surface-inset button {
+  .app-header-shell .leve-neu-surface-inset:not(.app-header-neu-track) button {
     color: var(--project-card-text-muted);
   }
 
-  .app-header-shell .leve-neu-surface-inset button:hover {
+  .app-header-shell .leve-neu-surface-inset:not(.app-header-neu-track) button:hover {
     color: var(--project-card-text);
     background: color-mix(in srgb, white 7%, var(--project-card-bg));
-    --tw-ring-color: color-mix(in srgb, var(--project-card-accent) 30%, transparent);
   }
 
-  .app-header-shell .leve-neu-surface-inset button[aria-pressed='true'] {
+  .app-header-shell .leve-neu-surface-inset:not(.app-header-neu-track) button[aria-pressed='true'] {
     color: var(--project-card-accent);
     border-color: color-mix(in srgb, var(--project-card-accent) 45%, transparent);
     background: color-mix(in srgb, var(--project-card-accent) 11%, var(--project-card-bg));
     box-shadow: var(--project-card-neu-inset);
-  }
-
-  .app-header-shell .leve-neu-surface-inset button svg {
-    color: currentColor;
-    stroke: currentColor;
-  }
-
-  .app-header-shell .leve-neu-surface-inset [class*='bg-[color-mix'] {
-    background: color-mix(in srgb, var(--project-card-neu-light) 32%, transparent) !important;
   }
 
   .app-header-shell .win-icon-button {
@@ -2096,20 +2690,20 @@
     box-shadow: var(--project-card-neu-raised-sm);
   }
 
-  .app-header-shell .app-nav-pill.btn-ghost {
+  .app-header-shell .app-nav-pill.btn-ghost:not(.app-header-neu-nav-pill) {
     color: var(--project-card-text-muted);
     background: transparent;
     border-color: color-mix(in srgb, var(--project-card-neu-light) 22%, transparent);
     box-shadow: var(--project-card-neu-inset);
   }
 
-  .app-header-shell .app-nav-pill.btn-ghost:hover {
+  .app-header-shell .app-nav-pill.btn-ghost:not(.app-header-neu-nav-pill):hover {
     color: var(--project-card-text);
     background: color-mix(in srgb, white 8%, var(--project-card-bg));
     box-shadow: var(--project-card-neu-raised-sm);
   }
 
-  .app-header-shell .app-nav-pill[data-active='true'] {
+  .app-header-shell .app-nav-pill[data-active='true']:not(.app-header-neu-nav-pill) {
     color: var(--project-card-accent);
     border-color: color-mix(in srgb, var(--project-card-accent) 42%, transparent);
     background: color-mix(in srgb, var(--project-card-accent) 10%, var(--project-card-bg));
@@ -2748,6 +3342,40 @@
     background: color-mix(in srgb, var(--leve-neu-dark) 8%, var(--leve-neu-bg));
     box-shadow: var(--leve-neu-inset);
   }
+
+  /** Conteúdo dentro de trilhos inset — padding e listas alinhadas à sombra interna */
+  .leve-neu-inset-content {
+    padding: 0.875rem 1rem;
+  }
+  @media (min-width: 640px) {
+    .leve-neu-inset-content {
+      padding: 1rem 1.25rem;
+    }
+  }
+  .leve-neu-inset-content :is(ul, ol) {
+    margin: 0.25rem 0 0;
+    padding-left: 1.35rem;
+  }
+  .leve-neu-inset-content :is(ul) {
+    list-style-type: disc;
+  }
+  .leve-neu-inset-content :is(ol) {
+    list-style-type: decimal;
+  }
+  .leve-neu-inset-content :is(ul, ol) > li + li {
+    margin-top: 0.35rem;
+  }
+  .leve-neu-inset-content :is(h1, h2, h3, h4, p):not(:last-child) {
+    margin-bottom: 0.5rem;
+  }
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-description.leve-neu-inset-content {
+    padding: 1rem 1.25rem !important;
+  }
+  @media (min-width: 640px) {
+    :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-description.leve-neu-inset-content {
+      padding: 1.125rem 1.5rem !important;
+    }
+  }
   .leve-neu-pill {
     border: 1px solid color-mix(in srgb, var(--leve-neu-light) 40%, transparent);
     border-radius: 9999px;
@@ -2845,63 +3473,126 @@
       0 0 0 2px color-mix(in srgb, var(--workspace-stat-accent) 22%, transparent);
   }
 
+  /** Aba Dashboard do projeto — fundo bege + neumorfismo (cores Leve preservadas). */
+  .dashboard-neu-scope {
+    --app-neu-bg: var(--leve-header-cream);
+    --leve-neu-bg: var(--leve-header-cream);
+    --project-dashboard-insight-bg: var(--leve-header-cream);
+  }
+
+  .dashboard-neu-scope .dashboard-neu-filter-toolbar {
+    border: 1px solid color-mix(in srgb, var(--app-neu-light) 32%, transparent) !important;
+    background: color-mix(in srgb, var(--app-neu-dark) 7%, var(--app-neu-bg)) !important;
+    box-shadow: var(--app-neu-inset) !important;
+  }
+
+  .dashboard-neu-scope .dashboard-neu-filter-btn {
+    border: 1px solid color-mix(in srgb, var(--app-neu-light) 38%, transparent) !important;
+    background: var(--app-neu-bg) !important;
+    box-shadow: var(--app-neu-raised) !important;
+  }
+
+  .dashboard-neu-scope .dashboard-neu-filter-btn:hover:not(:disabled) {
+    color: var(--leve-header-text) !important;
+    box-shadow: var(--app-neu-hover) !important;
+  }
+
+  .dashboard-neu-scope .dashboard-neu-filter-btn--active,
+  .dashboard-neu-scope .dashboard-neu-filter-btn.leve-neu-pill-active {
+    color: var(--leve-header-accent) !important;
+    border-color: color-mix(in srgb, var(--leve-header-accent) 32%, transparent) !important;
+    background: color-mix(in srgb, var(--leve-header-accent) 10%, var(--app-neu-bg)) !important;
+    box-shadow: var(--app-neu-inset) !important;
+  }
+
+  .dashboard-neu-scope .dashboard-neu-action-btn {
+    border: 1px solid color-mix(in srgb, var(--app-neu-light) 38%, transparent) !important;
+    background: var(--app-neu-bg) !important;
+    box-shadow: var(--app-neu-raised) !important;
+  }
+
+  .dashboard-neu-scope .dashboard-neu-action-btn:hover:not(:disabled) {
+    box-shadow: var(--app-neu-hover) !important;
+    color: var(--leve-header-accent) !important;
+  }
+
+  .dashboard-neu-scope .dashboard-neu-donut-well {
+    border: 1px solid color-mix(in srgb, var(--app-neu-light) 28%, transparent) !important;
+    background: color-mix(in srgb, var(--app-neu-dark) 9%, var(--app-neu-bg)) !important;
+    box-shadow: var(--app-neu-inset-deep) !important;
+  }
+
   /**
    * Shell do app (Tarefas, Documentos, Regras, Meus Projetos):
    * superfícies Leve e inputs usam o bege --app-neu-bg com sombras coerentes.
    */
-  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .leve-neu-surface,
-  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .app-panel {
+  :is(.app-neu-scope, .app-page, .tasks-panel-scope, .projects-dash-page, .leve-modal-neu-shell, .task-details-neu-modal)
+    .leve-neu-surface,
+  :is(.app-neu-scope, .app-page, .tasks-panel-scope, .projects-dash-page, .leve-modal-neu-shell, .task-details-neu-modal)
+    .app-panel {
     border: 1px solid color-mix(in srgb, var(--app-neu-light) 48%, transparent);
     background: var(--app-neu-bg);
     box-shadow: var(--app-neu-raised);
   }
-  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .leve-neu-surface-inset {
+  :is(.app-neu-scope, .app-page, .tasks-panel-scope, .projects-dash-page, .leve-modal-neu-shell, .task-details-neu-modal)
+    .leve-neu-surface-inset {
     border: 1px solid color-mix(in srgb, var(--app-neu-light) 32%, transparent);
     background: color-mix(in srgb, var(--app-neu-dark) 7%, var(--app-neu-bg));
     box-shadow: var(--app-neu-inset);
   }
-  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .leve-neu-pill {
+  :is(.app-neu-scope, .app-page, .tasks-panel-scope, .projects-dash-page, .leve-modal-neu-shell, .task-details-neu-modal)
+    .leve-neu-pill {
     border-color: color-mix(in srgb, var(--app-neu-light) 40%, transparent);
     background: var(--app-neu-bg);
     box-shadow: var(--app-neu-raised);
   }
-  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .leve-neu-pill-active {
+  :is(.app-neu-scope, .app-page, .tasks-panel-scope, .projects-dash-page, .leve-modal-neu-shell, .task-details-neu-modal)
+    .leve-neu-pill-active {
     background: color-mix(in srgb, var(--leve-header-accent) 14%, var(--app-neu-bg));
     box-shadow: var(--app-neu-inset);
   }
-  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .app-input {
+  :is(.app-neu-scope, .app-page, .tasks-panel-scope, .projects-dash-page, .leve-modal-neu-shell, .task-details-neu-modal)
+    .app-input {
     border-color: color-mix(in srgb, var(--app-neu-light) 30%, transparent);
     background: color-mix(in srgb, var(--app-neu-dark) 6%, var(--app-neu-bg));
     box-shadow: var(--app-neu-inset);
   }
-  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .app-input:focus {
+  :is(.app-neu-scope, .app-page, .tasks-panel-scope, .projects-dash-page, .leve-modal-neu-shell, .task-details-neu-modal)
+    .app-input:focus {
     box-shadow:
       var(--app-neu-inset),
       0 0 0 2px color-mix(in srgb, var(--leve-header-accent) 18%, transparent);
   }
-  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .app-select:not([multiple]),
-  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .app-select[multiple] {
+  :is(.app-neu-scope, .app-page, .tasks-panel-scope, .projects-dash-page, .leve-modal-neu-shell, .task-details-neu-modal)
+    .app-select:not([multiple]),
+  :is(.app-neu-scope, .app-page, .tasks-panel-scope, .projects-dash-page, .leve-modal-neu-shell, .task-details-neu-modal)
+    .app-select[multiple] {
     border-color: color-mix(in srgb, var(--app-neu-light) 30%, transparent);
     background-color: color-mix(in srgb, var(--app-neu-dark) 6%, var(--app-neu-bg));
     box-shadow: var(--app-neu-inset);
   }
-  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .app-select:not([multiple]):focus {
+  :is(.app-neu-scope, .app-page, .tasks-panel-scope, .projects-dash-page, .leve-modal-neu-shell, .task-details-neu-modal)
+    .app-select:not([multiple]):focus {
     box-shadow:
       var(--app-neu-inset),
       0 0 0 2px color-mix(in srgb, var(--leve-header-accent) 18%, transparent);
   }
-  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .app-filter-pill {
+  :is(.app-neu-scope, .app-page, .tasks-panel-scope, .projects-dash-page, .leve-modal-neu-shell, .task-details-neu-modal)
+    .app-filter-pill {
     border-color: color-mix(in srgb, var(--app-neu-light) 40%, transparent);
     background: var(--app-neu-bg);
     box-shadow: var(--app-neu-raised);
   }
-  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .app-filter-pill:hover:not(:disabled) {
+  :is(.app-neu-scope, .app-page, .tasks-panel-scope, .projects-dash-page, .leve-modal-neu-shell, .task-details-neu-modal)
+    .app-filter-pill:hover:not(:disabled) {
     box-shadow:
       7px 7px 18px var(--app-neu-dark),
       -5px -5px 14px var(--app-neu-light);
   }
-  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .app-filter-pill-active,
-  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .app-filter-pill[data-active='true'] {
+  :is(.app-neu-scope, .app-page, .tasks-panel-scope, .projects-dash-page, .leve-modal-neu-shell, .task-details-neu-modal)
+    .app-filter-pill-active,
+  :is(.app-neu-scope, .app-page, .tasks-panel-scope, .projects-dash-page, .leve-modal-neu-shell, .task-details-neu-modal)
+    .app-filter-pill[data-active='true'] {
     background: color-mix(in srgb, var(--leve-header-accent) 14%, var(--app-neu-bg));
     box-shadow: var(--app-neu-inset);
   }
@@ -3070,6 +3761,7 @@
   }
 
   /* Portais em document.body (fora de .app-neu-scope) */
+  body > [role='dialog'] .leve-modal-neu-shell,
   body > .app-menu-panel,
   body > [role='tooltip'].leve-neu-surface {
     border: 1px solid color-mix(in srgb, var(--leve-neu-light) 45%, transparent);
@@ -3081,5 +3773,295 @@
 
   .heading-section {
     @apply text-lg font-semibold text-base-content mb-4;
+  }
+
+  /**
+   * Modal de tarefa — classes dedicadas (padrão project-card-neu-*).
+   * Sombras literais + !important: portal fora de .app-page; overflow não pode cortar relevo.
+   */
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) {
+    --td-neu-dark: #b8aea3;
+    --td-neu-light: #faf7f2;
+    --td-neu-raised: 6px 6px 14px var(--td-neu-dark), -5px -5px 12px var(--td-neu-light);
+    --td-neu-inset: inset 4px 4px 10px var(--td-neu-dark), inset -3px -3px 8px var(--td-neu-light);
+    --td-neu-inset-deep: inset 5px 5px 14px var(--td-neu-dark), inset -4px -4px 10px var(--td-neu-light);
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-raised,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-modal-section {
+    border: 1px solid #ded7cd !important;
+    border-radius: var(--leve-header-radius);
+    background: #f2eee8 !important;
+    box-shadow: var(--td-neu-raised) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-inset,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-description,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-watchers {
+    border: 1px solid #ded7cd !important;
+    border-radius: var(--leve-header-radius);
+    background: #e5dfd5 !important;
+    box-shadow: var(--td-neu-inset) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-inset-deep,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-strategy-neu-inset,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-track {
+    border: 1px solid #ded7cd !important;
+    background: #e5dfd5 !important;
+    box-shadow: var(--td-neu-inset-deep) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-track {
+    border-radius: 9999px;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-chip {
+    border: 1px solid #ded7cd !important;
+    border-radius: 9999px;
+    background: #f2eee8 !important;
+    color: #6b5e5e;
+    box-shadow: var(--td-neu-raised) !important;
+    transition:
+      box-shadow 200ms ease,
+      color 200ms ease,
+      transform 150ms ease;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-chip:hover {
+    color: #401c31;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-chip:active {
+    transform: translateY(1px);
+    box-shadow: var(--td-neu-inset) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-chip--active {
+    border: 1px solid #ded7cd !important;
+    border-radius: 9999px;
+    background: #e2d9d0 !important;
+    color: #401c31 !important;
+    box-shadow: var(--td-neu-inset) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-chip--status-active {
+    border-color: color-mix(in srgb, #ff5c1b 42%, #ded7cd) !important;
+    background: color-mix(in srgb, #ff5c1b 14%, #f2eee8) !important;
+    color: #ff5c1b !important;
+    box-shadow: var(--td-neu-inset) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-ghost-btn,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-jira-btn,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .btn-ghost.task-details-neu-ghost-btn,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .app-btn-outline.task-details-neu-jira-btn {
+    box-shadow: var(--td-neu-raised) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-section-header {
+    border-color: color-mix(in srgb, #ded7cd 80%, transparent);
+    background: color-mix(in srgb, #ded7cd 18%, #f2eee8);
+    box-shadow:
+      inset 0 2px 4px color-mix(in srgb, #b8aea3 45%, transparent),
+      inset 0 -1px 0 color-mix(in srgb, #faf7f2 80%, #f2eee8) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-nav-footer {
+    border: 1px solid #ded7cd;
+    background: #e5dfd5;
+    box-shadow: var(--td-neu-inset-deep) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .leve-neu-pill:not(.leve-neu-pill-active) {
+    box-shadow: var(--td-neu-raised) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .leve-neu-pill-active {
+    box-shadow: var(--td-neu-inset) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .custom-scrollbar {
+    overflow-x: visible;
+  }
+
+  /** Caso de teste — roteiro completo, badge, select e campos */
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-roteiro-shell {
+    border-radius: var(--leve-header-radius) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-roteiro-block {
+    border-radius: var(--leve-header-radius) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-exec-badge {
+    border: 1px solid #ded7cd !important;
+    box-shadow: var(--td-neu-raised) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-select {
+    border: 1px solid #ded7cd !important;
+    border-radius: var(--leve-header-radius) !important;
+    background: #f2eee8 !important;
+    color: #401c31;
+    box-shadow: var(--td-neu-raised) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-select:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-textarea {
+    border: 1px solid #ded7cd !important;
+    border-radius: var(--leve-header-radius) !important;
+    background: #e5dfd5 !important;
+    box-shadow: var(--td-neu-inset) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-textarea:focus {
+    outline: none;
+    box-shadow: var(--td-neu-inset-deep) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-status-btn.task-details-neu-chip--active.text-success {
+    border-color: color-mix(in srgb, oklch(var(--su)) 35%, #ded7cd) !important;
+    background: color-mix(in srgb, oklch(var(--su)) 18%, #e5dfd5) !important;
+    color: oklch(var(--su)) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-status-btn.task-details-neu-chip--active.text-error {
+    border-color: color-mix(in srgb, oklch(var(--er)) 35%, #ded7cd) !important;
+    background: color-mix(in srgb, oklch(var(--er)) 18%, #e5dfd5) !important;
+    color: oklch(var(--er)) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-status-btn.task-details-neu-chip--active.text-warning {
+    border-color: color-mix(in srgb, oklch(var(--wa)) 35%, #ded7cd) !important;
+    background: color-mix(in srgb, oklch(var(--wa)) 18%, #e5dfd5) !important;
+    color: oklch(var(--wa)) !important;
+  }
+
+  /** Estratégia de teste — toggle, passos e ferramentas */
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-strategy-neu-card {
+    border: 1px solid #ded7cd !important;
+    background: #f2eee8 !important;
+    box-shadow: var(--td-neu-raised) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-strategy-neu-toggle {
+    position: relative;
+    display: inline-block;
+    height: 1.5rem;
+    width: 2.75rem;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    border: 1px solid #ded7cd;
+    background: #e5dfd5;
+    box-shadow: var(--td-neu-inset-deep) !important;
+    transition:
+      background-color 200ms ease,
+      box-shadow 200ms ease;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-strategy-neu-toggle::after {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    height: 1.25rem;
+    width: 1.25rem;
+    border-radius: 9999px;
+    border: 1px solid #ded7cd;
+    background: #f2eee8;
+    box-shadow: var(--td-neu-raised) !important;
+    transition: transform 200ms ease;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .peer:checked + .test-strategy-neu-toggle {
+    background: color-mix(in srgb, oklch(var(--su)) 62%, #e5dfd5);
+    box-shadow: var(--td-neu-inset) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .peer:checked + .test-strategy-neu-toggle::after {
+    transform: translateX(1.25rem);
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .peer:focus-visible + .test-strategy-neu-toggle {
+    outline: none;
+    box-shadow:
+      var(--td-neu-inset-deep),
+      0 0 0 2px color-mix(in srgb, #ff5c1b 28%, transparent) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-strategy-neu-tool-input {
+    border-radius: 9999px !important;
+    min-height: 2.25rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /** Nível de detalhe — segmentado + CTA IA */
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-case-detail-level-track {
+    border-radius: 9999px !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-case-detail-level-option--active {
+    border-color: color-mix(in srgb, #ff5c1b 48%, #ded7cd) !important;
+    background: #ff5c1b !important;
+    color: #ffffff !important;
+    box-shadow: var(--td-neu-inset) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-case-detail-level-option:not(.test-case-detail-level-option--active):hover:not(:disabled) {
+    color: #401c31 !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-primary-cta {
+    border: 1px solid color-mix(in srgb, #ff5c1b 45%, transparent) !important;
+    background: #ff5c1b !important;
+    color: #ffffff !important;
+    box-shadow: var(--td-neu-raised) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-primary-cta:hover:not(:disabled) {
+    filter: brightness(1.05);
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-primary-cta:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: var(--td-neu-inset) !important;
+  }
+
+  /** Modal Registro de Testes */
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-report-neu-modal .test-report-neu-section {
+    border: 1px solid #ded7cd !important;
+    background: #f2eee8 !important;
+    box-shadow: var(--td-neu-raised) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-report-neu-modal .test-report-neu-inset {
+    box-shadow: var(--td-neu-inset-deep) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-report-neu-modal .test-report-neu-format-option--active {
+    border-color: color-mix(in srgb, #ff5c1b 38%, #ded7cd) !important;
+    background: color-mix(in srgb, #ff5c1b 10%, #f2eee8) !important;
+    box-shadow: var(--td-neu-inset) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-report-neu-modal .test-report-neu-format-idle:hover {
+    border-color: color-mix(in srgb, #ff5c1b 28%, #ded7cd) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-report-neu-modal .test-report-neu-chip-btn:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: var(--td-neu-inset) !important;
+  }
+
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-report-neu-modal .test-report-neu-preview-field {
+    border: 1px solid #ded7cd !important;
+    background: #e5dfd5 !important;
+    box-shadow: var(--td-neu-inset) !important;
   }
 }

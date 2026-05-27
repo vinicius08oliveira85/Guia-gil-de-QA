@@ -1,11 +1,56 @@
 import { cn } from '../../utils/cn';
 import {
+  leveViewSecondaryToolbarBtnActiveClass,
+  leveViewSecondaryToolbarBtnClass,
+  leveViewSecondaryToolbarDividerClass,
+  qaDashboardHeaderActionBtnClass,
+} from '../common/projectCardUi';
+import {
   neuCardClass,
   neuCardCompactClass,
   neuCardInsetClass,
   neuDividerClass,
+  neuPillActiveClass,
+  neuPillClass,
+  neuSurfaceInsetClass,
   neuTrackClass,
 } from '../common/neuUi';
+
+/** Escopo bege do dashboard — ativa --app-neu-* e sombras em index.css. */
+export const dashboardNeuScopeClass = cn('dashboard-neu-scope', 'app-neu-scope');
+
+/** Toolbar Filtrar / Exportar (trilho inset + chips raised). */
+export const dashboardFilterToolbarClass = cn(
+  'dashboard-neu-filter-toolbar',
+  neuSurfaceInsetClass,
+  'inline-flex items-stretch gap-0.5 rounded-full p-1'
+);
+
+export const dashboardFilterToolbarDividerClass = leveViewSecondaryToolbarDividerClass;
+
+export const dashboardFilterBtnClass = cn(
+  'dashboard-neu-filter-btn',
+  neuPillClass,
+  leveViewSecondaryToolbarBtnClass
+);
+
+export const dashboardFilterBtnActiveClass = cn(
+  'dashboard-neu-filter-btn dashboard-neu-filter-btn--active',
+  neuPillActiveClass,
+  leveViewSecondaryToolbarBtnActiveClass
+);
+
+export const dashboardMobileActionBtnClass = cn(
+  'dashboard-neu-action-btn',
+  neuPillClass,
+  qaDashboardHeaderActionBtnClass
+);
+
+/** Poço inset do donut «Taxa de aprovação». */
+export const dashboardDonutWellClass = cn(
+  'dashboard-neu-donut-well',
+  'dashboard-neu-insight-inset mx-auto w-[92%] max-w-[14rem] min-w-[9rem] rounded-full p-3 sm:max-w-[15rem]'
+);
 
 /** Painel principal de seção no dashboard. */
 export const dashboardPanelClass = cn(neuCardClass, 'space-y-4');

@@ -11,6 +11,7 @@ import {
   leveTaskModalMutedClass,
   leveTaskModalMutedXsClass,
   leveTaskModalMetaBadgeClass,
+  leveTaskModalSectionClass,
   leveTaskModalStrongClass,
   leveTaskModalTextareaClass,
   leveViewOutlineBtnClass,

@@ -11,17 +11,20 @@ import {
   leveSettingsSectionIconWrapClass,
   leveTaskModalGhostBtnClass,
   leveTaskModalInsetClass,
-  leveTaskModalKpiStripClass,
   leveTaskModalMutedClass,
   leveTaskModalMutedXsClass,
   leveTaskModalProgressShellClass,
   leveTaskModalSectionAccentClass,
   leveTaskModalSectionClass,
   leveTaskModalStatPillActiveClass,
-  leveTaskModalStatPillIdleClass,
   leveTaskModalStrongClass,
   leveTaskModalTabBadgeIdleClass,
 } from '../common/projectCardUi';
+import {
+  taskDetailsModalSectionClass,
+  taskDetailsModalStatusTrackClass,
+  taskDetailsModalTabClass,
+} from './taskDetailsNeuUi';
 
 const STATUS_LABEL: Record<TestCase['status'], string> = {
   'Not Run': 'Não Executado',
@@ -189,7 +192,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
         {cases.length > 0 && (
           <>
             {/* Indicadores clicáveis */}
-            <div className={leveTaskModalKpiStripClass}>
+            <div className={cn(taskDetailsModalStatusTrackClass, 'flex flex-wrap items-center gap-1.5')}>
               {indicatorItems.map(item => (
                 <button
                   key={item.label}
@@ -204,9 +207,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                         ? `Filtrar por: ${item.label}`
                         : 'Ver todos'
                   }
-                  className={
-                    item.isActive ? leveTaskModalStatPillActiveClass : leveTaskModalStatPillIdleClass
-                  }
+                  className={taskDetailsModalTabClass(item.isActive)}
                   aria-pressed={item.isActive}
                 >
                   {!item.isActive && (

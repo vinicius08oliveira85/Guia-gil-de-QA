@@ -6,8 +6,13 @@ import {
   leveSettingsHeadingXsClass,
   leveSettingsMutedTextClass,
   leveSettingsMutedTextXsClass,
-  leveTaskModalSectionClass,
 } from '../common/projectCardUi';
+import {
+  testReportModalPreviewFieldClass,
+  testReportModalPreviewHeaderClass,
+  testReportModalSectionClass,
+  testReportModalStatCardClass,
+} from './testReportNeuUi';
 
 interface TestReportTextPreviewProps {
   reportText: string;
@@ -214,11 +219,16 @@ export const TestReportTextPreview: React.FC<TestReportTextPreviewProps> = ({
     <section
       aria-label="Prévia do relatório de testes"
       className={cn(
-        leveTaskModalSectionClass,
+        testReportModalSectionClass,
         'flex h-full min-h-[320px] flex-col overflow-hidden'
       )}
     >
-      <div className="flex flex-col gap-3 border-b border-[var(--leve-header-border)] bg-[color-mix(in_srgb,var(--leve-header-text)_4%,var(--leve-header-bg))] px-4 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+      <div
+        className={cn(
+          testReportModalPreviewHeaderClass,
+          'flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between'
+        )}
+      >
         <div className="min-w-0">
           <p className={leveSettingsHeadingXsClass}>Prévia pronta para copiar</p>
           <p className={leveSettingsMutedTextXsClass}>O botão copiar usa exatamente este conteúdo.</p>
@@ -245,7 +255,7 @@ export const TestReportTextPreview: React.FC<TestReportTextPreviewProps> = ({
               .map((line, index) => (
                 <p
                   key={`${line}-${index}`}
-                  className="rounded-[var(--leve-header-radius)] border border-[var(--leve-header-border)] bg-white px-3 py-2"
+                  className={testReportModalPreviewFieldClass}
                 >
                   {line}
                 </p>
@@ -258,7 +268,7 @@ export const TestReportTextPreview: React.FC<TestReportTextPreviewProps> = ({
                 return (
                   <div
                     key={`${row.type}-${index}`}
-                    className="grid gap-1 rounded-[var(--leve-header-radius)] border border-[var(--leve-header-border)] bg-[color-mix(in_srgb,var(--leve-header-text)_4%,var(--leve-header-bg))] px-3 py-2"
+                    className={cn(testReportModalPreviewFieldClass, 'grid gap-1')}
                   >
                     <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--leve-header-text-muted)]">
                       {row.label}
@@ -298,7 +308,11 @@ export const TestReportTextPreview: React.FC<TestReportTextPreviewProps> = ({
                       return (
                         <div
                           key={metricKey}
-                          className={`flex min-h-[92px] flex-col items-start justify-between gap-3 rounded-[var(--leve-header-radius)] border px-3 py-3 text-left ${metric.className}`}
+                          className={cn(
+                            testReportModalStatCardClass,
+                            'flex min-h-[92px] flex-col items-start justify-between gap-3 text-left',
+                            metric.className
+                          )}
                         >
                           <div className="flex w-full items-start gap-2">
                             <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-current/10">
@@ -364,7 +378,7 @@ export const TestReportTextPreview: React.FC<TestReportTextPreviewProps> = ({
                 return (
                   <div
                     key={`${row.type}-${index}`}
-                    className="rounded-[var(--leve-header-radius)] border border-[var(--leve-header-border)] bg-[color-mix(in_srgb,var(--leve-header-text)_4%,var(--leve-header-bg))] px-3 py-2 text-xs font-medium text-[var(--leve-header-text-muted)]"
+                    className={cn(testReportModalPreviewFieldClass, 'text-xs font-medium text-[var(--leve-header-text-muted)]')}
                   >
                     {row.content}
                   </div>

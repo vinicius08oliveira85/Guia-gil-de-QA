@@ -1,4 +1,13 @@
 import { cn } from '../../utils/cn';
+import {
+  neuFilterPillClass,
+  neuPillActiveClass,
+  neuPillClass,
+  neuSegmentedTabBadgeActiveClass,
+  neuSegmentedTabBadgeIdleClass,
+  neuSegmentedTabClass,
+  neuSegmentedTrackClass,
+} from './neuUi';
 
 /** Shell compartilhado — ProjectCard e NewProjectCard (neumorfismo + roxo/laranja Leve). */
 export const projectCardShellClass = cn(
@@ -238,8 +247,8 @@ export const qaDashboardHeaderActionBtnClass = cn(
 );
 
 export const qaDashboardHeaderFilterChipClass = cn(
-  'inline-flex items-center gap-1 rounded-full border pl-2.5 pr-1 py-1 font-sans text-xs',
-  'border-[var(--leve-header-border)] bg-[var(--leve-header-cream)] text-[var(--leve-header-text)]',
+  'dashboard-neu-insight-inset inline-flex items-center gap-1 rounded-full pl-2.5 pr-1 py-1 font-sans text-xs',
+  'text-[var(--leve-header-text)]',
   '[&_button]:text-[var(--leve-header-accent)] [&_button:hover]:opacity-80'
 );
 
@@ -372,17 +381,7 @@ export const leveViewFilterSelectClass = cn(
 export const leveViewManageLinkClass =
   'shrink-0 font-sans text-xs font-semibold text-[var(--leve-header-accent)] hover:underline';
 
-export const leveViewFilterPillClass = (active: boolean) =>
-  cn(
-    'px-3 py-1.5 font-sans text-xs transition-[box-shadow,color]',
-    active
-      ? cn(
-          'rounded-full border border-[color-mix(in_srgb,white_35%,transparent)]',
-          'bg-[var(--leve-header-accent)] font-semibold text-white',
-          'shadow-[2px_2px_8px_color-mix(in_srgb,black_30%,var(--leve-header-accent)),-2px_-2px_8px_color-mix(in_srgb,white_30%,var(--leve-header-accent))]'
-        )
-      : 'leve-neu-pill rounded-full font-medium text-[var(--leve-header-text-muted)] hover:text-[var(--leve-header-text)]'
-  );
+export const leveViewFilterPillClass = neuFilterPillClass;
 
 export const leveViewInlineCodeClass = cn(
   'rounded bg-[var(--leve-header-cream)] px-1.5 py-0.5 font-mono text-xs text-[var(--leve-header-text)]'
@@ -568,16 +567,18 @@ export const leveModalGrabberClass =
   'bg-[color-mix(in_srgb,var(--leve-header-text)_18%,transparent)]';
 
 /** Seções internas de modais de tarefa / relatório de testes. */
-export const leveTaskModalSectionClass = cn('task-modal-section font-sans');
+export const leveTaskModalSectionClass = cn(
+  'task-modal-section task-details-neu-raised font-sans'
+);
 
 export const leveTaskModalSectionAccentClass = cn('task-modal-section-accent font-sans');
 
 /** Área de conteúdo das abas do modal de tarefa. */
 export const leveTaskModalPanelShellClass = cn(
-  'leve-neu-surface-inset rounded-[var(--leve-header-radius)] p-3 sm:p-4'
+  'leve-neu-surface-inset leve-neu-inset-content rounded-[var(--leve-header-radius)]'
 );
 
-export const leveTaskModalInsetClass = cn('leve-neu-surface-inset px-3 py-3');
+export const leveTaskModalInsetClass = cn('leve-neu-surface-inset leve-neu-inset-content');
 
 export const leveTaskModalFormatOptionIdleClass = cn(
   leveTaskModalSectionClass,
@@ -587,47 +588,19 @@ export const leveTaskModalFormatOptionIdleClass = cn(
   'hover:text-[var(--leve-header-text)]'
 );
 
-/** Modal de detalhe da tarefa (Resumo, BDD, Testes…) — abas e painéis internos. */
-export const leveTaskModalTabsStripClass = cn(
-  'leve-neu-surface-inset flex w-full flex-wrap gap-1.5 overflow-x-auto p-1.5'
-);
+/** Abas segmentadas — trilho inset, chip raised, ativo inset (modal, card expandido, toolbars). */
+export const leveTaskModalTabsStripClass = neuSegmentedTrackClass;
 
-export const leveTaskModalTabClass = (active: boolean) =>
-  active
-    ? cn(
-        'inline-flex min-h-[2.25rem] shrink-0 snap-start items-center gap-2 rounded-full px-3 py-2',
-        'border border-[color-mix(in_srgb,white_35%,transparent)]',
-        'bg-[var(--leve-header-accent)]',
-        'font-sans text-xs font-semibold text-white sm:text-sm',
-        'shadow-[2px_2px_8px_color-mix(in_srgb,black_30%,var(--leve-header-accent)),-2px_-2px_8px_color-mix(in_srgb,white_30%,var(--leve-header-accent))]'
-      )
-    : cn(
-        'leve-neu-pill inline-flex min-h-[2.25rem] shrink-0 snap-start items-center gap-2 px-3 py-2',
-        'font-sans text-xs font-semibold text-[var(--leve-header-text-muted)] transition-all sm:text-sm',
-        'hover:shadow-[var(--leve-neu-hover)] hover:text-[var(--leve-header-text)]'
-      );
+export const leveTaskModalTabClass = neuSegmentedTabClass;
 
-/** Contador na aba ativa (laranja) — relevo neumórfico + texto legível. */
-export const leveTaskModalTabBadgeActiveClass = cn(
-  'min-h-[1.125rem] min-w-[1.125rem] justify-center rounded-full border',
-  'border-[color-mix(in_srgb,white_55%,transparent)]',
-  '!bg-[color-mix(in_srgb,var(--leve-header-cream)_82%,white)]',
-  'font-sans text-[10px] font-bold tabular-nums leading-none',
-  '!text-[var(--leve-header-text)]',
-  'shadow-[2px_2px_6px_color-mix(in_srgb,black_28%,var(--leve-header-accent)),-1px_-1px_4px_color-mix(in_srgb,white_36%,var(--leve-header-accent))]'
-);
+export const leveTaskModalTabBadgeActiveClass = neuSegmentedTabBadgeActiveClass;
 
-export const leveTaskModalTabBadgeIdleClass = cn(
-  'min-h-[1.125rem] min-w-[1.125rem] justify-center rounded-full border-0',
-  'bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))]',
-  'font-sans text-[10px] font-bold tabular-nums leading-none',
-  'text-[var(--leve-header-text-muted)] shadow-[var(--leve-neu-inset)]'
-);
+export const leveTaskModalTabBadgeIdleClass = neuSegmentedTabBadgeIdleClass;
 
 export const leveTaskModalFieldLabelClass = workspacePanelSectionTitleClass;
 
 export const leveTaskModalSectionHeaderClass = cn(
-  'flex items-center gap-2 border-b border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] p-4',
+  'task-details-neu-section-header flex items-center gap-2 border-b border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] p-4',
   'bg-[color-mix(in_srgb,var(--leve-neu-dark)_5%,var(--leve-neu-bg))]',
   'shadow-[inset_0_-1px_0_color-mix(in_srgb,var(--leve-neu-light)_25%,transparent)]'
 );
@@ -642,14 +615,14 @@ export const leveTaskModalMutedXsClass = leveSettingsMutedTextXsClass;
 export const leveTaskModalStrongClass = leveSettingsStrongTextClass;
 
 export const leveTaskModalNavFooterClass = cn(
-  'mt-5 flex items-center justify-between gap-2 rounded-[var(--leve-header-radius)]',
+  'task-details-neu-nav-footer mt-5 flex items-center justify-between gap-2 rounded-[var(--leve-header-radius)]',
   'border border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]',
   'bg-[color-mix(in_srgb,var(--leve-neu-dark)_4%,var(--leve-neu-bg))] p-2.5 sm:p-3',
   'shadow-[var(--leve-neu-inset)]'
 );
 
 export const leveTaskModalWatchersBoxClass = cn(
-  'leve-neu-surface-inset rounded-[var(--leve-header-radius)] p-2.5',
+  'task-details-neu-watchers leve-neu-surface-inset rounded-[var(--leve-header-radius)] p-2.5',
   'border border-[color-mix(in_srgb,var(--leve-header-accent)_18%,transparent)]'
 );
 
@@ -658,11 +631,18 @@ export const leveTaskModalAvatarClass = cn(
   'font-sans text-sm font-bold text-[var(--leve-header-accent)]'
 );
 
-export const leveTaskModalStatusPillClass = leveViewFilterPillClass;
+export const leveTaskModalStatusPillClass = (active: boolean) =>
+  cn(
+    'task-details-neu-status-pill inline-flex min-h-[2.25rem] items-center justify-center rounded-full px-3 py-1.5',
+    'font-sans text-xs font-semibold transition-[box-shadow,filter,color,transform] sm:min-h-0',
+    active ? cn(neuPillActiveClass, 'task-details-neu-status-pill--active') : 'leve-neu-pill'
+  );
 
 export const leveTaskModalDescriptionPanelClass = cn(
+  'task-details-neu-description leve-neu-inset-content',
   leveTaskModalInsetClass,
-  'text-sm leading-relaxed text-[var(--leve-header-text)]'
+  'text-sm leading-relaxed text-[var(--leve-header-text)]',
+  '[&_ul]:list-disc [&_ol]:list-decimal [&_ul]:space-y-1.5 [&_ol]:space-y-1.5'
 );
 
 export const leveTaskModalPageTitleClass =
@@ -686,7 +666,7 @@ export const leveTaskModalCollapsibleHeaderClass = cn(
 /** Blocos internos do roteiro (ação, parâmetros, resultado). */
 export const leveTaskModalRoteiroBlockClass = cn(
   leveTaskModalInsetClass,
-  'text-xs text-[var(--leve-header-text)]'
+  'task-details-neu-roteiro-block text-xs text-[var(--leve-header-text)]'
 );
 
 /** Faixa de alerta contextual (bloqueado / pronto). */
@@ -713,7 +693,8 @@ export const leveTaskModalMetaBadgeClass = cn(
 
 /** Toolbar compacta de ações (editar / status em casos de teste). */
 export const leveTaskModalActionToolbarClass = cn(
-  'leve-neu-surface-inset inline-flex shrink-0 items-center rounded-full p-0.5'
+  'leve-neu-surface-inset inline-flex shrink-0 items-center rounded-full p-0.5',
+  'shadow-[var(--leve-neu-inset)]'
 );
 
 /** Barra de ações BDD (gerar IA + adicionar manual). */
@@ -745,26 +726,17 @@ export const leveTaskModalProgressShellClass = cn(
 /** Chip de ferramenta (seletor em cartões de estratégia). */
 export const leveTaskModalToolChipClass = (selected: boolean, compact?: boolean) =>
   cn(
-    'inline-flex items-center gap-1.5 rounded-full font-semibold transition-[box-shadow,color]',
-    compact ? 'px-2 py-0.5 text-[10px]' : 'px-3 py-1.5 text-xs',
-    selected
-      ? leveViewFilterPillClass(true)
-      : 'leve-neu-pill font-medium text-[var(--leve-header-text-muted)] hover:shadow-[var(--leve-neu-hover)] hover:text-[var(--leve-header-text)]'
+    neuFilterPillClass(selected),
+    'inline-flex items-center gap-1.5 font-semibold',
+    compact && 'px-2 py-0.5 text-[10px]'
   );
 
-export const leveTaskModalStatPillActiveClass = cn(
-  'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5',
-  'border border-[color-mix(in_srgb,white_35%,transparent)] bg-[var(--leve-header-accent)]',
-  'font-sans text-xs font-semibold text-white',
-  'shadow-[2px_2px_8px_color-mix(in_srgb,black_30%,var(--leve-header-accent)),-2px_-2px_8px_color-mix(in_srgb,white_30%,var(--leve-header-accent))]',
-  'transition-[box-shadow]'
-);
+export const leveTaskModalStatPillClass = (active: boolean) =>
+  cn(neuFilterPillClass(active), 'inline-flex items-center gap-1.5');
 
-export const leveTaskModalStatPillIdleClass = cn(
-  leveViewFilterPillClass(false),
-  'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap py-1.5 font-medium transition-all',
-  'hover:border-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)]'
-);
+export const leveTaskModalStatPillActiveClass = leveTaskModalStatPillClass(true);
+
+export const leveTaskModalStatPillIdleClass = leveTaskModalStatPillClass(false);
 
 export const leveTaskModalCategoryBadgeClass = cn(
   'leve-neu-pill shrink-0 px-2 py-0.5',
@@ -773,6 +745,7 @@ export const leveTaskModalCategoryBadgeClass = cn(
 
 /** Botões — modal / detalhe expandido da tarefa (neumorfismo Leve). */
 export const leveTaskModalGhostBtnClass = cn(
+  'task-details-neu-ghost-btn',
   leveViewOutlineBtnClass,
   'min-h-[44px] rounded-full border-0 shadow-[var(--leve-neu-raised)]',
   'hover:shadow-[var(--leve-neu-hover)] hover:text-[var(--leve-header-accent)] sm:min-h-9'

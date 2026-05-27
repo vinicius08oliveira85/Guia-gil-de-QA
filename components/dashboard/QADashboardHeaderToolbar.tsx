@@ -12,14 +12,12 @@ import {
   qaDashboardHeaderTitleClass,
 } from '../common/projectCardUi';
 import {
-  tasksViewHeaderFilterCountClass,
-  tasksViewHeaderFilterIconClass,
-  tasksViewHeaderIconWrapClass,
-  tasksViewHeaderSecondaryBtnActiveClass,
-  tasksViewHeaderSecondaryBtnClass,
-  tasksViewHeaderSecondaryToolbarClass,
-  tasksViewHeaderSecondaryToolbarDividerClass,
-} from '../tasks/tasksPanelNeuStyles';
+  dashboardFilterBtnActiveClass,
+  dashboardFilterBtnClass,
+  dashboardFilterToolbarClass,
+  dashboardFilterToolbarDividerClass,
+  dashboardMobileActionBtnClass,
+} from './dashboardNeuUi';
 import { appMenuItemClass, appMenuPanelClass } from '../common/viewUi';
 
 export interface QADashboardHeaderToolbarProps {
@@ -87,7 +85,7 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
 
         <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
           <div
-            className={cn(tasksViewHeaderSecondaryToolbarClass, 'hidden md:inline-flex')}
+            className={cn(dashboardFilterToolbarClass, 'hidden md:inline-flex')}
             role="group"
             aria-label="Filtrar e exportar"
           >
@@ -96,32 +94,28 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
               onClick={onOpenFiltersModal}
               className={cn(
                 'rounded-l-full',
-                activeFiltersCount > 0
-                  ? tasksViewHeaderSecondaryBtnActiveClass
-                  : tasksViewHeaderSecondaryBtnClass
+                activeFiltersCount > 0 ? dashboardFilterBtnActiveClass : dashboardFilterBtnClass
               )}
               aria-label={`Filtrar dados do dashboard${activeFiltersCount > 0 ? `, ${activeFiltersCount} ativos` : ''}`}
             >
-              <span className={tasksViewHeaderIconWrapClass} aria-hidden>
-                <Filter className={tasksViewHeaderFilterIconClass} />
-              </span>
+              <Filter className="h-4 w-4 shrink-0" aria-hidden />
               <span>Filtrar{activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}</span>
               {activeFiltersCount > 0 ? (
-                <span className={tasksViewHeaderFilterCountClass}>{activeFiltersCount}</span>
+                <span className="inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--leve-header-accent)_14%,var(--app-neu-bg))] px-1 font-sans text-[10px] font-bold tabular-nums text-[var(--leve-header-accent)]">
+                  {activeFiltersCount}
+                </span>
               ) : null}
             </button>
 
-            <div className={tasksViewHeaderSecondaryToolbarDividerClass} aria-hidden />
+            <div className={dashboardFilterToolbarDividerClass} aria-hidden />
 
             <button
               type="button"
               onClick={onOpenExportModal}
-              className={cn(tasksViewHeaderSecondaryBtnClass, 'rounded-r-full')}
+              className={cn(dashboardFilterBtnClass, 'rounded-r-full')}
               aria-label="Exportar dados do projeto"
             >
-              <span className={tasksViewHeaderIconWrapClass} aria-hidden>
-                <Download className={tasksViewHeaderFilterIconClass} />
-              </span>
+              <Download className="h-4 w-4 shrink-0" aria-hidden />
               <span>Exportar</span>
             </button>
           </div>
@@ -129,7 +123,7 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
           <div className="relative ml-auto md:hidden">
             <button
               type="button"
-              className={qaDashboardHeaderActionBtnClass}
+              className={dashboardMobileActionBtnClass}
               onClick={() => setShowActionsMenu(v => !v)}
               aria-expanded={showActionsMenu}
               aria-label="Menu de ações"

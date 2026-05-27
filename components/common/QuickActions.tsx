@@ -7,11 +7,13 @@ import {
   leveTaskModalFieldLabelClass,
   leveTaskModalMutedXsClass,
   leveTaskModalSecondaryBtnClass,
-  leveTaskModalSectionClass,
-  leveTaskModalStatusPillClass,
   leveTaskModalStrongClass,
-  leveViewSecondaryToolbarClass,
 } from './projectCardUi';
+import {
+  taskDetailsModalSectionClass,
+  taskDetailsModalStatusPillClass,
+  taskDetailsModalStatusTrackClass,
+} from '../tasks/taskDetailsNeuUi';
 
 interface QuickActionsProps {
   task: JiraTask;
@@ -55,7 +57,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ task, project, onUpd
     <div className="flex flex-col gap-3">
       <div>
         <p className={cn(leveTaskModalFieldLabelClass, 'mb-2 block')}>Mudar status</p>
-        <div className={cn(leveViewSecondaryToolbarClass, 'flex flex-wrap gap-1')}>
+        <div className={taskDetailsModalStatusTrackClass}>
           {statusOptions.map(status => {
             const isActive = currentStatus === status;
             return (
@@ -63,7 +65,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ task, project, onUpd
                 key={status}
                 type="button"
                 onClick={() => handleQuickStatusChange(status)}
-                className={leveTaskModalStatusPillClass(!!isActive)}
+                className={taskDetailsModalStatusPillClass(!!isActive)}
               >
                 {status === 'To Do'
                   ? 'A fazer'
@@ -90,7 +92,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ task, project, onUpd
       {isBlocked && (
         <span
           className={cn(
-            leveTaskModalSectionClass,
+            taskDetailsModalSectionClass,
             'inline-block w-fit px-3 py-1.5 font-sans text-sm text-[var(--leve-header-accent)]'
           )}
         >
@@ -99,7 +101,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ task, project, onUpd
       )}
 
       {estimation && (
-        <div className={cn(leveTaskModalSectionClass, 'flex items-center gap-2 px-3 py-2 font-sans text-sm')}>
+        <div className={cn(taskDetailsModalSectionClass, 'flex items-center gap-2 px-3 py-2 font-sans text-sm')}>
           <span className={leveTaskModalMutedXsClass}>Estimado:</span>
           <span className={leveTaskModalStrongClass}>{estimation.estimatedHours}h</span>
           {estimation.actualHours > 0 && (

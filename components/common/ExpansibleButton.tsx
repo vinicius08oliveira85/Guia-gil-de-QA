@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '../../utils/cn';
+import { headerNeuChipIdleClass } from './headerNeuUi';
 
 const buttonVariants = {
   initial: {
@@ -33,6 +34,8 @@ export interface ExpansibleButtonProps {
   title?: string;
   isExpanded: boolean;
   onExpandedChange?: (expanded: boolean) => void;
+  /** `header` — chip neumórfico com paleta do header global. */
+  neuVariant?: 'default' | 'header';
 }
 
 /**
@@ -48,7 +51,9 @@ export const ExpansibleButton: React.FC<ExpansibleButtonProps> = ({
   title,
   isExpanded,
   onExpandedChange,
+  neuVariant = 'default',
 }) => {
+  const isHeaderNeu = neuVariant === 'header';
   const [isHovered, setIsHovered] = React.useState(false);
   const isLabelVisible = isHovered;
 
@@ -73,11 +78,15 @@ export const ExpansibleButton: React.FC<ExpansibleButtonProps> = ({
       aria-label={ariaLabel ?? label}
       aria-pressed={isExpanded}
       className={cn(
-        'btn btn-ghost relative flex min-h-[44px] min-w-[44px] items-center justify-center gap-0 overflow-visible rounded-full py-1.5 text-xs font-semibold sm:justify-start',
-        'text-[color-mix(in_srgb,var(--foreground)_68%,transparent)]',
-        'hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] hover:text-[var(--foreground)]',
+        isHeaderNeu
+          ? cn(headerNeuChipIdleClass, 'gap-0 py-1.5 sm:justify-start', isExpanded && 'app-header-neu-chip--active')
+          : cn(
+              'btn btn-ghost relative flex min-h-[44px] min-w-[44px] items-center justify-center gap-0 overflow-visible rounded-full py-1.5 text-xs font-semibold sm:justify-start',
+              'text-[color-mix(in_srgb,var(--foreground)_68%,transparent)]',
+              'hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] hover:text-[var(--foreground)]',
+              'border-0 outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[oklch(var(--p))]'
+            ),
         'disabled:cursor-not-allowed disabled:opacity-50',
-        'border-0 outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[oklch(var(--p))]',
         className
       )}
     >

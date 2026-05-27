@@ -237,9 +237,9 @@ export const calculateProjectMetrics = (project: Project) => {
   ).length;
 
   // Categorizar documentos (baseado no nome e conteúdo)
-  const detectCategory = (name: string, content: string): string => {
-    const lowerName = name.toLowerCase();
-    const lowerContent = content.toLowerCase();
+  const detectCategory = (name: string | undefined, content: string | undefined): string => {
+    const lowerName = (name ?? '').toLowerCase();
+    const lowerContent = (content ?? '').toLowerCase();
     if (
       lowerName.includes('requisito') ||
       lowerContent.includes('requisito') ||
@@ -280,10 +280,12 @@ export const calculateProjectMetrics = (project: Project) => {
 
   // Documentos vinculados a tarefas (verificar se o nome do documento aparece em descrições de tarefas)
   const documentsLinkedToTasks = documents.filter(doc => {
+    const docName = (doc.name ?? '').toLowerCase();
+    if (!docName) return false;
     return tasks.some(
       task =>
-        task.description?.toLowerCase().includes(doc.name.toLowerCase()) ||
-        task.title?.toLowerCase().includes(doc.name.toLowerCase())
+        (task.description ?? '').toLowerCase().includes(docName) ||
+        (task.title ?? '').toLowerCase().includes(docName)
     );
   }).length;
 

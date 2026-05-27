@@ -178,8 +178,8 @@ const KEYWORD_RULES: KeywordRule[] = [
   },
 ];
 
-function normalizeText(value: string): string {
-  return value
+function normalizeText(value: string | undefined | null): string {
+  return (value ?? '')
     .toLowerCase()
     .normalize('NFD')
     .replace(/\p{M}/gu, '');

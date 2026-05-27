@@ -24,6 +24,7 @@ import {
   countBugsWithReopenLinks,
   defectCreatedPerWeekSeries,
 } from './projectDashboardHelpers';
+import { dashboardDonutWellClass } from './dashboardNeuUi';
 
 const LABEL_CLASS = projectDashboardInsightMutedClass;
 const VALUE_STRONG_CLASS = projectDashboardInsightTextClass;
@@ -204,12 +205,7 @@ function PassRateRing(props: { percent: number; tooltip: React.ReactNode }) {
   const c = 2 * Math.PI * r;
   const offset = c * (1 - Math.min(100, Math.max(0, percent)) / 100);
   const ring = (
-    <div
-      className={cn(
-        projectDashboardInsightChipClass,
-        'mx-auto w-[92%] max-w-[14rem] min-w-[9rem] rounded-full p-3 sm:max-w-[15rem]'
-      )}
-    >
+    <div className={dashboardDonutWellClass}>
       <div className="relative aspect-square w-full">
         <svg viewBox="0 0 88 88" className="h-full w-full" aria-hidden>
           <circle

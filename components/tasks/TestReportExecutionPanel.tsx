@@ -7,8 +7,8 @@ import {
   leveSettingsHeadingXsClass,
   leveSettingsMutedTextClass,
   leveSettingsMutedTextXsClass,
-  leveTaskModalSectionClass,
 } from '../common/projectCardUi';
+import { testReportModalSectionClass, testReportModalStatCardClass } from './testReportNeuUi';
 
 interface TestReportExecutionPanelProps {
   executedTestCases: TestCase[];
@@ -60,7 +60,7 @@ export const TestReportExecutionPanel: React.FC<TestReportExecutionPanelProps> =
 }) => {
   return (
     <div className="min-h-0 space-y-4">
-      <div className={cn(leveTaskModalSectionClass, 'p-4')}>
+      <div className={cn(testReportModalSectionClass, 'p-4')}>
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
           <div className="min-w-0">
             <p className={leveSettingsHeadingXsClass}>Painel da execução</p>
@@ -85,22 +85,22 @@ export const TestReportExecutionPanel: React.FC<TestReportExecutionPanelProps> =
         </div>
 
         <div className="mt-4 grid grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-3">
-          <div className="rounded-[var(--leve-header-radius)] border border-success/30 bg-success/10 px-4 py-3">
+          <div className={cn(testReportModalStatCardClass, 'border-success/30 bg-success/10')}>
             <p className="text-xs font-semibold leading-tight text-success break-words">Aprovados</p>
             <p className="mt-2 text-2xl font-bold text-success">{visualStats.approved}</p>
           </div>
-          <div className="rounded-[var(--leve-header-radius)] border border-error/30 bg-error/10 px-4 py-3">
+          <div className={cn(testReportModalStatCardClass, 'border-error/30 bg-error/10')}>
             <p className="text-xs font-semibold leading-tight text-error break-words">Reprovados</p>
             <p className="mt-2 text-2xl font-bold text-error">{visualStats.failed}</p>
           </div>
-          <div className="rounded-[var(--leve-header-radius)] border border-warning/30 bg-warning/10 px-4 py-3">
+          <div className={cn(testReportModalStatCardClass, 'border-warning/30 bg-warning/10')}>
             <p className="text-xs font-semibold leading-tight text-warning break-words">Bloqueados</p>
             <p className="mt-2 text-2xl font-bold text-warning">{visualStats.blocked}</p>
           </div>
         </div>
       </div>
 
-      <div className={cn(leveTaskModalSectionClass, 'flex min-h-0 flex-1 flex-col overflow-hidden')}>
+      <div className={cn(testReportModalSectionClass, 'flex min-h-0 flex-1 flex-col overflow-hidden')}>
         <div className="border-b border-[var(--leve-header-border)] px-4 py-3">
           <p className={leveSettingsHeadingXsClass}>Casos executados</p>
           <p className={leveSettingsMutedTextXsClass}>Visão resumida dos cenários já validados.</p>

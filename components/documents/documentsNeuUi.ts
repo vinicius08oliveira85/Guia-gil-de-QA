@@ -16,7 +16,6 @@ export {
 export {
   documentsAlertInfoClass,
   documentsAlertSuccessClass,
-  documentsAnalysisBodyClass,
   documentsBodyTextClass,
   documentsEyebrowClass,
   documentsFilterPillClass,
@@ -48,7 +47,10 @@ export {
   documentsSummaryStatsClass,
   documentsSummaryStatStrongClass,
   documentsSummaryStripClass,
-} from '../tasks/tasksPanelNeuStyles';
+  documentsViewScopeClass,
+} from './documentsPageNeuUi';
+
+export { documentsModalAnalysisBodyClass as documentsAnalysisBodyClass } from './documentsModalNeuUi';
 
 export {
   documentsModalAnalysisBodyClass,

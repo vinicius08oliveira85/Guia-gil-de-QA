@@ -12,6 +12,7 @@ import { useDashboardMetrics } from '../../hooks/useDashboardMetrics';
 import { glassIndicatorCardClass } from '../common/projectCardUi';
 import { GlassIndicatorCards, type SmallIndicatorItem } from './GlassIndicatorCards';
 import { cn } from '../../utils/cn';
+import { dashboardNeuScopeClass } from './dashboardNeuUi';
 import { ProjectDashboard } from './ProjectDashboard';
 import { RecentActivity } from './RecentActivity';
 import { QADashboardHeaderToolbar } from './QADashboardHeaderToolbar';
@@ -162,7 +163,11 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
   const jiraKey = liveProject.settings?.jiraProjectKey;
 
   return (
-    <div className="space-y-4 sm:space-y-5" role="main" aria-label="Dashboard do projeto">
+    <div
+      className={cn(dashboardNeuScopeClass, 'space-y-4 sm:space-y-5')}
+      role="main"
+      aria-label="Dashboard do projeto"
+    >
       {showLoadingBanner && (
         <div
           className="leve-neu-surface flex items-center gap-2 px-3 py-2.5 text-sm text-base-content/80"

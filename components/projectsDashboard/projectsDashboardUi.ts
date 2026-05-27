@@ -24,6 +24,26 @@ export function projectsDashboardFilterPillClass(active: boolean): string {
   return cn('projects-dash-filter-pill', active && 'projects-dash-filter-pill-active');
 }
 
+/** Grupo segmentado neumórfico escuro (#4a423e) — Meus Projetos */
+export const projectsDashboardQuickFiltersToolbarClass = cn(
+  'projects-dash-quick-filters-toolbar mb-4 w-full sm:w-auto'
+);
+
+export function projectsDashboardQuickFiltersPillClass(
+  active: boolean,
+  segmentRound: string
+): string {
+  return cn(
+    'projects-dash-quick-filters-pill',
+    active && 'projects-dash-quick-filters-pill--active',
+    'min-h-[44px] sm:min-h-0',
+    segmentRound
+  );
+}
+
+export const projectsDashboardQuickFiltersDividerClass =
+  'projects-dash-quick-filters-divider';
+
 /** Painéis vazios / mensagens na grade */
 export const projectsDashboardMessagePanelClass = cn(
   'projects-dash-surface-raised rounded-[var(--projects-dash-radius)] p-4 text-center sm:p-5'

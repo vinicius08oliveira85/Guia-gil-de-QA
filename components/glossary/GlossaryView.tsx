@@ -21,6 +21,7 @@ import {
   leveGlossaryToolbarClass,
   leveSettingsHeadingSmClass,
   leveSettingsMutedTextClass,
+  leveTaskModalTabsStripClass,
   leveViewFilterPillClass,
   leveViewPageSubtitleClass,
   leveViewPageTitleClass,
@@ -112,7 +113,7 @@ export const GlossaryView: React.FC = () => {
           />
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className={cn(leveTaskModalTabsStripClass, 'w-fit max-w-full')}>
           <button
             type="button"
             onClick={() => setSelectedCategory('Todos')}

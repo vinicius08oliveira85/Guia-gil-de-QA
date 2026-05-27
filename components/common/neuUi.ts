@@ -1,8 +1,11 @@
 import { cn } from '../../utils/cn';
 
-/** Superfícies neumórficas — use em todo o app (reexporta classes CSS globais). */
+/** Superfícies neumórficas — relevo via classes em index.css (leve-neu-*). */
 export const neuSurfaceClass = 'leve-neu-surface';
 export const neuSurfaceInsetClass = 'leve-neu-surface-inset';
+
+/** Padding interno padrão em trilhos / blocos rebaixados (evita texto colado na sombra). */
+export const neuInsetContentClass = 'leve-neu-inset-content';
 export const neuPillClass = 'leve-neu-pill';
 export const neuPillActiveClass = 'leve-neu-pill leve-neu-pill-active';
 export const neuDashedPanelClass = 'neu-dashed-panel';
@@ -15,7 +18,7 @@ export const neuStrongTextClass = 'text-[var(--leve-header-text)]';
 
 export const neuCardClass = cn(neuSurfaceClass, 'p-4 sm:p-5');
 export const neuCardCompactClass = cn(neuSurfaceClass, 'p-3 sm:p-4');
-export const neuCardInsetClass = cn(neuSurfaceInsetClass, 'p-3 sm:p-4');
+export const neuCardInsetClass = cn(neuSurfaceInsetClass, neuInsetContentClass);
 export const neuListPanelClass = cn(neuSurfaceInsetClass, 'divide-y divide-[color-mix(in_srgb,var(--leve-neu-light)_30%,transparent)]');
 
 /** Itens de lista / menu flutuante (ver também `.app-menu-item` em index.css). */
@@ -59,7 +62,7 @@ export const neuHeaderDividerClass = cn('border-b', neuDividerClass);
 
 export const neuInsetTileClass = cn(
   neuCardInsetClass,
-  'rounded-2xl transition-[box-shadow] duration-200 hover:shadow-[var(--leve-neu-hover)]'
+  'rounded-2xl transition-[box-shadow] duration-200'
 );
 
 export const neuBrandChipActiveClass =
@@ -75,7 +78,7 @@ export const neuChecklistItemIdleClass = cn(
   neuSurfaceClass,
   'rounded-xl border transition-all duration-200',
   neuBrandBorderClass,
-  'hover:border-primary/30 hover:shadow-[var(--leve-neu-hover)]'
+  'hover:border-primary/30'
 );
 
 export const neuTimelineCardClass = cn(
@@ -83,10 +86,52 @@ export const neuTimelineCardClass = cn(
   'flex flex-col rounded-2xl border p-4 transition-all duration-300'
 );
 
-export const neuTimelineCardActiveClass =
-  'border-primary/30 shadow-[var(--leve-neu-hover)]';
+export const neuTimelineCardActiveClass = 'border-primary/30';
 
-export const neuTimelineCardIdleClass = cn(neuBrandBorderClass, 'shadow-[var(--leve-neu-raised)]');
+export const neuTimelineCardIdleClass = neuBrandBorderClass;
 
 export const neuTimelineIconIdleClass =
   'rounded-lg bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))] text-base-content/60';
+
+/** Trilho segmentado — inset; chips raised; ativo inset (padrão ProjectCard / modais). */
+export const neuSegmentedTrackClass = cn(
+  neuSurfaceInsetClass,
+  'flex w-full flex-wrap gap-1.5 overflow-x-auto rounded-full p-1.5'
+);
+
+export const neuSegmentedTabBaseClass =
+  'inline-flex min-h-[2.25rem] shrink-0 snap-start items-center gap-2 px-3 py-2 font-sans text-xs font-semibold transition-[box-shadow,color] sm:min-h-0 sm:text-sm';
+
+export const neuSegmentedTabClass = (active: boolean) =>
+  cn(
+    neuSegmentedTabBaseClass,
+    active
+      ? cn(neuPillActiveClass, 'text-[var(--leve-header-text)]')
+      : cn(neuPillClass, 'text-[var(--leve-header-text-muted)] hover:text-[var(--leve-header-text)]')
+  );
+
+export const neuSegmentedTabBadgeActiveClass = cn(
+  'task-details-neu-tab-count inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full border-0',
+  'bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))]',
+  'font-sans text-[10px] font-bold tabular-nums leading-none',
+  '!text-[var(--leve-header-text)] leve-neu-pill-active'
+);
+
+export const neuSegmentedTabBadgeIdleClass = cn(
+  'task-details-neu-tab-count inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full border-0',
+  'bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))]',
+  'font-sans text-[10px] font-bold tabular-nums leading-none',
+  '!text-[var(--leve-header-text-muted)] leve-neu-pill'
+);
+
+/** Chip de filtro compacto (glossário, KPIs, preferências) — raised / ativo inset. */
+export const neuFilterPillClass = (active: boolean) =>
+  cn(
+    'inline-flex shrink-0 items-center whitespace-nowrap rounded-full px-3 py-1.5 font-sans text-xs transition-[box-shadow,color]',
+    active
+      ? cn(neuPillActiveClass, 'font-semibold text-[var(--leve-header-text)]')
+      : cn(
+          neuPillClass,
+          'font-medium text-[var(--leve-header-text-muted)] hover:text-[var(--leve-header-text)]'
+        )
+  );

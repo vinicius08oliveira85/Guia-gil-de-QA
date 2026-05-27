@@ -38,6 +38,7 @@ import {
   businessRulesCardTitleClass,
   businessRulesCategoryBadgeClass,
   businessRulesListPanelClass,
+  businessRulesViewScopeClass,
 } from './businessRulesNeuUi';
 import {
   tasksPanelCardClass,
@@ -65,7 +66,6 @@ import {
 import { projectViewShell } from '../common/viewUi';
 import { cn } from '../../utils/cn';
 import { EmptyState } from '../common/EmptyState';
-import { Badge } from '../common/Badge';
 import { SafeMarkdown } from '../common/SafeMarkdown';
 import { BusinessRulesFiltersToolbar } from './BusinessRulesFiltersToolbar';
 import { BusinessRuleCategoryPresetsModal } from './BusinessRuleCategoryPresetsModal';
@@ -297,7 +297,11 @@ export const BusinessRulesManager: React.FC<{
 
   return (
     <>
-      <div className={projectViewShell} role="main" aria-label="Regras de negócio do projeto">
+      <div
+        className={cn(projectViewShell, businessRulesViewScopeClass)}
+        role="main"
+        aria-label="Regras de negócio do projeto"
+      >
         <header className={leveViewPageHeaderShellClass}>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0">
@@ -422,14 +426,12 @@ export const BusinessRulesManager: React.FC<{
                               <span className="min-w-0 flex-1">
                                 <span className={businessRulesCardTitleClass}>{rule.title}</span>
                                 <span className="mt-2 inline-flex flex-wrap items-center gap-2">
-                                  <Badge
-                                    variant={badgeVariant}
-                                    size="sm"
-                                    appearance="pill"
+                                  <span
                                     className={businessRulesCategoryBadgeClass(badgeVariant)}
+                                    role="status"
                                   >
                                     {catLabel}
-                                  </Badge>
+                                  </span>
                                 </span>
                               </span>
                               <ChevronDown className={businessRulesCardChevronClass} aria-hidden />

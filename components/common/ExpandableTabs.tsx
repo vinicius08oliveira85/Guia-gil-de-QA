@@ -3,6 +3,12 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useOnClickOutside } from 'usehooks-ts';
 import { cn } from '../../utils/cn';
 import { LucideIcon } from 'lucide-react';
+import {
+  headerNeuChipActiveClass,
+  headerNeuChipIdleClass,
+  headerNeuTrackClass,
+  headerNeuTrackSeparatorClass,
+} from './headerNeuUi';
 
 interface Tab {
   id: string;
@@ -30,6 +36,8 @@ interface ExpandableTabsProps {
   onOutsideClick?: () => void;
   /** Badge numérico ancorado a um ícone de aba (ex.: notificações). */
   tabBadge?: { tabId: string; count: number };
+  /** `header` — trilho cream + chips neumórficos com cores do header global. */
+  neuVariant?: 'default' | 'header';
 }
 
 const buttonVariants = {
@@ -75,7 +83,9 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
   leadingContent,
   onOutsideClick,
   tabBadge,
+  neuVariant = 'default',
 }) => {
+  const isHeaderNeu = neuVariant === 'header';
   const [selected, setSelected] = React.useState<number | null>(null);
   const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null);
   const outsideClickRef = React.useRef<HTMLDivElement>(null);
@@ -93,7 +103,11 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
 
   const Separator = () => (
     <div
-      className="mx-0.5 h-[20px] w-px bg-[color-mix(in_srgb,var(--foreground)_14%,transparent)]"
+      className={
+        isHeaderNeu
+          ? headerNeuTrackSeparatorClass
+          : 'mx-0.5 h-[20px] w-px bg-[color-mix(in_srgb,var(--foreground)_14%,transparent)]'
+      }
       aria-hidden="true"
     />
   );
@@ -102,15 +116,25 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
     <div
       ref={outsideClickRef}
       className={cn(
-        'leve-neu-surface-inset flex flex-wrap items-center gap-1.5 overflow-visible p-0.5',
-        'transition-[background-color,border-color,box-shadow] duration-300 ease-out',
+        isHeaderNeu
+          ? headerNeuTrackClass
+          : cn(
+              'leve-neu-surface-inset flex flex-wrap items-center gap-1.5 overflow-visible rounded-full p-0.5',
+              'transition-[background-color,border-color,box-shadow] duration-300 ease-out'
+            ),
         className
       )}
     >
       {leadingContent}
-      {leadingContent != null && (
-        <div className="mx-0.5 h-[20px] w-px bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))]" aria-hidden="true" />
-      )}
+      {leadingContent != null &&
+        (isHeaderNeu ? (
+          <div className={headerNeuTrackSeparatorClass} aria-hidden="true" />
+        ) : (
+          <div
+            className="mx-0.5 h-[20px] w-px bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))]"
+            aria-hidden="true"
+          />
+        ))}
       {tabs.map((tab, index) => {
         if (tab.type === 'separator') {
           return <Separator key={`separator-${index}`} />;
@@ -131,18 +155,24 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
             onMouseLeave={() => setHoveredIndex(null)}
             transition={transition}
             className={cn(
-              'relative z-[1] flex min-h-[44px] min-w-[44px] shrink-0 cursor-pointer items-center justify-center gap-0',
               showTabBadge && 'overflow-visible',
-              'overflow-visible rounded-full border border-transparent bg-transparent px-2 text-xs font-semibold outline-none',
-              'transition-[background-color,box-shadow,color] duration-200',
-              'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[oklch(var(--p))]',
-              'sm:min-w-0 sm:justify-start sm:gap-1 sm:px-2.5',
-              selected === index
-                ? cn('bg-[color-mix(in_srgb,var(--color-primary)_22%,transparent)]', activeColor)
+              isHeaderNeu
+                ? selected === index
+                  ? cn(headerNeuChipActiveClass, activeColor)
+                  : headerNeuChipIdleClass
                 : cn(
-                    'text-[color-mix(in_srgb,var(--foreground)_68%,transparent)]',
-                    'hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] hover:text-[var(--foreground)]',
-                    'hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_28%,transparent)]'
+                    'relative z-[1] flex min-h-[44px] min-w-[44px] shrink-0 cursor-pointer items-center justify-center gap-0',
+                    'overflow-visible rounded-full border border-transparent bg-transparent px-2 text-xs font-semibold outline-none',
+                    'transition-[background-color,box-shadow,color] duration-200',
+                    'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[oklch(var(--p))]',
+                    'sm:min-w-0 sm:justify-start sm:gap-1 sm:px-2.5',
+                    selected === index
+                      ? cn('bg-[color-mix(in_srgb,var(--color-primary)_22%,transparent)]', activeColor)
+                      : cn(
+                          'text-[color-mix(in_srgb,var(--foreground)_68%,transparent)]',
+                          'hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] hover:text-[var(--foreground)]',
+                          'hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_28%,transparent)]'
+                        )
                   )
             )}
             aria-label={tab.title}

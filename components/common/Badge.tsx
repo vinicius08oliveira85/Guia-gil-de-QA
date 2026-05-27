@@ -12,6 +12,7 @@ interface BadgeProps {
   /** Variante visual do badge */
   variant?:
     | 'default'
+    | 'neu'
     | 'neutral'
     | 'primary'
     | 'secondary'
@@ -54,6 +55,8 @@ export const Badge = React.memo<BadgeProps>(
   }) => {
     // Pill (v0): fundo sólido + texto em contraste, apenas Tailwind
     const pillVariantClasses = {
+      /** Sem cores de tema — use `className` (ex.: neumorfismo). */
+      neu: 'border-0 bg-transparent text-inherit',
       neutral: 'bg-neutral text-neutral-content',
       primary: 'bg-primary text-primary-content',
       secondary: 'bg-secondary text-secondary-content',
@@ -70,6 +73,7 @@ export const Badge = React.memo<BadgeProps>(
     // Classes base para variantes (mantém compatibilidade com DaisyUI)
     const variantClasses = {
       default: 'badge-outline',
+      neu: 'badge-ghost border-0 bg-transparent',
       neutral: 'badge-neutral',
       primary: 'badge-primary',
       secondary: 'badge-secondary',
@@ -91,6 +95,7 @@ export const Badge = React.memo<BadgeProps>(
     // Estilos customizados para badges dismissible seguindo padrão Radix UI
     const dismissibleVariantStyles = {
       default: 'bg-gray-50 border border-gray-300 text-gray-700',
+      neu: 'border-0 bg-transparent text-inherit',
       neutral:
         'border border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))] text-base-content',
       primary: 'bg-primary/10 border border-primary text-primary',
@@ -105,6 +110,7 @@ export const Badge = React.memo<BadgeProps>(
     // Dismissible + pill: cores sólidas do pill
     const dismissiblePillStyles = {
       default: 'bg-gray-200 text-gray-800 border border-gray-300',
+      neu: 'border-0 bg-transparent text-inherit',
       neutral: 'bg-neutral text-neutral-content',
       primary: 'bg-primary text-primary-content',
       secondary: 'bg-secondary text-secondary-content',

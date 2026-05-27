@@ -18,13 +18,16 @@ import {
   leveSettingsHeadingXsClass,
   leveSettingsMutedTextClass,
   leveSettingsMutedTextXsClass,
-  leveTaskModalFormatOptionIdleClass,
-  leveTaskModalInsetClass,
-  leveTaskModalSectionAccentClass,
-  leveTaskModalSectionClass,
-  leveViewOutlineBtnClass,
-  leveViewPrimaryBtnClass,
 } from '../common/projectCardUi';
+import {
+  testReportModalBodyClass,
+  testReportModalChipBtnClass,
+  testReportModalFormatOptionClass,
+  testReportModalInsetPanelClass,
+  testReportModalPrimaryBtnClass,
+  testReportModalSectionClass,
+  testReportModalShellClass,
+} from './testReportNeuUi';
 
 type ReportFormatOption = 'text' | 'resumido';
 type CopyVariant = 'full' | 'summary' | 'results' | null;
@@ -186,10 +189,12 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
       title="Registro de Testes Realizados"
       size="7xl"
       maxHeight="92vh"
+      panelClassName={testReportModalShellClass}
+      bodyClassName={testReportModalBodyClass}
     >
-      <div className="h-full flex flex-col min-h-0 space-y-5">
+      <div className="flex h-full min-h-0 flex-col space-y-5">
         <div className="flex-shrink-0">
-          <div className={cn(leveTaskModalSectionClass, 'flex flex-col gap-3 p-4')}>
+          <div className={cn(testReportModalSectionClass, 'flex flex-col gap-3 p-4')}>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
                 <p className={leveSettingsHeadingXsClass}>Saídas prontas para uso</p>
@@ -198,36 +203,36 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-2 lg:justify-end">
+              <div className="flex flex-wrap items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={handleSummarizeWithAI}
                   disabled={summarizing || !reportText.trim()}
                   aria-label="Resumir relatório com IA"
-                  className={cn(leveViewOutlineBtnClass, 'gap-1.5 px-3 py-1.5 text-xs')}
+                  className={testReportModalChipBtnClass}
                 >
-                  <Sparkles className="h-3.5 w-3.5" aria-hidden />
+                  <Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden />
                   {summarizing ? 'Resumindo…' : 'Resumir com IA'}
                 </button>
                 <button
                   type="button"
                   onClick={handleDownload}
                   aria-label="Baixar relatório em .txt"
-                  className={cn(leveViewOutlineBtnClass, 'gap-1.5 px-3 py-1.5 text-xs')}
+                  className={testReportModalChipBtnClass}
                 >
-                  <Download className="h-3.5 w-3.5" aria-hidden />
+                  <Download className="h-3.5 w-3.5 shrink-0" aria-hidden />
                   Baixar .txt
                 </button>
                 <button
                   type="button"
                   onClick={handleCopy}
                   aria-label={copiedVariant === 'full' ? 'Registro copiado' : 'Copiar registro completo'}
-                  className={cn(leveViewPrimaryBtnClass, 'gap-1.5 px-3 py-1.5 text-xs')}
+                  className={testReportModalPrimaryBtnClass}
                 >
                   {copiedVariant === 'full' ? (
-                    <Check className="h-3.5 w-3.5" aria-hidden />
+                    <Check className="h-3.5 w-3.5 shrink-0" aria-hidden />
                   ) : (
-                    <Copy className="h-3.5 w-3.5" aria-hidden />
+                    <Copy className="h-3.5 w-3.5 shrink-0" aria-hidden />
                   )}
                   {copiedVariant === 'full' ? 'Copiado!' : 'Copiar registro'}
                 </button>
@@ -236,7 +241,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
 
             <div
               className={cn(
-                leveTaskModalInsetClass,
+                testReportModalInsetPanelClass,
                 'flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between'
               )}
             >
@@ -249,17 +254,17 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-2 sm:justify-end">
+              <div className="flex flex-wrap items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={handleCopyExecutiveSummary}
                   aria-label="Copiar resumo executivo"
-                  className={cn(leveViewOutlineBtnClass, 'gap-1.5 px-3 py-1.5 text-xs')}
+                  className={testReportModalChipBtnClass}
                 >
                   {copiedVariant === 'summary' ? (
-                    <Check className="h-3.5 w-3.5" aria-hidden />
+                    <Check className="h-3.5 w-3.5 shrink-0" aria-hidden />
                   ) : (
-                    <Copy className="h-3.5 w-3.5" aria-hidden />
+                    <Copy className="h-3.5 w-3.5 shrink-0" aria-hidden />
                   )}
                   {copiedVariant === 'summary' ? 'Resumo copiado!' : 'Copiar resumo'}
                 </button>
@@ -267,12 +272,12 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
                   type="button"
                   onClick={handleCopyResultsOnly}
                   aria-label="Copiar somente resultados"
-                  className={cn(leveViewOutlineBtnClass, 'gap-1.5 px-3 py-1.5 text-xs')}
+                  className={testReportModalChipBtnClass}
                 >
                   {copiedVariant === 'results' ? (
-                    <Check className="h-3.5 w-3.5" aria-hidden />
+                    <Check className="h-3.5 w-3.5 shrink-0" aria-hidden />
                   ) : (
-                    <Copy className="h-3.5 w-3.5" aria-hidden />
+                    <Copy className="h-3.5 w-3.5 shrink-0" aria-hidden />
                   )}
                   {copiedVariant === 'results' ? 'Resultados copiados!' : 'Copiar resultados'}
                 </button>
@@ -281,7 +286,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
           </div>
         </div>
 
-        <div className="flex-shrink-0 flex flex-col gap-3">
+        <div className="flex flex-shrink-0 flex-col gap-3">
           <p className={leveSettingsHeadingXsClass}>Formato do relatório</p>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {formatOptions.map(option => {
@@ -294,20 +299,16 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
                     setFormat(option.value);
                     setIsAISummarized(false);
                   }}
-                  role="button"
                   aria-pressed={isSelected}
                   aria-label={`${option.label}: ${option.description}`}
-                  className={cn(
-                    'flex items-start gap-2',
-                    isSelected ? cn(leveTaskModalSectionAccentClass, 'p-4') : leveTaskModalFormatOptionIdleClass
-                  )}
+                  className={testReportModalFormatOptionClass(isSelected)}
                 >
                   <div
                     className={cn(
                       'mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2',
                       isSelected
-                        ? 'border-[var(--leve-header-accent)] bg-white'
-                        : 'border-[var(--leve-header-border)] bg-[var(--leve-header-bg)]'
+                        ? 'border-[var(--leve-header-accent)] bg-[#F2EEE8]'
+                        : 'border-[#DED7CD] bg-[#E5DFD5]'
                     )}
                   >
                     {isSelected ? (
@@ -317,7 +318,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
                       />
                     ) : null}
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 text-left">
                     <p className="font-medium text-[var(--leve-header-text)]">{option.label}</p>
                     <p className={cn('mt-1', leveSettingsMutedTextClass)}>{option.description}</p>
                   </div>
@@ -339,8 +340,13 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
           </div>
         </div>
 
-        <div className="flex flex-shrink-0 justify-end border-t border-[var(--leve-header-border)] pt-4">
-          <button type="button" onClick={onClose} aria-label="Fechar modal" className={leveViewOutlineBtnClass}>
+        <div className="flex flex-shrink-0 justify-end border-t border-[color-mix(in_srgb,#DED7CD_55%,transparent)] pt-4">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fechar modal"
+            className={testReportModalChipBtnClass}
+          >
             Fechar
           </button>
         </div>

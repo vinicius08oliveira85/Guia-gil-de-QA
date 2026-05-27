@@ -33,13 +33,12 @@ import { projectsListShell } from './common/viewUi';
 import {
   tasksViewHeaderFilterIconClass,
   tasksViewHeaderIconWrapClass,
-  tasksViewHeaderSecondaryBtnActiveClass,
-  tasksViewHeaderSecondaryBtnClass,
-  tasksViewHeaderSecondaryToolbarClass,
-  tasksViewHeaderSecondaryToolbarDividerClass,
 } from './tasks/tasksPanelNeuStyles';
 import {
   projectsDashboardFilterPillClass,
+  projectsDashboardQuickFiltersDividerClass,
+  projectsDashboardQuickFiltersPillClass,
+  projectsDashboardQuickFiltersToolbarClass,
   projectsDashboardMainGridClass,
   projectsDashboardMessagePanelClass,
   projectsDashboardPageClass,
@@ -508,15 +507,11 @@ function ProjectQuickFiltersGroup({
   }, [showBugsFilter, showAttentionFilter]);
 
   const pillClass = (active: boolean, slot: ProjectFilterSegment) =>
-    cn(
-      active ? tasksViewHeaderSecondaryBtnActiveClass : tasksViewHeaderSecondaryBtnClass,
-      'min-h-[44px] sm:min-h-0',
-      projectFilterSegmentRound(segments, slot)
-    );
+    projectsDashboardQuickFiltersPillClass(active, projectFilterSegmentRound(segments, slot));
 
   return (
     <div
-      className={cn(tasksViewHeaderSecondaryToolbarClass, 'mb-4 w-full sm:w-auto')}
+      className={projectsDashboardQuickFiltersToolbarClass}
       role="group"
       aria-label="Filtrar projetos"
     >
@@ -530,7 +525,7 @@ function ProjectQuickFiltersGroup({
       </button>
       {showBugsFilter ? (
         <>
-          <div className={tasksViewHeaderSecondaryToolbarDividerClass} aria-hidden />
+          <div className={projectsDashboardQuickFiltersDividerClass} aria-hidden />
           <button
             type="button"
             onClick={() => setQuickFilter(quickFilter === 'withBugs' ? 'all' : 'withBugs')}
@@ -546,7 +541,7 @@ function ProjectQuickFiltersGroup({
       ) : null}
       {showAttentionFilter ? (
         <>
-          <div className={tasksViewHeaderSecondaryToolbarDividerClass} aria-hidden />
+          <div className={projectsDashboardQuickFiltersDividerClass} aria-hidden />
           <button
             type="button"
             onClick={() =>

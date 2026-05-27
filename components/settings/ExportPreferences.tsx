@@ -9,6 +9,7 @@ import {
   leveSettingsSelectClass,
   leveSettingsStrongTextClass,
   leveSettingsToggleTrackClass,
+  leveTaskModalTabsStripClass,
   leveViewFilterPillClass,
   leveViewPrimaryBtnClass,
 } from '../common/projectCardUi';
@@ -108,10 +109,11 @@ export const ExportPreferences: React.FC = () => {
         {/* Formato Padrão */}
         <div className="space-y-4">
           <h5 className={leveSettingsHeadingXsClass}>Formato Padrão</h5>
-          <div className="flex flex-wrap gap-2">
+          <div className={cn(leveTaskModalTabsStripClass, 'w-fit max-w-full')}>
             {(['json', 'csv', 'markdown'] as const).map(format => (
               <button
                 key={format}
+                type="button"
                 onClick={() => handleDefaultFormatChange(format)}
                 className={leveViewFilterPillClass(preferences.defaultFormat === format)}
               >
@@ -261,7 +263,7 @@ export const ExportPreferences: React.FC = () => {
               </div>
               <div>
                 <label className="mb-2 block text-sm text-[var(--leve-header-text-muted)]">Formato</label>
-                <div className="flex flex-wrap gap-2">
+                <div className={cn(leveTaskModalTabsStripClass, 'w-fit max-w-full')}>
                   {(['json', 'csv', 'markdown'] as const).map(format => (
                     <button
                       key={format}
@@ -276,7 +278,7 @@ export const ExportPreferences: React.FC = () => {
               </div>
               <div>
                 <label className="mb-2 block text-sm text-[var(--leve-header-text-muted)]">Destino</label>
-                <div className="flex flex-wrap gap-2">
+                <div className={cn(leveTaskModalTabsStripClass, 'w-fit max-w-full')}>
                   {(['download', 'supabase'] as const).map(dest => (
                     <button
                       key={dest}

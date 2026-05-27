@@ -5,8 +5,7 @@ import {
   taskDetailsModalTitleClass,
 } from '../tasks/taskDetailsNeuUi';
 
-const dmInset =
-  'shadow-[inset_3px_3px_8px_color-mix(in_srgb,#DED7CD_50%,transparent),inset_-2px_-2px_6px_color-mix(in_srgb,#FFFFFF_18%,#E5DFD5)]';
+const dmInset = 'documents-neu-inset leve-neu-inset-content';
 
 /** Shell compartilhado com modais claros (reutiliza `.task-details-neu-modal` no CSS). */
 export const documentsModalShellClass = cn(
@@ -43,17 +42,15 @@ export const documentsModalFooterClass =
   'flex justify-end gap-2 border-t border-[#DED7CD] pt-4';
 
 export const documentsModalFooterCancelClass = cn(
-  'inline-flex min-h-10 cursor-pointer items-center justify-center rounded-full border border-[#DED7CD] px-5',
+  'documents-neu-chip inline-flex min-h-10 cursor-pointer items-center justify-center rounded-full border border-[#DED7CD] px-5',
   'bg-[#F2EEE8] font-sans text-sm font-semibold text-[#401C31]',
-  'shadow-[3px_3px_8px_color-mix(in_srgb,#DED7CD_45%,transparent),-2px_-2px_6px_color-mix(in_srgb,#FFFFFF_18%,#F2EEE8)]',
   'transition-[color,filter] hover:text-[#FF5C1B]',
   'disabled:cursor-not-allowed disabled:opacity-50'
 );
 
 export const documentsModalFooterSaveClass = cn(
-  'inline-flex min-h-10 cursor-pointer items-center justify-center rounded-full border border-[color-mix(in_srgb,#FF5C1B_45%,transparent)] px-6',
+  'documents-neu-btn-primary inline-flex min-h-10 cursor-pointer items-center justify-center rounded-full border border-[color-mix(in_srgb,#FF5C1B_45%,transparent)] px-6',
   'bg-[#FF5C1B] font-sans text-sm font-bold text-[#FFFFFF]',
-  'shadow-[3px_3px_8px_color-mix(in_srgb,#DED7CD_50%,transparent),-2px_-2px_6px_color-mix(in_srgb,#FFFFFF_18%,#F2EEE8)]',
   'transition-[filter] hover:brightness-105',
   'disabled:cursor-not-allowed disabled:opacity-50'
 );
@@ -65,9 +62,8 @@ export const documentsModalPrimaryBtnClass = cn(
 
 /** Ação secundária em destaque (ex.: Baixar no visualizador). */
 export const documentsModalSecondaryBtnClass = cn(
-  'inline-flex min-h-9 cursor-pointer items-center justify-center gap-2 rounded-full border border-[color-mix(in_srgb,#401C31_35%,#DED7CD)] px-4 py-2 sm:min-h-10',
+  'documents-neu-chip inline-flex min-h-9 cursor-pointer items-center justify-center gap-2 rounded-full border border-[color-mix(in_srgb,#401C31_35%,#DED7CD)] px-4 py-2 sm:min-h-10',
   'bg-[#401C31] font-sans text-xs font-semibold text-[#FFFFFF] sm:text-sm',
-  'shadow-[3px_3px_8px_color-mix(in_srgb,#DED7CD_50%,transparent),-2px_-2px_6px_color-mix(in_srgb,#FFFFFF_18%,#F2EEE8)]',
   'transition-[filter] hover:brightness-110',
   'disabled:cursor-not-allowed disabled:opacity-50'
 );

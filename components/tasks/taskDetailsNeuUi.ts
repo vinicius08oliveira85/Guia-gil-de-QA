@@ -1,35 +1,421 @@
 import { cn } from '../../utils/cn';
 
+
+
 /**
- * Paleta neumórfica clara — modal de detalhe da tarefa (Resumo, BDD, Testes…).
- * #EBE6DE página · #F2EEE8 card · #E5DFD5 rebaixado · #401C31 texto · #6B5E5E secundário
+
+ * Neumorfismo do modal de detalhe da tarefa — classes dedicadas (ver index.css).
+
+ * Mesmo padrão de project-card-neu-*: sombras literais, sem shadow-[var] no Tailwind.
+
  */
-const tdRaised =
-  'shadow-[5px_5px_12px_color-mix(in_srgb,#DED7CD_55%,transparent),-3px_-3px_8px_color-mix(in_srgb,#FFFFFF_20%,#F2EEE8)]';
 
-const tdInset =
-  'shadow-[inset_3px_3px_8px_color-mix(in_srgb,#DED7CD_50%,transparent),inset_-2px_-2px_6px_color-mix(in_srgb,#FFFFFF_18%,#E5DFD5)]';
 
-/** Shell do painel do modal (escopo visual da listagem de detalhes). */
+
+/** Shell do painel (portal em document.body). */
+
 export const taskDetailsModalShellClass = cn(
-  'task-details-neu-modal leve-modal-neu-shell font-sans',
-  'border border-[#DED7CD] bg-[#EBE6DE]',
-  tdRaised
+
+  'task-details-neu-modal leve-modal-neu-shell font-sans'
+
 );
 
-export const taskDetailsModalHeaderClass = cn(
-  'leve-modal-neu-header border-[#DED7CD] bg-[#F2EEE8] text-[#401C31]'
-);
+
 
 export const taskDetailsModalBodyClass = cn(
+
   'bg-[#EBE6DE] text-[#401C31]',
+
   'scrollbar-thumb-[color-mix(in_srgb,#FF5C1B_35%,transparent)]',
+
   'hover:scrollbar-thumb-[color-mix(in_srgb,#FF5C1B_50%,transparent)]'
+
 );
+
+
 
 export const taskDetailsModalTitleClass = 'text-[#401C31]';
 
-export const taskDetailsModalCloseClass = cn(
-  'leve-modal-neu-close border border-[#DED7CD] bg-[#F2EEE8] text-[#6B5E5E]',
-  'hover:text-[#FF5C1B]'
+/** Rótulo da seção ativa no cabeçalho do modal (pill neumórfica, texto legível). */
+export const taskDetailsModalHeaderSectionClass = cn(
+  'task-details-neu-header-section',
+  'inline-flex w-fit max-w-full shrink-0 items-center rounded-full px-3 py-1',
+  'font-sans text-[10px] font-semibold tracking-wide text-[#401C31] sm:text-[11px]',
+  'truncate'
 );
+
+/** Superfície elevada (cards, botões secundários). */
+
+export const taskDetailsNeuRaisedClass = 'task-details-neu-raised';
+
+
+
+/** Superfície rebaixada. */
+
+export const taskDetailsNeuInsetClass = 'task-details-neu-inset';
+
+
+
+/** Superfície rebaixada profunda (trilhos, painel de conteúdo). */
+
+export const taskDetailsNeuInsetDeepClass = 'task-details-neu-inset-deep';
+
+
+
+/** Trilho segmentado — inset. */
+
+export const taskDetailsModalTabsTrackClass = cn(
+
+  'task-details-neu-track flex w-full flex-wrap gap-1.5 overflow-visible rounded-full p-2'
+
+);
+
+
+
+const tabBaseClass =
+
+  'task-details-neu-tab inline-flex min-h-[2.25rem] shrink-0 snap-start items-center gap-2 px-3 py-2 font-sans text-xs font-semibold transition-[box-shadow,color,transform] sm:min-h-0 sm:text-sm';
+
+
+
+/** Chip de aba — raised; ativo = inset. */
+
+export const taskDetailsModalTabClass = (active: boolean) =>
+
+  cn(tabBaseClass, active ? 'task-details-neu-chip--active' : 'task-details-neu-chip');
+
+
+
+/** Wrapper com scroll horizontal sem cortar sombra dos chips. */
+
+export const taskDetailsModalTabsScrollWrapClass =
+
+  'overflow-x-auto overflow-y-visible px-1 py-1.5 -mx-0.5';
+
+
+
+/** Trilho de status (Ações rápidas). */
+
+export const taskDetailsModalStatusTrackClass = cn(
+
+  'task-details-neu-track task-details-neu-status-track inline-flex flex-wrap items-stretch gap-1 overflow-visible rounded-full p-1.5'
+
+);
+
+
+
+export const taskDetailsModalStatusPillClass = (active: boolean) =>
+
+  cn(
+
+    'task-details-neu-status-pill inline-flex min-h-[2.25rem] items-center justify-center rounded-full px-3 py-1.5',
+
+    'font-sans text-xs font-semibold transition-[box-shadow,color,transform] sm:min-h-0',
+
+    active ? 'task-details-neu-chip--status-active' : 'task-details-neu-chip'
+
+  );
+
+
+
+/** Seção/card interno do modal. */
+
+export const taskDetailsModalSectionClass = cn('task-modal-section', taskDetailsNeuRaisedClass, 'font-sans');
+
+
+
+export const taskDetailsModalPanelShellClass = cn(
+
+  taskDetailsNeuInsetDeepClass,
+
+  'rounded-[var(--leve-header-radius)] p-3 sm:p-4'
+
+);
+
+
+
+export const taskDetailsModalInsetPanelClass = cn(taskDetailsNeuInsetClass, 'px-3 py-3');
+
+
+
+export const taskDetailsModalDescriptionClass = cn(
+
+  'task-details-neu-description leve-neu-inset-content',
+
+  taskDetailsNeuInsetClass,
+
+  'text-sm leading-relaxed text-[var(--leve-header-text)]',
+
+  '[&_ul]:list-disc [&_ol]:list-decimal [&_ul]:space-y-1.5 [&_ol]:space-y-1.5'
+
+);
+
+
+
+export const taskDetailsModalGhostBtnClass = cn(
+
+  'task-details-neu-ghost-btn task-details-neu-chip',
+
+  'inline-flex min-h-[44px] items-center gap-2 rounded-full px-4 sm:min-h-9'
+
+);
+
+
+
+export const taskDetailsModalIconBtnClass = cn(
+
+  'task-details-neu-chip inline-flex h-9 w-9 min-h-9 min-w-9 items-center justify-center rounded-full',
+
+  'text-[var(--leve-header-text-muted)] transition-[box-shadow,color]',
+
+  'hover:text-[var(--leve-header-accent)]'
+
+);
+
+
+
+export const taskDetailsModalActionToolbarClass = cn(
+
+  'task-details-neu-inset inline-flex shrink-0 items-center gap-0.5 rounded-full p-1'
+
+);
+
+
+
+export const taskDetailsModalWatchersClass = cn(
+
+  'task-details-neu-watchers',
+
+  taskDetailsNeuInsetClass,
+
+  'rounded-[var(--leve-header-radius)] p-2.5',
+
+  'border border-[color-mix(in_srgb,var(--leve-header-accent)_18%,transparent)]'
+
+);
+
+
+
+export const taskDetailsModalJiraBtnClass = cn(
+
+  'task-details-neu-jira-btn task-details-neu-chip w-full gap-2 rounded-full'
+
+);
+
+
+
+/** Card de caso de teste na lista do modal. */
+
+export const taskDetailsModalTestCaseCardClass = cn(
+
+  taskDetailsModalSectionClass,
+
+  'py-2 px-3 transition-colors duration-200'
+
+);
+
+
+
+/** Shell colapsável «Roteiro completo» — trilho inset dentro do card. */
+
+export const taskDetailsModalRoteiroShellClass = cn(
+
+  taskDetailsNeuInsetClass,
+
+  'task-details-neu-roteiro-shell mt-2 overflow-visible rounded-[var(--leve-header-radius)]'
+
+);
+
+
+
+export const taskDetailsModalRoteiroHeaderClass = cn(
+
+  'task-details-neu-section-header task-details-neu-roteiro-header flex w-full items-center justify-between px-3 py-2',
+
+  'transition-[box-shadow,background-color] hover:text-[var(--leve-header-text)]'
+
+);
+
+
+
+export const taskDetailsModalRoteiroInnerClass =
+
+  'task-details-neu-roteiro-inner space-y-3 border-t border-[color-mix(in_srgb,var(--leve-header-border)_55%,transparent)] px-3 pb-3 pt-2';
+
+
+
+/** Blocos Ação / Parâmetros / Resultado esperado. */
+
+export const taskDetailsModalRoteiroBlockClass = cn(
+
+  'task-details-neu-roteiro-block leve-neu-inset-content',
+
+  taskDetailsNeuInsetDeepClass,
+
+  'rounded-[var(--leve-header-radius)] text-xs text-[var(--leve-header-text)]'
+
+);
+
+
+
+export const taskDetailsModalExecBadgeClass = 'task-details-neu-exec-badge shrink-0';
+
+
+
+export const taskDetailsModalSelectClass = cn(
+
+  'task-details-neu-select select select-bordered select-xs app-input min-w-0 w-full text-xs'
+
+);
+
+
+
+export const taskDetailsModalTextareaClass = cn(
+
+  'task-details-neu-textarea textarea textarea-bordered textarea-sm app-input w-full font-mono whitespace-pre-wrap text-xs text-[var(--leve-header-text)]'
+
+);
+
+
+
+export const taskDetailsModalToolbarIconClass = cn(
+
+  taskDetailsModalIconBtnClass,
+
+  'h-7 w-7 min-h-7 min-w-7'
+
+);
+
+
+
+export const taskDetailsModalStatusBtnClass = (active: boolean) =>
+
+  cn(
+
+    'task-details-neu-status-btn inline-flex h-7 w-7 min-h-7 min-w-7 items-center justify-center rounded-full transition-[box-shadow,color,transform]',
+
+    active ? 'task-details-neu-chip--active' : 'task-details-neu-chip'
+
+  );
+
+
+
+/** Card de estratégia de teste (planejamento). */
+
+export const testStrategyCardClass = cn(
+
+  taskDetailsModalSectionClass,
+
+  'test-strategy-neu-card flex flex-col overflow-hidden transition-[box-shadow,border-color] duration-300'
+
+);
+
+
+
+export const testStrategyInsetPanelClass = cn(
+
+  'test-strategy-neu-inset leve-neu-inset-content',
+
+  taskDetailsNeuInsetDeepClass,
+
+  'rounded-[var(--leve-header-radius)]'
+
+);
+
+
+
+export const testStrategyStepsListClass = cn(
+
+  testStrategyInsetPanelClass,
+
+  'space-y-1.5'
+
+);
+
+
+
+export const testStrategyToggleTrackClass = 'test-strategy-neu-toggle';
+
+
+
+export const testStrategyToolChipClass = (selected: boolean, compact?: boolean) =>
+
+  cn(
+
+    'test-strategy-neu-tool-chip',
+
+    selected ? 'task-details-neu-chip--active' : 'task-details-neu-chip',
+
+    'inline-flex items-center gap-1.5 font-semibold',
+
+    compact ? 'px-2 py-0.5 text-[10px]' : 'px-3 py-1.5 text-xs'
+
+  );
+
+
+
+export const testStrategyToolInputClass = cn(
+
+  'test-strategy-neu-tool-input task-details-neu-textarea',
+
+  'app-input w-full rounded-full border-0 font-sans text-[var(--leve-header-text)]',
+
+  'placeholder:text-[var(--leve-header-text-muted)]'
+
+);
+
+
+
+/** Nível de detalhe (Resumido / Estruturado) — trilho inset, opção ativa pressionada. */
+
+export const testCaseDetailLevelTrackClass = cn(
+
+  'test-case-detail-level-track',
+
+  taskDetailsModalTabsTrackClass,
+
+  'grid w-full grid-cols-2 gap-1 p-1'
+
+);
+
+
+
+export const testCaseDetailLevelOptionClass = (active: boolean) =>
+
+  cn(
+
+    'test-case-detail-level-option inline-flex min-h-[44px] items-center justify-center rounded-full px-2 py-1.5',
+
+    'font-sans text-xs transition-[box-shadow,color,background-color] sm:min-h-[2.25rem]',
+
+    active
+
+      ? 'test-case-detail-level-option--active task-details-neu-chip--active font-semibold text-[#FFFFFF]'
+
+      : 'task-details-neu-chip font-medium text-[var(--leve-header-text-muted)]'
+
+  );
+
+
+
+/** CTA «Gerar / Regerar com IA». */
+
+export const taskDetailsModalPrimaryCtaClass = cn(
+
+  'task-details-neu-primary-cta',
+
+  'inline-flex w-full min-h-[44px] cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-2',
+
+  'font-sans text-sm font-bold sm:min-h-9',
+
+  'border border-[color-mix(in_srgb,#FF5C1B_45%,transparent)] bg-[#FF5C1B] text-[#FFFFFF]',
+
+  'transition-[filter,transform,box-shadow] duration-150 hover:brightness-105',
+
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,#FF5C1B_28%,transparent)]',
+
+  'disabled:cursor-not-allowed disabled:opacity-50'
+
+);
+
+
