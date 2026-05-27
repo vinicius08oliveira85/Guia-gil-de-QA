@@ -34,7 +34,6 @@ import {
 import { logger } from '../../utils/logger';
 import { cn } from '../../utils/cn';
 import {
-  tasksListPanelClass,
   tasksPanelCardClass,
   tasksPanelListShellClass,
   tasksPanelSectionDividerClass,
@@ -50,6 +49,7 @@ import {
   tasksPanelBacklogSprintCountClass,
   tasksPanelBacklogSprintHeadingClass,
 } from './tasksPanelNeuStyles';
+import { tasksListPanelClass } from './tasksListNeuUi';
 import { useProjectsStore } from '../../store/projectsStore';
 import { toToastableAiError } from '../../utils/aiErrorMapper';
 import { withTimeout } from '../../utils/withTimeout';
