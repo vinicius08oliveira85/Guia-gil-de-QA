@@ -11,6 +11,8 @@ interface TestMetricBadgeProps {
   tone: TestMetricTone;
   size?: TestMetricBadgeSize;
   className?: string;
+  /** Substitui o relevo padrão (`taskNeuChipRaisedClass`). */
+  chipClassName?: string;
 }
 
 const TONE_CLASSES: Record<TestMetricTone, string> = {
@@ -33,12 +35,17 @@ export const TestMetricBadge: React.FC<TestMetricBadgeProps> = ({
   tone,
   size = 'md',
   className,
+  chipClassName,
 }) => {
+  const toneSurface = chipClassName
+    ? cn(chipClassName, tone === 'success' && 'text-success', tone === 'error' && 'text-error', tone === 'warning' && 'text-warning')
+    : TONE_CLASSES[tone];
+
   return (
     <span
       className={cn(
         'inline-flex items-center justify-center rounded-full font-bold leading-none tabular-nums shrink-0',
-        TONE_CLASSES[tone],
+        toneSurface,
         SIZE_CLASSES[size],
         className
       )}

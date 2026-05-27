@@ -49,8 +49,19 @@ export const searchInputClass = cn(
   'app-input h-10 w-full py-2 pl-10 pr-3 text-sm'
 );
 
-/** Gatilho de select (inset) — use com NeuSelect/AppSelect. */
+/** Select nativo (`<select>`) — chevron via CSS em `background-image`. */
 export const appSelectClass = cn('app-select h-9 min-h-0 text-sm');
+
+/**
+ * Gatilho do NeuSelect/AppSelect (botão customizado).
+ * Não usar `.app-select` aqui — evita chevron em background sobrepondo o texto.
+ */
+export const neuSelectTriggerClass = cn(
+  'neu-select-trigger inline-flex min-h-9 w-full min-w-0 cursor-pointer items-center justify-between gap-2',
+  'rounded-full border px-3 py-2 text-left font-sans text-sm font-medium',
+  'transition-[box-shadow,border-color,color] duration-150',
+  'disabled:cursor-not-allowed disabled:opacity-50'
+);
 
 export const appMenuPanelClass = 'app-menu-panel';
 

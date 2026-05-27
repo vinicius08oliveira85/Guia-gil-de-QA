@@ -67,6 +67,8 @@ export interface TaskTestStatusBadgeProps {
   labelOverride?: string;
   /** `card` = chip compacto alinhado aos metadados do JiraTaskItem. */
   variant?: 'default' | 'card';
+  /** Substitui `taskCardTestStatusChipLayout` quando `variant="card"`. */
+  chipLayoutClassName?: string;
   className?: string;
   hideIcon?: boolean;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
@@ -80,6 +82,7 @@ export const TaskTestStatusBadge: React.FC<TaskTestStatusBadgeProps> = ({
   status,
   labelOverride,
   variant = 'default',
+  chipLayoutClassName,
   className,
   hideIcon = false,
   onClick,
@@ -93,7 +96,7 @@ export const TaskTestStatusBadge: React.FC<TaskTestStatusBadgeProps> = ({
   const sharedClassName = cn(
     'inline-flex items-center gap-1 whitespace-nowrap',
     isCard
-      ? cn(taskCardTestStatusChipLayout, toneClass)
+      ? cn(chipLayoutClassName ?? taskCardTestStatusChipLayout, toneClass)
       : cn(
           'badge-task-format h-5 cursor-default px-2.5 text-xs normal-case',
           taskCardBadgePillShape,

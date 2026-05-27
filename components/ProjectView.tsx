@@ -31,21 +31,23 @@ import { Button } from './common/Button';
 import { cn } from '../utils/cn';
 import { appContentPaddingX } from './common/viewUi';
 import {
-  projectViewHeaderBacklogBtnClass,
-  projectViewHeaderBacklogCountClass,
-  projectViewHeaderBreadcrumbsClass,
-  projectViewHeaderDangerBtnClass,
-  projectViewHeaderScrollFadeFromClass,
-  projectViewHeaderScrollFadeToClass,
-  projectViewHeaderScrollHintClass,
-  projectViewHeaderShellClass,
-  projectViewHeaderSyncBtnClass,
-  projectViewHeaderTabClass,
-  projectViewHeaderTabsDividerClass,
-  projectViewHeaderTabsNavClass,
-  projectViewHeaderToolbarClass,
-  projectViewHeaderToolbarDividerClass,
-} from './common/projectCardUi';
+  projectChromeBacklogBtnClass,
+  projectChromeBacklogCountClass,
+  projectChromeBreadcrumbsClass,
+  projectChromeDangerBtnClass,
+  projectChromeHeaderShellClass,
+  projectChromeScrollFadeFromClass,
+  projectChromeScrollFadeToClass,
+  projectChromeScrollHintClass,
+  projectChromeSyncBtnClass,
+  projectChromeTabActiveClass,
+  projectChromeTabIdleClass,
+  projectChromeTabsDividerClass,
+  projectChromeTabsNavClass,
+  projectChromeToolbarClass,
+  projectChromeToolbarDividerClass,
+  projectChromeToolbarStatusClass,
+} from './tasks/tasksPanelNeuStyles';
 import { countBacklogTasks, type TasksListMode } from '../utils/backlogTasks';
 
 const TAB_LABELS: Record<string, string> = {
@@ -464,7 +466,7 @@ export const ProjectView: React.FC<{
           appContentPaddingX
         )}
       >
-        <div className={projectViewHeaderShellClass}>
+        <div className={projectChromeHeaderShellClass}>
           <div className="flex min-w-0 flex-col gap-1">
             {/* Linha 1: voltar + trilho | estado + excluir */}
             <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-1">
@@ -475,12 +477,12 @@ export const ProjectView: React.FC<{
                     showHome={false}
                     align="left"
                     dense
-                    className={cn(projectViewHeaderBreadcrumbsClass, 'w-full min-w-0 max-w-full')}
+                    className={cn(projectChromeBreadcrumbsClass, 'w-full min-w-0 max-w-full')}
                   />
                 </div>
               </div>
               {/* Toolbar de ações do projeto — agrupadas em uma única barra coesa */}
-              <div className={projectViewHeaderToolbarClass} role="toolbar" aria-label="Ações do projeto">
+              <div className={projectChromeToolbarClass} role="toolbar" aria-label="Ações do projeto">
                 {/* Status de salvamento */}
                 {(supabaseAvailable || lastSaveToSupabase === false) && (
                   <div
@@ -527,7 +529,7 @@ export const ProjectView: React.FC<{
                       </>
                     )}
                     {saveStatus === 'idle' && supabaseAvailable && lastSaveToSupabase === false && (
-                      <span className="hidden font-sans text-[var(--leve-header-text-muted)] sm:inline">
+                      <span className={cn('hidden font-sans sm:inline', projectChromeToolbarStatusClass)}>
                         Salvo localmente
                       </span>
                     )}
@@ -537,12 +539,12 @@ export const ProjectView: React.FC<{
                 {/* Botão Sincronizar — só quando há supabase E salvamento pendente */}
                 {supabaseAvailable && lastSaveToSupabase === false && saveStatus === 'idle' && (
                   <>
-                    <div className={projectViewHeaderToolbarDividerClass} aria-hidden />
+                    <div className={projectChromeToolbarDividerClass} aria-hidden />
                     <button
                       type="button"
                       onClick={handleSaveToSupabase}
                       disabled={isSavingToSupabase || !isOnline}
-                      className={projectViewHeaderSyncBtnClass}
+                      className={projectChromeSyncBtnClass}
                       aria-label="Sincronizar projeto com a nuvem"
                       title={
                         !isOnline
@@ -568,11 +570,11 @@ export const ProjectView: React.FC<{
                 {/* Separador + Excluir */}
                 {onDeleteProject && (
                   <>
-                    <div className={projectViewHeaderToolbarDividerClass} aria-hidden />
+                    <div className={projectChromeToolbarDividerClass} aria-hidden />
                     <button
                       type="button"
                       onClick={() => setShowDeleteProjectConfirm(true)}
-                      className={projectViewHeaderDangerBtnClass}
+                      className={projectChromeDangerBtnClass}
                       aria-label={`Excluir projeto ${currentProject.name}`}
                     >
                       <Trash2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
@@ -617,18 +619,18 @@ export const ProjectView: React.FC<{
             </div>
             )}
           </div>
-          <div className={projectViewHeaderTabsDividerClass}>
+          <div className={projectChromeTabsDividerClass}>
             {canScrollLeft && (
-              <div className={projectViewHeaderScrollFadeFromClass} aria-hidden />
+              <div className={projectChromeScrollFadeFromClass} aria-hidden />
             )}
             {canScrollRight && (
-              <div className={projectViewHeaderScrollFadeToClass} aria-hidden />
+              <div className={projectChromeScrollFadeToClass} aria-hidden />
             )}
 
             <div className="flex w-full items-end gap-2">
               <nav
                 ref={tabsRef}
-                className={projectViewHeaderTabsNavClass}
+                className={projectChromeTabsNavClass}
                 aria-label="Seções do projeto"
                 role="tablist"
                 aria-orientation="horizontal"
@@ -639,7 +641,9 @@ export const ProjectView: React.FC<{
                     key={tab.id}
                     type="button"
                     onClick={() => handleTabClick(tab.id)}
-                    className={projectViewHeaderTabClass(activeTab === tab.id)}
+                    className={
+                      activeTab === tab.id ? projectChromeTabActiveClass : projectChromeTabIdleClass
+                    }
                     id={`tab-${tab.id}`}
                     role="tab"
                     tabIndex={activeTab === tab.id ? 0 : -1}
@@ -653,7 +657,7 @@ export const ProjectView: React.FC<{
               <button
                 type="button"
                 onClick={handleNavigateToBacklog}
-                className={projectViewHeaderBacklogBtnClass(
+                className={projectChromeBacklogBtnClass(
                   activeTab === 'tasks' && tasksListMode === 'backlog'
                 )}
                 aria-label={`Abrir backlog (${backlogCount} itens)`}
@@ -662,7 +666,7 @@ export const ProjectView: React.FC<{
                 <Layers className="h-3 w-3 shrink-0" aria-hidden />
                 <span className="hidden sm:inline">Backlog</span>
                 <span
-                  className={projectViewHeaderBacklogCountClass(
+                  className={projectChromeBacklogCountClass(
                     activeTab === 'tasks' && tasksListMode === 'backlog'
                   )}
                   aria-hidden
@@ -672,7 +676,7 @@ export const ProjectView: React.FC<{
               </button>
             </div>
             {canScrollRight && (
-              <p className={projectViewHeaderScrollHintClass} aria-live="polite">
+              <p className={projectChromeScrollHintClass} aria-live="polite">
                 Deslize as abas para ver mais seções
               </p>
             )}

@@ -34,11 +34,22 @@ import {
 import { logger } from '../../utils/logger';
 import { cn } from '../../utils/cn';
 import {
-  taskListToolbarFieldClass,
-  taskListToolbarLabelClass,
-  taskListToolbarSelectClass,
-  taskListToolbarShellClass,
-} from './taskActionLayout';
+  tasksListPanelClass,
+  tasksPanelCardClass,
+  tasksPanelListShellClass,
+  tasksPanelSectionDividerClass,
+  tasksPanelSectionTitleClass,
+  tasksPanelToolbarExportBtnClass,
+  tasksPanelToolbarFieldClass,
+  tasksPanelToolbarLabelClass,
+  tasksPanelToolbarSelectClass,
+  tasksPanelNeuModalPanelClass,
+  tasksPanelNeuModalTitleClass,
+  tasksPanelToolbarShellClass,
+  tasksPanelBacklogSprintActiveBadgeClass,
+  tasksPanelBacklogSprintCountClass,
+  tasksPanelBacklogSprintHeadingClass,
+} from './tasksPanelNeuStyles';
 import { useProjectsStore } from '../../store/projectsStore';
 import { toToastableAiError } from '../../utils/aiErrorMapper';
 import { withTimeout } from '../../utils/withTimeout';
@@ -91,12 +102,8 @@ import {
 } from './tasksViewHelpers';
 import { testCaseLooksAutomated } from '../../utils/testCaseMigration';
 import { VirtualizedTaskRootList, shouldVirtualizeTaskRoots } from './VirtualizedTaskRootList';
-import { projectViewPanel, projectViewShell } from '../common/viewUi';
-import {
-  leveViewOutlineBtnClass,
-  leveViewPagePanelClass,
-  leveViewPageSectionDividerClass,
-} from '../common/projectCardUi';
+import { projectViewShell } from '../common/viewUi';
+import { leveViewOutlineBtnClass } from '../common/projectCardUi';
 import {
   applyBacklogSecondaryFilters,
   BACKLOG_SECONDARY_FILTER_DEFAULTS,
@@ -2177,11 +2184,15 @@ export const TasksView: React.FC<{
             roots={roots}
             listAriaLabel={listAriaLabel}
             renderRootNode={renderRow}
+            className={cn(
+              tasksListPanelClass,
+              'max-h-[min(72vh,880px)] overflow-y-auto overflow-x-hidden custom-scrollbar'
+            )}
           />
         );
       }
       return (
-        <div className="space-y-1" role="list" aria-label={listAriaLabel}>
+        <div className={cn(tasksListPanelClass, 'space-y-1')} role="list" aria-label={listAriaLabel}>
           {renderTaskTree(roots, 0, 0, undefined, sectionA11yByTaskId).map((taskElement, index) =>
             reduceListMotion ? (
               <div key={taskElement.key ?? `row-${index}`}>{taskElement}</div>
@@ -2231,10 +2242,7 @@ export const TasksView: React.FC<{
           </section>
         ) : null}
 
-        <section
-          className={leveViewPagePanelClass}
-          aria-label="Filtros e busca de tarefas"
-        >
+        <section className={tasksPanelCardClass} aria-label="Filtros e busca de tarefas">
           <TasksViewListModeToggle
             mode={listModeProp}
             onModeChange={onListModeChange ?? (() => undefined)}
@@ -2257,7 +2265,7 @@ export const TasksView: React.FC<{
             disabled={isRunningGeneralAnalysis || !onListModeChange}
           />
 
-          <div className={leveViewPageSectionDividerClass}>
+          <div className={tasksPanelSectionDividerClass}>
             <TasksViewSearch
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
@@ -2266,13 +2274,15 @@ export const TasksView: React.FC<{
           </div>
         </section>
 
-        <section className={projectViewPanel}>
+        <section className={tasksPanelListShellClass} aria-label="Lista de tarefas">
           <div className="flex flex-col gap-3 sm:gap-4">
           <Modal
             isOpen={isFiltersModalOpen}
             onClose={() => setIsFiltersModalOpen(false)}
             title="Filtros"
             size="6xl"
+            panelClassName={tasksPanelNeuModalPanelClass}
+            titleClassName={tasksPanelNeuModalTitleClass}
           >
             <TasksViewFiltersModalContent
               statusOptions={statusOptions}
@@ -2407,6 +2417,8 @@ export const TasksView: React.FC<{
                 }}
                 title={editingTask ? 'Editar Tarefa' : 'Adicionar Tarefa'}
                 size="xl"
+                panelClassName={tasksPanelNeuModalPanelClass}
+                titleClassName={tasksPanelNeuModalTitleClass}
               >
                 <TaskForm
                   onSave={handleSaveTask}
@@ -2490,11 +2502,11 @@ export const TasksView: React.FC<{
                   scopeLabel={backlogScopeLabel}
                 >
                 <div className="space-y-6">
-                  <div className={taskListToolbarShellClass}>
+                  <div className={tasksPanelToolbarShellClass}>
                     <button
                       type="button"
                       onClick={() => setShowExportTasksModal(true)}
-                      className={cn(leveViewOutlineBtnClass, 'gap-1.5')}
+                      className={tasksPanelToolbarExportBtnClass}
                       aria-label={`Exportar lista visível (${listTasks.length} tarefas)`}
                     >
                       <Download className="h-4 w-4 shrink-0" aria-hidden />
@@ -2504,15 +2516,15 @@ export const TasksView: React.FC<{
                         : ''}
                     </button>
                     {!backlogOnly && (
-                      <div className={taskListToolbarFieldClass}>
-                        <label htmlFor="tasks-sort-by" className={taskListToolbarLabelClass}>
+                      <div className={tasksPanelToolbarFieldClass}>
+                        <label htmlFor="tasks-sort-by" className={tasksPanelToolbarLabelClass}>
                           Ordenar
                         </label>
                         <AppSelect
                           id="tasks-sort-by"
                           value={sortBy}
                           onChange={v => setSortBy(v as TaskSortBy)}
-                          className={taskListToolbarSelectClass}
+                          className={tasksPanelToolbarSelectClass}
                           aria-label="Ordenação da lista de tarefas"
                         >
                           <option value="id">ID</option>
@@ -2524,15 +2536,15 @@ export const TasksView: React.FC<{
                       </div>
                     )}
                     {!backlogOnly && (
-                      <div className={taskListToolbarFieldClass}>
-                        <label htmlFor="tasks-group-by" className={taskListToolbarLabelClass}>
+                      <div className={tasksPanelToolbarFieldClass}>
+                        <label htmlFor="tasks-group-by" className={tasksPanelToolbarLabelClass}>
                           Agrupar
                         </label>
                         <AppSelect
                           id="tasks-group-by"
                           value={groupBy}
                           onChange={v => setGroupBy(v as TaskGroupBy)}
-                          className={taskListToolbarSelectClass}
+                          className={tasksPanelToolbarSelectClass}
                           aria-label="Agrupar lista de tarefas por"
                         >
                           <option value="none">Nenhum</option>
@@ -2547,23 +2559,20 @@ export const TasksView: React.FC<{
                     <div className="space-y-6">
                       {backlogSprintGroupsWithA11y.map(([group, tasksInGroup, groupA11y]) => (
                         <section key={group.key} aria-label={`Sprint: ${group.label}`}>
-                          <h3
-                            className={cn(
-                              'mb-3 flex flex-wrap items-center gap-2 font-heading text-xs font-bold uppercase tracking-wider',
-                              group.isActive
-                                ? 'text-[var(--brand-highlight)]'
-                                : 'text-[var(--leve-header-text-muted)]'
-                            )}
-                          >
-                            <Layers className="h-4 w-4 shrink-0" aria-hidden />
+                          <h3 className={tasksPanelBacklogSprintHeadingClass(group.isActive)}>
+                            <Layers
+                              className={cn(
+                                'h-4 w-4 shrink-0',
+                                group.isActive ? 'text-[#d85414]' : 'text-[#777777]'
+                              )}
+                              aria-hidden
+                            />
                             {group.label}
-                            <span className="font-medium normal-case tracking-normal text-[var(--leve-header-text-muted)]">
+                            <span className={tasksPanelBacklogSprintCountClass}>
                               ({countTasksInBacklogTree(tasksInGroup)})
                             </span>
                             {group.isActive ? (
-                              <span className="rounded-full border border-[color-mix(in_srgb,var(--brand-highlight)_35%,transparent)] bg-[color-mix(in_srgb,var(--brand-highlight)_12%,transparent)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-[var(--brand-highlight)]">
-                                Ativa
-                              </span>
+                              <span className={tasksPanelBacklogSprintActiveBadgeClass}>Ativa</span>
                             ) : null}
                           </h3>
                           {renderRootTaskList(
@@ -2597,12 +2606,15 @@ export const TasksView: React.FC<{
                           sectionId={`tasks-favorites-${project.id}`}
                           title="Favoritos"
                           icon={
-                            <Star className="h-4 w-4 shrink-0 fill-amber-400 text-amber-400" aria-hidden />
+                            <Star
+                              className="h-4 w-4 shrink-0 fill-[#d85414] text-[#d85414]"
+                              aria-hidden
+                            />
                           }
                           count={countTasksInBacklogTree(favoriteRoots)}
                           isOpen={favoritesSectionOpen}
                           onToggle={() => setFavoritesSectionOpen(prev => !prev)}
-                          titleClassName="text-[var(--brand-cta)]"
+                          titleClassName={tasksPanelSectionTitleClass}
                         >
                           {renderRootTaskList(
                             favoriteRoots,
@@ -2615,11 +2627,13 @@ export const TasksView: React.FC<{
                         <TaskListCollapsibleSection
                           sectionId={`tasks-other-${project.id}`}
                           title="Outras Tarefas"
-                          icon={<List className="h-4 w-4 shrink-0" aria-hidden />}
+                          icon={
+                            <List className="h-4 w-4 shrink-0 text-[#d85414]" aria-hidden />
+                          }
                           count={countTasksInBacklogTree(otherRoots)}
                           isOpen={otherTasksSectionOpen}
                           onToggle={() => setOtherTasksSectionOpen(prev => !prev)}
-                          titleClassName="text-[var(--leve-header-text-muted)]"
+                          titleClassName={tasksPanelSectionTitleClass}
                         >
                           {renderRootTaskList(
                             otherRoots,

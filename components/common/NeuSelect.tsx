@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useId, useLayoutEffect, useRef, useState
 import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '../../utils/cn';
-import { appMenuItemClass, appMenuPanelClass, appSelectClass } from './viewUi';
+import { appMenuItemClass, appMenuPanelClass, neuSelectTriggerClass } from './viewUi';
 
 export type NeuSelectOption = {
   value: string;
@@ -165,12 +165,7 @@ export const NeuSelect: React.FC<NeuSelectProps> = ({
             if (disabled) return;
             setIsOpen(open => !open);
           }}
-          className={cn(
-            appSelectClass,
-            'inline-flex w-full min-w-0 cursor-pointer items-center justify-between gap-2 text-left',
-            disabled && 'cursor-not-allowed opacity-50',
-            className
-          )}
+          className={cn(neuSelectTriggerClass, className)}
         >
           <span className="min-w-0 truncate">{displayLabel}</span>
           <ChevronDown

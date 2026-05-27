@@ -1,6 +1,13 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import type { TaskTestStatus, TestCase } from '../../types';
+import {
+  tasksPanelActiveFilterChipBtnClass,
+  tasksPanelActiveFilterChipClass,
+  tasksPanelActiveFiltersBarClass,
+  tasksPanelActiveFiltersClearClass,
+  tasksPanelListCountClass,
+} from './tasksPanelNeuStyles';
 import { TEST_STATUS_FILTER_OPTIONS } from './tasksViewHelpers';
 
 export interface TasksViewListProps {
@@ -47,12 +54,6 @@ const QUALITY_LABELS: Record<string, string> = {
   manual: 'Manuais',
 };
 
-const filterChipClass =
-  'leve-neu-pill app-element-typography inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-[var(--leve-header-text-muted)]';
-
-const filterChipBtnClass =
-  'flex h-5 w-5 items-center justify-center rounded-full text-[var(--leve-header-text-muted)] transition-colors hover:text-[var(--leve-header-accent)]';
-
 export const TasksViewList: React.FC<TasksViewListProps> = ({
   statusFilter,
   setStatusFilter,
@@ -78,17 +79,18 @@ export const TasksViewList: React.FC<TasksViewListProps> = ({
 }) => (
   <>
     {hasActiveFiltersOrSearch && (
-      <div className="leve-neu-surface-inset flex flex-wrap items-center gap-2 p-2.5 sm:p-3">
+      <div className="flex flex-col gap-2">
+        <div className={tasksPanelActiveFiltersBarClass}>
         {statusFilter.map(s => (
           <span
             key={`status-${s}`}
-            className={filterChipClass}
+            className={tasksPanelActiveFilterChipClass}
           >
             Status: {s}
             <button
               type="button"
               onClick={() => setStatusFilter(prev => prev.filter(x => x !== s))}
-              className={filterChipBtnClass}
+              className={tasksPanelActiveFilterChipBtnClass}
               aria-label={`Remover filtro Status: ${s}`}
             >
               <X className="w-3 h-3" />
@@ -98,13 +100,13 @@ export const TasksViewList: React.FC<TasksViewListProps> = ({
         {priorityFilter.map(p => (
           <span
             key={`priority-${p}`}
-            className={filterChipClass}
+            className={tasksPanelActiveFilterChipClass}
           >
             Prioridade: {p}
             <button
               type="button"
               onClick={() => setPriorityFilter(prev => prev.filter(x => x !== p))}
-              className={filterChipBtnClass}
+              className={tasksPanelActiveFilterChipBtnClass}
               aria-label={`Remover filtro Prioridade: ${p}`}
             >
               <X className="w-3 h-3" />
@@ -114,13 +116,13 @@ export const TasksViewList: React.FC<TasksViewListProps> = ({
         {typeFilter.map(t => (
           <span
             key={`type-${t}`}
-            className={filterChipClass}
+            className={tasksPanelActiveFilterChipClass}
           >
             Tipo: {t}
             <button
               type="button"
               onClick={() => setTypeFilter(prev => prev.filter(x => x !== t))}
-              className={filterChipBtnClass}
+              className={tasksPanelActiveFilterChipBtnClass}
               aria-label={`Remover filtro Tipo: ${t}`}
             >
               <X className="w-3 h-3" />
@@ -132,13 +134,13 @@ export const TasksViewList: React.FC<TasksViewListProps> = ({
           return (
             <span
               key={`testStatus-${ts}`}
-              className={filterChipClass}
+              className={tasksPanelActiveFilterChipClass}
             >
               Teste: {opt?.label ?? ts}
               <button
                 type="button"
                 onClick={() => setTestStatusFilter(prev => prev.filter(x => x !== ts))}
-                className={filterChipBtnClass}
+                className={tasksPanelActiveFilterChipBtnClass}
                 aria-label={`Remover filtro Teste: ${opt?.label ?? ts}`}
               >
                 <X className="w-3 h-3" />
@@ -149,13 +151,13 @@ export const TasksViewList: React.FC<TasksViewListProps> = ({
         {testCaseExecutionStatusFilter.map(st => (
           <span
             key={`caseExec-${st}`}
-            className={filterChipClass}
+            className={tasksPanelActiveFilterChipClass}
           >
             {CASE_EXECUTION_LABEL[st]}
             <button
               type="button"
               onClick={() => setTestCaseExecutionStatusFilter(prev => prev.filter(x => x !== st))}
-              className={filterChipBtnClass}
+              className={tasksPanelActiveFilterChipBtnClass}
               aria-label={`Remover filtro ${CASE_EXECUTION_LABEL[st]}`}
             >
               <X className="w-3 h-3" />
@@ -165,13 +167,13 @@ export const TasksViewList: React.FC<TasksViewListProps> = ({
         {qualityFilter.map(q => (
           <span
             key={`quality-${q}`}
-            className={filterChipClass}
+            className={tasksPanelActiveFilterChipClass}
           >
             Qualidade: {QUALITY_LABELS[q] ?? q}
             <button
               type="button"
               onClick={() => setQualityFilter(prev => prev.filter(x => x !== q))}
-              className={filterChipBtnClass}
+              className={tasksPanelActiveFilterChipBtnClass}
               aria-label={`Remover filtro Qualidade: ${QUALITY_LABELS[q] ?? q}`}
             >
               <X className="w-3 h-3" />
@@ -179,12 +181,12 @@ export const TasksViewList: React.FC<TasksViewListProps> = ({
           </span>
         ))}
         {searchQuery && (
-          <span className={filterChipClass}>
+          <span className={tasksPanelActiveFilterChipClass}>
             Busca: {searchQuery.length > 20 ? `${searchQuery.slice(0, 20)}…` : searchQuery}
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className={filterChipBtnClass}
+              className={tasksPanelActiveFilterChipBtnClass}
               aria-label="Remover filtro de busca"
             >
               <X className="w-3 h-3" />
@@ -194,18 +196,16 @@ export const TasksViewList: React.FC<TasksViewListProps> = ({
         <button
           type="button"
           onClick={onClearAndCloseFilters}
-          className="ml-1 inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-error transition-colors hover:bg-error/10"
+          className={tasksPanelActiveFiltersClearClass}
         >
-          <X className="w-3 h-3 mr-1" />
+          <X className="mr-1 h-3 w-3" aria-hidden />
           Limpar todos
         </button>
+        </div>
+        <p className={tasksPanelListCountClass}>
+          Exibindo {filteredCount} de {totalCount} tarefas
+        </p>
       </div>
-    )}
-
-    {hasActiveFiltersOrSearch && (
-      <p className="text-sm text-base-content/70">
-        Exibindo {filteredCount} de {totalCount} tarefas
-      </p>
     )}
 
     {children}

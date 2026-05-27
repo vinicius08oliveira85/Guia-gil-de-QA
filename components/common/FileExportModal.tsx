@@ -16,14 +16,17 @@ import { Project, JiraTask } from '../../types';
 import { downloadFile } from '../../utils/exportService';
 import { cn } from '../../utils/cn';
 import {
-  leveExportFormatOptionClass,
-  leveExportFormatStripClass,
-  leveExportModalContentClass,
-  leveExportModalFieldLabelClass,
-  leveExportModalHintClass,
-  leveExportModalInfoClass,
-  leveExportModalSubmitClass,
-} from './projectCardUi';
+  tasksPanelExportFormatOptionClass,
+  tasksPanelExportFormatStripClass,
+  tasksPanelExportModalContentClass,
+  tasksPanelExportModalFieldLabelClass,
+  tasksPanelExportModalHintClass,
+  tasksPanelExportModalInfoClass,
+  tasksPanelExportModalInfoStrongClass,
+  tasksPanelExportModalSubmitClass,
+  tasksPanelNeuModalPanelClass,
+  tasksPanelNeuModalTitleClass,
+} from '../tasks/tasksPanelNeuStyles';
 
 export type ExportType = 'project' | 'tasks' | 'test-cases';
 export type ExportFormat = 'json' | 'csv' | 'excel' | 'pdf' | 'word' | 'markdown';
@@ -187,32 +190,44 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(
     };
 
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Exportar Dados" size="lg">
-        <div className={leveExportModalContentClass}>
-          <div className={leveExportModalInfoClass}>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Exportar Dados"
+        size="lg"
+        panelClassName={tasksPanelNeuModalPanelClass}
+        titleClassName={tasksPanelNeuModalTitleClass}
+      >
+        <div className={tasksPanelExportModalContentClass}>
+          <div className={tasksPanelExportModalInfoClass}>
             {exportType === 'project' && project && (
               <p>
-                Exportando projeto: <strong className="text-[var(--leve-header-text)]">{project.name}</strong>
+                Exportando projeto:{' '}
+                <strong className={tasksPanelExportModalInfoStrongClass}>{project.name}</strong>
               </p>
             )}
             {exportType === 'tasks' && tasks && (
               <p>
-                Exportando <strong className="text-[var(--leve-header-text)]">{tasks.length}</strong> tarefa(s)
+                Exportando{' '}
+                <strong className={tasksPanelExportModalInfoStrongClass}>{tasks.length}</strong>{' '}
+                tarefa(s)
               </p>
             )}
             {exportType === 'test-cases' && tasks && (
               <p>
                 Exportando casos de teste de{' '}
-                <strong className="text-[var(--leve-header-text)]">{tasks.length}</strong> tarefa(s)
+                <strong className={tasksPanelExportModalInfoStrongClass}>{tasks.length}</strong>{' '}
+                tarefa(s)
               </p>
             )}
           </div>
 
           <div>
-            <span className={leveExportModalFieldLabelClass}>Formato de Exportação</span>
+            <span className={tasksPanelExportModalFieldLabelClass}>Formato de exportação</span>
             <div
               className={cn(
-                leveExportFormatStripClass,
+                tasksPanelExportFormatStripClass,
+                'mt-2',
                 availableFormats.length === 2 && 'grid-cols-2 sm:grid-cols-2'
               )}
               role="radiogroup"
@@ -225,7 +240,7 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(
                   role="radio"
                   aria-checked={selectedFormat === format}
                   onClick={() => setSelectedFormat(format)}
-                  className={leveExportFormatOptionClass(selectedFormat === format)}
+                  className={tasksPanelExportFormatOptionClass(selectedFormat === format)}
                   disabled={isExporting}
                 >
                   {formatLabels[format]}
@@ -235,14 +250,14 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(
           </div>
 
           {formatHint[selectedFormat] ? (
-            <p className={leveExportModalHintClass}>{formatHint[selectedFormat]}</p>
+            <p className={tasksPanelExportModalHintClass}>{formatHint[selectedFormat]}</p>
           ) : null}
 
           <button
             type="button"
             onClick={handleExport}
             disabled={isExporting}
-            className={leveExportModalSubmitClass}
+            className={tasksPanelExportModalSubmitClass}
           >
             {isExporting ? (
               <>

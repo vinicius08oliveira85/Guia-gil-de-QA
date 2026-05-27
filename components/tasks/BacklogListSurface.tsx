@@ -1,9 +1,12 @@
 import React from 'react';
 import { cn } from '../../utils/cn';
 import {
-  backlogListSurfaceClass,
   backlogListSurfaceBodyClass,
+  backlogListSurfaceClass,
   backlogListSurfaceHeaderClass,
+  backlogListSurfaceMetaClass,
+  backlogListSurfaceMetaMutedClass,
+  backlogListSurfaceTitleClass,
 } from './backlogToolbarLayout';
 
 export interface BacklogListSurfaceProps {
@@ -32,12 +35,10 @@ export const BacklogListSurface: React.FC<BacklogListSurfaceProps> = ({
   return (
     <section className={cn(backlogListSurfaceClass, className)} aria-label="Lista do backlog">
       <header className={backlogListSurfaceHeaderClass}>
-        <span className="text-xs font-semibold uppercase tracking-wider text-[var(--leve-header-text-muted)]">
-          Lista do backlog
-        </span>
-        <span className="text-xs font-medium text-[var(--leve-header-text)]">
+        <span className={backlogListSurfaceTitleClass}>Lista do backlog</span>
+        <span className={backlogListSurfaceMetaClass}>
           {itemCount} {itemCount === 1 ? 'item' : 'itens'}
-          <span className="text-[var(--leve-header-text-muted)]"> · {scopeLabel}</span>
+          <span className={backlogListSurfaceMetaMutedClass}> · {scopeLabel}</span>
         </span>
       </header>
       <div className={backlogListSurfaceBodyClass}>{children}</div>

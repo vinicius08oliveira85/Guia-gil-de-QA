@@ -87,20 +87,11 @@ import {
   taskCardBadgeTechShape,
   taskCardBadgeTechTypography,
   taskCardIdTypography,
-  taskCardTitleClass,
   taskCardSectionTitleClass,
-  taskCardMutedClass,
-  taskCardShellClass,
   taskCardShellLayoutClass,
-  taskCardListHoverClass,
   taskCardNestedListBgClass,
-  taskCardSelectedClass,
-  taskCardActionChipCta,
-  taskCardSubtreeExpandSlotClass,
-  taskChipCountClass,
   taskCountBadgeClass,
   taskDetailsExpandClass,
-  taskIconHoverClass,
   taskModalSectionClass,
   taskNavFooterClass,
   taskNeuDividerClass,
@@ -118,8 +109,26 @@ import {
   taskToolsSectionClass,
   taskUiTagSuccessClass,
   taskUiTagClass,
-  gerarTudoRingOffsetClass,
 } from './taskActionLayout';
+import {
+  tasksListCardHoverClass,
+  tasksListCardIconMutedClass,
+  tasksListCardIdLinkClass,
+  tasksListCardMutedClass,
+  tasksListCardOpenModalClass,
+  tasksListCardSelectedClass,
+  tasksListCardShellClass,
+  tasksListCardTitleClass,
+  tasksListActionChipCta,
+  tasksListChipRaisedClass,
+  tasksListChipCountClass,
+  tasksListIconHoverClass,
+  tasksListMetadataStripClass,
+  tasksListSubtreeBorderClass,
+  tasksListSubtreeExpandPlaceholderClass,
+  tasksListSubtreeExpandSlotClass,
+  tasksListTestStatusChipLayout,
+} from './tasksListNeuUi';
 import { JiraStatusLozenge } from './JiraStatusLozenge';
 import { TaskJiraStatusDropdown } from './TaskJiraStatusDropdown';
 import { TaskCardQaInsights } from './TaskCardQaInsights';
@@ -146,7 +155,7 @@ import {
 
 /** Destaque da ação IA principal — halo via tokens Daisy (oklch) + animação existente. */
 const gerarTudoDestaqueClass =
-  `animate-ai-card-border glow-primary ring-2 ring-[color-mix(in_oklch,oklch(var(--p))_32%,transparent)] ring-offset-2 ${gerarTudoRingOffsetClass} hover:ring-[color-mix(in_oklch,oklch(var(--p))_45%,transparent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[oklch(var(--p))] transition-[color,box-shadow,filter,background-color]`;
+  `animate-ai-card-border glow-primary ring-2 ring-[color-mix(in_srgb,#FF5C1B_32%,transparent)] ring-offset-2 ring-offset-[#EBE6DE] hover:ring-[color-mix(in_srgb,#FF5C1B_45%,transparent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C1B] transition-[color,box-shadow,filter,background-color]`;
 
 // Componente para renderizar descrição com formatação rica do Jira
 const DescriptionRenderer: React.FC<{
@@ -1234,10 +1243,10 @@ export const JiraTaskItem: React.FC<{
         <div className="space-y-4">
           <header className={cn(taskModalSectionClass, 'mb-4 p-4')}>
             <h2 className={taskCardSectionTitleClass}>Cenários de Teste BDD</h2>
-            <p className={cn(taskCardMutedClass, 'mt-1 text-sm')}>
+            <p className={cn(tasksListCardMutedClass, 'mt-1 text-sm')}>
               Gerencie e visualize seus critérios de aceite em formato Gherkin.
             </p>
-            <span className={cn(taskCardMutedClass, 'mt-1 block text-xs')}>{bddCount} cenário(s)</span>
+            <span className={cn(tasksListCardMutedClass, 'mt-1 block text-xs')}>{bddCount} cenário(s)</span>
           </header>
 
           <div className="space-y-4">
@@ -1722,21 +1731,22 @@ export const JiraTaskItem: React.FC<{
       >
         <div style={treeIndentStyle} className="task-tree-indent py-0.5">
           <div
-            className={[
-              taskCardShellClass,
+            className={cn(
+              tasksListCardShellClass,
               taskCardShellLayoutClass,
-              taskCardListHoverClass,
+              tasksListCardHoverClass,
               level > 0 ? taskCardNestedListBgClass : '',
-              activeTaskId === task.id ? 'ring-2 ring-primary/40' : '',
-              isSelected ? taskCardSelectedClass : '',
-              task.isFavorite ? 'ring-1 ring-amber-500/35' : '',
+              activeTaskId === task.id &&
+                'ring-2 ring-[color-mix(in_srgb,#FF5C1B_40%,transparent)]',
+              isSelected && tasksListCardSelectedClass,
+              task.isFavorite && 'ring-1 ring-amber-500/35',
               taskCardLeftAccentClass,
-              showBulkGenerateFeedback ? 'ring-2 ring-primary/50 animate-pulse' : '',
-              isAiProcessing ? 'animate-ai-card-border' : '',
-              onOpenModal
-                ? 'cursor-pointer hover:translate-x-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2'
-                : '',
-            ].join(' ')}
+              showBulkGenerateFeedback &&
+                'animate-pulse ring-2 ring-[color-mix(in_srgb,#FF5C1B_50%,transparent)]',
+              isAiProcessing && 'animate-ai-card-border',
+              onOpenModal && tasksListCardOpenModalClass,
+              onOpenModal && 'hover:translate-x-0.5'
+            )}
             onClick={onOpenModal ? handleCardClick : undefined}
             onKeyDown={onOpenModal ? handleCardKeyDown : undefined}
             role={onOpenModal ? 'button' : undefined}
@@ -1749,8 +1759,9 @@ export const JiraTaskItem: React.FC<{
           >
             <TaskCardHeader
               title={displayTitle}
+              titleClassName={tasksListCardTitleClass}
               metadata={
-                <TaskCardMetadataStrip>
+                <TaskCardMetadataStrip className={tasksListMetadataStripClass}>
                   <JiraIssueTypeIcon
                     type={task.type}
                     iconUrl={task.jiraIssueTypeIconUrl}
@@ -1761,8 +1772,9 @@ export const JiraTaskItem: React.FC<{
                     type="button"
                     onClick={handleOpenTaskDetails}
                     className={cn(
-                      'shrink-0 cursor-pointer rounded-sm text-[color:var(--color-primary-deep)] underline-offset-2 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
-                      taskCardIdTypography
+                      'shrink-0 cursor-pointer rounded-sm underline-offset-2 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2',
+                      taskCardIdTypography,
+                      tasksListCardIdLinkClass
                     )}
                     aria-label={taskDetailsTriggerLabel}
                     aria-expanded={onOpenModal ? undefined : isDetailsOpen}
@@ -1806,7 +1818,8 @@ export const JiraTaskItem: React.FC<{
                       <TaskCardMetadataSeparator />
                       <span
                         className={cn(
-                          'shrink-0 text-[var(--leve-header-text-muted)]',
+                          'shrink-0',
+                          tasksListCardIconMutedClass,
                           taskCardBadgeTechShape,
                           taskCardBadgeTechTypography
                         )}
@@ -1855,7 +1868,7 @@ export const JiraTaskItem: React.FC<{
                         e.stopPropagation();
                         onToggleFavorite();
                       }}
-                      className={cn(iconTouchTargetClass, 'shrink-0', taskIconHoverClass)}
+                      className={cn(iconTouchTargetClass, 'shrink-0', tasksListIconHoverClass)}
                       aria-label={task.isFavorite ? 'Desmarcar favorito' : 'Marcar como favorito'}
                     >
                       {task.isFavorite ? (
@@ -1864,12 +1877,12 @@ export const JiraTaskItem: React.FC<{
                           aria-hidden
                         />
                       ) : (
-                        <Star className="text-[var(--leve-header-text-muted)]" aria-hidden />
+                        <Star className={tasksListCardIconMutedClass} aria-hidden />
                       )}
                     </button>
                   )}
-                  <div className={taskCardSubtreeExpandSlotClass} aria-hidden={!hasChildren}>
-                    {hasChildren ? (
+                  {hasChildren ? (
+                    <div className={tasksListSubtreeExpandSlotClass} aria-hidden={false}>
                       <button
                         type="button"
                         onClick={e => {
@@ -1878,7 +1891,8 @@ export const JiraTaskItem: React.FC<{
                         }}
                         className={cn(
                           'btn btn-ghost btn-xs flex h-full min-h-0 w-full min-w-0 items-center justify-center gap-0.5 rounded-[inherit] border-0 bg-transparent px-0 py-0 shadow-none',
-                          taskIconHoverClass,
+                          tasksListIconHoverClass,
+                          'text-[#6B5E5E]',
                           '[&_svg:first-child]:size-[18px] sm:[&_svg:first-child]:size-4'
                         )}
                         aria-label={
@@ -1894,15 +1908,17 @@ export const JiraTaskItem: React.FC<{
                           )}
                           aria-hidden="true"
                         />
-                        <span className={taskChipCountClass}>{task.children.length}</span>
+                        <span className={tasksListChipCountClass}>{task.children.length}</span>
                       </button>
-                    ) : (
+                    </div>
+                  ) : (
+                    <div className={tasksListSubtreeExpandPlaceholderClass} aria-hidden>
                       <span className="pointer-events-none flex items-center gap-0.5 opacity-0 select-none">
                         <ChevronDown className="size-[18px] shrink-0 sm:size-4" aria-hidden="true" />
-                        <span className={cn(taskChipCountClass, 'min-w-[1.25rem]')}>0</span>
+                        <span className={cn(tasksListChipCountClass, 'min-w-[1.25rem]')}>0</span>
                       </span>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </>
               }
               titleTrailing={
@@ -1936,7 +1952,7 @@ export const JiraTaskItem: React.FC<{
             <div
               className={cn(
                 'flex w-full shrink-0 flex-nowrap items-center justify-end gap-tasks-panel-tight',
-                'z-20 min-w-0 overflow-visible max-sm:border-t max-sm:border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] max-sm:pt-1',
+                'z-20 min-w-0 overflow-visible max-sm:border-t max-sm:border-[#DED7CD] max-sm:pt-1',
                 'sm:w-auto sm:border-0 sm:pt-0'
               )}
               onClick={e => e.stopPropagation()}
@@ -1955,6 +1971,9 @@ export const JiraTaskItem: React.FC<{
                 isGenerateAllDisabled={
                   isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests
                 }
+                actionChipClassName={tasksListActionChipCta}
+                testStatusChipLayoutClassName={tasksListTestStatusChipLayout}
+                metricChipClassName={tasksListChipRaisedClass}
                 generateAllTitle={generateAllTitle}
                 generateAllAriaLabel={generateAllAriaLabel}
                 testStatus={taskTestStatus ?? 'testar'}
@@ -2140,7 +2159,7 @@ export const JiraTaskItem: React.FC<{
                       <button
                         type="button"
                         className={cn(
-                          taskCardActionChipCta,
+                          tasksListActionChipCta,
                           'max-md:min-h-[44px] px-3',
                           (isGenerating || isGeneratingAll) && gerarTudoDestaqueClass
                         )}
@@ -2443,7 +2462,7 @@ export const JiraTaskItem: React.FC<{
         {hasChildren && isChildrenOpen && (
           <div
             id={childrenRegionId}
-            className={taskSubtreeChildrenClass}
+            className={cn(taskSubtreeChildrenClass, tasksListSubtreeBorderClass)}
           >
             {children}
           </div>

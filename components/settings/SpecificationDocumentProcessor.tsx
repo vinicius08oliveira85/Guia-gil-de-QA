@@ -20,7 +20,9 @@ import {
   documentsMutedTextClass,
   documentsPrimaryBtnClass,
   documentsProgressPercentClass,
+  documentsProgressFillClass,
   documentsProgressTrackClass,
+  documentsStrongTextClass,
   documentsSectionHeaderClass,
   documentsSectionShellClass,
   documentsSectionTitleClass,
@@ -140,14 +142,14 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
               aria-valuemin={0}
               aria-valuemax={100}
             >
-              <div className="h-full w-full rounded-full bg-success" />
+              <div className={documentsProgressFillClass} />
             </div>
             <span className={documentsProgressPercentClass}>100%</span>
           </div>
           {documentSize != null && (
             <p className={documentsMutedTextClass}>
               Conteúdo processado:{' '}
-              <strong className="text-[var(--leve-header-text)]">{formatSize(documentSize)}</strong>
+              <strong className={documentsStrongTextClass}>{formatSize(documentSize)}</strong>
             </p>
           )}
           <div className="flex flex-wrap gap-2 pt-0.5">
@@ -180,7 +182,7 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
       ) : (
         <div className="mt-3 space-y-2.5">
           <div className={documentsAlertInfoClass}>
-            <span className="text-base font-bold text-[var(--leve-header-accent)]" aria-hidden>
+            <span className="text-base font-bold text-[#d85414]" aria-hidden>
               !
             </span>
             <p className={documentsBodyTextClass}>

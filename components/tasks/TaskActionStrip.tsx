@@ -26,6 +26,12 @@ interface TaskActionStripProps {
   onGenerateAll?: React.MouseEventHandler<HTMLButtonElement>;
   isGenerateAllBusy?: boolean;
   isGenerateAllDisabled?: boolean;
+  /** Substitui `taskCardActionChipCta` (ex.: listagem clara). */
+  actionChipClassName?: string;
+  /** Layout do chip de status de teste (`variant="card"`). */
+  testStatusChipLayoutClassName?: string;
+  /** Relevo dos contadores de métricas. */
+  metricChipClassName?: string;
   generateAllClassName?: string;
   generateAllTitle: string;
   generateAllAriaLabel: string;
@@ -46,6 +52,9 @@ export const TaskActionStrip: React.FC<TaskActionStripProps> = ({
   onGenerateAll,
   isGenerateAllBusy = false,
   isGenerateAllDisabled = false,
+  actionChipClassName = taskCardActionChipCta,
+  testStatusChipLayoutClassName,
+  metricChipClassName,
   generateAllClassName,
   generateAllTitle,
   generateAllAriaLabel,
@@ -69,9 +78,27 @@ export const TaskActionStrip: React.FC<TaskActionStripProps> = ({
       <div className={cn('flex justify-end', TASK_ACTION_SLOT_CLASSNAMES.metrics)}>
         {showMetrics ? (
           <div className="flex items-center gap-1" role="group" aria-label="Métricas de teste">
-            <TestMetricBadge value={metrics.passed} label="Aprovados" tone="success" size="sm" />
-            <TestMetricBadge value={metrics.failed} label="Reprovados" tone="error" size="sm" />
-            <TestMetricBadge value={metrics.pending} label="Pendentes" tone="warning" size="sm" />
+            <TestMetricBadge
+              value={metrics.passed}
+              label="Aprovados"
+              tone="success"
+              size="sm"
+              chipClassName={metricChipClassName}
+            />
+            <TestMetricBadge
+              value={metrics.failed}
+              label="Reprovados"
+              tone="error"
+              size="sm"
+              chipClassName={metricChipClassName}
+            />
+            <TestMetricBadge
+              value={metrics.pending}
+              label="Pendentes"
+              tone="warning"
+              size="sm"
+              chipClassName={metricChipClassName}
+            />
           </div>
         ) : null}
       </div>
@@ -83,7 +110,7 @@ export const TaskActionStrip: React.FC<TaskActionStripProps> = ({
             onClick={onGenerateAll}
             disabled={isGenerateAllDisabled}
             className={cn(
-              taskCardActionChipCta,
+              actionChipClassName,
               'max-md:min-h-[44px]',
               isGenerateAllBusy && taskCardActionChipBusy,
               generateAllClassName
@@ -106,6 +133,7 @@ export const TaskActionStrip: React.FC<TaskActionStripProps> = ({
         labelOverride={testStatusLabelOverride}
         onClick={onTestStatusClick}
         variant="card"
+        chipLayoutClassName={testStatusChipLayoutClassName}
         className={TASK_ACTION_SLOT_CLASSNAMES.testStatus}
       />
       </div>

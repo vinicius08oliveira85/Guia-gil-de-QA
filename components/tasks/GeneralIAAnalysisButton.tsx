@@ -15,6 +15,14 @@ interface GeneralIAAnalysisButtonProps {
   } | null;
   /** Quando true, remove bordas próprias e arredondamento lateral para se encaixar num grupo */
   grouped?: boolean;
+  /** Sobrescreve estilos do botão no modo agrupado (ex.: paleta do TasksViewHeader) */
+  groupedBtnClassName?: string;
+  /** Sobrescreve cor do ícone da lâmpada */
+  groupedIconClassName?: string;
+  /** Círculo creme do ícone no modo agrupado */
+  groupedIconWrapClassName?: string;
+  groupedProgressTrackClassName?: string;
+  groupedProgressFillClassName?: string;
 }
 
 export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = ({
@@ -22,6 +30,11 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
   isAnalyzing = false,
   progress,
   grouped = false,
+  groupedBtnClassName,
+  groupedIconClassName,
+  groupedIconWrapClassName,
+  groupedProgressTrackClassName,
+  groupedProgressFillClassName,
 }) => {
   const handleClick = async () => {
     if (isAnalyzing) return;
@@ -54,7 +67,10 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
         title={defaultTooltip}
         className={cn(
           grouped
-            ? cn(leveViewSecondaryToolbarBtnClass, 'rounded-l-full')
+            ? cn(
+                groupedBtnClassName ?? leveViewSecondaryToolbarBtnClass,
+                'rounded-l-full'
+              )
             : cn(
                 'btn btn-ghost btn-sm flex min-h-[44px] items-center gap-1.5 rounded-[var(--radius)] border px-3 text-xs font-semibold transition-colors duration-300 sm:min-h-0',
                 taskNeuBorderDividerClass,
@@ -65,22 +81,40 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
         aria-label={isAnalyzing ? 'Analisando' : 'Análise geral com IA'}
       >
         {isAnalyzing ? (
-          <Spinner small />
+          grouped && groupedIconWrapClassName ? (
+            <span className={groupedIconWrapClassName} aria-hidden>
+              <Spinner small />
+            </span>
+          ) : (
+            <Spinner small />
+          )
         ) : (
-          <svg
-            className="h-3.5 w-3.5 text-[var(--leve-header-accent)]"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-            />
-          </svg>
+          (() => {
+            const bulbIcon = (
+              <svg
+                className={cn(
+                  grouped && groupedIconClassName ? groupedIconClassName : 'h-3.5 w-3.5',
+                  !(grouped && groupedIconClassName) && 'text-[var(--leve-header-accent)]'
+                )}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                />
+              </svg>
+            );
+            return grouped && groupedIconWrapClassName ? (
+              <span className={groupedIconWrapClassName}>{bulbIcon}</span>
+            ) : (
+              bulbIcon
+            );
+          })()
         )}
         <span>
           {isAnalyzing
@@ -94,9 +128,19 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
         <div className="flex flex-col gap-0.5 w-full" aria-live="polite">
           {stepLabel && <span className="text-[10px] text-base-content/60">{stepLabel}</span>}
           {progress.total > 0 && (
-            <div className={cn(taskNeuTrackClass, 'h-1 w-full overflow-hidden')}>
+            <div
+              className={cn(
+                grouped && groupedProgressTrackClassName
+                  ? groupedProgressTrackClassName
+                  : cn(taskNeuTrackClass, 'h-1 w-full overflow-hidden')
+              )}
+            >
               <div
-                className="h-1 bg-primary transition-all duration-500"
+                className={
+                  grouped && groupedProgressFillClassName
+                    ? groupedProgressFillClassName
+                    : 'h-1 bg-primary transition-all duration-500'
+                }
                 style={{ width: `${Math.round((progress.current / progress.total) * 100)}%` }}
               />
             </div>

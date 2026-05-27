@@ -617,6 +617,255 @@
     isolation: isolate;
   }
 
+  /** NeuSelect / AppSelect — paleta escura (sem background-image; chevron é ícone Lucide). */
+  .tasks-panel-dark-surface .neu-select-trigger.tasks-panel-neu-select,
+  .tasks-panel-dark-surface .tasks-panel-neu-select.neu-select-trigger {
+    color: #fdf6e3;
+    border-color: color-mix(in srgb, #fdf6e3 10%, transparent);
+    background-color: #423b37;
+    background-image: none;
+    box-shadow:
+      inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
+      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e);
+  }
+
+  .tasks-panel-dark-surface .neu-select-trigger.tasks-panel-neu-select:hover:not(:disabled),
+  .tasks-panel-dark-surface .tasks-panel-neu-select.neu-select-trigger:hover:not(:disabled) {
+    border-color: color-mix(in srgb, #d85414 35%, transparent);
+    color: #fdf6e3;
+  }
+
+  .tasks-panel-dark-surface .neu-select-trigger.tasks-panel-neu-select:focus-visible,
+  .tasks-panel-dark-surface .tasks-panel-neu-select.neu-select-trigger:focus-visible {
+    outline: none;
+    border-color: color-mix(in srgb, #d85414 45%, transparent);
+    box-shadow:
+      inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
+      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e),
+      0 0 0 2px color-mix(in srgb, #d85414 35%, transparent);
+  }
+
+  .tasks-panel-dark-surface .backlog-toolbar-select.neu-select-trigger {
+    min-height: 1.75rem;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.25;
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+  }
+
+  /** Modais escuros neumórficos (filtros, exportar, tarefa, regras). */
+  :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal).leve-modal-neu-shell {
+    --leve-header-text: #fdf6e3;
+    --leve-header-text-muted: #dcdcdc;
+    --leve-header-accent: #d85414;
+    --leve-neu-bg: #4a423e;
+    --leve-neu-surface: #423b37;
+    --color-primary: #d85414;
+    --text-primary: #fdf6e3;
+    --text-secondary: #b8b3ad;
+    --muted-foreground: #b8b3ad;
+    border-color: color-mix(in srgb, #fdf6e3 14%, transparent);
+    background: #4a423e;
+    color: #dcdcdc;
+    box-shadow:
+      6px 6px 14px color-mix(in srgb, #423b37 55%, transparent),
+      -4px -4px 10px color-mix(in srgb, #fdf6e3 12%, #4a423e),
+      0 20px 50px color-mix(in srgb, #000 35%, transparent);
+  }
+
+  :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal) .leve-modal-neu-header {
+    border-color: color-mix(in srgb, #fdf6e3 12%, transparent);
+    background: #423b37;
+    color: #dcdcdc;
+  }
+
+  :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal)
+    .leve-modal-neu-header
+    :is([id$='-modal-title'], .font-bold) {
+    color: #fdf6e3 !important;
+  }
+
+  :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal) > div.custom-scrollbar {
+    background: #4a423e;
+    color: #dcdcdc !important;
+  }
+
+  :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal) .text-base-content,
+  :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal) .text-base-content\/70,
+  :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal) .text-base-content\/60 {
+    color: #dcdcdc !important;
+  }
+
+  :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal) .leve-modal-neu-close {
+    border: 1px solid color-mix(in srgb, #fdf6e3 12%, transparent);
+    background: #423b37;
+    color: #dcdcdc;
+    box-shadow:
+      inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
+      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e);
+  }
+
+  :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal) .leve-modal-neu-close:hover {
+    color: #d85414;
+  }
+
+  .tasks-panel-neu-modal .task-modal-section {
+    border-color: color-mix(in srgb, #fdf6e3 10%, transparent);
+    background: #423b37;
+    box-shadow:
+      inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
+      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e);
+  }
+
+  .tasks-panel-neu-modal .task-card-field-label,
+  .tasks-panel-neu-modal .task-card-section-title {
+    color: #dcdcdc;
+  }
+
+  .tasks-panel-neu-modal .task-card-muted,
+  .tasks-panel-neu-modal .task-card-title {
+    color: #dcdcdc;
+  }
+
+  .tasks-panel-neu-modal .task-card-title {
+    color: #fdf6e3;
+  }
+
+  .tasks-panel-neu-modal :is(.app-input, .input, .textarea, .select):not(.select-ghost) {
+    border-color: color-mix(in srgb, #fdf6e3 10%, transparent);
+    background-color: #423b37;
+    color: #fdf6e3;
+    box-shadow:
+      inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
+      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e);
+  }
+
+  .tasks-panel-neu-modal :is(.app-input, .input, .textarea, input, textarea)::placeholder,
+  .tasks-panel-neu-modal .placeholder\:text-text-secondary::placeholder {
+    color: #b8b3ad !important;
+    opacity: 1 !important;
+  }
+
+  .tasks-panel-neu-modal input.bg-transparent,
+  .tasks-panel-neu-modal input[class*='bg-transparent'] {
+    color: #fdf6e3 !important;
+    -webkit-text-fill-color: #fdf6e3;
+  }
+
+  .tasks-panel-neu-modal input.bg-transparent::placeholder,
+  .tasks-panel-neu-modal input[class*='bg-transparent']::placeholder {
+    color: #b8b3ad !important;
+    opacity: 1 !important;
+    -webkit-text-fill-color: #b8b3ad;
+  }
+
+  .tasks-panel-neu-modal :is(.app-input, .input, .textarea, .select):focus {
+    outline: none;
+    border-color: color-mix(in srgb, #d85414 45%, transparent);
+    box-shadow:
+      inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
+      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e),
+      0 0 0 2px color-mix(in srgb, #d85414 35%, transparent);
+  }
+
+  .tasks-panel-neu-modal .btn-primary,
+  .tasks-panel-neu-modal .btn.btn-primary {
+    border: 1px solid color-mix(in srgb, #fdf6e3 22%, transparent);
+    background: #d85414;
+    color: #ffffff;
+    box-shadow:
+      2px 2px 6px color-mix(in srgb, #423b37 55%, transparent),
+      -1px -1px 4px color-mix(in srgb, #fdf6e3 14%, #4a423e);
+  }
+
+  .tasks-panel-neu-modal .btn-outline {
+    border: 1px solid color-mix(in srgb, #fdf6e3 12%, transparent);
+    background: #423b37;
+    color: #dcdcdc;
+    box-shadow:
+      inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
+      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e);
+  }
+
+  .tasks-panel-neu-modal .checkbox-primary {
+    --chkbg: #d85414;
+    --chkfg: #ffffff;
+    border-color: color-mix(in srgb, #d85414 55%, transparent);
+  }
+
+  .tasks-panel-neu-modal :is(.bg-surface, [class*='bg-surface']) {
+    border-color: color-mix(in srgb, #fdf6e3 10%, transparent) !important;
+    background-color: #423b37 !important;
+    color: #dcdcdc !important;
+  }
+
+  .tasks-panel-neu-modal :is(.text-text-secondary, .text-text-primary),
+  .tasks-panel-neu-modal label.text-text-secondary {
+    color: #dcdcdc !important;
+  }
+
+  .tasks-panel-neu-modal .text-text-primary {
+    color: #fdf6e3 !important;
+  }
+
+  .tasks-panel-neu-modal .hover\:bg-surface-hover:hover,
+  .tasks-panel-neu-modal .hover\:text-text-primary:hover {
+    background-color: color-mix(in srgb, #fdf6e3 8%, #423b37) !important;
+    color: #fdf6e3 !important;
+  }
+
+  .tasks-panel-neu-modal :is(.border-surface-border, [class*='border-surface']) {
+    border-color: color-mix(in srgb, #fdf6e3 10%, transparent) !important;
+  }
+
+  .tasks-panel-neu-modal :is(textarea, input).bg-surface,
+  .tasks-panel-neu-modal textarea.bg-surface {
+    color: #fdf6e3 !important;
+  }
+
+  .tasks-panel-neu-modal :is(textarea, input).bg-surface::placeholder {
+    color: #b8b3ad !important;
+    opacity: 1 !important;
+  }
+
+  .tasks-panel-neu-modal code {
+    border-radius: 0.25rem;
+    background: color-mix(in srgb, #fdf6e3 8%, #423b37);
+    color: #d85414;
+    padding: 0.125rem 0.375rem;
+  }
+
+  /** Botão customizado — nunca repetir chevron de `.app-select` no fundo. */
+  .neu-select-trigger,
+  button.neu-select-trigger.app-select:not([multiple]) {
+    background-image: none !important;
+    background-repeat: no-repeat;
+    padding-right: 0.75rem;
+  }
+
+  :is(.app-page, .tasks-panel-scope, .projects-dash-page) .neu-select-trigger:not(.tasks-panel-neu-select) {
+    color: var(--leve-header-text);
+    border: 1px solid color-mix(in srgb, var(--app-neu-light) 30%, transparent);
+    border-radius: var(--leve-header-radius);
+    background-color: color-mix(in srgb, var(--app-neu-dark) 6%, var(--app-neu-bg));
+    box-shadow: var(--app-neu-inset);
+  }
+
+  :is(.app-page, .tasks-panel-scope, .projects-dash-page)
+    .neu-select-trigger:not(.tasks-panel-neu-select):hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--leve-header-accent) 30%, transparent);
+  }
+
+  :is(.app-page, .tasks-panel-scope, .projects-dash-page)
+    .neu-select-trigger:not(.tasks-panel-neu-select):focus-visible {
+    outline: none;
+    border-color: color-mix(in srgb, var(--leve-header-accent) 45%, transparent);
+    box-shadow:
+      var(--app-neu-inset),
+      0 0 0 2px color-mix(in srgb, var(--leve-header-accent) 18%, transparent);
+  }
+
   .gap-tasks-panel {
     gap: var(--tasks-panel-gap);
   }
@@ -744,6 +993,105 @@
     outline: none;
     border-color: color-mix(in srgb, var(--leve-header-accent) 30%, transparent);
     box-shadow: var(--leve-neu-hover);
+  }
+
+  /** Lista de tarefas — paleta clara neumórfica (cards). */
+  .tasks-list-panel {
+    --leve-header-text: #401c31;
+    --leve-header-text-muted: #6b5e5e;
+    --leve-header-accent: #ff5c1b;
+    --leve-neu-bg: #f2eee8;
+    --leve-neu-surface: #e5dfd5;
+    --task-card-surface-bg: #f2eee8;
+    --color-primary: #ff5c1b;
+    --color-primary-deep: #401c31;
+    --leve-neu-light: color-mix(in srgb, #ffffff 22%, #f2eee8);
+    --leve-neu-dark: color-mix(in srgb, #ded7cd 70%, #e5dfd5);
+    --leve-neu-raised:
+      3px 3px 8px color-mix(in srgb, #ded7cd 45%, transparent),
+      -2px -2px 6px color-mix(in srgb, #ffffff 18%, #f2eee8);
+    --leve-neu-inset:
+      inset 3px 3px 8px color-mix(in srgb, #ded7cd 50%, transparent),
+      inset -2px -2px 6px color-mix(in srgb, #ffffff 18%, #e5dfd5);
+    --leve-neu-hover:
+      4px 4px 10px color-mix(in srgb, #ded7cd 52%, transparent),
+      -2px -2px 7px color-mix(in srgb, #ffffff 20%, #f2eee8);
+  }
+
+  .tasks-list-panel .task-list-card-shell {
+    --task-card-surface-bg: #f2eee8;
+    border-color: #ded7cd;
+    background-color: #f2eee8;
+    box-shadow:
+      6px 6px 14px color-mix(in srgb, #ded7cd 75%, transparent),
+      -4px -4px 10px color-mix(in srgb, #ffffff 55%, #f2eee8);
+  }
+
+  .tasks-list-panel .task-list-card-shell:hover {
+    border-color: color-mix(in srgb, #ff5c1b 28%, transparent);
+  }
+
+  .tasks-list-panel .task-list-card-shell:focus-visible {
+    border-color: color-mix(in srgb, #ff5c1b 40%, transparent);
+    box-shadow:
+      6px 6px 14px color-mix(in srgb, #ded7cd 80%, transparent),
+      -4px -4px 10px color-mix(in srgb, #ffffff 60%, #f2eee8),
+      0 0 0 2px color-mix(in srgb, #ff5c1b 30%, transparent);
+  }
+
+  .tasks-list-panel .task-card-metadata-strip {
+    border-color: #ded7cd;
+    background: #e5dfd5 !important;
+    color: #6b5e5e;
+    box-shadow:
+      inset 3px 3px 8px color-mix(in srgb, #ded7cd 50%, transparent),
+      inset -2px -2px 6px color-mix(in srgb, #ffffff 18%, #e5dfd5) !important;
+  }
+
+  .tasks-list-panel .task-card-title {
+    color: #401c31;
+  }
+
+  .tasks-list-panel .task-card-muted,
+  .tasks-list-panel .task-card-field-label {
+    color: #6b5e5e;
+  }
+
+  .tasks-list-panel .task-card-action-chip-cta {
+    color: #6b5e5e;
+  }
+
+  .tasks-list-panel .task-card-action-chip-cta:hover {
+    color: #ff5c1b;
+  }
+
+  .tasks-list-panel .text-primary {
+    color: #ff5c1b;
+  }
+
+  .tasks-list-panel .task-list-card-shell :is(.task-list-neu-chip-raised, .task-list-action-chip) {
+    border-color: #ded7cd;
+    background-color: #f2eee8;
+    box-shadow:
+      2px 2px 6px color-mix(in srgb, #ded7cd 42%, transparent),
+      -1px -1px 4px color-mix(in srgb, #ffffff 14%, #f2eee8);
+  }
+
+  .tasks-list-panel .task-list-card-shell :is(.task-list-neu-chip-raised, .task-list-action-chip):hover:not(:disabled) {
+    background-color: color-mix(in srgb, #e8e2da 45%, #f2eee8);
+  }
+
+  .tasks-list-panel .task-list-subtree-expand-placeholder {
+    border-color: #ded7cd;
+    background-color: #e5dfd5;
+    box-shadow:
+      inset 3px 3px 8px color-mix(in srgb, #ded7cd 50%, transparent),
+      inset -2px -2px 6px color-mix(in srgb, #ffffff 18%, #e5dfd5);
+  }
+
+  .tasks-list-panel .task-list-card-shell [role='progressbar'] {
+    border-color: #ded7cd;
+    background: color-mix(in srgb, #ded7cd 28%, #f2eee8);
   }
 
   /** Faixa de metadados (ID, tipo, status) — relevo inset no card. */

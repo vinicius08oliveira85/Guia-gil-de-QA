@@ -16,27 +16,50 @@ import {
   parseBusinessRulesImportJson,
 } from '../../utils/businessRulesImport';
 import { Modal } from '../common/Modal';
-import { Button } from '../common/Button';
 import { ConfirmDialog } from '../common/ConfirmDialog';
-import { appPanelClass, appSelectClass } from '../common/viewUi';
 import {
   leveViewInlineCodeClass,
-  leveViewOutlineBtnClass,
   leveViewPageHeaderShellClass,
   leveViewPageJiraBadgeClass,
-  leveViewPagePanelClass,
   leveViewPageSubtitleClass,
   leveViewPageTitleClass,
-  leveViewPrimaryBtnClass,
 } from '../common/projectCardUi';
-import { projectViewPanel, projectViewShell } from '../common/viewUi';
-import { taskCardFieldLabelClass, taskFormInsetPanelClass, taskTextareaClass } from '../tasks/taskActionLayout';
-import { cn } from '../../utils/cn';
 import {
-  projectNeuBorderClass,
-  projectNeuDividerClass,
-  projectNeuSurfaceStrongClass,
-} from './projectNeuUi';
+  businessRulesCardActionsClass,
+  businessRulesCardBodyClass,
+  businessRulesCardChevronClass,
+  businessRulesCardClass,
+  businessRulesCardEmptyDescClass,
+  businessRulesCardInsetClass,
+  businessRulesCardLabelClass,
+  businessRulesCardLinkedTextClass,
+  businessRulesCardOutlineBtnClass,
+  businessRulesCardSummaryClass,
+  businessRulesCardTitleClass,
+  businessRulesCategoryBadgeClass,
+  businessRulesListPanelClass,
+} from './businessRulesNeuUi';
+import {
+  documentsOutlineBtnClass,
+  documentsPrimaryBtnClass,
+  tasksPanelCardClass,
+  tasksPanelFormCancelBtnClass,
+  tasksPanelFormFieldLabelAccentClass,
+  tasksPanelFormFieldLabelClass,
+  tasksPanelFormFooterClass,
+  tasksPanelFormInputClass,
+  tasksPanelFormListItemMetaClass,
+  tasksPanelFormListItemTitleClass,
+  tasksPanelFormListShellClass,
+  tasksPanelFormMutedClass,
+  tasksPanelFormSaveBtnClass,
+  tasksPanelFormSelectClass,
+  tasksPanelFormTextareaClass,
+  tasksPanelNeuModalPanelClass,
+  tasksPanelNeuModalTitleClass,
+} from '../tasks/tasksPanelNeuStyles';
+import { projectViewShell } from '../common/viewUi';
+import { cn } from '../../utils/cn';
 import { EmptyState } from '../common/EmptyState';
 import { Badge } from '../common/Badge';
 import { SafeMarkdown } from '../common/SafeMarkdown';
@@ -185,7 +208,7 @@ export const BusinessRulesManager: React.FC<{
     [linkableRules]
   );
 
-  const quickLinkSelectRef = useRef<HTMLSelectElement>(null);
+  const [quickLinkSelectValue, setQuickLinkSelectValue] = useState('');
 
   const handleToggleLinkRule = useCallback(
     (otherId: string, checked: boolean) => {
@@ -307,7 +330,10 @@ export const BusinessRulesManager: React.FC<{
               />
               <button
                 type="button"
-                className={cn(leveViewOutlineBtnClass, 'w-full sm:w-auto')}
+                className={cn(
+                  documentsOutlineBtnClass,
+                  'w-full min-h-[44px] sm:w-auto sm:min-h-9'
+                )}
                 onClick={() => importInputRef.current?.click()}
                 title="Mescla regras a partir de JSON (mesmo id atualiza título/descrição)"
               >
@@ -316,7 +342,10 @@ export const BusinessRulesManager: React.FC<{
               </button>
               <button
                 type="button"
-                className={cn(leveViewOutlineBtnClass, 'w-full sm:w-auto')}
+                className={cn(
+                  documentsOutlineBtnClass,
+                  'w-full min-h-[44px] sm:w-auto sm:min-h-9'
+                )}
                 onClick={handleExportJson}
                 title="Exporta todas as regras do projeto em JSON"
               >
@@ -325,7 +354,7 @@ export const BusinessRulesManager: React.FC<{
               </button>
               <button
                 type="button"
-                className={cn(leveViewPrimaryBtnClass, 'w-full sm:w-auto')}
+                className={cn(documentsPrimaryBtnClass, 'w-full sm:w-auto')}
                 onClick={openCreate}
               >
                 <Plus className="h-4 w-4 shrink-0" aria-hidden />
@@ -335,7 +364,7 @@ export const BusinessRulesManager: React.FC<{
           </div>
         </header>
 
-        <section className={leveViewPagePanelClass} aria-label="Filtros de regras de negócio">
+        <section className={tasksPanelCardClass} aria-label="Filtros de regras de negócio">
           <BusinessRulesFiltersToolbar
             searchQuery={searchQuery}
             onSearchQueryChange={setSearchQuery}
@@ -348,7 +377,7 @@ export const BusinessRulesManager: React.FC<{
           />
         </section>
 
-        <section className={projectViewPanel} aria-label="Lista de regras de negócio">
+        <section className={businessRulesListPanelClass} aria-label="Lista de regras de negócio">
           <div className="flex flex-col gap-4">
               {rules.length === 0 ? (
                 <EmptyState
@@ -378,91 +407,70 @@ export const BusinessRulesManager: React.FC<{
                     const badgeVariant = badgeVariantForBusinessRuleCategory(catLabel);
                     return (
                       <li key={rule.id}>
-                        <div className={cn(appPanelClass, 'overflow-hidden shadow-[var(--leve-neu-raised)]')}>
-                          <details className="group open:shadow-md">
-                            <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_6%,var(--leve-neu-bg))] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_30%,transparent)] focus-visible:ring-inset [&::-webkit-details-marker]:hidden">
+                        <div className={businessRulesCardClass}>
+                          <details className="group">
+                            <summary className={businessRulesCardSummaryClass}>
                               <span className="min-w-0 flex-1">
-                                <span className="block border-b border-transparent pb-1 text-base font-bold tracking-tight text-[var(--leve-header-text)] group-open:border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]">
-                                  {rule.title}
-                                </span>
+                                <span className={businessRulesCardTitleClass}>{rule.title}</span>
                                 <span className="mt-2 inline-flex flex-wrap items-center gap-2">
-                                  <Badge variant={badgeVariant} size="sm" appearance="pill">
-                                    <span className="normal-case">{catLabel}</span>
+                                  <Badge
+                                    variant={badgeVariant}
+                                    size="sm"
+                                    appearance="pill"
+                                    className={businessRulesCategoryBadgeClass(badgeVariant)}
+                                  >
+                                    {catLabel}
                                   </Badge>
                                 </span>
                               </span>
-                              <ChevronDown
-                                className="h-5 w-5 shrink-0 text-[var(--leve-header-text-muted)] transition-transform duration-200 group-open:rotate-180"
-                                aria-hidden
-                              />
+                              <ChevronDown className={businessRulesCardChevronClass} aria-hidden />
                             </summary>
-                            <div className="space-y-4 border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))] px-4 py-4 sm:px-5">
+                            <div className={businessRulesCardBodyClass}>
                               <div>
-                                <p className="text-[10px] font-bold uppercase tracking-widest task-card-field-label mb-2">
-                                  Descrição
-                                </p>
+                                <p className={businessRulesCardLabelClass}>Descrição</p>
                                 {rule.description.trim() ? (
                                   <SafeMarkdown
                                     source={rule.description}
-                                    className={cn(
-                                      'jira-rich-content prose-headings:font-heading prose-headings:text-[var(--leve-header-text)]',
-                                      cn(
-                                        projectNeuSurfaceStrongClass,
-                                        'rounded-[var(--radius)] border px-4 py-4 shadow-[var(--leve-neu-inset)] sm:px-5 sm:py-5',
-                                        projectNeuBorderClass
-                                      ),
-                                      'prose-h2:border-b prose-h2:border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] prose-h2:pb-2 prose-h2:mb-3',
-                                      'prose-h3:border-b prose-h3:border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] prose-h3:pb-1.5 prose-h3:mb-2',
-                                      'prose-p:leading-relaxed prose-strong:text-[var(--leve-header-text)]',
-                                      'prose-ul:list-disc prose-ul:pl-6 prose-ol:list-decimal prose-ol:pl-6'
-                                    )}
+                                    className={businessRulesCardInsetClass}
                                   />
                                 ) : (
-                                  <p
-                                    className={cn(
-                                      projectNeuSurfaceStrongClass,
-                                      'neu-dashed-panel rounded-[var(--radius)] px-4 py-6 text-center text-sm italic task-card-muted'
-                                    )}
-                                  >
-                                    Sem descrição
-                                  </p>
+                                  <p className={businessRulesCardEmptyDescClass}>Sem descrição</p>
                                 )}
                               </div>
                               {(rule.linkedBusinessRuleIds?.length ?? 0) > 0 && (
                                 <div>
-                                  <p className="text-[10px] font-bold uppercase tracking-widest task-card-field-label mb-1.5">
+                                  <p className={cn(businessRulesCardLabelClass, 'mb-1.5')}>
                                     Vinculada a
                                   </p>
-                                  <p className="text-sm leading-relaxed text-[var(--leve-header-text)]">
+                                  <p className={businessRulesCardLinkedTextClass}>
                                     {(rule.linkedBusinessRuleIds ?? [])
                                       .map(id => rules.find(x => x.id === id)?.title ?? id)
                                       .join(', ')}
                                   </p>
                                 </div>
                               )}
-                              <div className="flex flex-wrap items-center gap-2 border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pt-4">
-                                <Button
+                              <div className={businessRulesCardActionsClass}>
+                                <button
                                   type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  className="rounded-full gap-1.5"
+                                  className={businessRulesCardOutlineBtnClass}
                                   onClick={() => openEdit(rule)}
                                   aria-label={`Editar regra ${rule.title}`}
                                 >
-                                  <Pencil className="h-4 w-4" aria-hidden />
+                                  <Pencil className="h-4 w-4 shrink-0" aria-hidden />
                                   Editar
-                                </Button>
-                                <Button
+                                </button>
+                                <button
                                   type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  className="rounded-full gap-1.5 border-error/40 text-error hover:border-error/55 hover:bg-error/10"
+                                  className={cn(
+                                    businessRulesCardOutlineBtnClass,
+                                    'border-error/40 text-error hover:border-error/55 hover:bg-error/10'
+                                  )}
                                   onClick={() => setDeleteId(rule.id)}
                                   aria-label={`Excluir regra ${rule.title}`}
                                 >
-                                  <Trash2 className="h-4 w-4" aria-hidden />
+                                  <Trash2 className="h-4 w-4 shrink-0" aria-hidden />
                                   Excluir
-                                </Button>
+                                </button>
                               </div>
                             </div>
                           </details>
@@ -480,43 +488,38 @@ export const BusinessRulesManager: React.FC<{
         isOpen={formOpen}
         onClose={() => setFormOpen(false)}
         title={editingId ? 'Editar regra de negócio' : 'Nova regra de negócio'}
+        panelClassName={tasksPanelNeuModalPanelClass}
+        titleClassName={tasksPanelNeuModalTitleClass}
       >
         <div className="space-y-4">
           <div>
-            <label
-              htmlFor="br-title"
-              className="mb-2 block text-[10px] font-bold uppercase tracking-widest task-card-field-label"
-            >
+            <label htmlFor="br-title" className={tasksPanelFormFieldLabelClass}>
               Título
             </label>
             <input
               id="br-title"
               type="text"
               value={title}
-              onChange={v => setTitle(v)}
-              className="app-input input input-bordered w-full min-h-[44px]"
+              onChange={e => setTitle(e.target.value)}
+              className={tasksPanelFormInputClass}
               autoComplete="off"
             />
           </div>
           <div>
-            <label
-              htmlFor="br-category"
-              className="mb-2 block text-[10px] font-bold uppercase tracking-widest task-card-field-label"
-            >
+            <label htmlFor="br-category" className={tasksPanelFormFieldLabelClass}>
               Categoria
             </label>
             <AppSelect
               id="br-category"
               value={categorySelectValue}
-              onChange={e => {
-                const v = e.target.value;
+              onChange={v => {
                 if (v === BR_CATEGORY_SELECT_OTHER) {
                   setCategory(prev => (uniqueCategories.includes(prev) ? '' : prev));
                 } else {
                   setCategory(v);
                 }
               }}
-              className="app-select select select-bordered w-full min-h-[44px] text-sm"
+              className={tasksPanelFormSelectClass}
             >
               {uniqueCategories.map(c => (
                 <option key={c} value={c}>
@@ -530,8 +533,8 @@ export const BusinessRulesManager: React.FC<{
                 id="br-category-custom"
                 type="text"
                 value={category}
-                onChange={v => setCategory(v)}
-                className="app-input input input-bordered w-full min-h-[44px] mt-2"
+                onChange={e => setCategory(e.target.value)}
+                className={cn(tasksPanelFormInputClass, 'mt-2')}
                 autoComplete="off"
                 placeholder="Digite o nome da categoria"
                 aria-label="Nome da categoria personalizada"
@@ -539,52 +542,40 @@ export const BusinessRulesManager: React.FC<{
             )}
           </div>
           <div>
-            <label
-              htmlFor="br-desc"
-              className="mb-2 block text-[10px] font-bold uppercase tracking-widest task-card-field-label"
-            >
+            <label htmlFor="br-desc" className={tasksPanelFormFieldLabelClass}>
               Descrição
             </label>
             <textarea
               id="br-desc"
               value={description}
-              onChange={v => setDescription(v)}
+              onChange={e => setDescription(e.target.value)}
               rows={6}
-              className="textarea textarea-bordered w-full text-sm min-h-[120px] app-input font-mono"
+              className={tasksPanelFormTextareaClass}
             />
           </div>
           {linkableRules.length > 0 && (
-            <div className={cn('border-t pt-4', projectNeuDividerClass)}>
-              <div className="mb-2 flex items-center gap-2">
-                <Link2 className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-                <span className="text-[10px] font-bold uppercase tracking-widest task-card-field-label">
-                  Vincular a outras regras
-                </span>
+            <div className={cn('border-t pt-4', 'border-[color-mix(in_srgb,#fdf6e3_12%,transparent)]')}>
+              <div className={tasksPanelFormFieldLabelAccentClass}>
+                <Link2 className="h-4 w-4 shrink-0" aria-hidden />
+                Vincular a outras regras
               </div>
-              <p className="text-xs task-card-muted mb-2">
+              <p className={cn(tasksPanelFormMutedClass, 'mb-2')}>
                 Ao marcar, inclui{' '}
                 <code className={leveViewInlineCodeClass}>@NomeDaRegra</code> na descrição
                 (nome derivado do título; títulos iguais no projeto ganham sufixo para diferenciar).
               </p>
-              <label
-                htmlFor="br-quick-link-rule"
-                className="block text-xs font-medium task-card-field-label mb-1"
-              >
+              <label htmlFor="br-quick-link-rule" className={cn(tasksPanelFormFieldLabelClass, 'mb-1 text-xs')}>
                 Escolher regra existente
               </label>
               <AppSelect
-                ref={quickLinkSelectRef}
                 id="br-quick-link-rule"
-                defaultValue=""
-                onChange={() => {
-                  const el = quickLinkSelectRef.current;
-                  if (!el) return;
-                  const id = el.value;
-                  el.value = '';
+                value={quickLinkSelectValue}
+                onChange={id => {
+                  setQuickLinkSelectValue('');
                   if (!id) return;
                   if (!linkedRuleIds.includes(id)) handleToggleLinkRule(id, true);
                 }}
-                className={cn(appSelectClass, 'select-bordered w-full mb-3')}
+                className={cn(tasksPanelFormSelectClass, 'mb-3')}
                 aria-label="Vincular rapidamente escolhendo uma regra existente na lista"
               >
                 <option value="">Selecione uma regra para vincular…</option>
@@ -597,15 +588,7 @@ export const BusinessRulesManager: React.FC<{
                   );
                 })}
               </AppSelect>
-              <ul
-                className={cn(
-                  appPanelClass,
-                  projectNeuSurfaceStrongClass,
-                  'max-h-48 divide-y overflow-y-auto',
-                  'divide-[color-mix(in_srgb,var(--leve-neu-light)_30%,transparent)]'
-                )}
-                role="list"
-              >
+              <ul className={tasksPanelFormListShellClass} role="list">
                 {linkableRules.map(r => {
                   const checked = linkedRuleIds.includes(r.id);
                   const preview = mentionTokenForRule(r, rules);
@@ -627,10 +610,8 @@ export const BusinessRulesManager: React.FC<{
                         htmlFor={`br-link-${r.id}`}
                         className="text-sm cursor-pointer flex-1 min-w-0"
                       >
-                        <span className="font-medium text-[var(--leve-header-text)]">{r.title}</span>
-                        <span className="block text-xs task-card-muted">
-                          Inserirá {preview}
-                        </span>
+                        <span className={tasksPanelFormListItemTitleClass}>{r.title}</span>
+                        <span className={tasksPanelFormListItemMetaClass}>Inserirá {preview}</span>
                       </label>
                     </li>
                   );
@@ -638,26 +619,18 @@ export const BusinessRulesManager: React.FC<{
               </ul>
             </div>
           )}
-          <div className={cn('flex flex-wrap justify-end gap-2 border-t pt-4', projectNeuDividerClass)}>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="rounded-full px-5"
-              onClick={() => setFormOpen(false)}
-            >
+          <div className={tasksPanelFormFooterClass}>
+            <button type="button" className={tasksPanelFormCancelBtnClass} onClick={() => setFormOpen(false)}>
               Cancelar
-            </Button>
-            <Button
+            </button>
+            <button
               type="button"
-              variant="default"
-              size="sm"
-              className="rounded-full px-6 shadow-md shadow-primary/15"
+              className={tasksPanelFormSaveBtnClass}
               onClick={handleSave}
               disabled={!title.trim()}
             >
               Salvar
-            </Button>
+            </button>
           </div>
         </div>
       </Modal>

@@ -1,7 +1,12 @@
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '../../utils/cn';
-import { taskListSectionPanelClass, taskListSectionToggleClass } from './backlogToolbarLayout';
+import { taskListSectionPanelClass } from './backlogToolbarLayout';
+import {
+  tasksPanelSectionChevronClass,
+  tasksPanelSectionCountClass,
+  tasksPanelSectionToggleClass,
+} from './tasksPanelNeuStyles';
 
 export interface TaskListCollapsibleSectionProps {
   sectionId: string;
@@ -37,7 +42,7 @@ export const TaskListCollapsibleSection: React.FC<TaskListCollapsibleSectionProp
       <button
         type="button"
         id={buttonId}
-        className={cn(taskListSectionToggleClass, 'mb-2')}
+        className={cn(tasksPanelSectionToggleClass, 'mb-2')}
         aria-expanded={isOpen}
         aria-controls={panelId}
         onClick={onToggle}
@@ -50,15 +55,10 @@ export const TaskListCollapsibleSection: React.FC<TaskListCollapsibleSectionProp
         >
           {icon}
           <span className="truncate">{title}</span>
-          <span className="shrink-0 font-medium normal-case tracking-normal text-[var(--leve-header-text-muted)]">
-            ({count})
-          </span>
+          <span className={tasksPanelSectionCountClass}>({count})</span>
         </span>
         <ChevronDown
-          className={cn(
-            'h-4 w-4 shrink-0 text-[var(--leve-header-text-muted)] transition-transform duration-200',
-            isOpen && 'rotate-180'
-          )}
+          className={cn(tasksPanelSectionChevronClass, isOpen && 'rotate-180')}
           aria-hidden
         />
       </button>

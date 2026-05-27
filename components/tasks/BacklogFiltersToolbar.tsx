@@ -19,6 +19,8 @@ import { BacklogToolbarField } from './BacklogToolbarField';
 import { AppSelect } from '../common/AppSelect';
 import {
   backlogActiveChipClass,
+  backlogChipRemoveBtnClass,
+  backlogClearFiltersLinkClass,
   backlogToolbarChipsRowClass,
   backlogToolbarClearLinkClass,
   backlogToolbarFieldClass,
@@ -99,13 +101,11 @@ export const BacklogFiltersToolbar: React.FC<BacklogFiltersToolbarProps> = ({
       <p className={backlogToolbarHelpClass}>
         {itemFilter === 'completed' ? (
           <>
-            <strong className="text-[var(--leve-header-text)]">Concluídos</strong> — Done ou Jira
-            encerrado — exceto Epics.
+            <strong>Concluídos</strong> — Done ou Jira encerrado — exceto Epics.
           </>
         ) : (
           <>
-            <strong className="text-[var(--leve-header-text)]">To Do</strong> ou fila Jira (Backlog,
-            A fazer) — exceto Epics.
+            <strong>To Do</strong> ou fila Jira (Backlog, A fazer) — exceto Epics.
           </>
         )}
       </p>
@@ -224,7 +224,7 @@ export const BacklogFiltersToolbar: React.FC<BacklogFiltersToolbarProps> = ({
               Tipo: {typeFilter}
               <button
                 type="button"
-                className="flex h-4 w-4 items-center justify-center rounded-full hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_12%,var(--leve-neu-bg))]"
+                className={backlogChipRemoveBtnClass}
                 aria-label="Remover filtro de tipo"
                 onClick={() => onTypeFilterChange('all')}
               >
@@ -237,7 +237,7 @@ export const BacklogFiltersToolbar: React.FC<BacklogFiltersToolbarProps> = ({
               Prioridade: {priorityFilter}
               <button
                 type="button"
-                className="flex h-4 w-4 items-center justify-center rounded-full hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_12%,var(--leve-neu-bg))]"
+                className={backlogChipRemoveBtnClass}
                 aria-label="Remover filtro de prioridade"
                 onClick={() => onPriorityFilterChange('all')}
               >
@@ -250,7 +250,7 @@ export const BacklogFiltersToolbar: React.FC<BacklogFiltersToolbarProps> = ({
               SP: {storyPointsFilter === 'withSp' ? 'Com pontos' : 'Sem pontos'}
               <button
                 type="button"
-                className="flex h-4 w-4 items-center justify-center rounded-full hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_12%,var(--leve-neu-bg))]"
+                className={backlogChipRemoveBtnClass}
                 aria-label="Remover filtro de story points"
                 onClick={() => onStoryPointsFilterChange('all')}
               >
@@ -262,7 +262,7 @@ export const BacklogFiltersToolbar: React.FC<BacklogFiltersToolbarProps> = ({
             type="button"
             disabled={disabled}
             onClick={onClearSecondaryFilters}
-            className="text-[11px] font-medium text-error hover:underline disabled:opacity-50"
+            className={backlogClearFiltersLinkClass}
           >
             Limpar filtros extras
           </button>

@@ -49,6 +49,7 @@ import {
   documentsPageSubtitleClass,
   documentsPageTitleClass,
   documentsPrimaryBtnClass,
+  documentsSearchIconClass,
   documentsSearchInputClass,
   documentsSummaryStatIconAccentClass,
   documentsSummaryStatIconSuccessClass,
@@ -373,7 +374,7 @@ export const DocumentsView: React.FC<{
   const documentsDescription = (
     <>
       Gerencie e analise documentos do projeto.{' '}
-      <span className="font-medium text-[var(--leve-header-text)]">
+      <span className="font-medium text-[#4a423e]">
         {stats.total} documento{stats.total !== 1 ? 's' : ''} • {formatFileSize(stats.totalSize)}
       </span>
       {lastUpdatedText ? (
@@ -467,10 +468,7 @@ export const DocumentsView: React.FC<{
         {stats.total > 0 ? (
           <div className={documentsFilterRowClass}>
             <div className="relative min-w-0 flex-1 sm:min-w-[240px]">
-              <Search
-                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--leve-header-text-muted)]"
-                aria-hidden
-              />
+              <Search className={documentsSearchIconClass} aria-hidden />
               <input
                 type="text"
                 placeholder="Buscar documentos..."

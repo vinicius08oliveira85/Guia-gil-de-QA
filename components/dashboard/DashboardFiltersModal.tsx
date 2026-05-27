@@ -2,6 +2,14 @@ import React, { useMemo } from 'react';
 import { Modal } from '../common/Modal';
 import { Project } from '../../types';
 import { X } from 'lucide-react';
+import {
+  tasksPanelActiveFiltersClearClass,
+  tasksPanelFiltersModalChipClass,
+  tasksPanelFiltersModalChipCountClass,
+  tasksPanelFiltersModalSectionLabelClass,
+  tasksPanelNeuModalPanelClass,
+  tasksPanelNeuModalTitleClass,
+} from '../tasks/tasksPanelNeuStyles';
 
 export interface DashboardFilters {
   period?: 'week' | 'month' | 'quarter' | 'all';
@@ -34,28 +42,16 @@ const FilterChip = ({
   <button
     type="button"
     onClick={onClick}
-    className={`
-      inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all border
-      ${
-        isActive
-          ? 'bg-primary text-primary-content border-primary shadow-sm'
-          : 'leve-neu-pill border-0 text-base-content/70 hover:text-base-content'
-      }
-    `}
+    className={tasksPanelFiltersModalChipClass(isActive)}
+    aria-pressed={isActive}
   >
     {label}
-    {showCount && (
-      <span
-        className={`rounded-full px-1.5 py-0.5 text-[10px] ${isActive ? 'bg-white/20' : 'bg-[color-mix(in_srgb,var(--leve-neu-dark)_12%,var(--leve-neu-bg))]'}`}
-      >
-        {count}
-      </span>
-    )}
+    {showCount && <span className={tasksPanelFiltersModalChipCountClass(isActive)}>{count}</span>}
   </button>
 );
 
 /**
- * Modal de filtros para o Dashboard — mesmo padrão visual do modal de filtros da aba de tarefas.
+ * Modal de filtros para o Dashboard — paleta neumórfica escura (mesmo padrão da aba Tarefas).
  */
 export const DashboardFiltersModal: React.FC<DashboardFiltersModalProps> = ({
   isOpen,
@@ -107,25 +103,26 @@ export const DashboardFiltersModal: React.FC<DashboardFiltersModalProps> = ({
     (filters.phase?.length ?? 0);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Filtros" size="2xl">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Filtros"
+      size="2xl"
+      panelClassName={tasksPanelNeuModalPanelClass}
+      titleClassName={tasksPanelNeuModalTitleClass}
+    >
       {activeFiltersCount > 0 && (
-        <div className="flex justify-end mb-4">
-          <button
-            type="button"
-            onClick={handleClear}
-            className="text-xs text-error hover:text-error/80 font-medium flex items-center gap-1"
-          >
-            <X className="w-3 h-3" /> Limpar todos
+        <div className="mb-4 flex justify-end">
+          <button type="button" onClick={handleClear} className={tasksPanelActiveFiltersClearClass}>
+            <X className="mr-1 h-3 w-3" aria-hidden />
+            Limpar todos
           </button>
         </div>
       )}
       <div className="space-y-5">
-        {/* Período */}
         <div>
-          <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">
-            Período
-          </p>
-          <div className="flex flex-wrap gap-2">
+          <p className={tasksPanelFiltersModalSectionLabelClass}>Período</p>
+          <div className="mt-2 flex flex-wrap gap-2">
             {[
               { value: 'all' as const, label: 'Todos' },
               { value: 'week' as const, label: 'Última Semana' },
@@ -144,30 +141,24 @@ export const DashboardFiltersModal: React.FC<DashboardFiltersModalProps> = ({
           </div>
         </div>
 
-        {/* Tipo de Tarefa */}
         <div>
-          <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">
-            Tipo de Tarefa
-          </p>
-          <div className="flex flex-wrap gap-2">
+          <p className={tasksPanelFiltersModalSectionLabelClass}>Tipo de tarefa</p>
+          <div className="mt-2 flex flex-wrap gap-2">
             {['Tarefa', 'Bug', 'Epic', 'História'].map(type => (
               <FilterChip
                 key={type}
                 label={type}
                 count={counts.type(type)}
-                isActive={filters.taskType?.includes(type as any) ?? false}
+                isActive={filters.taskType?.includes(type as 'Epic' | 'História' | 'Tarefa' | 'Bug') ?? false}
                 onClick={() => handleToggleArrayFilter('taskType', type)}
               />
             ))}
           </div>
         </div>
 
-        {/* Status de Teste (caso de teste) */}
         <div>
-          <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">
-            Status de Teste
-          </p>
-          <div className="flex flex-wrap gap-2">
+          <p className={tasksPanelFiltersModalSectionLabelClass}>Status de teste</p>
+          <div className="mt-2 flex flex-wrap gap-2">
             {[
               { value: 'Not Run', label: 'Não Executado' },
               { value: 'Passed', label: 'Aprovado' },
@@ -178,20 +169,21 @@ export const DashboardFiltersModal: React.FC<DashboardFiltersModalProps> = ({
                 key={option.value}
                 label={option.label}
                 count={counts.testStatus(option.value)}
-                isActive={filters.testStatus?.includes(option.value as any) ?? false}
+                isActive={
+                  filters.testStatus?.includes(
+                    option.value as 'Not Run' | 'Passed' | 'Failed' | 'Blocked'
+                  ) ?? false
+                }
                 onClick={() => handleToggleArrayFilter('testStatus', option.value)}
               />
             ))}
           </div>
         </div>
 
-        {/* Fase */}
         {availablePhases.length > 0 && (
           <div>
-            <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">
-              Fase
-            </p>
-            <div className="flex flex-wrap gap-2">
+            <p className={tasksPanelFiltersModalSectionLabelClass}>Fase</p>
+            <div className="mt-2 flex flex-wrap gap-2">
               {availablePhases.map(phase => (
                 <FilterChip
                   key={phase}

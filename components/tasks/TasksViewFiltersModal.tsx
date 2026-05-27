@@ -9,8 +9,22 @@ import {
   type SavedFilterPreset,
 } from '../../utils/savedFiltersService';
 import { cn } from '../../utils/cn';
-import { filterPillClass, outlineActionBtn, primaryActionBtn, searchInputClass } from '../common/viewUi';
-import { taskCardFieldLabelClass } from './taskActionLayout';
+import {
+  tasksPanelActiveFiltersClearClass,
+  tasksPanelFiltersModalCancelIconBtnClass,
+  tasksPanelFiltersModalChipClass,
+  tasksPanelFiltersModalChipCountClass,
+  tasksPanelFiltersModalDividerClass,
+  tasksPanelFiltersModalEmptyClass,
+  tasksPanelFiltersModalHintClass,
+  tasksPanelFiltersModalInputClass,
+  tasksPanelFiltersModalPresetClass,
+  tasksPanelFiltersModalPresetDeleteClass,
+  tasksPanelFiltersModalPresetNameClass,
+  tasksPanelFiltersModalSaveBtnClass,
+  tasksPanelFiltersModalSaveLinkClass,
+  tasksPanelFiltersModalSectionLabelClass,
+} from './tasksPanelNeuStyles';
 
 const FilterChip = ({
   label,
@@ -26,19 +40,11 @@ const FilterChip = ({
   <button
     type="button"
     onClick={onClick}
-    className={cn(
-      filterPillClass(isActive),
-      'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs sm:gap-2 sm:px-3 sm:py-1.5',
-      !isActive &&
-        'hover:border-[color-mix(in_srgb,var(--color-primary)_40%,transparent)]'
-    )}
+    className={tasksPanelFiltersModalChipClass(isActive)}
+    aria-pressed={isActive}
   >
     {label}
-    <span
-      className={`rounded-full px-1.5 py-0.5 text-[10px] ${isActive ? 'bg-white/20' : 'bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))]'}`}
-    >
-      {count}
-    </span>
+    <span className={tasksPanelFiltersModalChipCountClass(isActive)}>{count}</span>
   </button>
 );
 
@@ -145,27 +151,27 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
 
   return (
     <>
-      {/* Seção de Filtros Salvos */}
       {projectId && (
-        <div className="mb-5 pb-5 border-b border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]">
-          <div className="flex items-center justify-between mb-3">
-            <p className={cn(taskCardFieldLabelClass, 'flex items-center gap-1.5')}>
-              <Bookmark className="w-3.5 h-3.5" />
-              Filtros Salvos
+        <div className={tasksPanelFiltersModalDividerClass}>
+          <div className="mb-3 flex items-center justify-between">
+            <p className={tasksPanelFiltersModalSectionLabelClass}>
+              <Bookmark className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              Filtros salvos
             </p>
             {!isSavingPreset && (
               <button
                 type="button"
                 onClick={() => setIsSavingPreset(true)}
-                className="text-xs text-primary hover:text-primary/80 font-medium flex items-center gap-1"
+                className={tasksPanelFiltersModalSaveLinkClass}
               >
-                <BookmarkCheck className="w-3 h-3" /> Salvar filtros atuais
+                <BookmarkCheck className="h-3 w-3 shrink-0" aria-hidden />
+                Salvar filtros atuais
               </button>
             )}
           </div>
 
           {isSavingPreset && (
-            <div className="flex gap-2 mb-3">
+            <div className="mb-3 flex gap-2">
               <input
                 type="text"
                 value={presetName}
@@ -178,14 +184,14 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
                   }
                 }}
                 placeholder="Nome do preset (ex: Meus bugs)"
-                className={cn(searchInputClass, 'input-sm flex-1 h-9 pl-3 text-xs')}
+                className={tasksPanelFiltersModalInputClass}
                 autoFocus
               />
               <button
                 type="button"
                 onClick={handleSavePreset}
                 disabled={!presetName.trim()}
-                className={cn(primaryActionBtn, 'btn-sm min-h-9 px-4 text-xs')}
+                className={tasksPanelFiltersModalSaveBtnClass}
               >
                 Salvar
               </button>
@@ -195,9 +201,10 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
                   setIsSavingPreset(false);
                   setPresetName('');
                 }}
-                className={cn(outlineActionBtn, 'btn-sm min-h-9 px-2 text-xs')}
+                className={tasksPanelFiltersModalCancelIconBtnClass}
+                aria-label="Cancelar salvamento"
               >
-                <X className="w-3 h-3" />
+                <X className="h-3 w-3" aria-hidden />
               </button>
             </div>
           )}
@@ -205,53 +212,49 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
           {savedPresets.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {savedPresets.map(preset => (
-                <div
-                  key={preset.id}
-                  className="app-filter-pill group inline-flex items-center gap-1.5 px-2.5 py-1 text-xs hover:border-[color-mix(in_srgb,var(--color-primary)_40%,transparent)] sm:px-3 sm:py-1.5"
-                >
+                <div key={preset.id} className={tasksPanelFiltersModalPresetClass}>
                   <button
                     type="button"
                     onClick={() => onLoadPreset?.(preset)}
-                    className="text-base-content/80 hover:text-base-content"
+                    className={tasksPanelFiltersModalPresetNameClass}
                   >
                     {preset.name}
                   </button>
                   <button
                     type="button"
                     onClick={() => handleDeletePreset(preset.id)}
-                    className="text-base-content/40 hover:text-error transition-colors opacity-0 group-hover:opacity-100"
+                    className={tasksPanelFiltersModalPresetDeleteClass}
                     aria-label={`Excluir filtro "${preset.name}"`}
                   >
-                    <Trash2 className="w-3 h-3" />
+                    <Trash2 className="h-3 w-3" aria-hidden />
                   </button>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-xs text-base-content/50 italic">
-              Nenhum filtro salvo. Configure os filtros e clique em "Salvar filtros atuais".
+            <p className={tasksPanelFiltersModalEmptyClass}>
+              Nenhum filtro salvo. Configure os filtros e clique em &quot;Salvar filtros atuais&quot;.
             </p>
           )}
         </div>
       )}
 
       {activeFiltersCount > 0 && (
-        <div className="flex justify-end mb-4">
+        <div className="mb-4 flex justify-end">
           <button
             type="button"
             onClick={onClearAll}
-            className="text-xs text-error hover:text-error/80 font-medium flex items-center gap-1"
+            className={tasksPanelActiveFiltersClearClass}
           >
-            <X className="w-3 h-3" /> Limpar todos
+            <X className="mr-1 h-3 w-3" aria-hidden />
+            Limpar todos
           </button>
         </div>
       )}
       <div className="grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2 xl:grid-cols-3">
         <div className="min-w-0">
-          <p className={cn(taskCardFieldLabelClass, 'mb-2')}>
-            Status
-          </p>
-          <div className="flex flex-wrap gap-2">
+          <p className={tasksPanelFiltersModalSectionLabelClass}>Status</p>
+          <div className="mt-2 flex flex-wrap gap-2">
             {statusOptions.map(statusName => (
               <FilterChip
                 key={statusName}
@@ -271,10 +274,8 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
         </div>
 
         <div className="min-w-0">
-          <p className={cn(taskCardFieldLabelClass, 'mb-2')}>
-            Prioridade
-          </p>
-          <div className="flex flex-wrap gap-2">
+          <p className={tasksPanelFiltersModalSectionLabelClass}>Prioridade</p>
+          <div className="mt-2 flex flex-wrap gap-2">
             {priorityOptions.map(priorityName => (
               <FilterChip
                 key={priorityName}
@@ -294,10 +295,8 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
         </div>
 
         <div className="min-w-0">
-          <p className={cn(taskCardFieldLabelClass, 'mb-2')}>
-            Tipo de Tarefa
-          </p>
-          <div className="flex flex-wrap gap-2">
+          <p className={tasksPanelFiltersModalSectionLabelClass}>Tipo de tarefa</p>
+          <div className="mt-2 flex flex-wrap gap-2">
             {['Tarefa', 'Bug', 'Epic', 'História'].map(type => (
               <FilterChip
                 key={type}
@@ -315,10 +314,8 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
         </div>
 
         <div className="min-w-0">
-          <p className={cn(taskCardFieldLabelClass, 'mb-2')}>
-            Status de Teste
-          </p>
-          <div className="flex flex-wrap gap-2">
+          <p className={tasksPanelFiltersModalSectionLabelClass}>Status de teste</p>
+          <div className="mt-2 flex flex-wrap gap-2">
             {TEST_STATUS_FILTER_OPTIONS.map(({ value, label }) => (
               <FilterChip
                 key={value}
@@ -336,10 +333,8 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
         </div>
 
         <div className="min-w-0 md:col-span-2 xl:col-span-3">
-          <p className={cn(taskCardFieldLabelClass, 'mb-2')}>
-            Resultado do caso de teste
-          </p>
-          <p className="text-[11px] text-base-content/50 mb-2">
+          <p className={tasksPanelFiltersModalSectionLabelClass}>Resultado do caso de teste</p>
+          <p className={tasksPanelFiltersModalHintClass}>
             Filtra tarefas que possuem ao menos um caso neste status (Passou, Falhou, etc.).
           </p>
           <div className="flex flex-wrap gap-2">
@@ -360,10 +355,8 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
         </div>
 
         <div className="min-w-0 md:col-span-2 xl:col-span-3">
-          <p className={cn(taskCardFieldLabelClass, 'mb-2')}>
-            Estado de Qualidade
-          </p>
-          <div className="flex flex-wrap gap-2">
+          <p className={tasksPanelFiltersModalSectionLabelClass}>Estado de qualidade</p>
+          <div className="mt-2 flex flex-wrap gap-2">
             {[
               { id: 'with-bdd', label: 'Com BDD' },
               { id: 'without-bdd', label: 'Sem BDD' },
