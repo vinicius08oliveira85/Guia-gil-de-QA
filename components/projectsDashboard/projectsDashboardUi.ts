@@ -16,7 +16,8 @@ export const projectsDashboardSearchBtnClass = cn(
 export const projectsDashboardSelectClass = cn(
   'projects-dash-neu-select select select-sm h-9 min-h-[44px] rounded-xl border-0',
   'bg-[var(--workspace-stat-bg)] py-1 pl-2 pr-8 text-xs font-medium text-[var(--workspace-stat-text)]',
-  'focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--workspace-stat-accent)_35%,transparent)] sm:min-h-8 sm:h-8'
+  'focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--workspace-stat-accent)_35%,transparent)]',
+  'max-md:min-h-8 max-md:h-8 sm:min-h-8 sm:h-8'
 );
 
 /** Pílulas de filtro rápido (Todos / Com bugs / Atenção) */
@@ -26,7 +27,8 @@ export function projectsDashboardFilterPillClass(active: boolean): string {
 
 /** Grupo segmentado neumórfico escuro (#4a423e) — Meus Projetos */
 export const projectsDashboardQuickFiltersToolbarClass = cn(
-  'projects-dash-quick-filters-toolbar mb-4 w-full sm:w-auto'
+  'projects-dash-quick-filters-toolbar mb-4 w-full sm:w-auto',
+  'max-md:mb-2'
 );
 
 export function projectsDashboardQuickFiltersPillClass(
@@ -36,7 +38,7 @@ export function projectsDashboardQuickFiltersPillClass(
   return cn(
     'projects-dash-quick-filters-pill',
     active && 'projects-dash-quick-filters-pill--active',
-    'min-h-[44px] sm:min-h-0',
+    'min-h-[44px] max-md:min-h-8 max-md:py-1 sm:min-h-0',
     segmentRound
   );
 }
@@ -72,13 +74,17 @@ export const projectsDashboardSyncAlertMutedClass =
 export const projectsDashboardSyncAlertTitleClass = 'font-medium';
 
 /** Faixa de KPIs (WorkspaceDaisyStats + Eficiência) */
-export const projectsDashboardStatsRegionClass =
-  'mb-4 mt-4 grid grid-cols-2 gap-2.5 sm:mt-5 sm:grid-cols-4 sm:gap-3 lg:grid-cols-[repeat(4,minmax(0,1fr))_minmax(12rem,1.35fr)] lg:items-stretch';
+export const projectsDashboardStatsRegionClass = cn(
+  'mb-4 mt-4 grid grid-cols-2 gap-2.5 sm:mt-5 sm:grid-cols-4 sm:gap-3 lg:grid-cols-[repeat(4,minmax(0,1fr))_minmax(12rem,1.35fr)] lg:items-stretch',
+  'max-md:mb-2 max-md:mt-2 max-md:gap-2'
+);
 
 /** Grade principal + sidebar */
 export const projectsDashboardMainGridClass = cn(
   'mt-2 lg:grid lg:grid-cols-[minmax(0,1fr)_min(100%,20rem)] lg:items-start lg:gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]'
 );
 
-export const projectsDashboardProjectGridClass =
-  'grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 md:gap-5';
+export const projectsDashboardProjectGridClass = cn(
+  'grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 md:gap-5',
+  'max-md:gap-2'
+);

@@ -355,7 +355,7 @@ export const TaskForm: React.FC<{
             <AppSelect
               id="owner"
               value={taskData.owner}
-              onChange={e => setTaskData({ ...taskData, owner: e.target.value as TeamRole })}
+              onChange={v => setTaskData({ ...taskData, owner: v as TeamRole })}
               className={selectClass}
             >
               <option value="Product">Produto</option>
@@ -374,7 +374,7 @@ export const TaskForm: React.FC<{
             <AppSelect
               id="assignee"
               value={taskData.assignee}
-              onChange={e => setTaskData({ ...taskData, assignee: e.target.value as TeamRole })}
+              onChange={v => setTaskData({ ...taskData, assignee: v as TeamRole })}
               className={selectClass}
             >
               <option value="Product">Produto</option>

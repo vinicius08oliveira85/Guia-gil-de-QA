@@ -3,25 +3,27 @@
 import { cn } from '../../utils/cn';
 
 /** Padding horizontal alinhado ao header — conteúdo em largura total da viewport. */
-export const appContentPaddingX = 'px-3 sm:px-4';
+export const appContentPaddingX = 'px-3 sm:px-4 max-md:px-2';
 
 export const projectViewShell =
-  'tasks-panel-scope w-full min-w-0 max-w-none space-y-3 sm:space-y-4';
+  'tasks-panel-scope w-full min-w-0 max-w-none space-y-3 sm:space-y-4 max-md:space-y-2';
 
 /** Lista de projetos (dashboard inicial). */
 export const projectsListShell =
-  `tasks-panel-scope w-full min-w-0 max-w-none py-4 sm:py-5 ${appContentPaddingX}`;
+  `tasks-panel-scope w-full min-w-0 max-w-none py-4 sm:py-5 max-md:py-2 ${appContentPaddingX}`;
 
 export const appPanelClass = 'app-panel';
 
 export const projectViewPanel = cn(appPanelClass, 'p-2.5 sm:p-3.5');
 
 export const outlineActionBtn = cn(
-  'app-btn-outline inline-flex min-h-[44px] items-center gap-1.5 px-2.5 py-1.5 text-sm disabled:opacity-50 sm:min-h-9 sm:gap-2 sm:px-3 sm:py-2'
+  'app-btn-outline inline-flex min-h-[44px] items-center gap-1.5 px-2.5 py-1.5 text-sm disabled:opacity-50',
+  'max-md:min-h-9 max-md:px-2 max-md:py-1 max-md:text-xs sm:min-h-9 sm:gap-2 sm:px-3 sm:py-2'
 );
 
 export const primaryActionBtn = cn(
-  'app-btn-primary-inline inline-flex min-h-[44px] items-center gap-1.5 px-3 py-1.5 text-sm disabled:opacity-50 active:scale-[0.98] sm:min-h-9 sm:gap-2 sm:px-4 sm:py-2'
+  'app-btn-primary-inline inline-flex min-h-[44px] items-center gap-1.5 px-3 py-1.5 text-sm disabled:opacity-50 active:scale-[0.98]',
+  'max-md:min-h-9 max-md:px-2.5 max-md:py-1 max-md:text-xs sm:min-h-9 sm:gap-2 sm:px-4 sm:py-2'
 );
 
 export function filterPillClass(active: boolean): string {

@@ -328,7 +328,7 @@ export const BusinessRulesManager: React.FC<{
                   descrição ao vincular regras entre si.
                 </p>
               </div>
-              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+              <div className="business-rules-hero-actions flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
                 <input
                   ref={importInputRef}
                   id="business-rules-import-json"
@@ -345,26 +345,28 @@ export const BusinessRulesManager: React.FC<{
                 >
                   <button
                     type="button"
-                    className={cn(tasksViewHeaderSecondaryBtnClass, 'min-h-[44px] sm:min-h-0')}
+                    className={tasksViewHeaderSecondaryBtnClass}
                     onClick={() => importInputRef.current?.click()}
                     title="Mescla regras a partir de JSON (mesmo id atualiza título/descrição)"
                   >
                     <span className={tasksViewHeaderIconWrapClass} aria-hidden>
                       <Upload className={tasksViewHeaderFilterIconClass} />
                     </span>
-                    <span>Importar JSON</span>
+                    <span className="hidden md:inline">Importar JSON</span>
+                    <span className="md:hidden">Importar</span>
                   </button>
                   <div className={tasksViewHeaderSecondaryToolbarDividerClass} aria-hidden />
                   <button
                     type="button"
-                    className={cn(tasksViewHeaderSecondaryBtnClass, 'min-h-[44px] sm:min-h-0')}
+                    className={tasksViewHeaderSecondaryBtnClass}
                     onClick={handleExportJson}
                     title="Exporta todas as regras do projeto em JSON"
                   >
                     <span className={tasksViewHeaderIconWrapClass} aria-hidden>
                       <Download className={tasksViewHeaderFilterIconClass} />
                     </span>
-                    <span>Exportar JSON</span>
+                    <span className="hidden md:inline">Exportar JSON</span>
+                    <span className="md:hidden">Exportar</span>
                   </button>
                 </div>
                 <button

@@ -111,9 +111,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   return (
     <div className={leveSettingsPageClass}>
       <div className={leveSettingsHeaderStickyClass}>
-        <div className={cn(settingsContentShell, 'py-5 sm:py-6')}>
-          <div className="flex flex-col gap-6">
-            <div className="flex items-start gap-4">
+        <div className={cn(settingsContentShell, 'py-5 sm:py-6 max-md:py-3')}>
+          <div className="flex flex-col gap-6 max-md:gap-3">
+            <div className="flex items-start gap-4 max-md:gap-2">
               <BackButton
                 className="mt-1 shrink-0 self-start text-[var(--leve-header-text-muted)] hover:text-[var(--leve-header-accent)]"
                 onClick={handleClose}
@@ -121,8 +121,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 aria-label="Voltar"
               />
               <div className="min-w-0 flex-1">
-                <h1 className={cn(leveViewPageTitleClass, 'sm:text-3xl')}>Configurações</h1>
-                <p className={cn(leveViewPageSubtitleClass, 'mt-2')}>
+                <h1 className={cn(leveViewPageTitleClass, 'max-md:text-2xl sm:text-3xl')}>Configurações</h1>
+                <p className={cn(leveViewPageSubtitleClass, 'mt-2 max-md:mt-1 max-md:text-xs')}>
                   Gerencie suas integrações, preferências e configurações do projeto
                 </p>
               </div>
@@ -160,7 +160,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       </div>
 
       <div className={leveSettingsContentAreaClass}>
-        <div className={cn(settingsContentShell, 'py-6')}>
+        <div className={cn(settingsContentShell, 'py-6 max-md:py-3')}>
           <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
             <div
               id={`tab-panel-${activeTab}`}

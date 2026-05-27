@@ -35,6 +35,7 @@ import {
   projectChromeBacklogCountClass,
   projectChromeBreadcrumbsClass,
   projectChromeDangerBtnClass,
+  projectChromeHeaderInnerClass,
   projectChromeHeaderShellClass,
   projectChromeScrollFadeFromClass,
   projectChromeScrollFadeToClass,
@@ -44,9 +45,11 @@ import {
   projectChromeTabIdleClass,
   projectChromeTabsDividerClass,
   projectChromeTabsNavClass,
+  projectChromeTabsRowClass,
   projectChromeToolbarClass,
   projectChromeToolbarDividerClass,
   projectChromeToolbarStatusClass,
+  projectChromeToolbarStatusWrapClass,
 } from './tasks/tasksPanelNeuStyles';
 import { countBacklogTasks, type TasksListMode } from '../utils/backlogTasks';
 
@@ -462,16 +465,16 @@ export const ProjectView: React.FC<{
     <>
       <div
         className={cn(
-          'animate-fade-in w-full min-w-0 max-w-none py-3 sm:py-4 non-printable',
+          'animate-fade-in w-full min-w-0 max-w-none py-3 sm:py-4 max-md:py-2 non-printable',
           appContentPaddingX
         )}
       >
         <div className={projectChromeHeaderShellClass}>
-          <div className="flex min-w-0 flex-col gap-1">
-            {/* Linha 1: voltar + trilho | estado + excluir */}
-            <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-1">
-              <div className="flex min-w-0 max-w-full flex-1 flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap sm:items-center">
-                <div className="min-w-0 max-w-full flex-1 overflow-x-auto sm:overflow-visible">
+          <div className={cn('flex min-w-0 flex-col gap-1', projectChromeHeaderInnerClass)}>
+            {/* Linha 1: trilho + ações na mesma linha (mobile compacto) */}
+            <div className="project-chrome-header-row flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-1 max-md:flex-nowrap max-md:items-center max-md:gap-1 max-md:gap-y-0">
+              <div className="flex min-w-0 max-w-full flex-1 flex-wrap items-center gap-x-2 gap-y-1 max-md:min-w-0 max-md:flex-nowrap sm:flex-nowrap sm:items-center">
+                <div className="min-w-0 max-w-full flex-1 overflow-x-auto max-md:overflow-hidden sm:overflow-visible">
                   <Breadcrumbs
                     items={breadcrumbItems}
                     showHome={false}
@@ -486,7 +489,7 @@ export const ProjectView: React.FC<{
                 {/* Status de salvamento */}
                 {(supabaseAvailable || lastSaveToSupabase === false) && (
                   <div
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs"
+                    className={projectChromeToolbarStatusWrapClass}
                     role="status"
                     aria-live="polite"
                     aria-atomic="true"
@@ -627,7 +630,7 @@ export const ProjectView: React.FC<{
               <div className={projectChromeScrollFadeToClass} aria-hidden />
             )}
 
-            <div className="flex w-full items-end gap-2">
+            <div className={projectChromeTabsRowClass}>
               <nav
                 ref={tabsRef}
                 className={projectChromeTabsNavClass}
@@ -683,7 +686,7 @@ export const ProjectView: React.FC<{
           </div>
         </div>
 
-        <div className="mt-4 sm:mt-5">
+        <div className="mt-4 sm:mt-5 max-md:mt-2">
           <PageTransition transitionKey={activeTab}>
             {activeTab === 'dashboard' && (
               <section id="tab-panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">

@@ -385,18 +385,18 @@ export const TestCaseItem: React.FC<{
           </button>
         </div>
 
-        <div className="dropdown dropdown-end shrink-0 md:hidden">
+        <div className="dropdown dropdown-end dropdown-top shrink-0 md:hidden">
           <div
             tabIndex={0}
             role="button"
-            className="btn btn-ghost btn-xs btn-circle min-h-8 min-w-8"
+            className="btn btn-ghost btn-xs btn-circle min-h-8 min-w-8 rounded-full"
             aria-label="Mais ações do caso de teste"
           >
             <MoreVertical className="h-4 w-4" aria-hidden />
           </div>
           <ul
             tabIndex={0}
-            className={cn('dropdown-content menu z-[60] mt-1 w-56 p-2 shadow-lg', appMenuPanelClass)}
+            className={cn('dropdown-content menu z-[60] mb-1 w-56 p-2 shadow-lg', appMenuPanelClass)}
           >
             {onEdit && (
               <li>

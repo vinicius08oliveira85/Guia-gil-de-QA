@@ -39,6 +39,7 @@ export const headerNeuChipClass = cn(
   'transition-[background-color,box-shadow,color] duration-200',
   'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
   'focus-visible:outline-[color-mix(in_srgb,var(--project-card-accent)_45%,transparent)]',
+  'max-md:min-h-9 max-md:min-w-9',
   'sm:min-w-0 sm:justify-start sm:gap-1 sm:px-2.5'
 );
 

@@ -16,8 +16,8 @@ export const neuDividerClass = 'border-[color-mix(in_srgb,var(--leve-neu-light)_
 export const neuMutedTextClass = 'text-[var(--leve-header-text-muted)]';
 export const neuStrongTextClass = 'text-[var(--leve-header-text)]';
 
-export const neuCardClass = cn(neuSurfaceClass, 'p-4 sm:p-5');
-export const neuCardCompactClass = cn(neuSurfaceClass, 'p-3 sm:p-4');
+export const neuCardClass = cn(neuSurfaceClass, 'p-4 sm:p-5', 'max-md:p-3');
+export const neuCardCompactClass = cn(neuSurfaceClass, 'p-3 sm:p-4', 'max-md:p-2');
 export const neuCardInsetClass = cn(neuSurfaceInsetClass, neuInsetContentClass);
 export const neuListPanelClass = cn(neuSurfaceInsetClass, 'divide-y divide-[color-mix(in_srgb,var(--leve-neu-light)_30%,transparent)]');
 

@@ -35,13 +35,14 @@ const listChipBase = cn(
 /** Área rolável da lista (fundo da página nos cards). */
 export const tasksListPanelClass = cn(
   'tasks-list-panel min-w-0 rounded-[var(--leve-header-radius)] p-1 sm:p-1.5',
-  'bg-[#EBE6DE]'
+  'bg-[#EBE6DE] max-md:p-0.5'
 );
 
 /** Shell do card na listagem — substitui o visual escuro de `.task-card-shell`. */
 export const tasksListCardShellClass = cn(
   'task-card-shell task-list-card-shell',
   'px-1.5 py-2 transition-[box-shadow,border-color] duration-200 max-sm:min-w-0 sm:px-3 sm:py-2',
+  'max-md:px-1.5 max-md:py-1',
   'border border-[#DED7CD] bg-[#F2EEE8]',
   tlRaised
 );

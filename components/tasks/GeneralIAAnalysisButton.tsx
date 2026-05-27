@@ -113,13 +113,30 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
             );
           })()
         )}
-        <span>
-          {isAnalyzing
-            ? progress?.message
-              ? progress.message
-              : 'Analisando…'
-            : 'Análise geral com IA'}
-        </span>
+        {grouped ? (
+          <span
+            className={cn(
+              isAnalyzing && progress?.message && 'general-ia-analysis-btn__label--long'
+            )}
+          >
+            {isAnalyzing
+              ? progress?.message
+                ? progress.message
+                : 'Analisando…'
+              : 'Análise geral com IA'}
+          </span>
+        ) : (
+          <>
+            <span className="hidden sm:inline">
+              {isAnalyzing
+                ? progress?.message
+                  ? progress.message
+                  : 'Analisando…'
+                : 'Análise geral com IA'}
+            </span>
+            <span className="sm:hidden">{isAnalyzing ? '…' : 'IA'}</span>
+          </>
+        )}
       </button>
       {isAnalyzing && progress && (
         <div className="flex flex-col gap-0.5 w-full" aria-live="polite">

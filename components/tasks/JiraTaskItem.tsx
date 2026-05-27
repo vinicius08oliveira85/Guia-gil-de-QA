@@ -301,6 +301,8 @@ export const JiraTaskItem: React.FC<{
   }) => {
     const reduceMotion = useReducedMotion();
     const [isDetailsOpen, setIsDetailsOpen] = useState(false); // Colapsado por padrão para compactar
+    const [mobileTaskActionsOpen, setMobileTaskActionsOpen] = useState(false);
+    const mobileTaskActionsRef = useRef<HTMLDivElement>(null);
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
     const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
     const [isCreatingBdd, setIsCreatingBdd] = useState(false);
@@ -325,6 +327,24 @@ export const JiraTaskItem: React.FC<{
     const safeDomId = useMemo(() => task.id.replace(/[^a-zA-Z0-9_-]/g, '_'), [task.id]);
     const detailsRegionId = `task-details-${safeDomId}`;
     const childrenRegionId = `task-children-${safeDomId}`;
+
+    useEffect(() => {
+      if (!mobileTaskActionsOpen) return;
+      const close = (event: MouseEvent | TouchEvent) => {
+        if (
+          mobileTaskActionsRef.current &&
+          !mobileTaskActionsRef.current.contains(event.target as Node)
+        ) {
+          setMobileTaskActionsOpen(false);
+        }
+      };
+      document.addEventListener('mousedown', close);
+      document.addEventListener('touchstart', close);
+      return () => {
+        document.removeEventListener('mousedown', close);
+        document.removeEventListener('touchstart', close);
+      };
+    }, [mobileTaskActionsOpen]);
     const taskTypeNorm = (task.type || '').toLowerCase();
     const showTestExecutionSummary = task.type === 'Tarefa' || task.type === 'Bug';
     const showGenerateAllAction = ['tarefa', 'bug', 'task'].includes(taskTypeNorm) && !!onGenerateAll;
@@ -1686,7 +1706,8 @@ export const JiraTaskItem: React.FC<{
         target.closest('select') ||
         target.closest('a') ||
         target.closest('[role="button"]') ||
-        target.closest('.dropdown')
+        target.closest('.dropdown') ||
+        target.closest('.task-card-mobile-actions-menu')
       ) {
         return;
       }
@@ -1725,10 +1746,13 @@ export const JiraTaskItem: React.FC<{
 
     return (
       <div
-        className="relative max-md:focus-within:z-[300]"
+        className={cn(
+          'relative max-md:focus-within:z-[300]',
+          mobileTaskActionsOpen && 'max-md:z-[300]'
+        )}
         data-task-id={task.id}
       >
-        <div style={treeIndentStyle} className="task-tree-indent py-0.5">
+        <div style={treeIndentStyle} className="task-tree-indent max-md:py-0 md:py-0.5">
           <div
             className={cn(
               tasksListCardShellClass,
@@ -1941,13 +1965,181 @@ export const JiraTaskItem: React.FC<{
                   ) : null}
                 </>
               }
+              className="task-card-header-mobile-compact"
+              mobileTitleActions={
+                <div
+                  ref={mobileTaskActionsRef}
+                  className={cn(
+                    'task-card-mobile-actions-menu dropdown dropdown-end dropdown-top relative shrink-0 overflow-visible',
+                    mobileTaskActionsOpen && 'dropdown-open z-[120]'
+                  )}
+                  onClick={e => e.stopPropagation()}
+                >
+                  <button
+                    type="button"
+                    className="win-icon-button task-card-mobile-menu-trigger !size-8 !min-h-8 !min-w-8 !rounded-full !p-0"
+                    aria-label="Ações da tarefa"
+                    aria-haspopup="menu"
+                    aria-expanded={mobileTaskActionsOpen}
+                    onClick={e => {
+                      e.stopPropagation();
+                      setMobileTaskActionsOpen(open => !open);
+                    }}
+                  >
+                    <MoreVertical className="h-4 w-4" aria-hidden />
+                  </button>
+                  <ul
+                    role="menu"
+                    className={cn(
+                      'dropdown-content menu app-menu-panel z-[130] mb-1 w-64 max-w-[min(100vw-2rem,18rem)] p-2',
+                      !mobileTaskActionsOpen && 'pointer-events-none'
+                    )}
+                    onClick={e => {
+                      e.stopPropagation();
+                      if ((e.target as HTMLElement).closest('button')) {
+                        setMobileTaskActionsOpen(false);
+                      }
+                    }}
+                  >
+                    {isAiProcessing && aiPhaseMessage ? (
+                      <li className="menu-title">
+                        <span className="flex items-center gap-2 text-xs font-normal text-primary">
+                          <span className="loading loading-spinner loading-xs text-primary" />
+                          <span className="truncate">{aiPhaseMessage}</span>
+                        </span>
+                      </li>
+                    ) : null}
+                    {(task.type === 'Tarefa' || task.type === 'Bug') && (
+                      <li className="menu-title">
+                        <span className="font-body text-xs font-normal text-muted">
+                          Métricas: ✓ {testExecutionSummary.passed} · ✗ {testExecutionSummary.failed}{' '}
+                          · pend. {testExecutionSummary.pending}
+                        </span>
+                      </li>
+                    )}
+                    {['tarefa', 'bug', 'task'].includes(taskTypeNorm) && onGenerateAll ? (
+                      <li>
+                        <button
+                          type="button"
+                          className="font-body gap-2"
+                          disabled={
+                            isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests
+                          }
+                          onClick={e => {
+                            e.stopPropagation();
+                            handleGenerateAll(e);
+                          }}
+                        >
+                          <Zap className="h-4 w-4 shrink-0" aria-hidden />
+                          {isGenerating || isGeneratingAll ? 'Gerando…' : 'Gerar Tudo'}
+                        </button>
+                      </li>
+                    ) : null}
+                    <li>
+                      <button
+                        type="button"
+                        className="font-body gap-2"
+                        onClick={handleTestStatusBadgeClick}
+                      >
+                        <ClipboardList className="h-4 w-4 shrink-0" aria-hidden />
+                        {standaloneContainerIssue
+                          ? taskTestStatus === 'teste_concluido'
+                            ? 'Reabrir'
+                            : 'Concluir'
+                          : taskTestStatus === 'testando'
+                            ? 'Testando — concluir'
+                            : taskTestStatus === 'teste_concluido'
+                              ? 'Marcar pendente'
+                              : taskTestStatus === 'pendente'
+                                ? 'Pronto para testar'
+                                : 'Iniciar teste'}
+                      </button>
+                    </li>
+                    <li className="menu-title mt-1">
+                      <span className="font-body text-xs font-normal text-muted">Status Jira</span>
+                    </li>
+                    {project?.settings?.jiraStatuses && project.settings.jiraStatuses.length > 0
+                      ? project.settings.jiraStatuses.map(status => {
+                          const statusName = typeof status === 'string' ? status : status.name;
+                          const statusColor =
+                            typeof status === 'string'
+                              ? getJiraStatusColor(statusName)
+                              : status.color
+                                ? ensureJiraHexColor(status.color, status.name)
+                                : getJiraStatusColor(statusName);
+                          const isSelected = currentDisplayStatusLabel === statusName;
+                          return (
+                            <li key={`mob-toolbar-${task.id}-${statusName}`}>
+                              <button
+                                type="button"
+                                className={cn('font-body gap-2', isSelected && 'active')}
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  handleChangeStatus(statusName);
+                                }}
+                              >
+                                <span
+                                  className="h-3 w-3 shrink-0 rounded-full"
+                                  style={{
+                                    backgroundColor: statusColor || 'oklch(var(--b3))',
+                                  }}
+                                  aria-hidden
+                                />
+                                {statusName}
+                              </button>
+                            </li>
+                          );
+                        })
+                      : (
+                        <>
+                          <li>
+                            <button
+                              type="button"
+                              className="font-body"
+                              onClick={e => {
+                                e.stopPropagation();
+                                handleChangeStatus('To Do');
+                              }}
+                            >
+                              A Fazer
+                            </button>
+                          </li>
+                          <li>
+                            <button
+                              type="button"
+                              className="font-body"
+                              onClick={e => {
+                                e.stopPropagation();
+                                handleChangeStatus('In Progress');
+                              }}
+                            >
+                              Em Andamento
+                            </button>
+                          </li>
+                          <li>
+                            <button
+                              type="button"
+                              className="font-body"
+                              onClick={e => {
+                                e.stopPropagation();
+                                handleChangeStatus('Done');
+                              }}
+                            >
+                              Concluído
+                            </button>
+                          </li>
+                        </>
+                      )}
+                  </ul>
+                </div>
+              }
             />
 
             <div
               className={cn(
-                'flex w-full shrink-0 flex-nowrap items-center justify-end gap-tasks-panel-tight',
-                'z-20 min-w-0 overflow-visible max-sm:border-t max-sm:border-[#DED7CD] max-sm:pt-1',
-                'sm:w-auto sm:border-0 sm:pt-0'
+                'task-card-mobile-actions-row flex w-full shrink-0 flex-nowrap items-center justify-end gap-tasks-panel-tight',
+                'z-20 min-w-0 overflow-visible max-md:relative max-md:z-10 max-md:justify-start',
+                'md:w-auto'
               )}
               onClick={e => e.stopPropagation()}
             >
@@ -1974,156 +2166,6 @@ export const JiraTaskItem: React.FC<{
                 testStatusLabelOverride={containerTestStatusLabel}
                 onTestStatusClick={handleTestStatusBadgeClick}
               />
-
-              <div
-                className="dropdown dropdown-end md:hidden relative z-30 shrink-0 overflow-visible"
-                onClick={e => e.stopPropagation()}
-              >
-                <button
-                  type="button"
-                  tabIndex={0}
-                  className="win-icon-button sm:!min-h-9 sm:!min-w-9"
-                  aria-label="Ações da tarefa"
-                  aria-haspopup="true"
-                >
-                  <MoreVertical className="h-5 w-5" aria-hidden />
-                </button>
-                <ul
-                  tabIndex={0}
-                  className="dropdown-content menu mica z-50 mt-1 w-64 max-w-[min(100vw-2rem,18rem)] !rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] p-2"
-                  onClick={e => e.stopPropagation()}
-                >
-                  {isAiProcessing && aiPhaseMessage ? (
-                    <li className="menu-title">
-                      <span className="flex items-center gap-2 text-xs font-normal text-primary">
-                        <span className="loading loading-spinner loading-xs text-primary" />
-                        <span className="truncate">{aiPhaseMessage}</span>
-                      </span>
-                    </li>
-                  ) : null}
-                  {(task.type === 'Tarefa' || task.type === 'Bug') && (
-                    <li className="menu-title">
-                      <span className="font-body text-xs font-normal text-muted">
-                        Métricas: ✓ {testExecutionSummary.passed} · ✗ {testExecutionSummary.failed} · pend.{' '}
-                        {testExecutionSummary.pending}
-                      </span>
-                    </li>
-                  )}
-                  {['tarefa', 'bug', 'task'].includes(taskTypeNorm) && onGenerateAll ? (
-                    <li>
-                      <button
-                        type="button"
-                        className="font-body gap-2"
-                        disabled={
-                          isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests
-                        }
-                        onClick={e => {
-                          e.stopPropagation();
-                          handleGenerateAll(e);
-                        }}
-                      >
-                        <Zap className="h-4 w-4 shrink-0" aria-hidden />
-                        {isGenerating || isGeneratingAll ? 'Gerando…' : 'Gerar Tudo'}
-                      </button>
-                    </li>
-                  ) : null}
-                  <li>
-                    <button
-                      type="button"
-                      className="font-body gap-2"
-                      onClick={handleTestStatusBadgeClick}
-                    >
-                      <ClipboardList className="h-4 w-4 shrink-0" aria-hidden />
-                      {standaloneContainerIssue
-                        ? taskTestStatus === 'teste_concluido'
-                          ? 'Reabrir'
-                          : 'Concluir'
-                        : taskTestStatus === 'testando'
-                          ? 'Testando — concluir'
-                          : taskTestStatus === 'teste_concluido'
-                            ? 'Marcar pendente'
-                            : taskTestStatus === 'pendente'
-                              ? 'Pronto para testar'
-                              : 'Iniciar teste'}
-                    </button>
-                  </li>
-                  <li className="menu-title mt-1">
-                    <span className="font-body text-xs font-normal text-muted">Status Jira</span>
-                  </li>
-                  {project?.settings?.jiraStatuses && project.settings.jiraStatuses.length > 0
-                    ? project.settings.jiraStatuses.map(status => {
-                        const statusName = typeof status === 'string' ? status : status.name;
-                        const statusColor =
-                          typeof status === 'string'
-                            ? getJiraStatusColor(statusName)
-                            : status.color
-                              ? ensureJiraHexColor(status.color, status.name)
-                              : getJiraStatusColor(statusName);
-                        const isSelected = currentDisplayStatusLabel === statusName;
-                        return (
-                          <li key={`mob-toolbar-${task.id}-${statusName}`}>
-                            <button
-                              type="button"
-                              className={cn('font-body gap-2', isSelected && 'active')}
-                              onClick={e => {
-                                e.stopPropagation();
-                                handleChangeStatus(statusName);
-                              }}
-                            >
-                              <span
-                                className="h-3 w-3 shrink-0 rounded-full"
-                                style={{
-                                  backgroundColor: statusColor || 'oklch(var(--b3))',
-                                }}
-                                aria-hidden
-                              />
-                              {statusName}
-                            </button>
-                          </li>
-                        );
-                      })
-                    : (
-                      <>
-                        <li>
-                          <button
-                            type="button"
-                            className="font-body"
-                            onClick={e => {
-                              e.stopPropagation();
-                              handleChangeStatus('To Do');
-                            }}
-                          >
-                            A Fazer
-                          </button>
-                        </li>
-                        <li>
-                          <button
-                            type="button"
-                            className="font-body"
-                            onClick={e => {
-                              e.stopPropagation();
-                              handleChangeStatus('In Progress');
-                            }}
-                          >
-                            Em Andamento
-                          </button>
-                        </li>
-                        <li>
-                          <button
-                            type="button"
-                            className="font-body"
-                            onClick={e => {
-                              e.stopPropagation();
-                              handleChangeStatus('Done');
-                            }}
-                          >
-                            Concluído
-                          </button>
-                        </li>
-                      </>
-                    )}
-                </ul>
-              </div>
 
             </div>
           </div>

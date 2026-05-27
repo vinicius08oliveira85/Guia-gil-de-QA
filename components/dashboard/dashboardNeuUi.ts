@@ -93,7 +93,8 @@ export const dashboardListRowClass = cn(
 /** Cabeçalho de seção (título + filtros). */
 export const dashboardHeroClass = cn(
   neuCardClass,
-  'flex flex-col gap-4 px-4 py-4 sm:px-6 sm:py-6 md:flex-row md:items-center md:justify-between'
+  'flex flex-col gap-4 px-4 py-4 sm:px-6 sm:py-6 md:flex-row md:items-center md:justify-between',
+  'max-md:gap-2 max-md:px-3 max-md:py-3'
 );
 
 /** Trilho neutro para barras de progresso sem cor semântica. */

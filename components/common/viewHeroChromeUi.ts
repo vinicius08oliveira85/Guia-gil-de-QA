@@ -7,13 +7,18 @@ import { cn } from '../../utils/cn';
 export const viewHeroChromeClass = cn(
   'dashboard-hero-chrome project-chrome-neu-shell tasks-panel-dark-surface',
   'rounded-[var(--leve-header-radius)] px-3 py-3 sm:px-4 sm:py-4',
-  'flex flex-col gap-4 sm:gap-5'
+  'flex flex-col gap-4 sm:gap-5',
+  'max-md:gap-2 max-md:px-2 max-md:py-2'
 );
 
-export const viewHeroHeaderShellClass = 'flex flex-col gap-4 font-sans sm:gap-5';
+export const viewHeroHeaderShellClass = cn(
+  'view-hero-header-shell flex flex-col gap-4 font-sans sm:gap-5',
+  'max-md:gap-2'
+);
 
 export const viewHeroTitleClass = cn(
-  'font-sans text-2xl font-bold tracking-tight text-[var(--workspace-panel-text)] sm:text-[1.65rem]'
+  'font-sans text-2xl font-bold tracking-tight text-[var(--workspace-panel-text)] sm:text-[1.65rem]',
+  'max-md:text-xl'
 );
 
 export const viewHeroJiraBadgeClass = cn(
@@ -21,8 +26,10 @@ export const viewHeroJiraBadgeClass = cn(
   'font-sans text-xs font-bold'
 );
 
-export const viewHeroSubtitleClass =
-  'max-w-2xl font-sans text-sm leading-relaxed text-[var(--workspace-panel-text-muted)]';
+export const viewHeroSubtitleClass = cn(
+  'max-w-2xl font-sans text-sm leading-relaxed text-[var(--workspace-panel-text-muted)]',
+  'max-md:text-xs max-md:leading-snug'
+);
 
 export const viewHeroMutedClass = 'font-sans text-[var(--workspace-panel-text-muted)]';
 
@@ -43,12 +50,14 @@ export const viewHeroToolbarDividerClass =
 export const viewHeroToolbarBtnClass = cn(
   'dashboard-neu-filter-btn workspace-chrome-pill',
   'inline-flex min-h-[36px] items-center gap-1.5 rounded-full px-3 py-1.5 font-sans text-sm font-semibold sm:min-h-0',
+  'max-md:min-h-8 max-md:px-2.5 max-md:py-1 max-md:text-xs',
   'disabled:cursor-not-allowed disabled:opacity-50'
 );
 
 export const viewHeroToolbarBtnActiveClass = cn(
   'dashboard-neu-filter-btn dashboard-neu-filter-btn--active workspace-chrome-pill-active',
   'inline-flex min-h-[36px] items-center gap-1.5 rounded-full px-3 py-1.5 font-sans text-sm font-semibold sm:min-h-0',
+  'max-md:min-h-8 max-md:px-2.5 max-md:py-1 max-md:text-xs',
   'disabled:cursor-not-allowed disabled:opacity-50'
 );
 
@@ -67,7 +76,7 @@ export const viewHeroToolbarCountClass = cn(
 
 export const viewHeroPrimaryBtnClass = cn(
   'workspace-chrome-pill-active inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-full px-4 py-2',
-  'font-sans text-sm font-bold sm:min-h-9',
+  'font-sans text-sm font-bold max-md:min-h-9 max-md:gap-1.5 max-md:px-3 max-md:py-1.5 max-md:text-xs sm:min-h-9',
   'transition-[filter,transform,box-shadow] duration-150',
   'hover:brightness-110 hover:-translate-y-px',
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--workspace-panel-accent)_45%,transparent)]',
@@ -76,6 +85,6 @@ export const viewHeroPrimaryBtnClass = cn(
 
 export const viewHeroMobileActionBtnClass = cn(
   'workspace-chrome-pill inline-flex min-h-[44px] items-center gap-2 px-3 py-2',
-  'font-sans text-sm font-semibold text-[var(--workspace-panel-text-muted)] sm:min-h-9',
+  'font-sans text-sm font-semibold text-[var(--workspace-panel-text-muted)] max-md:min-h-9 max-md:gap-1.5 max-md:px-2.5 max-md:py-1.5 max-md:text-xs sm:min-h-9',
   'disabled:opacity-50'
 );

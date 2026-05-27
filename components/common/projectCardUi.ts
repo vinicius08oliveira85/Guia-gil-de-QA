@@ -399,8 +399,8 @@ export const leveSettingsTabsNavClass = cn(
 );
 
 export const leveSettingsTabClass = cn(
-  'inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-t-[var(--leve-header-radius)] px-4 py-2.5',
-  'font-sans text-sm font-semibold transition-colors sm:min-h-0',
+  'leve-settings-tab inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-t-[var(--leve-header-radius)] px-4 py-2.5',
+  'font-sans text-sm font-semibold transition-colors max-md:min-h-9 max-md:gap-1.5 max-md:px-3 max-md:py-1.5 max-md:text-xs sm:min-h-0',
   'text-[color-mix(in_srgb,var(--leve-header-text)_70%,transparent)]',
   'hover:bg-[color-mix(in_srgb,var(--leve-header-text)_6%,var(--leve-header-cream))] hover:text-[var(--leve-header-text)]',
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] focus-visible:ring-offset-2',
@@ -814,7 +814,8 @@ export function formatWorkspaceStatCount(value: number): string {
 /** Cards GlassIndicatorCards / KPI — relevo neumórfico (Tarefas, dashboard). */
 export const glassIndicatorCardClass = cn(
   'dashboard-glass-indicator-card flex min-h-[4rem] flex-col items-center justify-center gap-1.5 font-sans text-center',
-  'px-3 py-3 sm:min-h-[4.25rem] sm:px-4 sm:py-3.5'
+  'px-3 py-3 sm:min-h-[4.25rem] sm:px-4 sm:py-3.5',
+  'max-md:min-h-[3.25rem] max-md:gap-1 max-md:px-2 max-md:py-2'
 );
 
 export const glassIndicatorCardActiveClass = 'dashboard-glass-indicator-card--active';
@@ -844,7 +845,8 @@ export const glassIndicatorBadgeClass = cn(
 
 /** Cards compactos da faixa superior (legado / outros usos). */
 export const workspaceStatCardClass = cn(
-  'projects-dash-stat-card flex min-h-[4rem] flex-col items-center justify-center gap-1 px-2 py-2.5 text-center sm:min-h-[4.25rem] sm:px-3 sm:py-3'
+  'projects-dash-stat-card flex min-h-[4rem] flex-col items-center justify-center gap-1 px-2 py-2.5 text-center sm:min-h-[4.25rem] sm:px-3 sm:py-3',
+  'max-md:min-h-[3.25rem] max-md:px-1.5 max-md:py-1.5'
 );
 
 export const workspaceStatLabelClass =

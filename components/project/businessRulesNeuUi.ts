@@ -7,7 +7,8 @@ export const businessRulesViewScopeClass = 'business-rules-view-scope app-neu-sc
 /** Envelope da lista (trilho inset). */
 export const businessRulesListPanelClass = cn(
   'business-rules-list-panel business-rules-neu-list-track',
-  'rounded-[var(--leve-header-radius)] p-2.5 sm:p-3.5'
+  'rounded-[var(--leve-header-radius)] p-2.5 sm:p-3.5',
+  'max-md:p-1.5'
 );
 
 /** Card expansível — superfície elevada. */
@@ -18,7 +19,8 @@ export const businessRulesCardClass = cn(
 );
 
 export const businessRulesCardSummaryClass = cn(
-  'flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-left',
+  'business-rules-card-summary flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-left',
+  'max-md:min-h-9 max-md:gap-2 max-md:px-3 max-md:py-2',
   'transition-[background-color,box-shadow] duration-200',
   'hover:bg-[color-mix(in_srgb,#E2D9D0_45%,#F2EEE8)]',
   'focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,#FF5C1B_35%,transparent)] focus-visible:ring-inset',
@@ -34,7 +36,8 @@ export const businessRulesCardChevronClass =
   'h-5 w-5 shrink-0 text-[#6B5E5E] transition-transform duration-200 group-open:rotate-180';
 
 export const businessRulesCardBodyClass = cn(
-  'space-y-4 border-t border-[#DED7CD] bg-[#F2EEE8] px-4 py-4 sm:px-5'
+  'space-y-4 border-t border-[#DED7CD] bg-[#F2EEE8] px-4 py-4 sm:px-5',
+  'max-md:space-y-3 max-md:px-3 max-md:py-3'
 );
 
 export const businessRulesCardLabelClass =

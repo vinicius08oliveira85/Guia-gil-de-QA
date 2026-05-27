@@ -10,8 +10,10 @@ import {
 /** Escopo da aba Documentos — tokens em index.css (`.documents-view-scope`). */
 export const documentsViewScopeClass = 'documents-view-scope';
 
-export const documentsPageHeaderClass =
-  'mb-3 flex flex-col gap-4 font-sans sm:mb-4 sm:gap-5';
+export const documentsPageHeaderClass = cn(
+  'documents-page-header mb-3 flex flex-col gap-4 font-sans sm:mb-4 sm:gap-5',
+  'max-md:mb-2 max-md:gap-2'
+);
 
 export const documentsPageTitleClass =
   'font-sans text-2xl font-bold tracking-tight text-[#401C31] sm:text-[1.65rem]';
@@ -30,7 +32,8 @@ export const documentsPageMutedClass = 'font-sans text-sm text-[#6B5E5E]';
 export const documentsFiltersPanelClass = cn(
   'documents-neu-panel',
   neuSurfaceClass,
-  'relative flex flex-col overflow-visible rounded-[var(--leve-header-radius)] p-3 font-sans sm:p-4'
+  'relative flex flex-col overflow-visible rounded-[var(--leve-header-radius)] p-3 font-sans sm:p-4',
+  'max-md:p-2'
 );
 
 export const documentsEyebrowClass = cn(
@@ -42,7 +45,8 @@ export const documentsEyebrowClass = cn(
 export const documentsSectionShellClass = cn(
   'documents-neu-section',
   neuSurfaceClass,
-  'rounded-[var(--leve-header-radius)] p-3 font-sans sm:p-4'
+  'rounded-[var(--leve-header-radius)] p-3 font-sans sm:p-4',
+  'max-md:p-2'
 );
 
 export const documentsSectionHeaderDividerClass =
@@ -57,7 +61,8 @@ export const documentsSectionTitleClass =
 export const documentsSummaryStripClass = cn(
   'documents-neu-summary-track',
   neuSurfaceInsetClass,
-  'mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[var(--leve-header-radius)] px-3 py-2.5 sm:px-3.5'
+  'mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[var(--leve-header-radius)] px-3 py-2.5 sm:px-3.5',
+  'max-md:mb-2 max-md:gap-x-2 max-md:gap-y-1 max-md:px-2 max-md:py-1.5'
 );
 
 export const documentsSummaryStatsClass =
@@ -106,7 +111,7 @@ export const documentsProgressPercentClass =
 
 export const documentsPrimaryBtnClass = cn(
   'documents-neu-btn-primary inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-full px-4 py-2',
-  'font-sans text-sm font-bold sm:min-h-9',
+  'font-sans text-sm font-bold max-md:min-h-9 max-md:gap-1.5 max-md:px-3 max-md:py-1.5 max-md:text-xs sm:min-h-9',
   'border border-[color-mix(in_srgb,#FF5C1B_45%,transparent)] bg-[#FF5C1B] text-[#FFFFFF]',
   'transition-[filter,transform] duration-150 hover:brightness-105',
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,#FF5C1B_28%,transparent)]',
@@ -126,7 +131,8 @@ export const documentsSpecRemoveBtnClass = cn(
 
 export const documentsSearchInputClass = cn(
   'documents-neu-search',
-  'app-input h-11 w-full min-w-[200px] flex-1 rounded-full border-0 py-2 pl-10 pr-10 font-sans text-sm sm:h-10',
+  'app-input h-11 w-full min-w-[200px] flex-1 rounded-full border-0 py-2 pl-10 pr-10 font-sans text-sm',
+  'max-md:h-10 max-md:pl-9 max-md:pr-9 max-md:text-xs sm:h-10',
   'text-[#401C31] placeholder:text-[#6B5E5E]',
   'focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,#FF5C1B_22%,transparent)]'
 );
@@ -137,8 +143,10 @@ export const documentsSearchIconClass =
 export const documentsFilterPillClass = (active: boolean) =>
   cn('documents-neu-filter-pill', neuFilterPillClass(active));
 
-export const documentsFilterRowClass =
-  'flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3';
+export const documentsFilterRowClass = cn(
+  'flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3',
+  'max-md:gap-1.5'
+);
 
 export const documentsFilterPillsStripClass = cn(
   'documents-neu-filter-track',

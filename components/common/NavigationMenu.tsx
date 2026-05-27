@@ -108,7 +108,7 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
               <button
                 type="button"
                 role="menuitem"
-                className="app-nav-pill app-element-typography flex min-h-[44px] w-full items-center gap-2.5 rounded-[var(--radius)] px-2.5 text-left text-sm font-medium sm:gap-3 sm:px-3"
+                className="app-nav-pill app-element-typography flex min-h-[44px] w-full items-center gap-2.5 rounded-[var(--radius)] px-2.5 text-left text-sm font-medium max-md:min-h-9 max-md:gap-2 max-md:px-2 max-md:py-1.5 max-md:text-xs sm:gap-3 sm:px-3"
                 data-active={currentId === item.id ? 'true' : undefined}
                 aria-current={currentId === item.id ? 'page' : undefined}
                 onClick={() => {

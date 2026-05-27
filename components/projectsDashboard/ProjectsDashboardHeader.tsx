@@ -28,12 +28,12 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
 
   return (
     <section aria-labelledby={headingId} className="relative mb-1 sm:mb-2">
-      <div className="flex flex-col gap-3 sm:gap-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+      <div className="flex flex-col gap-3 sm:gap-4 max-md:gap-2">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 max-md:gap-2">
           <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-2.5">
             <h1
               id={headingId}
-              className="font-heading text-2xl font-bold tracking-tight text-[var(--workspace-panel-text)] sm:text-[1.75rem]"
+              className="font-heading text-2xl font-bold tracking-tight text-[var(--workspace-panel-text)] max-md:text-xl sm:text-[1.75rem]"
             >
               Meus Projetos
             </h1>
@@ -63,7 +63,7 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
               </span>
             )}
             {showSort && (
-              <label className="inline-flex min-h-[44px] items-center gap-2 sm:min-h-0">
+              <label className="inline-flex min-h-[44px] items-center gap-2 max-md:min-h-8 max-md:gap-1.5 sm:min-h-0">
                 <span className="text-xs font-medium text-[var(--workspace-panel-text-muted)]">Ordenar:</span>
                 <AppSelect
                   value={sortBy}

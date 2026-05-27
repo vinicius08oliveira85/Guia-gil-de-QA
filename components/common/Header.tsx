@@ -44,6 +44,7 @@ import {
   headerNeuToolbarPillPrimaryClass,
   headerNeuToolbarPillSecondaryClass,
 } from './headerNeuUi';
+import { appMenuItemClass, appMenuPanelClass } from './viewUi';
 
 interface HeaderProps {
   onProjectImported?: (project: Project) => void;
@@ -68,8 +69,10 @@ export const Header: React.FC<HeaderProps> = ({
   const [isSyncingSupabase, setIsSyncingSupabase] = useState(false);
   const [expandedButton, setExpandedButton] = useState<'jira' | 'salvar' | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [utilityMenuOpen, setUtilityMenuOpen] = useState(false);
   const mobileMenuPanelRef = useRef<HTMLDivElement>(null);
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
+  const utilityMenuRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
   const mobileMenuDomId = useId().replace(/:/g, '');
 
@@ -99,10 +102,27 @@ export const Header: React.FC<HeaderProps> = ({
     onLogoClick?.();
   }, [selectProject, onLogoClick]);
 
-  const utilityMenuRef = useRef<HTMLDetailsElement>(null);
   const closeUtilityMenu = useCallback(() => {
-    if (utilityMenuRef.current) utilityMenuRef.current.open = false;
+    setUtilityMenuOpen(false);
   }, []);
+
+  useEffect(() => {
+    if (!utilityMenuOpen) return;
+    const close = (event: MouseEvent | TouchEvent) => {
+      if (
+        utilityMenuRef.current &&
+        !utilityMenuRef.current.contains(event.target as Node)
+      ) {
+        setUtilityMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', close);
+    document.addEventListener('touchstart', close);
+    return () => {
+      document.removeEventListener('mousedown', close);
+      document.removeEventListener('touchstart', close);
+    };
+  }, [utilityMenuOpen]);
 
   useEffect(() => {
     if (!mobileMenuOpen) return;
@@ -496,7 +516,12 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           )}
 
-          <div className="relative flex min-w-0 max-w-[min(100%,52%)] shrink-0 items-center justify-end gap-1.5 overflow-hidden sm:max-w-[min(100%,58%)] md:gap-2">
+          <div
+            className={cn(
+              'app-header-actions relative flex min-w-0 max-w-[min(100%,52%)] shrink-0 items-center justify-end gap-1.5 overflow-hidden max-md:max-w-[min(100%,72%)] sm:max-w-[min(100%,58%)] md:gap-2',
+              utilityMenuOpen && 'max-md:overflow-visible'
+            )}
+          >
             {showDashboardActions && (
               <div className="hidden shrink-0 items-center gap-1.5 md:flex">
                 {onOpenCreateModal && (
@@ -556,38 +581,60 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
 
             <div className="relative z-[110] flex shrink-0 items-center gap-1 md:hidden">
-              <details ref={utilityMenuRef} className="dropdown dropdown-end relative z-[120]">
-                <summary className="win-icon-button list-none [&::-webkit-details-marker]:hidden [&::marker]:hidden">
-                  <span className="sr-only">Mais opções: configurações, glossário e tema</span>
-                  <MoreVertical className="h-5 w-5" aria-hidden />
-                </summary>
-                <ul
-                  className="dropdown-content menu menu-sm app-surface fixed right-3 z-[130] w-56 rounded-box p-2 text-[var(--leve-header-text)] shadow-xl transition-colors duration-300"
-                  style={{ top: 'calc(var(--app-header-sticky-offset, 4.5rem) + 0.25rem)' }}
+              <div
+                ref={utilityMenuRef}
+                className={cn(
+                  'app-header-mobile-utility-menu dropdown dropdown-end relative z-[120]',
+                  utilityMenuOpen && 'dropdown-open'
+                )}
+              >
+                <button
+                  type="button"
+                  className="win-icon-button app-header-mobile-utility-trigger !size-9 !min-h-9 !min-w-9 !rounded-full !p-0"
+                  aria-label="Mais opções: configurações, glossário e tema"
+                  aria-haspopup="menu"
+                  aria-expanded={utilityMenuOpen}
+                  onClick={() => setUtilityMenuOpen(open => !open)}
                 >
-                  {tabs.map(tab => {
-                    const Icon = tab.icon;
-                    return (
-                      <li key={tab.id}>
-                        <button
-                          type="button"
-                          className={cn(
-                            'btn btn-ghost btn-sm flex min-h-[44px] w-full items-center justify-start gap-2 rounded-[var(--radius)] border-0 text-left font-medium normal-case',
-                            'hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]'
-                          )}
-                          onClick={() => handleTabChange(tab.id)}
-                        >
-                          <Icon className="h-5 w-5 shrink-0 text-[oklch(var(--p))]" aria-hidden />
-                          {tab.title}
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </details>
+                  <MoreVertical className="h-5 w-5" aria-hidden />
+                </button>
+                {utilityMenuOpen ? (
+                  <ul
+                    role="menu"
+                    className={cn(
+                      appMenuPanelClass,
+                      'dropdown-content menu menu-sm fixed right-3 z-[200] mt-1 w-56 p-2'
+                    )}
+                    style={{ top: 'calc(var(--app-header-sticky-offset, 4.5rem) + 0.25rem)' }}
+                  >
+                    {tabs.map(tab => {
+                      const Icon = tab.icon;
+                      return (
+                        <li key={tab.id} role="none">
+                          <button
+                            type="button"
+                            role="menuitem"
+                            className={cn(
+                              appMenuItemClass,
+                              'max-md:min-h-9 max-md:py-1.5 max-md:text-sm'
+                            )}
+                            onClick={() => handleTabChange(tab.id)}
+                          >
+                            <Icon className="h-5 w-5 shrink-0" aria-hidden />
+                            {tab.title}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : null}
+              </div>
               <NavigationMenuHamburger
                 open={mobileMenuOpen}
-                onOpenChange={setMobileMenuOpen}
+                onOpenChange={open => {
+                  setMobileMenuOpen(open);
+                  if (open) setUtilityMenuOpen(false);
+                }}
                 triggerRef={mobileMenuButtonRef}
                 controlsId={mobileMenuDomId}
               />

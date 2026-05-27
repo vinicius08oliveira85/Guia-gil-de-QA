@@ -347,13 +347,13 @@ export interface GlassIndicatorCardsProps {
 }
 
 const indicatorGridClass: Record<4 | 5, string> = {
-  4: 'grid grid-cols-2 gap-1.5 sm:grid-cols-2 sm:gap-2 lg:grid-cols-4',
-  5: 'grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-2 lg:grid-cols-5',
+  4: 'dashboard-glass-indicator-grid grid grid-cols-2 gap-1.5 max-sm:grid-cols-1 max-md:gap-1 sm:gap-2 lg:grid-cols-4',
+  5: 'dashboard-glass-indicator-grid grid grid-cols-2 gap-1.5 max-sm:grid-cols-1 max-md:gap-1 sm:grid-cols-3 sm:gap-2 lg:grid-cols-5',
 };
 
 export function GlassIndicatorCards({ items, execution, columns = 5 }: GlassIndicatorCardsProps) {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 max-md:gap-2">
       <div className={indicatorGridClass[columns]}>
         {items.map((item, index) => (
           <SmallIndicatorCard key={`${item.label}-${index}`} item={item} />
