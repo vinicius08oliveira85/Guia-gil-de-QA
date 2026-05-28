@@ -693,6 +693,29 @@
     padding-bottom: 0.125rem;
   }
 
+  /** Toolbar da lista (exportar / ordenar / agrupar) — faixa baixa, labels inline. */
+  .tasks-panel-dark-surface .tasks-panel-toolbar-compact .tasks-panel-toolbar-select.neu-select-trigger {
+    min-height: 1.75rem;
+    height: 1.75rem;
+    min-width: 4.75rem;
+    padding-inline: 0.5rem;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+
+  .tasks-panel-dark-surface .tasks-panel-toolbar-compact .tasks-panel-toolbar-export-btn.app-neu-action-btn {
+    min-height: 1.75rem;
+    padding: 0.125rem 0.5rem;
+    font-size: 11px;
+    gap: 0.25rem;
+  }
+
+  .tasks-panel-dark-surface .tasks-panel-toolbar-compact .tasks-panel-toolbar-export-btn.app-neu-action-btn svg {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
   /** Modais escuros neumórficos (filtros, exportar, tarefa, regras). */
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal).leve-modal-neu-shell {
     --leve-header-text: #fdf6e3;
@@ -5374,8 +5397,14 @@
   }
 
   .tasks-panel-toolbar-compact .neu-select-trigger {
-    min-height: 2.25rem;
-    font-size: 0.75rem;
+    min-height: 1.75rem;
+    height: 1.75rem;
+    font-size: 11px;
+  }
+
+  .tasks-panel-toolbar-compact .tasks-panel-toolbar-export-btn {
+    min-height: 1.75rem;
+    font-size: 11px;
   }
 
 }

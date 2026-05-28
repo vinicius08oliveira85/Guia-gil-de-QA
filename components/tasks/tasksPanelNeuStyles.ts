@@ -362,29 +362,31 @@ export const tasksPanelFormSaveBtnClass = cn(tasksViewHeaderPrimaryBtnClass, 'mi
 export const tasksPanelToolbarShellClass = cn(
   'tasks-panel-toolbar-compact',
   appNeuActionTrackClass,
-  'flex flex-wrap items-end justify-end gap-3 rounded-[var(--leve-header-radius)] px-2.5 pt-3.5 pb-2.5 sm:px-3 sm:pt-4 sm:pb-3',
-  'max-md:flex-col max-md:items-stretch max-md:gap-1 max-md:p-2 max-md:pt-2 max-md:pb-2'
+  'flex flex-wrap items-center justify-end gap-1 px-1 py-0.5 sm:gap-1.5 sm:px-1.5 sm:py-1',
+  'max-md:flex-col max-md:items-stretch max-md:gap-1 max-md:p-1.5'
 );
 
 export const tasksPanelToolbarExportBtnClass = cn(
   appNeuActionBtnClass,
-  'max-md:w-full max-md:justify-center max-md:px-3 max-md:py-1.5 max-md:text-xs'
+  'tasks-panel-toolbar-export-btn min-h-7 gap-1 px-2 py-0.5 text-[11px] font-semibold',
+  '[&_svg]:h-3.5 [&_svg]:w-3.5',
+  'max-md:w-full max-md:min-h-8 max-md:justify-center max-md:px-3 max-md:py-1.5 max-md:text-xs'
 );
 
 export const tasksPanelToolbarFieldClass = cn(
-  'tasks-panel-toolbar-field flex min-w-0 flex-col gap-1.5',
-  'max-md:w-full max-md:flex-row max-md:items-center max-md:justify-between max-md:gap-1.5'
+  'tasks-panel-toolbar-field inline-flex min-w-0 items-center gap-1',
+  'max-md:w-full max-md:justify-between max-md:gap-1.5'
 );
 
 export const tasksPanelToolbarLabelClass = cn(
-  'font-sans text-[10px] font-semibold uppercase leading-snug tracking-wide text-[var(--workspace-panel-text-muted)]',
-  'max-md:mb-0 max-md:w-14 max-md:shrink-0 max-md:text-[9px]'
+  'shrink-0 font-sans text-[9px] font-semibold uppercase leading-none tracking-wide text-[var(--workspace-panel-text-muted)]',
+  'max-md:mb-0 max-md:w-12 max-md:shrink-0'
 );
 
 export const tasksPanelToolbarSelectClass = cn(
-  'tasks-panel-neu-select app-element-typography h-9 min-h-0 w-auto min-w-[6.5rem]',
-  'max-md:min-h-9 max-md:min-w-0 max-md:flex-1',
-  'border-0 text-[var(--workspace-panel-text)]'
+  'tasks-panel-neu-select tasks-panel-toolbar-select app-element-typography h-7 min-h-7 w-auto min-w-[4.75rem]',
+  'max-md:min-h-8 max-md:min-w-0 max-md:flex-1',
+  'border-0 px-2 text-[11px] text-[var(--workspace-panel-text)]'
 );
 
 /* ── Seções colapsáveis (Favoritos / Outras) ─────────────────── */
