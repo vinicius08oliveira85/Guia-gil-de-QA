@@ -9,7 +9,8 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   helperText?: string;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
-  variant?: 'default' | 'outlined' | 'filled';
+  /** `neu` — sem `input-bordered`; usa inset do shim (ex.: modal Jira em settings). */
+  variant?: 'default' | 'outlined' | 'filled' | 'neu';
 }
 
 /**
@@ -48,6 +49,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       default: 'input-bordered',
       outlined: 'input-bordered',
       filled: 'border-[var(--border)] bg-[var(--muted)]',
+      neu: '',
     };
 
     const baseInputClasses = cn(

@@ -12,6 +12,9 @@ interface BeforeInstallPromptEvent extends Event {
 let deferredPrompt: BeforeInstallPromptEvent | null = null;
 let pwaInitialized = false;
 
+/** Atraso antes de recarregar após SKIP_WAITING (ms). */
+const RELOAD_DELAY_MS = 100;
+
 /**
  * Verifica se o navegador suporta service workers
  */
@@ -211,7 +214,7 @@ export const forceUpdate = (): void => {
         // Recarrega a página após um pequeno delay
         setTimeout(() => {
           window.location.reload();
-        }, 100);
+        }, RELOAD_DELAY_MS);
       }
     })
     .catch(error => {

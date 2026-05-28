@@ -45,17 +45,24 @@ import { StatusBadge } from '../settings/StatusBadge';
 import { cn } from '../../utils/cn';
 
 import {
+  jiraIntegrationDisconnectBtnClass,
   jiraIntegrationImportBtnClass,
 
   jiraIntegrationImportProgressPanelClass,
 
   jiraIntegrationInsetPanelClass,
 
+  jiraIntegrationInputClass,
+
   jiraIntegrationLabelClass,
+
+  jiraIntegrationLinkPillClass,
 
   jiraIntegrationListClass,
 
   jiraIntegrationModalFooterClass,
+
+  jiraIntegrationModalPanelClass,
 
   jiraIntegrationMutedXsClass,
 
@@ -67,9 +74,19 @@ import {
 
   jiraIntegrationProgressTrackClass,
 
+  jiraIntegrationScopeClass,
+
+  jiraIntegrationSaveBtnClass,
+
   jiraIntegrationSelectClass,
 
   jiraIntegrationShellClass,
+
+  jiraIntegrationSpinnerShellMdClass,
+
+  jiraIntegrationSpinnerShellSmClass,
+
+  jiraIntegrationStatusBadgeClass,
 
   jiraIntegrationStrongClass,
 
@@ -79,7 +96,7 @@ import {
 
 } from './jiraIntegrationUi';
 
-import { leveViewOutlineBtnClass, leveViewPrimaryBtnClass } from '../common/projectCardUi';
+import { leveViewOutlineBtnClass } from '../common/projectCardUi';
 
 
 
@@ -89,7 +106,15 @@ interface JiraIntegrationProps {
 
 }
 
-
+function JiraNeuSpinner({ size = 'md' }: { size?: 'sm' | 'md' }) {
+  const shellClass =
+    size === 'sm' ? jiraIntegrationSpinnerShellSmClass : jiraIntegrationSpinnerShellMdClass;
+  return (
+    <div className={shellClass} aria-hidden>
+      <Spinner small={size === 'sm'} className="text-[var(--leve-header-accent)]" />
+    </div>
+  );
+}
 
 export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImported }) => {
 
@@ -471,6 +496,8 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
 
   return (
 
+    <div className={jiraIntegrationScopeClass}>
+
     <section className={jiraIntegrationShellClass} aria-label="Integração com Jira">
 
       <div className="mb-4 flex items-center justify-between">
@@ -489,11 +516,19 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
 
         {isConnected ? (
 
-          <StatusBadge variant="connected">Conectado</StatusBadge>
+          <StatusBadge variant="connected" className={jiraIntegrationStatusBadgeClass('connected')}>
+
+            Conectado
+
+          </StatusBadge>
 
         ) : (
 
-          <StatusBadge variant="disconnected">Desconectado</StatusBadge>
+          <StatusBadge variant="disconnected" className={jiraIntegrationStatusBadgeClass('disconnected')}>
+
+            Desconectado
+
+          </StatusBadge>
 
         )}
 
@@ -589,13 +624,7 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
 
                 onClick={handleDisconnect}
 
-                className={cn(
-
-                  jiraIntegrationOutlineBtnClass,
-
-                  'text-[#e54b4f] hover:border-[color-mix(in_srgb,#e54b4f_35%,transparent)]'
-
-                )}
+                className={jiraIntegrationDisconnectBtnClass}
 
               >
 
@@ -615,7 +644,7 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
 
               <div className="flex flex-col items-center gap-3">
 
-                <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[var(--leve-header-accent)]" />
+                <JiraNeuSpinner size="md" />
 
                 <p className="text-sm font-medium text-[var(--leve-header-text-muted)]">
 
@@ -647,7 +676,7 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
 
                   onClick={() => loadJiraProjects(config, false)}
 
-                  className="text-xs text-[var(--leve-header-accent)] hover:underline"
+                  className={jiraIntegrationLinkPillClass}
 
                   title="Atualizar lista de projetos"
 
@@ -701,7 +730,7 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
 
                   <>
 
-                    <Spinner small />
+                    <JiraNeuSpinner size="sm" />
 
                     {importProgress ? (
 
@@ -747,7 +776,7 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
 
                     </span>
 
-                    <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-[var(--leve-header-accent)]" />
+                    <JiraNeuSpinner size="sm" />
 
                   </div>
 
@@ -823,6 +852,8 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
 
         maxHeight="90vh"
 
+        panelClassName={jiraIntegrationModalPanelClass}
+
       >
 
         <div className="space-y-5 pb-2">
@@ -833,7 +864,11 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
 
             type="text"
 
+            variant="neu"
+
             value={config.url}
+
+            className={jiraIntegrationInputClass}
 
             onChange={e => setConfig({ ...config, url: e.target.value })}
 
@@ -861,7 +896,11 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
 
             type="email"
 
+            variant="neu"
+
             value={config.email}
+
+            className={jiraIntegrationInputClass}
 
             onChange={e => setConfig({ ...config, email: e.target.value })}
 
@@ -879,7 +918,11 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
 
             type="password"
 
+            variant="neu"
+
             value={config.apiToken}
+
+            className={jiraIntegrationInputClass}
 
             onChange={e => setConfig({ ...config, apiToken: e.target.value })}
 
@@ -891,7 +934,7 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
               href="https://id.atlassian.com/manage-profile/security/api-tokens"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[var(--leve-header-accent)] underline hover:opacity-90"
+              className={jiraIntegrationLinkPillClass}
             >
               Como gerar um API Token?
             </a>
@@ -913,7 +956,7 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
 
               disabled={isTesting}
 
-              className={cn(leveViewPrimaryBtnClass, 'disabled:cursor-not-allowed disabled:opacity-50')}
+              className={jiraIntegrationSaveBtnClass}
 
             >
 
@@ -921,7 +964,7 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
 
                 <>
 
-                  <Spinner small />
+                  <JiraNeuSpinner size="sm" />
 
                   Testando...
 
@@ -942,6 +985,8 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
       </Modal>
 
     </section>
+
+    </div>
 
   );
 

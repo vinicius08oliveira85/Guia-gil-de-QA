@@ -1,27 +1,45 @@
 import { cn } from '../../utils/cn';
+import { settingsViewScopeClass } from '../common/appPageNeuUi';
+import { neuSelectTriggerClass } from '../common/viewUi';
 import {
   leveSettingsCardClass,
-  leveSettingsInsetPanelClass,
   leveSettingsInputClass,
   leveSettingsListClass,
   leveSettingsMutedTextClass,
   leveSettingsMutedTextXsClass,
   leveSettingsOutlineBtnClass,
   leveSettingsPrimaryBtnFullClass,
-  leveSettingsSelectClass,
   leveSettingsStrongTextClass,
   leveViewPrimaryBtnClass,
 } from '../common/projectCardUi';
+import { settingsNeuModalPanelClass } from '../settings/settingsNeuUi';
 
-/** Shell principal — `leve-neu-surface` com relevo (substitui Card + bg-surface plano). */
+/** Ativa o shim neumórfico de settings (`index.css` → `.settings-view-scope`). */
+export const jiraIntegrationScopeClass = settingsViewScopeClass;
+
+/** Shell principal — card elevado (`--leve-neu-raised`). */
 export const jiraIntegrationShellClass = cn(leveSettingsCardClass, 'space-y-4');
 
-/** Bloco informativo rebaixado (estado desconectado). */
-export const jiraIntegrationInsetPanelClass = leveSettingsInsetPanelClass;
+/** Bloco informativo rebaixado — trilho `--leve-neu-inset-deep`. */
+export const jiraIntegrationInsetPanelClass = cn(
+  'jira-integration-inset-panel leve-settings-inset-panel leve-neu-surface-inset p-4 sm:p-5'
+);
 
-/** Inputs e select — trilho inset via `.app-input` / NeuSelect (index.css). */
-export const jiraIntegrationInputClass = leveSettingsInputClass;
-export const jiraIntegrationSelectClass = leveSettingsSelectClass;
+/** Modal de configuração — `leve-modal-neu-shell` + tema escuro de settings. */
+export const jiraIntegrationModalPanelClass = settingsNeuModalPanelClass;
+
+/** Inputs do modal — variant `neu` + inset (sem `input-bordered` / bg claro). */
+export const jiraIntegrationInputClass = cn(
+  leveSettingsInputClass,
+  'jira-integration-modal-input'
+);
+
+/** AppSelect / NeuSelect — gatilho inset (não usar `.app-select` / `select-bordered`). */
+export const jiraIntegrationSelectClass = cn(
+  'jira-integration-select',
+  neuSelectTriggerClass,
+  'h-10 w-full'
+);
 
 export const jiraIntegrationTitleClass =
   'mb-2 font-sans text-xl font-bold text-[var(--leve-header-text)]';
@@ -41,26 +59,70 @@ export const jiraIntegrationPrimaryBtnClass = leveSettingsPrimaryBtnFullClass;
 
 export const jiraIntegrationOutlineBtnClass = cn(leveSettingsOutlineBtnClass, 'text-sm');
 
+/** Desconectar — variante danger neumórfica (tokens `--er`, sem hex hardcoded). */
+export const jiraIntegrationDisconnectBtnClass = cn(
+  jiraIntegrationOutlineBtnClass,
+  'jira-integration-disconnect-btn'
+);
+
+/** Link/ação secundária — pill neumórfica com raised no hover. */
+export const jiraIntegrationLinkPillClass = cn(
+  'jira-integration-link-pill',
+  'inline-flex items-center rounded-full px-2.5 py-1',
+  'font-sans text-xs font-semibold text-[var(--leve-header-accent)]',
+  'transition-[box-shadow,color,transform] duration-150',
+  'focus-visible:outline-none focus-visible:ring-2',
+  'focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_28%,transparent)]'
+);
+
+/** Status no cabeçalho — pill elevada (não texto plano sobre fundo). */
+export const jiraIntegrationStatusBadgeClass = (variant: 'connected' | 'disconnected') =>
+  cn('jira-integration-status-badge', `jira-integration-status-badge--${variant}`);
+
 export const jiraIntegrationImportBtnClass = cn(
   leveViewPrimaryBtnClass,
-  'w-full disabled:cursor-not-allowed disabled:opacity-50'
+  'jira-integration-import-btn w-full disabled:cursor-not-allowed'
+);
+
+/** Botão salvar/testar — estado disabled neumórfico via `.jira-integration-save-btn:disabled`. */
+export const jiraIntegrationSaveBtnClass = cn(
+  leveViewPrimaryBtnClass,
+  'jira-integration-save-btn disabled:cursor-not-allowed'
+);
+
+/** Container circular inset para spinners de carregamento. */
+export const jiraIntegrationSpinnerShellMdClass = cn(
+  'jira-integration-spinner-shell jira-integration-spinner-shell--md',
+  'flex items-center justify-center rounded-full'
+);
+
+export const jiraIntegrationSpinnerShellSmClass = cn(
+  'jira-integration-spinner-shell jira-integration-spinner-shell--sm',
+  'flex items-center justify-center rounded-full'
 );
 
 /**
  * Painel de progresso da importação — card elevado + barra em trilho neumórfico rebaixado.
  */
 export const jiraIntegrationImportProgressPanelClass = cn(
+  'jira-integration-import-progress-panel',
   leveSettingsCardClass,
-  'mt-2 border-[color-mix(in_srgb,var(--leve-header-accent)_25%,transparent)]'
+  'mt-2 p-4 sm:p-5',
+  'border-[color-mix(in_srgb,var(--leve-header-accent)_25%,transparent)]'
 );
 
-export const jiraIntegrationProgressTrackClass = 'workspace-stat-neu-track mb-2 h-2.5 w-full';
+/** Trilho — `var(--leve-neu-inset-deep)` via CSS (`.settings-view-scope`). */
+export const jiraIntegrationProgressTrackClass = cn(
+  'jira-integration-progress-track mb-2 h-3 w-full overflow-hidden rounded-full'
+);
 
+/** Preenchimento — gradiente + brilho superior + sombra de volume (CSS). */
 export const jiraIntegrationProgressFillClass = cn(
-  'workspace-stat-neu-fill h-2.5 rounded-full transition-all duration-300',
-  'bg-[var(--leve-header-accent)]'
+  'jira-integration-progress-fill h-full min-h-3 rounded-full transition-all duration-300'
 );
 
+/** Rodapé do modal — separador com profundidade (inset superior). */
 export const jiraIntegrationModalFooterClass = cn(
-  'mt-6 flex justify-end gap-2 border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pt-4'
+  'jira-integration-modal-footer',
+  'mt-6 flex justify-end gap-2 pt-4'
 );

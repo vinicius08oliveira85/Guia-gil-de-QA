@@ -33,8 +33,50 @@ export const MAX_PERSISTED_TEST_ANALYSES = MAX_AI_TESTS;
 const TEXT_SNIPPET_LENGTH = 500;
 /** Limite total de caracteres do prompt de análise geral (contexto expandido). */
 const MAX_PROMPT_LENGTH = 40_000;
-/** Espaço reservado para instruções fixas + margem ao montar o prompt com JSON embutido. */
-const PROMPT_TEMPLATE_RESERVE = 2400;
+/** Mínimo de caracteres reservados ao bloco JSON de contexto no prompt. */
+const MIN_CONTEXT_JSON_LENGTH = 2000;
+
+/** Pontuação base de risco por tarefa. */
+const RISK_SCORE_BASE = 20;
+const RISK_SCORE_STORY_POINTS_CAP = 15;
+const RISK_SCORE_STORY_POINTS_MULTIPLIER = 2;
+const RISK_SCORE_LARGE_TASK_STORY_POINTS_THRESHOLD = 5;
+const RISK_SCORE_COMPLEX_TASK_STORY_POINTS_THRESHOLD = 8;
+const RISK_SCORE_LARGE_TASK_NO_TESTS = 15;
+const RISK_SCORE_COMPLEX_TASK_NO_BDD = 10;
+const RISK_SCORE_NO_DESCRIPTION = 20;
+const RISK_SCORE_NO_TESTS = 25;
+const RISK_SCORE_FAILED_TEST_MULTIPLIER = 5;
+const RISK_SCORE_FAILED_TEST_CAP = 30;
+const RISK_SCORE_PENDING_TESTS = 10;
+const RISK_SCORE_NO_BDD = 8;
+const RISK_SCORE_NO_STRATEGY = 8;
+const RISK_SCORE_DEPENDENCIES = 5;
+const RISK_SCORE_MAX = 100;
+
+/** Multiplicador de segurança antes de normalizar texto longo (evita regex em strings massivas). */
+const TRUNCATION_MULTIPLIER = 5;
+
+const CONTEXT_TRUNCATION_NOTICE =
+  '[AVISO: contexto JSON reduzido por limite de prompt — tarefas/testes menos prioritários foram omitidos; métricas globais (metrics, qualitySignals) foram preservadas.]';
+
+const GENERAL_ANALYSIS_PROMPT_INSTRUCTIONS = `INSTRUÇÕES:
+1. Gere um resumo executivo e liste problemas/riscos globais com base em qualitySignals e metrics.
+2. Calcule o risco geral (overallRisk, riskScore e riskFactors) considerando métricas de tarefas e testes.
+3. Para cada entrada em priorityTasks:
+   - Produza um item em taskAnalyses seguindo o schema (resumo, problemas, nível de risco, score, itens faltantes, sugestões BDD, melhorias de QA).
+4. Para cada entrada em priorityTests:
+   - Produza um item em testAnalyses; no campo **coverage** use Markdown (listas, **negrito**), texto escaneável; evite parágrafos densos.
+5. Gere missingItems, bddSuggestions e qaImprovements alinhados ao contexto.
+6. Respeite o schema informado (JSON puro, sem texto adicional).
+
+OBSERVAÇÕES IMPORTANTES:
+- Foque em recomendações acionáveis e priorizadas.
+- Utilize o idioma português.
+- Não faça referência a tarefas/testes que não estejam presentes no contexto.
+- Ao sugerir melhorias em casos de teste (quando aplicável), alinhe-se a esta padronização de roteiro:
+${TEST_CASE_VISUAL_FORMAT_INSTRUCTIONS}
+- Em **testAnalyses[].coverage**, priorize Markdown estruturado (listas e **negrito**); não escreva um único parágrafo longo.`;
 
 /** Snapshot usado para hash de cache: inclui todos os campos que influenciam o resultado da análise. */
 interface TaskSnapshot {
@@ -102,7 +144,10 @@ const generalAnalysisCache = new Map<
 const normalizeText = (value?: string, maxLength: number = TEXT_SNIPPET_LENGTH): string => {
   if (!value) return '';
   // Evita processar strings massivas (ex: base64) com regex para prevenir STATUS_STACK_OVERFLOW
-  const truncatedInput = value.length > maxLength * 5 ? value.slice(0, maxLength * 5) : value;
+  const truncatedInput =
+    value.length > maxLength * TRUNCATION_MULTIPLIER
+      ? value.slice(0, maxLength * TRUNCATION_MULTIPLIER)
+      : value;
   const sanitized = truncatedInput.replace(/\s+/g, ' ').trim();
   if (sanitized.length <= maxLength) return sanitized;
   return `${sanitized.slice(0, maxLength)}…`;
@@ -129,50 +174,56 @@ const calculateTaskSnapshot = (task: JiraTask): TaskSnapshot => {
   const displaySprint = resolveTaskDisplaySprint(task);
 
   const riskSignals: string[] = [];
-  let riskScore = 20;
+  let riskScore = RISK_SCORE_BASE;
 
   if (storyPoints > 0) {
-    riskScore += Math.min(15, storyPoints * 2);
+    riskScore += Math.min(
+      RISK_SCORE_STORY_POINTS_CAP,
+      storyPoints * RISK_SCORE_STORY_POINTS_MULTIPLIER
+    );
   }
-  if (storyPoints > 5 && totalTests === 0) {
+  if (storyPoints > RISK_SCORE_LARGE_TASK_STORY_POINTS_THRESHOLD && totalTests === 0) {
     riskSignals.push('Tarefa grande sem testes');
-    riskScore += 15;
+    riskScore += RISK_SCORE_LARGE_TASK_NO_TESTS;
   }
-  if (storyPoints > 8 && !hasBDD) {
+  if (storyPoints > RISK_SCORE_COMPLEX_TASK_STORY_POINTS_THRESHOLD && !hasBDD) {
     riskSignals.push('Tarefa complexa sem BDD');
-    riskScore += 10;
+    riskScore += RISK_SCORE_COMPLEX_TASK_NO_BDD;
   }
 
   if (!hasDescription) {
-    riskScore += 20;
+    riskScore += RISK_SCORE_NO_DESCRIPTION;
     riskSignals.push('Sem descrição detalhada');
   }
   if (totalTests === 0) {
-    riskScore += 25;
+    riskScore += RISK_SCORE_NO_TESTS;
     riskSignals.push('Sem casos de teste');
   }
   if (testsFailed > 0) {
-    riskScore += Math.min(30, testsFailed * 5);
+    riskScore += Math.min(
+      RISK_SCORE_FAILED_TEST_CAP,
+      testsFailed * RISK_SCORE_FAILED_TEST_MULTIPLIER
+    );
     riskSignals.push(`${testsFailed} teste(s) falhando`);
   }
   if (testsNotRun > Math.max(0, totalTests - testsPassed)) {
-    riskScore += 10;
+    riskScore += RISK_SCORE_PENDING_TESTS;
     riskSignals.push('Testes pendentes de execução');
   }
   if (!hasBDD) {
-    riskScore += 8;
+    riskScore += RISK_SCORE_NO_BDD;
     riskSignals.push('Sem cenários BDD');
   }
   if (!hasStrategy) {
-    riskScore += 8;
+    riskScore += RISK_SCORE_NO_STRATEGY;
     riskSignals.push('Sem estratégia de testes');
   }
   if ((task.dependencies?.length || 0) > 0) {
-    riskScore += 5;
+    riskScore += RISK_SCORE_DEPENDENCIES;
     riskSignals.push('Possui dependências abertas');
   }
 
-  riskScore = Math.min(100, riskScore);
+  riskScore = Math.min(RISK_SCORE_MAX, riskScore);
 
   return {
     id: task.id,
@@ -731,17 +782,115 @@ export function getTaskIaAnalysisSnapshotHash(task: JiraTask): string {
 
 /** Nível de risco para exibição (análise persistida ou heurística do snapshot atual). */
 export function getTaskQaRiskLevel(task: JiraTask): TaskIAAnalysis['riskLevel'] {
-  return task.iaAnalysis?.riskLevel ?? calculateTaskSnapshot(task).riskLevel;
+  return task.iaAnalysis?.riskLevel ?? getTaskQaRiskSnapshot(task).riskLevel;
+}
+
+/** Score, nível e sinais heurísticos de risco (testável; ignora análise IA persistida). */
+export function getTaskQaRiskSnapshot(task: JiraTask): Pick<
+  TaskSnapshot,
+  'riskScore' | 'riskLevel' | 'riskSignals'
+> {
+  const { riskScore, riskLevel, riskSignals } = calculateTaskSnapshot(task);
+  return { riskScore, riskLevel, riskSignals };
 }
 
 /** Sinais heurísticos de risco (tooltip no card; ignora análise IA persistida). */
 export function getTaskQaRiskSignals(task: JiraTask): string[] {
-  return calculateTaskSnapshot(task).riskSignals;
+  return getTaskQaRiskSnapshot(task).riskSignals;
 }
 
 /** Hash do snapshot de teste usado em `TestIAAnalysis.snapshotHash`. */
 export function getTestIaAnalysisSnapshotHash(task: JiraTask, testCase: TestCase): string {
   return computeTestSnapshotHash(calculateTestSnapshot(task, testCase));
+}
+
+interface GeneralAnalysisSnapshotPayload {
+  project: {
+    id: string;
+    name: string;
+    description: string;
+    tags: string[];
+  };
+  metrics: ProjectMetrics;
+  qualitySignals: string[];
+  priorityTasks: TaskSnapshot[];
+  priorityTests: TestSnapshot[];
+  _truncationNotice?: string;
+}
+
+/**
+ * Reduz o JSON de contexto preservando métricas globais e removendo tarefas/testes menos prioritários.
+ * INSTRUÇÕES e schema (via API) permanecem intactos — apenas o bloco JSON é ajustado.
+ */
+function shrinkSnapshotJsonForPrompt(compactJson: string, maxLen: number): string {
+  if (compactJson.length <= maxLen) return compactJson;
+
+  try {
+    const payload = JSON.parse(compactJson) as GeneralAnalysisSnapshotPayload;
+    let tasks = [...payload.priorityTasks];
+    let tests = [...payload.priorityTests];
+
+    const buildCandidate = (): string =>
+      JSON.stringify({
+        project: payload.project,
+        metrics: payload.metrics,
+        qualitySignals: payload.qualitySignals,
+        priorityTasks: tasks,
+        priorityTests: tests,
+        _truncationNotice: CONTEXT_TRUNCATION_NOTICE,
+      });
+
+    let candidate = buildCandidate();
+    let guard = 0;
+
+    while (candidate.length > maxLen && guard++ < 500) {
+      if (tests.length > 0) {
+        const removeCount = Math.max(1, Math.ceil(tests.length * 0.12));
+        tests = tests.slice(0, tests.length - removeCount);
+      } else if (tasks.length > 1) {
+        const removeCount = Math.max(1, Math.ceil((tasks.length - 1) * 0.12));
+        tasks = tasks.slice(0, tasks.length - removeCount);
+      } else {
+        break;
+      }
+      candidate = buildCandidate();
+    }
+
+    if (candidate.length <= maxLen) return candidate;
+
+    const minimal = JSON.stringify({
+      project: payload.project,
+      metrics: payload.metrics,
+      qualitySignals: payload.qualitySignals,
+      priorityTasks: tasks.slice(0, 1),
+      priorityTests: [],
+      _truncationNotice: CONTEXT_TRUNCATION_NOTICE,
+    });
+    if (minimal.length <= maxLen) return minimal;
+
+    const noticeSuffix = `\n${CONTEXT_TRUNCATION_NOTICE}`;
+    return `${compactJson.slice(0, Math.max(0, maxLen - noticeSuffix.length))}${noticeSuffix}`;
+  } catch {
+    const noticeSuffix = `\n${CONTEXT_TRUNCATION_NOTICE}`;
+    return `${compactJson.slice(0, Math.max(0, maxLen - noticeSuffix.length))}${noticeSuffix}`;
+  }
+}
+
+function buildGeneralAnalysisPrompt(documentContext: string, snapshotJsonCompact: string): string {
+  const headerPrefix = `${documentContext}
+Você é um especialista sênior em QA e precisa produzir uma análise estratégica e acionável.
+Use o contexto JSON fornecido (tarefas e testes mais críticos já foram filtrados para você).
+
+CONTEXTO E MÉTRICAS (JSON compacto):
+`;
+
+  const headerSuffix = '\n\n';
+  const fixedLen =
+    headerPrefix.length + headerSuffix.length + GENERAL_ANALYSIS_PROMPT_INSTRUCTIONS.length;
+  const maxJsonLen = Math.max(MIN_CONTEXT_JSON_LENGTH, MAX_PROMPT_LENGTH - fixedLen);
+  const contextJsonBlock = shrinkSnapshotJsonForPrompt(snapshotJsonCompact, maxJsonLen);
+
+  return `${headerPrefix}${contextJsonBlock}${headerSuffix}${GENERAL_ANALYSIS_PROMPT_INSTRUCTIONS}`;
 }
 
 /**
@@ -763,40 +912,7 @@ export async function generateGeneralIAAnalysis(project: Project): Promise<Gener
     }
 
     const documentContext = await getFormattedContext(project);
-    const maxJsonLen = Math.max(
-      2000,
-      MAX_PROMPT_LENGTH - documentContext.length - PROMPT_TEMPLATE_RESERVE
-    );
-    const contextJsonBlock =
-      snapshotJsonCompact.length > maxJsonLen
-        ? `${snapshotJsonCompact.slice(0, maxJsonLen - 48)}\n[...JSON truncado por limite de prompt...]`
-        : snapshotJsonCompact;
-
-    const finalPrompt = `${documentContext}
-Você é um especialista sênior em QA e precisa produzir uma análise estratégica e acionável.
-Use o contexto JSON fornecido (tarefas e testes mais críticos já foram filtrados para você).
-
-CONTEXTO E MÉTRICAS (JSON compacto):
-${contextJsonBlock}
-
-INSTRUÇÕES:
-1. Gere um resumo executivo e liste problemas/riscos globais com base em qualitySignals e metrics.
-2. Calcule o risco geral (overallRisk, riskScore e riskFactors) considerando métricas de tarefas e testes.
-3. Para cada entrada em priorityTasks:
-   - Produza um item em taskAnalyses seguindo o schema (resumo, problemas, nível de risco, score, itens faltantes, sugestões BDD, melhorias de QA).
-4. Para cada entrada em priorityTests:
-   - Produza um item em testAnalyses; no campo **coverage** use Markdown (listas, **negrito**), texto escaneável; evite parágrafos densos.
-5. Gere missingItems, bddSuggestions e qaImprovements alinhados ao contexto.
-6. Respeite o schema informado (JSON puro, sem texto adicional).
-
-OBSERVAÇÕES IMPORTANTES:
-- Foque em recomendações acionáveis e priorizadas.
-- Utilize o idioma português.
-- Não faça referência a tarefas/testes que não estejam presentes no contexto.
-- Ao sugerir melhorias em casos de teste (quando aplicável), alinhe-se a esta padronização de roteiro:
-${TEST_CASE_VISUAL_FORMAT_INSTRUCTIONS}
-- Em **testAnalyses[].coverage**, priorize Markdown estruturado (listas e **negrito**); não escreva um único parágrafo longo.
-    `.slice(0, MAX_PROMPT_LENGTH);
+    const finalPrompt = buildGeneralAnalysisPrompt(documentContext, snapshotJsonCompact);
 
     const response = await callGeminiWithRetry({
       model: GEMINI_DEFAULT_MODEL,

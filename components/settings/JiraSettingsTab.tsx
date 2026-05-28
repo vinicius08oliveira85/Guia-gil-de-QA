@@ -33,7 +33,6 @@ import {
   leveSettingsSectionTitleClass,
   leveSettingsSelectClass,
   leveSettingsStrongTextClass,
-  leveViewPrimaryBtnClass,
 } from '../common/projectCardUi';
 import { Input } from '../common/Input';
 import { logger } from '../../utils/logger';
@@ -41,6 +40,10 @@ import { cn } from '../../utils/cn';
 import toast from 'react-hot-toast';
 import { AppSelect } from '../common/AppSelect';
 import { settingsNeuModalPanelClass } from './settingsNeuUi';
+import {
+  jiraIntegrationImportBtnClass,
+  jiraIntegrationSaveBtnClass,
+} from '../jira/jiraIntegrationUi';
 
 interface JiraSettingsTabProps {
   onProjectImported?: (project: Project) => void;
@@ -410,7 +413,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
                   <button
                     onClick={handleImport}
                     disabled={!selectedProjectKey || isImporting}
-                    className={cn(leveViewPrimaryBtnClass, 'w-full disabled:cursor-not-allowed disabled:opacity-50')}
+                    className={jiraIntegrationImportBtnClass}
                   >
                     {isImporting ? (
                       <>
@@ -574,7 +577,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
               type="button"
               onClick={handleSaveConfig}
               disabled={isTesting || isSavingOnly}
-              className={cn(leveViewPrimaryBtnClass, 'disabled:cursor-not-allowed disabled:opacity-50')}
+              className={jiraIntegrationSaveBtnClass}
             >
               {isSavingOnly ? (
                 <>

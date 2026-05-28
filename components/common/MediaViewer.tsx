@@ -51,7 +51,7 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in"
+      className="neu-allow-backdrop-blur fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in"
       onClick={onClose}
     >
       <button
