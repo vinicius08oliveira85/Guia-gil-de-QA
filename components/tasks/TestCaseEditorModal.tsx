@@ -3,7 +3,7 @@ import type { TestCase, TestCaseExecutionKind } from '../../types';
 import { Modal } from '../common/Modal';
 import { SafeMarkdown } from '../common/SafeMarkdown';
 import { cn } from '../../utils/cn';
-import { appSelectClass, outlineActionBtn, primaryActionBtn, searchInputClass } from '../common/viewUi';
+import { outlineActionBtn, primaryActionBtn, searchInputClass } from '../common/viewUi';
 import { AppSelect } from '../common/AppSelect';
 import {
   taskCardFieldLabelClass,
@@ -11,13 +11,14 @@ import {
   taskFormInsetPanelClass,
   taskFormPreviewBoxClass,
   taskPanelBorderClass,
-  taskTextareaClass,
   taskTextStrongClass,
 } from './taskActionLayout';
 import {
   taskDetailsModalBodyClass,
+  taskDetailsModalNeuSelectTriggerClass,
   taskDetailsModalShellClass,
   taskDetailsModalTitleClass,
+  taskDetailsModalTextareaClass,
 } from './taskDetailsNeuUi';
 
 interface TestCaseEditorModalProps {
@@ -115,7 +116,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
           <textarea
             value={action}
             onChange={e => setAction(e.target.value)}
-            className={cn(taskTextareaClass, 'min-h-[120px]')}
+            className={cn(taskDetailsModalTextareaClass, 'min-h-[120px]')}
             placeholder="Descreva o que deve ser executado (roteiro)."
           />
           {previewMarkdown && (
@@ -131,7 +132,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
           <textarea
             value={parameters}
             onChange={e => setParameters(e.target.value)}
-            className={cn(taskTextareaClass, 'min-h-[88px]')}
+            className={cn(taskDetailsModalTextareaClass, 'min-h-[88px]')}
             placeholder="Dados de entrada, massa, ambientes, contas…"
           />
           {previewMarkdown && (
@@ -147,7 +148,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
           <textarea
             value={expectedResult}
             onChange={e => setExpectedResult(e.target.value)}
-            className={cn(taskTextareaClass, 'min-h-[88px]')}
+            className={cn(taskDetailsModalTextareaClass, 'min-h-[88px]')}
           />
           {previewMarkdown && (
             <div className={taskFormPreviewBoxClass}>
@@ -162,7 +163,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
           <textarea
             value={observedResult}
             onChange={e => setObservedResult(e.target.value)}
-            className={cn(taskTextareaClass, 'min-h-[88px]')}
+            className={cn(taskDetailsModalTextareaClass, 'min-h-[88px]')}
             placeholder="Preencha após a execução."
           />
           {previewMarkdown && (
@@ -184,7 +185,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
               onChange={raw =>
                 setExecutionKind((raw || '') as TestCaseExecutionKind | '')
               }
-              className={cn(appSelectClass, 'select-bordered w-full')}
+              className={taskDetailsModalNeuSelectTriggerClass}
             >
               <option value="manual">Manual (padrão)</option>
               <option value="">Inferir pelo texto</option>
@@ -221,7 +222,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
           <AppSelect
             value={status}
             onChange={v => setStatus(v as TestCase['status'])}
-            className={cn(appSelectClass, 'select-bordered w-full')}
+            className={taskDetailsModalNeuSelectTriggerClass}
           >
             <option value="Not Run">Não Executado</option>
             <option value="Passed">Aprovado</option>

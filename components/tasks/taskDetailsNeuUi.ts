@@ -262,6 +262,12 @@ export const taskDetailsModalSelectClass = cn(
 
 );
 
+/** Gatilho do AppSelect/NeuSelect no modal escuro — não usar `.app-select` nem `select-bordered`. */
+export const taskDetailsModalNeuSelectTriggerClass = cn(
+  'task-details-neu-neu-select-trigger neu-select-trigger w-full min-w-0',
+  'rounded-[var(--leve-header-radius)] text-sm font-medium text-[#FDF6E3]'
+);
+
 
 
 export const taskDetailsModalTextareaClass = cn(

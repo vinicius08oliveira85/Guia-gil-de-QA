@@ -344,6 +344,106 @@
   color: rgba(245, 241, 230, 0.5) !important;
 }
 
+/* AppSelect / NeuSelect — gatilho inset (evitar .app-select e select-bordered do DaisyUI) */
+:is(.task-details-neu-modal, .test-report-neu-modal) :is(.neu-select-trigger, .task-details-neu-neu-select-trigger),
+:is(.task-details-neu-modal, .test-report-neu-modal) button.neu-select-trigger {
+  border: 1px solid color-mix(in srgb, #3a342f 48%, transparent) !important;
+  border-radius: var(--leve-header-radius) !important;
+  background-color: color-mix(in srgb, #3a342f 28%, #4b433d) !important;
+  background-image: none !important;
+  color: #fdf6e3 !important;
+  box-shadow: var(--td-neu-inset-deep) !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .neu-select-trigger:hover:not(:disabled) {
+  border-color: color-mix(in srgb, #e65100 28%, #5c524b) !important;
+  color: #fdf6e3 !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .neu-select-trigger:focus-visible {
+  outline: none !important;
+  border-color: color-mix(in srgb, #e65100 45%, transparent) !important;
+  box-shadow:
+    var(--td-neu-inset-deep),
+    0 0 0 2px color-mix(in srgb, #e65100 18%, transparent) !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .neu-select-trigger:disabled {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .neu-select-trigger span {
+  color: inherit !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) :is(.select-bordered, .select.select-bordered) {
+  border-color: color-mix(in srgb, #3a342f 48%, transparent) !important;
+  background-color: color-mix(in srgb, #3a342f 28%, #4b433d) !important;
+  color: #fdf6e3 !important;
+  box-shadow: var(--td-neu-inset-deep) !important;
+}
+
+/* Rodapé do editor de caso — botões outline / primário */
+:is(.task-details-neu-modal) .app-btn-outline {
+  border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
+  background: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
+  color: #fdf6e3 !important;
+  box-shadow: var(--td-neu-raised) !important;
+}
+
+:is(.task-details-neu-modal) .app-btn-outline:hover:not(:disabled) {
+  border-color: color-mix(in srgb, #e65100 28%, #5c524b) !important;
+  color: #e65100 !important;
+}
+
+:is(.task-details-neu-modal) .app-btn-outline.btn-error {
+  border-color: color-mix(in srgb, oklch(var(--er)) 32%, #5c524b) !important;
+  color: oklch(var(--er)) !important;
+}
+
+:is(.task-details-neu-modal) .app-btn-primary-inline {
+  border: 1px solid color-mix(in srgb, #e65100 45%, #3a342f) !important;
+  background: #e65100 !important;
+  color: #fdf6e3 !important;
+  box-shadow:
+    0 2px 10px color-mix(in srgb, #e65100 35%, transparent),
+    var(--td-neu-raised) !important;
+}
+
+/* Dropdown portaled ao abrir select no modal */
+body.app-dark-neu-root:has(.task-details-neu-modal) .app-menu-panel,
+body.app-dark-neu-root:has(.test-report-neu-modal) .app-menu-panel {
+  border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
+  background: color-mix(in srgb, #3a342f 18%, #4b433d) !important;
+  box-shadow:
+    8px 8px 20px color-mix(in srgb, #3a342f 55%, transparent),
+    -4px -4px 12px color-mix(in srgb, #5c524b 22%, #4b433d) !important;
+  color: #fdf6e3 !important;
+}
+
+body.app-dark-neu-root:has(.task-details-neu-modal) .app-menu-item,
+body.app-dark-neu-root:has(.test-report-neu-modal) .app-menu-item {
+  border: 1px solid color-mix(in srgb, #5c524b 38%, transparent) !important;
+  background: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
+  color: rgba(245, 241, 230, 0.88) !important;
+  box-shadow: var(--td-neu-raised) !important;
+}
+
+body.app-dark-neu-root:has(.task-details-neu-modal) .app-menu-item:hover:not(:disabled),
+body.app-dark-neu-root:has(.test-report-neu-modal) .app-menu-item:hover:not(:disabled) {
+  border-color: color-mix(in srgb, #e65100 32%, #5c524b) !important;
+  color: #e65100 !important;
+}
+
+body.app-dark-neu-root:has(.task-details-neu-modal) .app-menu-item.app-menu-item-active,
+body.app-dark-neu-root:has(.test-report-neu-modal) .app-menu-item.app-menu-item-active {
+  border-color: color-mix(in srgb, #e65100 42%, #5c524b) !important;
+  background: color-mix(in srgb, #e65100 14%, #4b433d) !important;
+  color: #fdf6e3 !important;
+  box-shadow: var(--td-neu-inset) !important;
+}
+
 /* Badges de contagem nas abas */
 :is(.task-details-neu-modal, .test-report-neu-modal) .task-details-neu-tab-count,
 :is(.task-details-neu-modal, .test-report-neu-modal) [role='tab'] .badge {

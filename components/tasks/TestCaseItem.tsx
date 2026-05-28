@@ -31,7 +31,7 @@ import {
   taskDetailsModalRoteiroHeaderClass,
   taskDetailsModalRoteiroInnerClass,
   taskDetailsModalRoteiroShellClass,
-  taskDetailsModalSelectClass,
+  taskDetailsModalNeuSelectTriggerClass,
   taskDetailsModalStatusBtnClass,
   taskDetailsModalTestCaseCardClass,
   taskDetailsModalTextareaClass,
@@ -485,7 +485,8 @@ export const TestCaseItem: React.FC<{
             }
             aria-label="Tipo de execução do caso de teste"
             className={cn(
-              taskDetailsModalSelectClass,
+              taskDetailsModalNeuSelectTriggerClass,
+              'text-xs',
               !onExecutionKindChange && 'cursor-not-allowed opacity-70'
             )}
           >
