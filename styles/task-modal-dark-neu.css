@@ -235,23 +235,101 @@
   color: var(--td-neu-text-muted) !important;
 }
 
-/* Descrição Jira / prose */
-:is(.task-details-neu-modal, .test-report-neu-modal) :is(.jira-rich-content, .jira-rich-content.prose) {
+/* Descrição Jira / prose — vence cores inline do HTML exportado pelo Jira */
+:is(.task-details-neu-modal, .test-report-neu-modal) :is(
+    .task-details-neu-description,
+    .jira-rich-content,
+    .jira-rich-content.prose
+  ) {
+  color: #fdf6e3 !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .jira-rich-content [style*='color'] {
+  color: #fdf6e3 !important;
+  -webkit-text-fill-color: #fdf6e3 !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .jira-rich-content :where(
+    p,
+    li,
+    span,
+    div,
+    td,
+    th,
+    strong,
+    b,
+    em,
+    i,
+    u,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    label,
+    font
+  ) {
+  color: #fdf6e3 !important;
+  -webkit-text-fill-color: #fdf6e3 !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .jira-rich-content :is(ul, ol) {
+  color: #fdf6e3 !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .jira-rich-content a,
+:is(.task-details-neu-modal, .test-report-neu-modal) .jira-rich-content a :where(span, strong, em) {
+  color: #e65100 !important;
+  -webkit-text-fill-color: #e65100 !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .jira-rich-content :is(code, pre) {
+  border: 1px solid color-mix(in srgb, #3a342f 48%, transparent) !important;
+  background: color-mix(in srgb, #3a342f 32%, #4b433d) !important;
+  color: #fdf6e3 !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .jira-rich-content blockquote {
+  border-left: 3px solid color-mix(in srgb, #e65100 55%, transparent) !important;
+  color: rgba(245, 241, 230, 0.88) !important;
+}
+
+/* Painéis / notas / avisos (macros ADF do Jira) */
+:is(.task-details-neu-modal, .test-report-neu-modal)
+  .jira-rich-content
+  :is(
+    .panel,
+    .aui-message,
+    .confluence-information-macro,
+    .confluence-information-macro-note,
+    .confluence-information-macro-warning,
+    .confluence-information-macro-information,
+    .confluence-information-macro-tip,
+    [data-macro-name='info'],
+    [data-macro-name='note'],
+    [data-macro-name='warning']
+  ) {
+  border: 1px solid color-mix(in srgb, #e65100 30%, #5c524b) !important;
+  background: color-mix(in srgb, #e65100 10%, #4b433d) !important;
+  background-color: color-mix(in srgb, #e65100 10%, #4b433d) !important;
   color: #fdf6e3 !important;
 }
 
 :is(.task-details-neu-modal, .test-report-neu-modal)
   .jira-rich-content
-  :is(p, li, span, div, td, th, strong, em, h1, h2, h3, h4, h5, h6) {
-  color: inherit !important;
-}
-
-:is(.task-details-neu-modal, .test-report-neu-modal) .jira-rich-content a {
-  color: #e65100 !important;
-}
-
-:is(.task-details-neu-modal, .test-report-neu-modal) .jira-rich-content :is(ul, ol) {
+  :is(
+    .panel,
+    .aui-message,
+    .confluence-information-macro,
+    .confluence-information-macro-note,
+    .confluence-information-macro-warning,
+    .confluence-information-macro-information,
+    .confluence-information-macro-tip
+  )
+  :where(p, li, span, div, strong, em, b) {
   color: #fdf6e3 !important;
+  -webkit-text-fill-color: #fdf6e3 !important;
 }
 
 /* Anexos Jira */
