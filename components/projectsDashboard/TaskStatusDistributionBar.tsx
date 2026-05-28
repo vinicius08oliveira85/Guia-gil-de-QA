@@ -63,7 +63,7 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
     <section
       className={cn(
         embedded
-          ? 'flex flex-col border-t border-[color-mix(in_srgb,var(--workspace-panel-neu-light)_30%,transparent)] pt-4'
+          ? 'flex flex-col border-t border-[color-mix(in_srgb,var(--workspace-panel-neu-highlight-inset)_35%,transparent)] pt-4'
           : 'leve-neu-surface flex h-full min-h-0 flex-col p-3 sm:p-3.5',
         className
       )}
@@ -79,7 +79,7 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
       )}
       <div
         className={cn(
-          'mt-2.5 flex h-2.5 w-full shrink-0 overflow-hidden',
+          'mt-2.5 flex h-3 w-full shrink-0 overflow-hidden',
           embedded
             ? 'workspace-panel-neu-dist-track'
             : 'rounded-full bg-[color-mix(in_srgb,var(--leve-neu-dark)_12%,var(--leve-neu-bg))] ring-1 ring-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]'

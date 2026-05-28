@@ -1,4 +1,4 @@
-/** Cards da lista — paleta clara em `documentsCardNeuUi`. Demais UI em `tasksPanelNeuStyles`. */
+/** Cards da lista — paleta escura em `documentsCardNeuUi`. Tokens em `documentsPageNeuUi`. */
 export {
   documentsActionOutlineClass,
   documentsActionPrimaryClass,

@@ -1,58 +1,67 @@
 import { cn } from '../../utils/cn';
+import {
+  appNeuActionBtnActiveClass,
+  appNeuActionBtnClass,
+  appNeuActionTrackWrapClass,
+} from '../common/workspaceChromeActionUi';
 
 /**
- * Cards da lista de documentos — paleta clara (#EBE6DE / #F2EEE8).
- * Relevo via `.documents-view-scope` em index.css (sombras literais).
+ * Cards da lista de documentos — paleta escura (#4B433D / #E65100 / #FDF6E3).
+ * Relevo via `.documents-view-scope` em index.css.
  */
 export const documentsCardListPanelClass = cn(
   'documents-card-list-panel documents-neu-list-track',
   'rounded-[var(--leve-header-radius)] p-1 sm:p-1.5'
 );
 
+const documentsCardRaisedShadow =
+  'shadow-[6px_6px_16px_color-mix(in_srgb,#3a342f_52%,transparent),-4px_-4px_10px_color-mix(in_srgb,#5c524b_28%,#4b433d)]';
+
 export const documentsCardClass = cn(
-  'documents-card documents-neu-card rounded-[var(--leve-header-radius)] p-3 transition-[box-shadow] duration-200 sm:p-3.5'
+  'documents-card documents-neu-card documents-card-neu-raised leve-neu-surface',
+  'rounded-[var(--leve-header-radius)] border border-[color-mix(in_srgb,#5c524b_48%,transparent)]',
+  'bg-[color-mix(in_srgb,#5c524b_14%,#4b433d)] p-3 transition-[box-shadow,border-color] duration-200 sm:p-3.5',
+  documentsCardRaisedShadow,
+  'hover:shadow-[7px_7px_18px_color-mix(in_srgb,#3a342f_55%,transparent),-5px_-5px_12px_color-mix(in_srgb,#5c524b_30%,#4b433d),0_0_0_1px_color-mix(in_srgb,#e65100_14%,transparent)]',
+  'hover:border-[color-mix(in_srgb,#e65100_28%,#5c524b)]'
 );
 
 export const documentsCardTitleClass = cn(
-  'line-clamp-2 border-b border-[#DED7CD] pb-2',
-  'font-heading text-sm font-bold leading-snug text-[#401C31] sm:text-base'
+  'documents-card-title line-clamp-2 border-b border-[color-mix(in_srgb,var(--leve-neu-light)_38%,transparent)] pb-2',
+  'font-heading text-sm font-bold leading-snug text-[var(--leve-header-text)] sm:text-base'
 );
 
-export const documentsCardMetaClass = 'mt-1.5 text-[11px] leading-relaxed text-[#6B5E5E]';
+export const documentsCardMetaClass =
+  'documents-card-meta mt-1.5 text-[11px] leading-relaxed text-[var(--leve-header-text-muted)]';
 
 export const documentsCardActionsClass = cn(
-  'documents-card-actions mt-2.5 border-t border-[#DED7CD] pt-2.5'
+  'documents-card-actions mt-2.5 border-t border-[color-mix(in_srgb,var(--leve-neu-light)_38%,transparent)] pt-2.5'
 );
 
-/** Grade 2×3 (mobile) / 4+2 (desktop) — alinhamento uniforme dos botões. */
+/** Grade 2×3 (mobile) / 4+2 (desktop) — trilho inset + pills (modelo Filtrar/Exportar). */
 export const documentsCardActionsGridClass = cn(
   documentsCardActionsClass,
-  'grid grid-cols-2 gap-1.5 sm:grid-cols-4'
+  appNeuActionTrackWrapClass,
+  'grid grid-cols-2 gap-1.5 p-1.5 sm:grid-cols-4'
 );
 
 const documentsActionBtnBase = cn(
-  'documents-card-action-btn inline-flex w-full min-h-9 items-center justify-center gap-1',
-  'px-3 py-1.5 font-sans text-xs font-semibold sm:min-h-[2.25rem]',
-  '[&_svg]:h-3.5 [&_svg]:w-3.5 [&_svg]:shrink-0',
-  'rounded-full border transition-[box-shadow,color,background-color,transform] duration-200',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,#FF5C1B_28%,transparent)]',
-  'disabled:cursor-not-allowed disabled:opacity-50'
+  'documents-card-action-btn w-full justify-center px-3 py-1.5 text-xs sm:min-h-[2.25rem] sm:text-xs',
+  '[&_svg]:h-3.5 [&_svg]:w-3.5 [&_svg]:shrink-0'
 );
 
-/** Ver, Preview, Editar — chip elevado. */
+/** Ver, Preview, Editar — pill elevado. */
 export const documentsActionOutlineClass = cn(
   documentsActionBtnBase,
   'documents-card-action-outline documents-neu-chip',
-  'border-[#DED7CD] bg-[#F2EEE8] text-[#401C31]',
-  'hover:text-[#FF5C1B]'
+  appNeuActionBtnClass
 );
 
-/** Analisar, Gerar — primário laranja elevado. */
+/** Analisar, Gerar — pill ativo laranja. */
 export const documentsActionPrimaryClass = cn(
   documentsActionBtnBase,
   'documents-card-action-primary documents-neu-btn-primary',
-  'border-[color-mix(in_srgb,#FF5C1B_45%,transparent)] bg-[#FF5C1B] text-[#FFFFFF]',
-  'hover:brightness-105 disabled:opacity-50'
+  appNeuActionBtnActiveClass
 );
 
 export const documentsActionRemoveClass = cn(
@@ -63,12 +72,14 @@ export const documentsActionRemoveClass = cn(
 export type DocumentCategoryId = 'requisitos' | 'testes' | 'arquitetura' | 'outros';
 
 const documentsCategoryBadgeMap: Record<DocumentCategoryId, string> = {
-  requisitos: 'border-[#938A81] bg-[#F7F4F0] text-[#401C31]',
+  requisitos:
+    'documents-category-badge--requisitos border-[color-mix(in_srgb,#e65100_35%,transparent)] bg-[color-mix(in_srgb,#e65100_12%,#4b433d)] text-[#e65100]',
   testes:
-    'border-[color-mix(in_srgb,#10b981_35%,transparent)] bg-[color-mix(in_srgb,#10b981_12%,#F7F4F0)] text-[#401C31]',
+    'border-[color-mix(in_srgb,#10b981_35%,transparent)] bg-[color-mix(in_srgb,#10b981_12%,var(--leve-neu-bg))] text-[var(--leve-header-text)]',
   arquitetura:
-    'border-[color-mix(in_srgb,#FF5C1B_30%,transparent)] bg-[color-mix(in_srgb,#FF5C1B_10%,#F7F4F0)] text-[#401C31]',
-  outros: 'border-[#938A81] bg-[#F7F4F0] text-[#938A81]',
+    'border-[color-mix(in_srgb,var(--leve-header-accent)_30%,transparent)] bg-[color-mix(in_srgb,var(--leve-header-accent)_10%,var(--leve-neu-bg))] text-[var(--leve-header-text)]',
+  outros:
+    'border-[color-mix(in_srgb,var(--leve-neu-light)_40%,transparent)] bg-[color-mix(in_srgb,var(--leve-neu-dark)_14%,var(--leve-neu-bg))] text-[var(--leve-header-text-muted)]',
 };
 
 /** Tags de categoria — chips elevados. */
@@ -80,5 +91,5 @@ export const documentsCategoryBadgeClass = (category: DocumentCategoryId) =>
 
 export const documentsAnalysisBadgeClass = cn(
   'documents-neu-chip inline-flex rounded-full border border-[color-mix(in_srgb,#10b981_35%,transparent)]',
-  'bg-[color-mix(in_srgb,#10b981_10%,#F7F4F0)] px-2 py-0.5 text-[10px] font-semibold text-[#401C31]'
+  'bg-[color-mix(in_srgb,#10b981_10%,var(--leve-neu-bg))] px-2 py-0.5 text-[10px] font-semibold text-[var(--leve-header-text)]'
 );

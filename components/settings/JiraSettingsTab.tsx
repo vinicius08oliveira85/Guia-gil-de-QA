@@ -40,6 +40,7 @@ import { logger } from '../../utils/logger';
 import { cn } from '../../utils/cn';
 import toast from 'react-hot-toast';
 import { AppSelect } from '../common/AppSelect';
+import { settingsNeuModalPanelClass } from './settingsNeuUi';
 
 interface JiraSettingsTabProps {
   onProjectImported?: (project: Project) => void;
@@ -487,6 +488,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
         title="Configurar Conexão com Jira"
         size="lg"
         maxHeight="90vh"
+        panelClassName={settingsNeuModalPanelClass}
       >
         <div className="space-y-5 pb-2">
           <Input

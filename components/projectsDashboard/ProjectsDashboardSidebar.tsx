@@ -4,7 +4,8 @@ import type { TaskWorkflowBuckets } from '../../utils/workspaceAnalytics';
 import { WorkspaceAlertsPanel } from './WorkspaceAlertsPanel';
 import { ConsolidatedMetrics } from '../common/ConsolidatedMetrics';
 import { TaskStatusDistributionBar } from './TaskStatusDistributionBar';
-import { workspacePanelShellClass } from '../common/projectCardUi';
+import { appDarkSidebarPanelClass } from '../common/appPageNeuUi';
+import { projectsDashboardSidebarPanelClass } from './projectsDashboardUi';
 import { cn } from '../../utils/cn';
 
 export interface ProjectsDashboardSidebarProps {
@@ -39,6 +40,7 @@ export const ProjectsDashboardSidebar: React.FC<ProjectsDashboardSidebarProps> =
   >
     {showAlerts && (
       <WorkspaceAlertsPanel
+        className={appDarkSidebarPanelClass}
         healthProjects={healthProjects}
         testExecutionAlertProjects={testExecutionAlertProjects}
         onSelectProject={onSelectProject}
@@ -46,7 +48,7 @@ export const ProjectsDashboardSidebar: React.FC<ProjectsDashboardSidebarProps> =
         onToggleListFilterNeedsAttention={onToggleListFilterNeedsAttention}
       />
     )}
-    <div className={cn(workspacePanelShellClass, 'gap-0 p-4 sm:p-5')}>
+    <div className={projectsDashboardSidebarPanelClass}>
       <ConsolidatedMetrics projects={projects} variant="embedded" />
       <TaskStatusDistributionBar buckets={taskWorkflowBuckets} variant="embedded" />
     </div>

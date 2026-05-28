@@ -1,4 +1,10 @@
 import { cn } from '../../utils/cn';
+import { appDarkPageSurfaceClass, settingsViewScopeClass } from './appPageNeuUi';
+import {
+  appNeuActionBtnActiveClass,
+  appNeuActionBtnClass,
+  appNeuActionTrackClass,
+} from './workspaceChromeActionUi';
 import {
   neuFilterPillClass,
   neuPillActiveClass,
@@ -54,9 +60,17 @@ export const projectCardIconWrapClass = cn(
 
 export const projectCardChipClass = 'project-card-neu-chip';
 
-/** Painéis laterais — neumorfismo escuro (marrom + creme + laranja Leve). */
+/** Painéis laterais — fundo #4B433D + neumorfismo (modelo métricas globais). */
 export const workspacePanelShellClass = cn(
-  'workspace-panel-neu-shell relative flex flex-col overflow-hidden font-sans'
+  'workspace-panel-neu-shell relative flex flex-col overflow-hidden font-sans',
+  'rounded-[var(--workspace-panel-radius)]',
+  '!bg-[#4B433D]'
+);
+
+/** Faixa rebaixada das métricas no painel lateral. */
+export const workspacePanelMetricTileClass = cn(
+  'workspace-panel-neu-metric-tile flex min-h-0 flex-row items-center gap-2.5 p-2.5 sm:gap-3 sm:p-3',
+  'rounded-[var(--workspace-panel-metric-radius)]'
 );
 
 /** Título de seção — laranja com sublinhado (como no rodapé Leve). */
@@ -85,9 +99,7 @@ export const workspacePanelValueBadgeClass = cn(
   'font-sans text-sm font-extrabold tabular-nums sm:text-base'
 );
 
-export const workspaceMetricTileClass = cn(
-  'workspace-panel-neu-metric-tile flex min-h-0 flex-row items-center gap-2.5 p-2.5 sm:gap-3 sm:p-3'
-);
+export const workspaceMetricTileClass = workspacePanelMetricTileClass;
 
 /** Ícone em círculo creme — elevado (neumorfismo). */
 export const workspaceMetricIconWrapClass = cn(
@@ -127,7 +139,8 @@ export const recentActivityStatusBadgeNeutralClass = cn(
 
 export const recentActivityItemClass = cn(
   workspaceMetricTileClass,
-  'flex gap-3 hover:shadow-[0_2px_12px_rgba(0,0,0,0.15)]'
+  'flex gap-3 transition-[box-shadow] duration-200',
+  'hover:shadow-[var(--workspace-panel-neu-raised)]'
 );
 
 export const recentActivityDescriptionClass =
@@ -138,11 +151,8 @@ export const recentActivityTimeClass =
 
 export const recentActivityIconWrapClass = (type: 'pass' | 'fail' | 'pending' | 'report' | 'warning') =>
   cn(
-    'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full sm:h-9 sm:w-9',
-    'bg-[var(--workspace-panel-text)] ring-1 ring-[var(--workspace-panel-border)]',
-    type === 'fail'
-      ? 'text-[var(--workspace-panel-bg)]'
-      : 'text-[var(--workspace-panel-accent)]'
+    'workspace-panel-neu-icon-wrap mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center sm:h-9 sm:w-9',
+    type === 'fail' && '!bg-[#e54b4f] !text-[var(--workspace-panel-badge-text)]'
   );
 
 /** Cabeçalho ProjectView — fundo claro, títulos roxo, destaque laranja. */
@@ -387,37 +397,49 @@ export const leveViewInlineCodeClass = cn(
   'rounded bg-[var(--leve-header-cream)] px-1.5 py-0.5 font-mono text-xs text-[var(--leve-header-text)]'
 );
 
-/** Tela Configurações — identidade Leve (todas as abas). */
-export const leveSettingsPageClass = 'app-page flex min-h-screen flex-col font-sans';
+/** Tela Configurações — neumorfismo escuro Leve (#4B433D / #E65100 / #FDF6E3). */
+export const leveSettingsPageClass = cn(
+  settingsViewScopeClass,
+  'app-page flex min-h-screen flex-col font-sans',
+  appDarkPageSurfaceClass
+);
 
 export const leveSettingsHeaderStickyClass = cn(
-  'leve-neu-surface sticky top-0 z-20 border-b border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]'
+  'leve-settings-header-sticky sticky top-0 z-20',
+  'border-b border-[color-mix(in_srgb,#5c524b_38%,transparent)] bg-[#4b433d]'
 );
 
 export const leveSettingsTabsNavClass = cn(
-  'no-scrollbar flex gap-1 overflow-x-auto border-b border-[var(--leve-header-border)] sm:gap-2'
+  'leve-settings-tabs-track no-scrollbar flex w-full max-w-full flex-wrap gap-0.5 overflow-x-auto sm:flex-nowrap',
+  appNeuActionTrackClass
 );
 
 export const leveSettingsTabClass = cn(
-  'leve-settings-tab inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-t-[var(--leve-header-radius)] px-4 py-2.5',
-  'font-sans text-sm font-semibold transition-colors max-md:min-h-9 max-md:gap-1.5 max-md:px-3 max-md:py-1.5 max-md:text-xs sm:min-h-0',
-  'text-[color-mix(in_srgb,var(--leve-header-text)_70%,transparent)]',
-  'hover:bg-[color-mix(in_srgb,var(--leve-header-text)_6%,var(--leve-header-cream))] hover:text-[var(--leve-header-text)]',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] focus-visible:ring-offset-2',
-  'data-[active=true]:bg-[color-mix(in_srgb,var(--leve-header-text)_12%,var(--leve-header-cream))] data-[active=true]:text-[var(--leve-header-text)]'
+  'leve-settings-tab shrink-0',
+  appNeuActionBtnClass,
+  'min-h-[44px] gap-2 rounded-full px-4 py-2 max-md:min-h-9 max-md:gap-1.5 max-md:px-3 max-md:text-xs sm:min-h-9'
+);
+
+export const leveSettingsTabActiveClass = cn(
+  'leve-settings-tab--active',
+  appNeuActionBtnActiveClass,
+  'min-h-[44px] gap-2 rounded-full px-4 py-2 max-md:min-h-9 max-md:gap-1.5 max-md:px-3 max-md:text-xs sm:min-h-9'
 );
 
 export const leveSettingsContentAreaClass = 'app-page flex-1 overflow-y-auto';
 
-export const leveSettingsPanelClass = leveViewPagePanelClass;
+export const leveSettingsPanelClass = cn(
+  'leve-settings-panel leve-neu-surface p-3 font-sans sm:p-4'
+);
 
 export const leveSettingsSectionRowClass = 'flex items-start justify-between gap-4';
 
 export const leveSettingsSectionMainClass = 'flex min-w-0 flex-1 items-start gap-4';
 
 export const leveSettingsSectionIconWrapClass = cn(
-  'leve-neu-pill flex h-12 w-12 shrink-0 items-center justify-center rounded-[var(--leve-header-radius)]',
-  'text-[var(--leve-header-accent)]'
+  'leve-settings-section-icon-wrap app-neu-action-icon-wrap',
+  'flex h-12 w-12 shrink-0 items-center justify-center rounded-[var(--leve-header-radius)] text-[#e65100]',
+  '[&_svg]:h-5 [&_svg]:w-5'
 );
 
 export const leveSettingsSectionTitleClass =
@@ -426,7 +448,9 @@ export const leveSettingsSectionTitleClass =
 export const leveSettingsSectionSubtitleClass =
   'font-sans text-sm leading-relaxed text-[var(--leve-header-text-muted)]';
 
-export const leveSettingsInsetPanelClass = cn('leve-neu-surface-inset p-4 sm:p-5');
+export const leveSettingsInsetPanelClass = cn(
+  'leve-settings-inset-panel leve-neu-surface-inset p-4 sm:p-5'
+);
 
 export const leveSettingsCardClass = leveSettingsPanelClass;
 
@@ -449,13 +473,16 @@ export const leveSettingsPrimaryBtnFullClass = cn(
 
 export const leveSettingsOutlineBtnClass = leveViewOutlineBtnClass;
 
+export const leveSettingsPrefsTabsTrackClass = cn(
+  'leve-settings-prefs-tabs-track w-fit max-w-full',
+  appNeuActionTrackClass
+);
+
 export const leveSettingsSubTabClass = (active: boolean) =>
   cn(
-    'relative inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 font-sans text-sm font-medium transition-colors',
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] focus-visible:ring-offset-2',
-    active
-      ? 'border-[var(--leve-header-accent)] font-semibold text-[var(--leve-header-text)]'
-      : 'border-transparent text-[var(--leve-header-text-muted)] hover:border-[var(--leve-header-border)] hover:text-[var(--leve-header-text)]'
+    'leve-settings-subtab shrink-0 whitespace-nowrap',
+    active ? appNeuActionBtnActiveClass : appNeuActionBtnClass,
+    'min-h-9 gap-2 px-4 py-2 text-sm'
   );
 
 export const leveSettingsInputClass = cn(
@@ -479,57 +506,12 @@ export const leveSettingsToggleTrackClass = cn(
   'peer-checked:bg-[var(--leve-header-accent)] peer-checked:after:translate-x-full peer-focus:ring-2 peer-focus:ring-[color-mix(in_srgb,var(--leve-header-accent)_40%,transparent)]'
 );
 
-export const leveSettingsLinkClass =
-  'font-medium text-[var(--leve-header-accent)] underline-offset-2 hover:underline';
+export const leveSettingsLinkClass = cn(
+  'leve-settings-link font-medium text-[var(--leve-header-accent)] underline-offset-2 hover:underline'
+);
 
 export const leveSettingsHeadingXsClass =
   'mb-3 font-sans text-sm font-semibold text-[var(--leve-header-text)]';
-
-/** Glossário — modal e grade de termos (identidade Leve). */
-export const leveGlossaryShellClass = 'font-sans';
-
-export const leveGlossaryToolbarClass = cn(
-  leveViewPagePanelClass,
-  'mb-4 flex flex-col gap-5 sm:mb-6'
-);
-
-export const leveGlossaryCardClass = cn(
-  'leve-neu-surface group relative cursor-pointer overflow-hidden p-5',
-  'transition-[transform,box-shadow,border-color] duration-200 hover:border-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)]'
-);
-
-export const leveGlossaryCardTitleClass = cn(
-  'flex-1 font-sans text-lg font-semibold text-[var(--leve-header-text)]',
-  'transition-colors group-hover:text-[var(--leve-header-accent)]'
-);
-
-export const leveGlossaryCardDescClass =
-  'mb-3 line-clamp-2 font-sans text-sm leading-relaxed text-[var(--leve-header-text-muted)]';
-
-export const leveGlossaryCardFooterClass =
-  'mt-3 flex flex-wrap gap-1.5 border-t border-[var(--leve-header-border)] pt-3';
-
-export const leveGlossaryHashtagClass = cn(
-  'font-sans text-xs font-semibold text-[var(--leve-header-accent)]',
-  'hover:underline'
-);
-
-export const leveGlossaryCategoryBadgeBaseClass = cn(
-  'shrink-0 rounded-full border px-2 py-0.5 font-sans text-[10px] font-semibold leading-tight'
-);
-
-export const leveGlossaryStatsPanelClass = cn(
-  leveViewPagePanelClass,
-  'mt-8 p-6 transition-shadow duration-200',
-  'hover:border-[color-mix(in_srgb,var(--leve-header-accent)_25%,transparent)]'
-);
-
-export const leveGlossaryRelatedTermClass = cn(
-  'cursor-pointer rounded-full border border-[color-mix(in_srgb,var(--leve-header-accent)_30%,transparent)]',
-  'bg-[color-mix(in_srgb,var(--leve-header-accent)_8%,var(--leve-header-bg))] px-2.5 py-1',
-  'font-sans text-xs font-semibold text-[var(--leve-header-accent)] transition-colors',
-  'hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_15%,var(--leve-header-bg))]'
-);
 
 /** Modal global — identidade Leve (aplicado em `Modal.tsx` para todos os modais). */
 export const leveModalPanelBorderClass = 'leve-modal-neu-shell';
@@ -600,9 +582,10 @@ export const leveTaskModalTabBadgeIdleClass = neuSegmentedTabBadgeIdleClass;
 export const leveTaskModalFieldLabelClass = workspacePanelSectionTitleClass;
 
 export const leveTaskModalSectionHeaderClass = cn(
-  'task-details-neu-section-header flex items-center gap-2 border-b border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] p-4',
-  'bg-[color-mix(in_srgb,var(--leve-neu-dark)_5%,var(--leve-neu-bg))]',
-  'shadow-[inset_0_-1px_0_color-mix(in_srgb,var(--leve-neu-light)_25%,transparent)]'
+  'task-details-neu-section-header flex items-center gap-2 border-b p-4 sm:px-5',
+  'border-[color-mix(in_srgb,#5C524B_38%,transparent)]',
+  'bg-[color-mix(in_srgb,#3A342F_22%,#4B433D)]',
+  'shadow-[inset_4px_4px_10px_#3A342F,inset_-3px_-3px_8px_#5C524B]'
 );
 
 export const leveTaskModalSectionTitleClass =
@@ -796,11 +779,6 @@ export const workspaceDaisyStatValueClass = cn(
   'font-sans text-xl font-extrabold tabular-nums leading-none text-[var(--workspace-stat-accent)] sm:text-2xl'
 );
 
-export const leveGlossaryStatsItemClass = cn(
-  workspaceDaisyStatCardClass,
-  'text-center transition-transform duration-200 hover:scale-[1.02]'
-);
-
 /** Percentual no padrão pt-BR (ex.: 66,2%) — alinhado ao site Leve. */
 export function formatWorkspaceStatPercent(value: number): string {
   return `${value.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 1 })}%`;
@@ -869,7 +847,7 @@ export const dashboardInsightTitleClass =
 export const dashboardInsightSubtitleClass =
   'text-[11px] leading-snug text-[var(--leve-header-text-muted)]';
 
-/** Cards da grade ProjectDashboard (QADashboard) — identidade Leve creme + roxo + laranja. */
+/** Cards da grade ProjectDashboard (QADashboard) — superfície escura + creme + laranja Leve. */
 export const projectDashboardInsightCardClass = cn(
   'dashboard-neu-insight-card relative flex h-full min-h-0 w-full flex-col overflow-hidden font-sans p-3.5 sm:p-4'
 );
@@ -896,10 +874,16 @@ export const projectDashboardInsightAccentClass = cn(
   'font-sans font-bold tabular-nums text-[var(--project-dashboard-insight-accent)]'
 );
 
-/** Badge contador (roxo + texto creme — referência depoimentos Leve). */
+/** Badge contador — rebaixado + destaque laranja. */
 export const projectDashboardInsightCountBadgeClass = cn(
-  'inline-flex items-center justify-center rounded-[var(--project-dashboard-insight-inner-radius)] px-2.5 py-1',
-  'bg-[var(--project-dashboard-insight-badge-bg)] font-sans text-sm font-bold tabular-nums text-[var(--project-dashboard-insight-badge-text)] sm:text-base'
+  'dashboard-neu-insight-inset inline-flex items-center justify-center px-2.5 py-1',
+  'font-sans text-sm font-bold tabular-nums text-[var(--project-dashboard-insight-accent)] sm:text-base'
+);
+
+/** Trecho `code` dentro dos cards de insight. */
+export const projectDashboardInsightCodeClass = cn(
+  'dashboard-neu-insight-inset rounded px-1 py-0.5 font-mono text-[0.7rem]',
+  'text-[var(--project-dashboard-insight-text-muted)]'
 );
 
 /** Badge métrica secundária (laranja suave). */

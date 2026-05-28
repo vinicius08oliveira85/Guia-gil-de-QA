@@ -6,6 +6,7 @@ import { lazyWithRetry } from '../../utils/lazyWithRetry';
 import {
   leveSettingsSectionSubtitleClass,
   leveSettingsSectionTitleClass,
+  leveSettingsPrefsTabsTrackClass,
   leveSettingsSubTabClass,
 } from '../common/projectCardUi';
 
@@ -39,9 +40,9 @@ export const PreferencesTab: React.FC = () => {
         </p>
       </div>
 
-      <div className="border-b border-[color-mix(in_srgb,var(--leve-header-text)_12%,transparent)]">
+      <div>
         <nav
-          className="flex gap-1 overflow-x-auto no-scrollbar"
+          className={leveSettingsPrefsTabsTrackClass}
           role="tablist"
           aria-label="Seções de preferências"
         >

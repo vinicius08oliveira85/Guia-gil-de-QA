@@ -12,7 +12,13 @@ import { useDashboardMetrics } from '../../hooks/useDashboardMetrics';
 import { glassIndicatorCardClass } from '../common/projectCardUi';
 import { GlassIndicatorCards, type SmallIndicatorItem } from './GlassIndicatorCards';
 import { cn } from '../../utils/cn';
-import { dashboardHeroChromeClass, dashboardNeuScopeClass } from './dashboardNeuUi';
+import {
+  dashboardEmptyStateShellClass,
+  dashboardErrorBannerClass,
+  dashboardHeroChromeClass,
+  dashboardLoadingBannerClass,
+  dashboardNeuScopeClass,
+} from './dashboardNeuUi';
 import { ProjectDashboard } from './ProjectDashboard';
 import { RecentActivity } from './RecentActivity';
 import { QADashboardHeaderToolbar } from './QADashboardHeaderToolbar';
@@ -169,18 +175,17 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
       aria-label="Dashboard do projeto"
     >
       {showLoadingBanner && (
-        <div
-          className="leve-neu-surface flex items-center gap-2 px-3 py-2.5 text-sm text-base-content/80"
-          role="status"
-          aria-live="polite"
-        >
-          <Loader2 className="h-4 w-4 shrink-0 animate-spin text-[var(--brand-cta)]" aria-hidden />
+        <div className={dashboardLoadingBannerClass} role="status" aria-live="polite">
+          <Loader2
+            className="h-4 w-4 shrink-0 animate-spin text-[var(--leve-header-accent)]"
+            aria-hidden
+          />
           <span>Carregando ou sincronizando dados do projeto…</span>
         </div>
       )}
 
       {displayError && (
-        <div className="rounded-lg border border-error/30 bg-error/10 px-3 py-2.5 text-sm text-error" role="alert">
+        <div className={dashboardErrorBannerClass} role="alert">
           <span className="font-medium">Não foi possível carregar os projetos.</span>
           <span className="mt-0.5 block opacity-90">{displayError.message}</span>
         </div>
@@ -231,19 +236,21 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
       />
 
       {!showLoadingBanner && dashboardMetrics.totalTasks === 0 && (
-        <EmptyState
-          compact
-          title="Nenhuma tarefa no escopo"
-          description="Crie tarefas na aba Tarefas ou ajuste os filtros do dashboard."
-          icon="📊"
-          secondaryAction={
-            onNavigateToBacklog && backlogCount > 0
-              ? { label: 'Ver backlog', onClick: onNavigateToBacklog }
-              : onNavigateToTab
-                ? { label: 'Ir para Tarefas', onClick: () => onNavigateToTab('tasks') }
-                : undefined
-          }
-        />
+        <div className={dashboardEmptyStateShellClass}>
+          <EmptyState
+            compact
+            title="Nenhuma tarefa no escopo"
+            description="Crie tarefas na aba Tarefas ou ajuste os filtros do dashboard."
+            icon="📊"
+            secondaryAction={
+              onNavigateToBacklog && backlogCount > 0
+                ? { label: 'Ver backlog', onClick: onNavigateToBacklog }
+                : onNavigateToTab
+                  ? { label: 'Ir para Tarefas', onClick: () => onNavigateToTab('tasks') }
+                  : undefined
+            }
+          />
+        </div>
       )}
 
       <RecentActivity project={filteredProject} onViewAll={goTasks} />

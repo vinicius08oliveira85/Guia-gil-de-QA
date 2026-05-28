@@ -78,7 +78,12 @@ export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
             <span className="sm:hidden">Tarefa</span>
           </button>
 
-          {/* Desktop: IA + Filtros na trilha neumórfica */}
+          <div
+            className={cn(tasksViewHeaderSecondaryToolbarDividerClass, 'hidden md:block')}
+            aria-hidden
+          />
+
+          {/* Desktop: IA + Filtros no mesmo trilho (modelo Filtrar/Exportar) */}
           <div
             className={cn(tasksViewHeaderSecondaryToolbarClass, 'hidden md:inline-flex')}
             role="group"

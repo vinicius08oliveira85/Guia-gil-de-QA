@@ -14,6 +14,11 @@ import {
   taskTextareaClass,
   taskTextStrongClass,
 } from './taskActionLayout';
+import {
+  taskDetailsModalBodyClass,
+  taskDetailsModalShellClass,
+  taskDetailsModalTitleClass,
+} from './taskDetailsNeuUi';
 
 interface TestCaseEditorModalProps {
   testCase: TestCase;
@@ -73,12 +78,20 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
   const previewTitle = action.trim().slice(0, 60) || testCase.id;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`Editar caso de teste: ${previewTitle}`} size="2xl">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Editar caso de teste: ${previewTitle}`}
+      size="2xl"
+      panelClassName={taskDetailsModalShellClass}
+      titleClassName={taskDetailsModalTitleClass}
+      bodyClassName={taskDetailsModalBodyClass}
+    >
       <div className="space-y-4 app-element-typography">
         <label
           className={cn(
             taskPanelBorderClass,
-            'flex cursor-pointer items-start gap-3 bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))] p-3 text-sm transition-colors hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_12%,var(--leve-neu-bg))]',
+            'flex cursor-pointer items-start gap-3 p-3 text-sm transition-[box-shadow,color] hover:shadow-[var(--td-neu-raised)]',
             taskTextStrongClass
           )}
         >
@@ -168,8 +181,8 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
             <label className={labelClass}>Tipo de execução</label>
             <AppSelect
               value={executionKind}
-              onChange={e =>
-                setExecutionKind((e.target.value || '') as TestCaseExecutionKind | '')
+              onChange={raw =>
+                setExecutionKind((raw || '') as TestCaseExecutionKind | '')
               }
               className={cn(appSelectClass, 'select-bordered w-full')}
             >

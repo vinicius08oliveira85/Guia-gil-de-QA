@@ -5,8 +5,12 @@ import {
   leveSettingsInputClass,
   leveSettingsMutedTextClass,
   leveSettingsOutlineBtnClass,
-  leveViewInlineCodeClass,
 } from '../common/projectCardUi';
+import {
+  settingsNeuEditBtnClass,
+  settingsNeuKbdClass,
+  settingsNeuShortcutActionsClass,
+} from './settingsNeuUi';
 import { cn } from '../../utils/cn';
 import {
   getKeyboardShortcutPreferences,
@@ -145,12 +149,12 @@ export const KeyboardShortcutsEditor: React.FC = () => {
                   autoFocus
                 />
               ) : (
-                <div className="flex shrink-0 items-center gap-3">
-                  <kbd className={leveViewInlineCodeClass}>{formatShortcut(preferences[shortcut.key])}</kbd>
+                <div className={settingsNeuShortcutActionsClass}>
+                  <kbd className={settingsNeuKbdClass}>{formatShortcut(preferences[shortcut.key])}</kbd>
                   <button
                     type="button"
                     onClick={() => handleStartEdit(shortcut.key)}
-                    className="rounded-lg px-3 py-1.5 text-sm font-medium text-[var(--leve-header-accent)] transition-colors hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_10%,transparent)]"
+                    className={settingsNeuEditBtnClass}
                   >
                     Editar
                   </button>

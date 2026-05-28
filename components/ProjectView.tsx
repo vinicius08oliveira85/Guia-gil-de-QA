@@ -29,6 +29,7 @@ import { Trash2, CheckCircle2, AlertTriangle, CloudOff, Layers } from 'lucide-re
 import { logger } from '../utils/logger';
 import { Button } from './common/Button';
 import { cn } from '../utils/cn';
+import { appDarkPageSurfaceClass } from './common/appPageNeuUi';
 import { appContentPaddingX } from './common/viewUi';
 import {
   projectChromeBacklogBtnClass,
@@ -465,6 +466,7 @@ export const ProjectView: React.FC<{
     <>
       <div
         className={cn(
+          appDarkPageSurfaceClass,
           'animate-fade-in w-full min-w-0 max-w-none py-3 sm:py-4 max-md:py-2 non-printable',
           appContentPaddingX
         )}

@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
+import './styles/app-global-dark-neu.css';
+import './styles/task-modal-dark-neu.css';
 import App from './App';
 import { GridPattern } from '@/components/ui/grid-pattern';
 import { initializePWA } from './utils/pwa';

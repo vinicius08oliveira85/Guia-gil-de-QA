@@ -1,4 +1,12 @@
 import { cn } from '../../utils/cn';
+import { appDarkHeroChromeMarkerClass } from './appPageNeuUi';
+import {
+  appNeuActionBtnActiveClass,
+  appNeuActionBtnClass,
+  appNeuActionIconClass,
+  appNeuActionIconWrapClass,
+  appNeuActionTrackClass,
+} from './workspaceChromeActionUi';
 
 /**
  * Card escuro neumórfico (#4a423e) — cabeçalho + KPIs / filtros rápidos.
@@ -6,6 +14,7 @@ import { cn } from '../../utils/cn';
  */
 export const viewHeroChromeClass = cn(
   'dashboard-hero-chrome project-chrome-neu-shell tasks-panel-dark-surface',
+  appDarkHeroChromeMarkerClass,
   'rounded-[var(--leve-header-radius)] px-3 py-3 sm:px-4 sm:py-4',
   'flex flex-col gap-4 sm:gap-5',
   'max-md:gap-2 max-md:px-2 max-md:py-2'
@@ -40,33 +49,28 @@ export const viewHeroFilterChipClass = cn(
 );
 
 export const viewHeroToolbarClass = cn(
-  'dashboard-neu-filter-toolbar workspace-chrome-inset',
-  'inline-flex items-stretch gap-0.5 p-0.5'
+  'dashboard-neu-filter-toolbar',
+  appNeuActionTrackClass
 );
 
 export const viewHeroToolbarDividerClass =
   'my-1.5 w-px shrink-0 self-stretch bg-[var(--workspace-panel-divider)]';
 
 export const viewHeroToolbarBtnClass = cn(
-  'dashboard-neu-filter-btn workspace-chrome-pill',
-  'inline-flex min-h-[36px] items-center gap-1.5 rounded-full px-3 py-1.5 font-sans text-sm font-semibold sm:min-h-0',
-  'max-md:min-h-8 max-md:px-2.5 max-md:py-1 max-md:text-xs',
-  'disabled:cursor-not-allowed disabled:opacity-50'
+  'dashboard-neu-filter-btn',
+  appNeuActionBtnClass,
+  'min-h-[36px] sm:min-h-0 max-md:min-h-8 max-md:px-2.5 max-md:py-1 max-md:text-xs'
 );
 
 export const viewHeroToolbarBtnActiveClass = cn(
-  'dashboard-neu-filter-btn dashboard-neu-filter-btn--active workspace-chrome-pill-active',
-  'inline-flex min-h-[36px] items-center gap-1.5 rounded-full px-3 py-1.5 font-sans text-sm font-semibold sm:min-h-0',
-  'max-md:min-h-8 max-md:px-2.5 max-md:py-1 max-md:text-xs',
-  'disabled:cursor-not-allowed disabled:opacity-50'
+  'dashboard-neu-filter-btn dashboard-neu-filter-btn--active',
+  appNeuActionBtnActiveClass,
+  'min-h-[36px] font-semibold sm:min-h-0 max-md:min-h-8 max-md:px-2.5 max-md:py-1 max-md:text-xs'
 );
 
-export const viewHeroToolbarIconWrapClass = cn(
-  'dashboard-neu-filter-icon-wrap workspace-chrome-badge',
-  'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[var(--workspace-panel-accent)]'
-);
+export const viewHeroToolbarIconWrapClass = appNeuActionIconWrapClass;
 
-export const viewHeroToolbarIconClass = 'h-3.5 w-3.5 shrink-0';
+export const viewHeroToolbarIconClass = appNeuActionIconClass;
 
 export const viewHeroToolbarCountClass = cn(
   'dashboard-neu-filter-count workspace-chrome-count-active',
@@ -75,16 +79,12 @@ export const viewHeroToolbarCountClass = cn(
 );
 
 export const viewHeroPrimaryBtnClass = cn(
-  'workspace-chrome-pill-active inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-full px-4 py-2',
-  'font-sans text-sm font-bold max-md:min-h-9 max-md:gap-1.5 max-md:px-3 max-md:py-1.5 max-md:text-xs sm:min-h-9',
-  'transition-[filter,transform,box-shadow] duration-150',
-  'hover:brightness-110 hover:-translate-y-px',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--workspace-panel-accent)_45%,transparent)]',
-  'disabled:cursor-not-allowed disabled:opacity-50'
+  appNeuActionBtnActiveClass,
+  'min-h-[44px] gap-2 px-4 py-2 max-md:min-h-9 max-md:gap-1.5 max-md:px-3 max-md:py-1.5 max-md:text-xs sm:min-h-9',
+  'hover:-translate-y-px'
 );
 
 export const viewHeroMobileActionBtnClass = cn(
-  'workspace-chrome-pill inline-flex min-h-[44px] items-center gap-2 px-3 py-2',
-  'font-sans text-sm font-semibold text-[var(--workspace-panel-text-muted)] max-md:min-h-9 max-md:gap-1.5 max-md:px-2.5 max-md:py-1.5 max-md:text-xs sm:min-h-9',
-  'disabled:opacity-50'
+  appNeuActionBtnClass,
+  'min-h-[44px] gap-2 px-3 py-2 max-md:min-h-9 max-md:gap-1.5 max-md:px-2.5 max-md:py-1.5 max-md:text-xs sm:min-h-9'
 );

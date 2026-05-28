@@ -350,22 +350,4 @@ Então devo ser redirecionado para o dashboard
 **Resultado:** Menos bugs em produção, maior qualidade.`,
     },
   },
-  glossary: {
-    title: 'Glossário de Termos',
-    content: `O glossário contém mais de 150 termos de QA.
-
-**Como usar:**
-• Busque por termos específicos
-• Filtre por categoria
-• Clique em um termo para ver detalhes completos
-• Navegue por termos relacionados
-
-**Categorias:**
-• Geral: Conceitos básicos
-• Testes: Tipos e técnicas
-• Metodologias: Agile, Scrum, etc.
-• Ferramentas: Ferramentas populares
-• Métricas: KPIs e indicadores
-• Processos: Fluxos e procedimentos`,
-  },
 };

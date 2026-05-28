@@ -1,13 +1,16 @@
 import { cn } from '../../utils/cn';
 import {
-  neuFilterPillClass,
   neuInsetContentClass,
-  neuSegmentedTrackClass,
   neuSurfaceClass,
   neuSurfaceInsetClass,
 } from '../common/neuUi';
+import {
+  appNeuActionBtnActiveClass,
+  appNeuActionBtnClass,
+  appNeuActionTrackWrapClass,
+} from '../common/workspaceChromeActionUi';
 
-/** Escopo da aba Documentos — tokens em index.css (`.documents-view-scope`). */
+/** Escopo da aba Documentos — tokens escuros em index.css (`.documents-view-scope`). */
 export const documentsViewScopeClass = 'documents-view-scope';
 
 export const documentsPageHeaderClass = cn(
@@ -16,17 +19,17 @@ export const documentsPageHeaderClass = cn(
 );
 
 export const documentsPageTitleClass =
-  'font-sans text-2xl font-bold tracking-tight text-[#401C31] sm:text-[1.65rem]';
+  'font-sans text-2xl font-bold tracking-tight text-[var(--leve-header-text)] sm:text-[1.65rem]';
 
 export const documentsPageSubtitleClass =
-  'mt-1 font-sans text-sm leading-relaxed text-[#6B5E5E]';
+  'mt-1 font-sans text-sm leading-relaxed text-[var(--leve-header-text-muted)]';
 
 export const documentsJiraBadgeClass = cn(
   'documents-neu-chip inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5',
-  'font-sans text-xs font-bold text-[#FF5C1B]'
+  'font-sans text-xs font-bold text-[var(--leve-header-accent)]'
 );
 
-export const documentsPageMutedClass = 'font-sans text-sm text-[#6B5E5E]';
+export const documentsPageMutedClass = 'font-sans text-sm text-[var(--leve-header-text-muted)]';
 
 /** Painel de filtros / resumo — superfície elevada. */
 export const documentsFiltersPanelClass = cn(
@@ -37,8 +40,8 @@ export const documentsFiltersPanelClass = cn(
 );
 
 export const documentsEyebrowClass = cn(
-  'inline-block border-b border-[#FF5C1B] pb-1',
-  'font-sans text-[10px] font-extrabold uppercase tracking-wider text-[#FF5C1B] sm:text-[11px]'
+  'documents-eyebrow inline-block border-b border-[var(--leve-header-accent)] pb-1',
+  'font-sans text-[10px] font-extrabold uppercase tracking-wider text-[var(--leve-header-accent)] sm:text-[11px]'
 );
 
 /** Documento de especificação — card elevado. */
@@ -50,12 +53,13 @@ export const documentsSectionShellClass = cn(
 );
 
 export const documentsSectionHeaderDividerClass =
-  'border-b border-[color-mix(in_srgb,#DED7CD_55%,transparent)]';
+  'documents-section-header border-b border-[color-mix(in_srgb,var(--leve-neu-light)_38%,transparent)]';
 
 export const documentsSectionHeaderClass = cn(documentsSectionHeaderDividerClass, 'pb-2');
 
-export const documentsSectionTitleClass =
-  'mt-1 font-sans text-base font-bold text-[#401C31] sm:text-lg';
+export const documentsSectionTitleClass = cn(
+  'documents-section-title mt-1 font-sans text-base font-bold text-[var(--leve-header-text)] sm:text-lg'
+);
 
 /** Faixa de resumo — trilho inset. */
 export const documentsSummaryStripClass = cn(
@@ -66,11 +70,12 @@ export const documentsSummaryStripClass = cn(
 );
 
 export const documentsSummaryStatsClass =
-  'flex flex-wrap items-center gap-x-4 gap-y-1 font-sans text-sm text-[#6B5E5E]';
+  'flex flex-wrap items-center gap-x-4 gap-y-1 font-sans text-sm text-[var(--leve-header-text-muted)]';
 
-export const documentsSummaryStatStrongClass = 'font-semibold text-[#401C31]';
+export const documentsSummaryStatStrongClass =
+  'font-semibold text-[var(--leve-header-text)]';
 
-export const documentsSummaryStatIconAccentClass = 'h-4 w-4 text-[#FF5C1B]';
+export const documentsSummaryStatIconAccentClass = 'h-4 w-4 text-[var(--leve-header-accent)]';
 
 export const documentsSummaryStatIconSuccessClass = 'h-4 w-4 text-success';
 
@@ -79,8 +84,7 @@ export const documentsAlertSuccessClass = cn(
   neuSurfaceInsetClass,
   neuInsetContentClass,
   'flex items-start gap-2 rounded-[var(--leve-header-radius)]',
-  'border border-[color-mix(in_srgb,oklch(var(--su))_35%,#DED7CD)]',
-  'bg-[color-mix(in_srgb,oklch(var(--su))_10%,#E5DFD5)]'
+  'border border-[color-mix(in_srgb,oklch(var(--su))_32%,var(--leve-neu-dark))]'
 );
 
 export const documentsAlertInfoClass = cn(
@@ -88,40 +92,36 @@ export const documentsAlertInfoClass = cn(
   neuSurfaceInsetClass,
   neuInsetContentClass,
   'flex items-start gap-2 rounded-[var(--leve-header-radius)]',
-  'border border-[color-mix(in_srgb,#FF5C1B_30%,#DED7CD)]',
-  'bg-[color-mix(in_srgb,#FF5C1B_8%,#E5DFD5)]'
+  'border border-[color-mix(in_srgb,var(--leve-header-accent)_28%,var(--leve-neu-dark))]'
 );
 
-export const documentsBodyTextClass = 'font-sans text-sm font-medium leading-snug text-[#401C31]';
+export const documentsBodyTextClass =
+  'font-sans text-sm font-medium leading-snug text-[var(--leve-header-text)]';
 
-export const documentsMutedTextClass = 'font-sans text-xs text-[#6B5E5E]';
+export const documentsMutedTextClass = 'documents-muted font-sans text-xs text-[var(--leve-header-text-muted)]';
 
-export const documentsStrongTextClass = 'font-semibold text-[#401C31]';
+export const documentsStrongTextClass = 'font-semibold text-[var(--leve-header-text)]';
 
 export const documentsProgressTrackClass = cn(
   'documents-neu-progress-track',
   'relative h-2 min-w-0 flex-1 overflow-hidden rounded-full'
 );
 
-export const documentsProgressFillClass =
-  'documents-neu-progress-fill h-full w-full rounded-full bg-success';
+export const documentsProgressFillClass = 'documents-neu-progress-fill h-full w-full rounded-full';
 
 export const documentsProgressPercentClass =
-  'shrink-0 font-sans text-xs font-bold tabular-nums text-[#6B5E5E]';
+  'shrink-0 font-sans text-xs font-bold tabular-nums text-[var(--leve-header-text-muted)]';
 
 export const documentsPrimaryBtnClass = cn(
-  'documents-neu-btn-primary inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-full px-4 py-2',
-  'font-sans text-sm font-bold max-md:min-h-9 max-md:gap-1.5 max-md:px-3 max-md:py-1.5 max-md:text-xs sm:min-h-9',
-  'border border-[color-mix(in_srgb,#FF5C1B_45%,transparent)] bg-[#FF5C1B] text-[#FFFFFF]',
-  'transition-[filter,transform] duration-150 hover:brightness-105',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,#FF5C1B_28%,transparent)]',
-  'disabled:cursor-not-allowed disabled:opacity-50'
+  'documents-neu-btn-primary',
+  appNeuActionBtnActiveClass,
+  'min-h-[44px] gap-2 px-4 py-2 max-md:min-h-9 max-md:gap-1.5 max-md:px-3 max-md:py-1.5 max-md:text-xs sm:min-h-9'
 );
 
 export const documentsOutlineBtnClass = cn(
-  'documents-neu-chip inline-flex min-h-9 items-center gap-1.5 rounded-full px-4 py-2',
-  'font-sans text-sm font-semibold text-[#401C31]',
-  'transition-[box-shadow,color] duration-200 hover:text-[#FF5C1B]'
+  'documents-neu-chip',
+  appNeuActionBtnClass,
+  'min-h-9 px-4 py-2'
 );
 
 export const documentsSpecRemoveBtnClass = cn(
@@ -133,15 +133,19 @@ export const documentsSearchInputClass = cn(
   'documents-neu-search',
   'app-input h-11 w-full min-w-[200px] flex-1 rounded-full border-0 py-2 pl-10 pr-10 font-sans text-sm',
   'max-md:h-10 max-md:pl-9 max-md:pr-9 max-md:text-xs sm:h-10',
-  'text-[#401C31] placeholder:text-[#6B5E5E]',
-  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,#FF5C1B_22%,transparent)]'
+  'text-[var(--leve-header-text)] placeholder:text-[var(--leve-header-text-muted)]',
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_22%,transparent)]'
 );
 
 export const documentsSearchIconClass =
-  'pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B5E5E]';
+  'pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--leve-header-text-muted)]';
 
 export const documentsFilterPillClass = (active: boolean) =>
-  cn('documents-neu-filter-pill', neuFilterPillClass(active));
+  cn(
+    'documents-neu-filter-pill',
+    active ? appNeuActionBtnActiveClass : appNeuActionBtnClass,
+    'px-3 py-1.5 text-xs font-medium sm:text-sm'
+  );
 
 export const documentsFilterRowClass = cn(
   'flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3',
@@ -150,8 +154,8 @@ export const documentsFilterRowClass = cn(
 
 export const documentsFilterPillsStripClass = cn(
   'documents-neu-filter-track',
-  neuSegmentedTrackClass,
-  'inline-flex max-w-full flex-wrap items-center gap-1.5 sm:gap-2'
+  appNeuActionTrackWrapClass,
+  'max-w-full gap-1.5 sm:gap-2'
 );
 
 export const documentsFilterPillsGroupClass = documentsFilterPillsStripClass;

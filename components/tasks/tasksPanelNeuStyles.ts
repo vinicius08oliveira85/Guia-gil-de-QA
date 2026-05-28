@@ -1,4 +1,12 @@
 import { cn } from '../../utils/cn';
+import {
+  appNeuActionBtnActiveClass,
+  appNeuActionBtnClass,
+  appNeuActionDividerClass,
+  appNeuActionIconWrapClass,
+  appNeuActionTrackClass,
+  appNeuActionTrackWrapClass,
+} from '../common/workspaceChromeActionUi';
 
 /**
  * Paleta escura neumórfica — painel de Tarefas (header, abas, busca, toolbar, seções).
@@ -39,37 +47,29 @@ export const tasksPanelListShellClass = cn(
 /* ── Header (3 CTAs) ─────────────────────────────────────────── */
 
 export const tasksViewHeaderPrimaryBtnClass = cn(
-  'workspace-chrome-pill-active inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-full px-4 py-2',
-  'font-sans text-sm font-bold max-md:min-h-9 max-md:gap-1.5 max-md:px-3 max-md:py-1.5 max-md:text-xs sm:min-h-9',
-  'transition-[filter,transform,box-shadow] duration-150',
-  'hover:brightness-110 hover:-translate-y-px',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--workspace-panel-accent)_45%,transparent)]',
-  'disabled:cursor-not-allowed disabled:opacity-50'
+  appNeuActionBtnActiveClass,
+  'min-h-[44px] gap-2 px-4 py-2 max-md:min-h-9 max-md:gap-1.5 max-md:px-3 max-md:py-1.5 max-md:text-xs sm:min-h-9',
+  'hover:-translate-y-px'
 );
 
 export const tasksViewHeaderSecondaryToolbarClass = cn(
-  'workspace-chrome-inset inline-flex items-stretch gap-0.5 p-0.5',
+  'inline-flex items-stretch gap-0.5',
   'max-md:w-full max-md:flex-wrap max-md:justify-stretch'
 );
 
-export const tasksViewHeaderSecondaryToolbarDividerClass =
-  'my-1.5 w-px shrink-0 self-stretch bg-[var(--workspace-panel-divider)]';
+export const tasksViewHeaderSecondaryToolbarDividerClass = appNeuActionDividerClass;
 
 export const tasksViewHeaderSecondaryBtnClass = cn(
-  'workspace-chrome-pill inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-3 py-1.5 font-sans text-sm font-semibold',
-  'max-md:min-h-9 max-md:gap-1 max-md:px-2.5 max-md:py-1 max-md:text-xs md:min-h-9',
-  'disabled:cursor-not-allowed disabled:opacity-50'
+  appNeuActionBtnClass,
+  'min-h-[44px] max-md:min-h-9 max-md:gap-1 max-md:px-2.5 max-md:py-1 max-md:text-xs md:min-h-9'
 );
 
 export const tasksViewHeaderSecondaryBtnActiveClass = cn(
-  'workspace-chrome-pill-active inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-3 py-1.5 font-sans text-sm font-semibold',
-  'max-md:min-h-9 max-md:gap-1 max-md:px-2.5 max-md:py-1 max-md:text-xs md:min-h-9',
-  'disabled:cursor-not-allowed disabled:opacity-50'
+  appNeuActionBtnActiveClass,
+  'min-h-[44px] font-semibold max-md:min-h-9 max-md:gap-1 max-md:px-2.5 max-md:py-1 max-md:text-xs md:min-h-9'
 );
 
-export const tasksViewHeaderIconWrapClass = cn(
-  'workspace-chrome-badge flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[var(--workspace-panel-accent)]'
-);
+export const tasksViewHeaderIconWrapClass = appNeuActionIconWrapClass;
 
 export const tasksViewHeaderIaIconClass = 'h-3.5 w-3.5';
 
@@ -91,7 +91,8 @@ export const tasksViewHeaderProgressFillClass =
 /* ── Abas Todas / Backlog ────────────────────────────────────── */
 
 export const tasksPanelModeTabsClass = cn(
-  'workspace-chrome-inset inline-flex w-fit max-w-full shrink-0 flex-wrap items-center gap-1 p-1'
+  appNeuActionTrackClass,
+  'w-fit max-w-full shrink-0 flex-wrap gap-1'
 );
 
 export const tasksPanelModeTabActiveClass = cn(
@@ -359,18 +360,15 @@ export const tasksPanelFormSaveBtnClass = cn(tasksViewHeaderPrimaryBtnClass, 'mi
 /* ── Toolbar (exportar, ordenar, agrupar) ────────────────────── */
 
 export const tasksPanelToolbarShellClass = cn(
-  'tasks-panel-toolbar-compact workspace-chrome-inset flex flex-wrap items-end justify-end gap-3',
-  'rounded-[var(--leve-header-radius)] px-2.5 pt-3.5 pb-2.5 sm:px-3 sm:pt-4 sm:pb-3',
+  'tasks-panel-toolbar-compact',
+  appNeuActionTrackClass,
+  'flex flex-wrap items-end justify-end gap-3 rounded-[var(--leve-header-radius)] px-2.5 pt-3.5 pb-2.5 sm:px-3 sm:pt-4 sm:pb-3',
   'max-md:flex-col max-md:items-stretch max-md:gap-1 max-md:p-2 max-md:pt-2 max-md:pb-2'
 );
 
 export const tasksPanelToolbarExportBtnClass = cn(
-  'workspace-chrome-pill inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full px-4 py-2',
-  'max-md:w-full max-md:justify-center max-md:px-3 max-md:py-1.5 max-md:text-xs',
-  'font-sans text-sm font-semibold text-[var(--workspace-panel-text)]',
-  'transition-[box-shadow,color] duration-200',
-  'hover:text-[var(--workspace-panel-accent)]',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--workspace-panel-accent)_35%,transparent)]'
+  appNeuActionBtnClass,
+  'max-md:w-full max-md:justify-center max-md:px-3 max-md:py-1.5 max-md:text-xs'
 );
 
 export const tasksPanelToolbarFieldClass = cn(
@@ -429,8 +427,9 @@ export const projectChromeBreadcrumbsClass = cn(
 );
 
 export const projectChromeToolbarClass = cn(
-  'project-chrome-toolbar-responsive workspace-chrome-inset flex shrink-0 items-center gap-0.5 p-0.5',
-  'max-md:w-auto max-md:shrink-0'
+  'project-chrome-toolbar-responsive',
+  appNeuActionTrackClass,
+  'shrink-0 max-md:w-auto max-md:shrink-0'
 );
 
 export const projectChromeToolbarDividerClass = cn(
@@ -490,15 +489,17 @@ export const projectChromeBacklogCountClass = (active: boolean) =>
   );
 
 export const projectChromeSyncBtnClass = cn(
-  'workspace-chrome-pill project-chrome-sync-btn inline-flex min-h-9 items-center gap-1.5 px-3 py-1.5 sm:min-h-0',
-  'max-md:min-h-8 max-md:min-w-8 max-md:justify-center max-md:gap-0 max-md:p-0',
-  'font-sans text-xs font-semibold disabled:opacity-50'
+  'project-chrome-sync-btn',
+  appNeuActionBtnClass,
+  'max-md:min-h-8 max-md:min-w-8 max-md:justify-center max-md:gap-0 max-md:p-0 sm:min-h-0',
+  'text-xs'
 );
 
 export const projectChromeDangerBtnClass = cn(
-  'workspace-chrome-pill workspace-chrome-pill-danger inline-flex min-h-9 items-center gap-1.5 px-3 py-1.5 sm:min-h-0',
-  'max-md:min-h-8 max-md:min-w-8 max-md:justify-center max-md:gap-0 max-md:p-0',
-  'font-sans text-xs font-semibold'
+  'workspace-chrome-pill-danger',
+  appNeuActionBtnClass,
+  'max-md:min-h-8 max-md:min-w-8 max-md:justify-center max-md:gap-0 max-md:p-0 sm:min-h-0',
+  'text-xs text-error'
 );
 
 export const projectChromeToolbarStatusWrapClass =
@@ -513,7 +514,8 @@ export const tasksViewPageHeaderShellClass = cn(
 );
 
 export const tasksViewHeaderActionsClass = cn(
-  'tasks-view-header-actions-row flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end'
+  'tasks-view-header-actions-row flex w-full lg:w-auto lg:justify-end',
+  appNeuActionTrackWrapClass
 );
 
 /** CTA principal do cabeçalho de Tarefas (largura total no mobile via CSS). */

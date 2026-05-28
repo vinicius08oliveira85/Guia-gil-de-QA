@@ -11,7 +11,6 @@ import { ExpandableTabs } from './ExpandableTabs';
 import { ExpansibleButton } from './ExpansibleButton';
 import { useTheme } from '../../hooks/useTheme';
 import {
-  BookOpen,
   Moon,
   Sun,
   Heart,
@@ -25,7 +24,6 @@ import {
 } from 'lucide-react';
 import { Project } from '../../types';
 import { Modal } from './Modal';
-import { GlossaryView } from '../glossary/GlossaryView';
 import { useProjectsStore } from '../../store/projectsStore';
 import { useJiraSync } from '../../hooks/useJiraSync';
 import { isSupabaseAvailable } from '../../services/supabaseService';
@@ -64,7 +62,6 @@ export const Header: React.FC<HeaderProps> = ({
   onLogoClick,
 }) => {
   const { theme, toggleTheme } = useTheme();
-  const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isSyncingSupabase, setIsSyncingSupabase] = useState(false);
   const [expandedButton, setExpandedButton] = useState<'jira' | 'salvar' | null>(null);
@@ -217,11 +214,6 @@ export const Header: React.FC<HeaderProps> = ({
         closeMobileMenu();
         closeUtilityMenu();
         break;
-      case 'glossary':
-        setIsGlossaryOpen(true);
-        closeMobileMenu();
-        closeUtilityMenu();
-        break;
       case 'theme':
         toggleTheme();
         closeUtilityMenu();
@@ -231,7 +223,6 @@ export const Header: React.FC<HeaderProps> = ({
 
   const tabs = [
     { id: 'settings', title: 'Configurações', icon: Sliders },
-    { id: 'glossary', title: 'Glossário', icon: BookOpen },
     { id: 'theme', title: getThemeTitle(), icon: getThemeIcon() },
   ];
 
@@ -591,7 +582,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   type="button"
                   className="win-icon-button app-header-mobile-utility-trigger !size-9 !min-h-9 !min-w-9 !rounded-full !p-0"
-                  aria-label="Mais opções: configurações, glossário e tema"
+                  aria-label="Mais opções: configurações e tema"
                   aria-haspopup="menu"
                   aria-expanded={utilityMenuOpen}
                   onClick={() => setUtilityMenuOpen(open => !open)}
@@ -652,15 +643,6 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
       </div>
-
-      <Modal
-        isOpen={isGlossaryOpen}
-        onClose={() => setIsGlossaryOpen(false)}
-        title="Glossário"
-        size="6xl"
-      >
-        <GlossaryView />
-      </Modal>
 
       <Modal
         isOpen={showJiraProjectSelector}

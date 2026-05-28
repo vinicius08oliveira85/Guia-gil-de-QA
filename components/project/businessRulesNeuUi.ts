@@ -1,7 +1,11 @@
 import { cn } from '../../utils/cn';
 import type { BusinessRuleCategoryBadgeVariant } from '../../utils/businessRuleCategoryPresets';
+import {
+  appNeuActionBtnClass,
+  appNeuActionBtnDangerClass,
+} from '../common/workspaceChromeActionUi';
 
-/** Escopo da aba Regras de negócio — tokens em index.css (`.business-rules-view-scope`). */
+/** Escopo da aba Regras de negócio — tokens escuros em index.css (`.business-rules-view-scope`). */
 export const businessRulesViewScopeClass = 'business-rules-view-scope app-neu-scope';
 
 /** Envelope da lista (trilho inset). */
@@ -22,60 +26,75 @@ export const businessRulesCardSummaryClass = cn(
   'business-rules-card-summary flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-left',
   'max-md:min-h-9 max-md:gap-2 max-md:px-3 max-md:py-2',
   'transition-[background-color,box-shadow] duration-200',
-  'hover:bg-[color-mix(in_srgb,#E2D9D0_45%,#F2EEE8)]',
-  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,#FF5C1B_35%,transparent)] focus-visible:ring-inset',
+  'hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_22%,var(--leve-neu-bg))]',
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] focus-visible:ring-inset',
   '[&::-webkit-details-marker]:hidden'
 );
 
 export const businessRulesCardTitleClass = cn(
-  'block border-b border-transparent pb-1 text-base font-bold tracking-tight text-[#401C31]',
-  'group-open:border-[#DED7CD]'
+  'business-rules-card-title block border-b border-transparent pb-1 text-base font-bold tracking-tight text-[var(--leve-header-text)]',
+  'group-open:border-[color-mix(in_srgb,var(--leve-neu-light)_38%,transparent)]'
 );
 
 export const businessRulesCardChevronClass =
-  'h-5 w-5 shrink-0 text-[#6B5E5E] transition-transform duration-200 group-open:rotate-180';
+  'business-rules-card-chevron h-5 w-5 shrink-0 text-[var(--leve-header-text-muted)] transition-transform duration-200 group-open:rotate-180';
 
 export const businessRulesCardBodyClass = cn(
-  'space-y-4 border-t border-[#DED7CD] bg-[#F2EEE8] px-4 py-4 sm:px-5',
+  'business-rules-card-body space-y-4 border-t border-[color-mix(in_srgb,var(--leve-neu-light)_38%,transparent)] px-4 py-4 sm:px-5',
   'max-md:space-y-3 max-md:px-3 max-md:py-3'
 );
 
-export const businessRulesCardLabelClass =
-  'mb-2 text-[10px] font-bold uppercase tracking-widest text-[#6B5E5E]';
+export const businessRulesCardLabelClass = cn(
+  'business-rules-card-label mb-2 text-[10px] font-bold uppercase tracking-widest text-[var(--leve-header-text-muted)]'
+);
 
 /** Painel de descrição — inset profundo. */
 export const businessRulesCardInsetClass = cn(
   'business-rules-neu-inset jira-rich-content rounded-[var(--leve-header-radius)]',
   'px-4 py-4 sm:px-5 sm:py-5',
-  'prose-headings:font-heading prose-headings:text-[#401C31]',
-  'prose-p:leading-relaxed prose-p:text-[#401C31]',
-  'prose-strong:font-bold prose-strong:text-[#401C31]',
-  'prose-h2:mb-3 prose-h2:border-b prose-h2:border-[#DED7CD] prose-h2:pb-2',
-  'prose-h3:mb-2 prose-h3:border-b prose-h3:border-[#DED7CD] prose-h3:pb-1.5',
+  'prose-headings:font-heading prose-headings:text-[var(--leve-header-text)]',
+  'prose-p:leading-relaxed prose-p:text-[var(--leve-header-text)]',
+  'prose-strong:font-bold prose-strong:text-[var(--leve-header-text)]',
+  'prose-h2:mb-3 prose-h2:border-b prose-h2:border-[color-mix(in_srgb,var(--leve-neu-light)_38%,transparent)] prose-h2:pb-2',
+  'prose-h3:mb-2 prose-h3:border-b prose-h3:border-[color-mix(in_srgb,var(--leve-neu-light)_38%,transparent)] prose-h3:pb-1.5',
   'prose-ul:list-disc prose-ul:pl-6 prose-ol:list-decimal prose-ol:pl-6'
 );
 
 export const businessRulesCardEmptyDescClass = cn(
   businessRulesCardInsetClass,
-  'text-center text-sm italic text-[#6B5E5E]'
+  'text-center text-sm italic text-[var(--leve-header-text-muted)]'
 );
 
-export const businessRulesCardLinkedTextClass = 'text-sm leading-relaxed text-[#401C31]';
+export const businessRulesCardLinkedTextClass =
+  'business-rules-card-linked text-sm leading-relaxed text-[var(--leve-header-text)]';
 
+/** Editar / Excluir — trilho inset + pills alinhados no eixo. */
 export const businessRulesCardActionsClass = cn(
-  'flex flex-wrap items-center gap-2 border-t border-[#DED7CD] pt-4'
+  'business-rules-card-actions',
+  'workspace-chrome-inset app-neu-action-track',
+  'flex w-full min-h-[2.75rem] flex-row flex-nowrap items-center justify-end gap-1',
+  'rounded-[var(--leve-header-radius)] border-t border-[color-mix(in_srgb,var(--leve-neu-light)_38%,transparent)] p-1 pt-3'
 );
 
-/** Editar / Excluir — chip elevado. */
-export const businessRulesCardOutlineBtnClass = cn(
-  'business-rules-neu-chip business-rules-card-action-btn',
-  'inline-flex min-h-9 items-center gap-1.5 rounded-full px-4 py-2',
-  'font-sans text-sm font-semibold text-[#401C31]',
-  'transition-[box-shadow,color,background-color] duration-200',
-  'hover:text-[#FF5C1B]',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,#FF5C1B_28%,transparent)]',
-  'disabled:cursor-not-allowed disabled:opacity-50'
+const businessRulesCardActionBtnBase = cn(
+  'h-9 min-h-9 shrink-0 items-center justify-center gap-1.5 px-4 leading-none',
+  '[&_svg]:block [&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0'
 );
+
+export const businessRulesCardEditBtnClass = cn(
+  'business-rules-card-action-btn business-rules-card-action-edit',
+  appNeuActionBtnClass,
+  businessRulesCardActionBtnBase
+);
+
+export const businessRulesCardDeleteBtnClass = cn(
+  'business-rules-card-action-btn business-rules-card-action-delete',
+  appNeuActionBtnDangerClass,
+  businessRulesCardActionBtnBase
+);
+
+/** @deprecated Use `businessRulesCardEditBtnClass` */
+export const businessRulesCardOutlineBtnClass = businessRulesCardEditBtnClass;
 
 const businessRulesCategoryBadgeToneClass: Record<
   BusinessRuleCategoryBadgeVariant,

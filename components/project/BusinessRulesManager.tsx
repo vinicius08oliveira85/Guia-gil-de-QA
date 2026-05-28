@@ -34,7 +34,8 @@ import {
   businessRulesCardInsetClass,
   businessRulesCardLabelClass,
   businessRulesCardLinkedTextClass,
-  businessRulesCardOutlineBtnClass,
+  businessRulesCardDeleteBtnClass,
+  businessRulesCardEditBtnClass,
   businessRulesCardSummaryClass,
   businessRulesCardTitleClass,
   businessRulesCategoryBadgeClass,
@@ -468,7 +469,7 @@ export const BusinessRulesManager: React.FC<{
                               <div className={businessRulesCardActionsClass}>
                                 <button
                                   type="button"
-                                  className={businessRulesCardOutlineBtnClass}
+                                  className={businessRulesCardEditBtnClass}
                                   onClick={() => openEdit(rule)}
                                   aria-label={`Editar regra ${rule.title}`}
                                 >
@@ -477,10 +478,7 @@ export const BusinessRulesManager: React.FC<{
                                 </button>
                                 <button
                                   type="button"
-                                  className={cn(
-                                    businessRulesCardOutlineBtnClass,
-                                    'border-error/40 text-error hover:border-error/55 hover:bg-error/10'
-                                  )}
+                                  className={businessRulesCardDeleteBtnClass}
                                   onClick={() => setDeleteId(rule.id)}
                                   aria-label={`Excluir regra ${rule.title}`}
                                 >

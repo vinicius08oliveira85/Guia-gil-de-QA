@@ -11,6 +11,7 @@ import {
   leveSettingsHeaderStickyClass,
   leveSettingsPageClass,
   leveSettingsPanelClass,
+  leveSettingsTabActiveClass,
   leveSettingsTabClass,
   leveSettingsTabsNavClass,
   leveViewPageSubtitleClass,
@@ -142,7 +143,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     onKeyDown={handleTabKeyDown}
-                    className={leveSettingsTabClass}
+                    className={isActive ? leveSettingsTabActiveClass : leveSettingsTabClass}
                     data-active={isActive ? 'true' : undefined}
                     role="tab"
                     aria-selected={isActive}

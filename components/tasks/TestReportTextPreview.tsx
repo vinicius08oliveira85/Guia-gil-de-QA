@@ -94,7 +94,7 @@ function getSummaryMetricStyles(type: keyof PreviewSummaryMetrics) {
         label: 'Não executados',
         Icon: Clock3,
         className:
-          'border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] text-base-content/70',
+          'border-[color-mix(in_srgb,#5C524B_38%,transparent)] bg-[color-mix(in_srgb,#3A342F_22%,#4B433D)] text-[rgba(245,241,230,0.78)]',
       };
   }
 }
@@ -388,7 +388,10 @@ export const TestReportTextPreview: React.FC<TestReportTextPreviewProps> = ({
               return (
                 <p
                   key={`${row.type}-${index}`}
-                  className="rounded-[var(--leve-header-radius)] border border-[var(--leve-header-border)] bg-white px-3 py-2 text-sm leading-relaxed text-[var(--leve-header-text)]"
+                  className={cn(
+                    testReportModalPreviewFieldClass,
+                    'text-sm leading-relaxed text-[var(--leve-header-text)]'
+                  )}
                 >
                   {row.content}
                 </p>

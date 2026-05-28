@@ -30,6 +30,22 @@ export const neuListPanelMenuClass = 'app-menu-panel';
 export const neuLegacyPanelClass = neuSurfaceClass;
 export const neuLegacyInsetClass = neuSurfaceInsetClass;
 
+/** Substitui `bg-surface border border-surface-border rounded-lg` (painéis legados). */
+export const neuLegacySurfacePanelClass = cn(
+  neuSurfaceClass,
+  'rounded-[var(--leve-header-radius)] border border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] p-3 sm:p-4'
+);
+
+/** Substitui `bg-surface border border-surface-border rounded-lg` em itens de lista. */
+export const neuLegacyListItemPanelClass = cn(
+  neuSurfaceClass,
+  'rounded-lg border border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] transition-[box-shadow] duration-200'
+);
+
+/** Substitui `hover:bg-surface-hover` em linhas de menu legadas. */
+export const neuLegacyMenuRowHoverClass =
+  'hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_14%,var(--leve-neu-bg))] hover:text-[var(--leve-header-text)]';
+
 /** Chip de filtro ativo (listas, tarefas). */
 export const neuFilterChipClass = cn(
   'leve-neu-pill app-element-typography inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-[var(--leve-header-text-muted)]'
@@ -124,7 +140,7 @@ export const neuSegmentedTabBadgeIdleClass = cn(
   '!text-[var(--leve-header-text-muted)] leve-neu-pill'
 );
 
-/** Chip de filtro compacto (glossário, KPIs, preferências) — raised / ativo inset. */
+/** Chip de filtro compacto (KPIs, preferências) — raised / ativo inset. */
 export const neuFilterPillClass = (active: boolean) =>
   cn(
     'inline-flex shrink-0 items-center whitespace-nowrap rounded-full px-3 py-1.5 font-sans text-xs transition-[box-shadow,color]',

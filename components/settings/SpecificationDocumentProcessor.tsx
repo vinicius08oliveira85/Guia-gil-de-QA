@@ -27,6 +27,7 @@ import {
   documentsSectionTitleClass,
   documentsSpecRemoveBtnClass,
 } from '../documents/documentsNeuUi';
+import { appNeuActionTrackWrapClass } from '../common/workspaceChromeActionUi';
 
 interface SpecificationDocumentProcessorProps {
   project: Project;
@@ -151,7 +152,7 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
               <strong className={documentsStrongTextClass}>{formatSize(documentSize)}</strong>
             </p>
           )}
-          <div className="flex flex-wrap gap-2 pt-0.5">
+          <div className={cn(appNeuActionTrackWrapClass, 'pt-0.5')}>
             <label className={cn(primaryLabelClass, 'cursor-pointer')}>
               <RefreshCw className="h-4 w-4" aria-hidden />
               Reprocessar documento

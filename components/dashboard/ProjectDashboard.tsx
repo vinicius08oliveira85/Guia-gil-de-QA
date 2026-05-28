@@ -7,6 +7,7 @@ import {
   projectDashboardInsightAccentClass,
   projectDashboardInsightCardClass,
   projectDashboardInsightChipClass,
+  projectDashboardInsightCodeClass,
   projectDashboardInsightCountBadgeClass,
   projectDashboardInsightHeaderClass,
   projectDashboardInsightMetricBadgeClass,
@@ -24,7 +25,7 @@ import {
   countBugsWithReopenLinks,
   defectCreatedPerWeekSeries,
 } from './projectDashboardHelpers';
-import { dashboardDonutWellClass } from './dashboardNeuUi';
+import { dashboardDonutWellClass, dashboardInsightWellClass } from './dashboardNeuUi';
 
 const LABEL_CLASS = projectDashboardInsightMutedClass;
 const VALUE_STRONG_CLASS = projectDashboardInsightTextClass;
@@ -32,7 +33,8 @@ const VALUE_ACCENT_CLASS = projectDashboardInsightAccentClass;
 
 const PIE_PASSED = 'var(--project-dashboard-insight-accent)';
 const PIE_FAILED = '#e54b4f';
-const PIE_BLOCKED = 'var(--project-dashboard-insight-title)';
+const PIE_BLOCKED =
+  'color-mix(in srgb, var(--project-dashboard-insight-text-muted) 50%, var(--project-dashboard-insight-text))';
 const PIE_PENDING = 'color-mix(in srgb, var(--project-dashboard-insight-text) 35%, transparent)';
 
 function sectorPath(cx: number, cy: number, r: number, a0: number, a1: number): string {
@@ -116,7 +118,7 @@ const ExecutionPieSvg = React.memo(function ExecutionPieSvg(props: {
             key={s.label}
             className={cn(
               'flex cursor-default items-center gap-1.5 rounded-md px-1 py-0.5 transition-colors',
-              hoverLabel === s.label && 'bg-[var(--project-dashboard-insight-chip)]'
+              hoverLabel === s.label && projectDashboardInsightChipClass
             )}
             onMouseEnter={() => s.value > 0 && setHoverLabel(s.label)}
             onMouseLeave={() => setHoverLabel(null)}
@@ -149,7 +151,7 @@ const MiniSparkline = React.memo(function MiniSparkline({ values }: { values: nu
   });
   const points = pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
   return (
-    <div className={cn(projectDashboardInsightChipClass, 'relative inline-block p-2')}>
+    <div className={cn(dashboardInsightWellClass, 'relative')}>
       <svg
         width={w}
         height={h}
@@ -470,7 +472,12 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
                       }
                       delay={100}
                     >
-                      <div className="cursor-default rounded-md py-0.5 transition-colors hover:bg-[var(--project-dashboard-insight-chip)]">
+                      <div
+                        className={cn(
+                          'cursor-default rounded-md py-0.5 transition-[box-shadow] duration-200',
+                          'hover:shadow-[var(--workspace-panel-neu-inset)]'
+                        )}
+                      >
                         <div className="flex justify-between gap-2 text-xs">
                           <span className={cn('truncate', LABEL_CLASS)}>{row.label}</span>
                           <span className={cn('shrink-0 tabular-nums', VALUE_STRONG_CLASS)}>{row.count}</span>
@@ -615,13 +622,8 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
           hint={
             <span>
               Média em dias entre{' '}
-              <code className="rounded bg-[var(--project-dashboard-insight-chip)] px-1">
-                createdAt
-              </code>{' '}
-              e{' '}
-              <code className="rounded bg-[var(--project-dashboard-insight-chip)] px-1">
-                completedAt
-              </code>{' '}
+              <code className={projectDashboardInsightCodeClass}>createdAt</code> e{' '}
+              <code className={projectDashboardInsightCodeClass}>completedAt</code>{' '}
               nos bugs já fechados.
             </span>
           }
@@ -659,13 +661,8 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
           </Tooltip>
           <p className={cn('mt-2 text-xs', LABEL_CLASS)}>
             Média sobre bugs com{' '}
-            <code className="rounded bg-[var(--project-dashboard-insight-chip)] px-1 text-[0.7rem]">
-              createdAt
-            </code>{' '}
-            e{' '}
-            <code className="rounded bg-[var(--project-dashboard-insight-chip)] px-1 text-[0.7rem]">
-              completedAt
-            </code>
+            <code className={projectDashboardInsightCodeClass}>createdAt</code> e{' '}
+            <code className={projectDashboardInsightCodeClass}>completedAt</code>
             .
           </p>
         </InsightCard>

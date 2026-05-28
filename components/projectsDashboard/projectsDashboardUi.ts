@@ -1,7 +1,12 @@
 import { cn } from '../../utils/cn';
+import { appDarkPageSurfaceClass, appDarkSidebarPanelClass } from '../common/appPageNeuUi';
 
-/** Fundo e escopo da página Meus Projetos */
-export const projectsDashboardPageClass = 'app-page projects-dash-page animate-fade-in min-h-[calc(100vh-4rem)] font-body';
+/** Fundo e escopo da página Meus Projetos — superfície #4B433D neumórfica (ver index.css). */
+export const projectsDashboardPageClass = cn(
+  'app-page projects-dash-page',
+  appDarkPageSurfaceClass,
+  'animate-fade-in min-h-[calc(100vh-4rem)] font-body'
+);
 
 /** Badge "Workspace" e chips do cabeçalho */
 export const projectsDashboardHeaderBadgeClass = cn(
@@ -46,10 +51,14 @@ export function projectsDashboardQuickFiltersPillClass(
 export const projectsDashboardQuickFiltersDividerClass =
   'projects-dash-quick-filters-divider';
 
-/** Painéis vazios / mensagens na grade */
+/** Painéis vazios / mensagens na grade — relevo elevado (evitar bg-surface plano). */
 export const projectsDashboardMessagePanelClass = cn(
   'projects-dash-surface-raised rounded-[var(--projects-dash-radius)] p-4 text-center sm:p-5'
 );
+
+/** Selects e filtros do dashboard — inset/raised via CSS em index.css (projects-dash-neu-*). */
+export const projectsDashboardNeuFieldHintClass =
+  'font-sans text-xs text-[var(--workspace-stat-text-muted)]';
 
 /** Banner de sincronização */
 export function projectsDashboardSyncAlertClass(variant: 'warning' | 'error'): string {
@@ -87,4 +96,14 @@ export const projectsDashboardMainGridClass = cn(
 export const projectsDashboardProjectGridClass = cn(
   'grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 md:gap-5',
   'max-md:gap-2'
+);
+
+/**
+ * Painel lateral (métricas + status) — fundo #4B433D e neumorfismo do modelo Leve.
+ * Classe dedicada + CSS fora de @layer em index.css (prioridade sobre DaisyUI/Tailwind).
+ */
+export const projectsDashboardSidebarPanelClass = cn(
+  appDarkSidebarPanelClass,
+  'workspace-panel-neu-shell',
+  'relative flex flex-col overflow-hidden font-sans gap-0 p-4 sm:p-5'
 );

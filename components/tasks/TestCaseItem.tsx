@@ -472,9 +472,8 @@ export const TestCaseItem: React.FC<{
           <AppSelect
             id={`tc-exec-kind-${testCase.id}`}
             value={testCase.executionKind ?? ''}
-            onChange={e => {
+            onChange={raw => {
               if (!onExecutionKindChange) return;
-              const raw = e.target.value;
               if (raw === '') onExecutionKindChange(undefined);
               else onExecutionKindChange(raw as TestCaseExecutionKind);
             }}

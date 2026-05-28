@@ -23,24 +23,18 @@ export const taskDetailsModalShellClass = cn(
 
 
 export const taskDetailsModalBodyClass = cn(
-
-  'bg-[#EBE6DE] text-[#401C31]',
-
-  'scrollbar-thumb-[color-mix(in_srgb,#FF5C1B_35%,transparent)]',
-
-  'hover:scrollbar-thumb-[color-mix(in_srgb,#FF5C1B_50%,transparent)]'
-
+  'bg-[#4B433D] text-[rgba(245,241,230,0.72)]',
+  'scrollbar-thumb-[color-mix(in_srgb,#E65100_35%,transparent)]',
+  'hover:scrollbar-thumb-[color-mix(in_srgb,#E65100_50%,transparent)]'
 );
 
-
-
-export const taskDetailsModalTitleClass = 'text-[#401C31]';
+export const taskDetailsModalTitleClass = 'text-[#FDF6E3]';
 
 /** Rótulo da seção ativa no cabeçalho do modal (pill neumórfica, texto legível). */
 export const taskDetailsModalHeaderSectionClass = cn(
   'task-details-neu-header-section',
   'inline-flex w-fit max-w-full shrink-0 items-center rounded-full px-3 py-1',
-  'font-sans text-[10px] font-semibold tracking-wide text-[#401C31] sm:text-[11px]',
+  'font-sans text-[10px] font-semibold tracking-wide text-[#FDF6E3] sm:text-[11px]',
   'truncate'
 );
 
@@ -390,7 +384,7 @@ export const testCaseDetailLevelOptionClass = (active: boolean) =>
 
     active
 
-      ? 'test-case-detail-level-option--active task-details-neu-chip--active font-semibold text-[#FFFFFF]'
+      ? 'test-case-detail-level-option--active task-details-neu-chip--active font-semibold text-[#FDF6E3]'
 
       : 'task-details-neu-chip font-medium text-[var(--leve-header-text-muted)]'
 
@@ -408,11 +402,11 @@ export const taskDetailsModalPrimaryCtaClass = cn(
 
   'font-sans text-sm font-bold sm:min-h-9',
 
-  'border border-[color-mix(in_srgb,#FF5C1B_45%,transparent)] bg-[#FF5C1B] text-[#FFFFFF]',
+  'border border-[color-mix(in_srgb,#E65100_45%,transparent)] bg-[#E65100] text-[#FDF6E3]',
 
-  'transition-[filter,transform,box-shadow] duration-150 hover:brightness-105',
+  'transition-[filter,transform,box-shadow] duration-150 hover:brightness-110',
 
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,#FF5C1B_28%,transparent)]',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,#E65100_35%,transparent)]',
 
   'disabled:cursor-not-allowed disabled:opacity-50'
 

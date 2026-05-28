@@ -1,0 +1,529 @@
+/**
+ * Modal de tarefa + Registro de Testes — neumorfismo escuro Leve.
+ * #4B433D / #E65100 / #FDF6E3 · sombras #3A342F / #5C524B
+ * Carregado fora de @layer para prevalecer sobre o tema claro legado em index.css.
+ */
+
+:is(.task-details-neu-modal, .test-report-neu-modal) {
+  --td-neu-bg: #4b433d;
+  --td-neu-dark: #3a342f;
+  --td-neu-light: #5c524b;
+  --td-neu-accent: #e65100;
+  --td-neu-text: #fdf6e3;
+  --td-neu-text-muted: rgba(245, 241, 230, 0.72);
+  --td-neu-raised:
+    6px 6px 16px color-mix(in srgb, #3a342f 52%, transparent),
+    -4px -4px 10px color-mix(in srgb, #5c524b 26%, #4b433d);
+  --td-neu-inset: inset 5px 5px 10px #3a342f, inset -4px -4px 8px #5c524b;
+  --td-neu-inset-deep: inset 6px 6px 12px #3a342f, inset -5px -5px 10px #5c524b;
+  --leve-neu-bg: #4b433d;
+  --leve-neu-light: #5c524b;
+  --leve-neu-dark: #3a342f;
+  --leve-header-text: #fdf6e3;
+  --leve-header-text-muted: rgba(245, 241, 230, 0.72);
+  --leve-header-accent: #e65100;
+  --leve-header-cream: #fdf6e3;
+  --leve-header-bg: #4b433d;
+  --leve-header-border: color-mix(in srgb, #5c524b 42%, transparent);
+  --leve-neu-raised: var(--td-neu-raised);
+  --leve-neu-inset: var(--td-neu-inset);
+  --leve-neu-inset-deep: var(--td-neu-inset-deep);
+  --workspace-panel-accent: #e65100;
+  --color-primary: #e65100;
+  --color-primary-deep: #fdf6e3;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal).leve-modal-neu-shell {
+  border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
+  background: #4b433d !important;
+  color: var(--td-neu-text-muted) !important;
+  box-shadow:
+    10px 10px 28px color-mix(in srgb, #3a342f 55%, transparent),
+    -6px -6px 16px color-mix(in srgb, #5c524b 28%, #4b433d),
+    0 24px 48px color-mix(in srgb, #3a342f 35%, transparent) !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .leve-modal-neu-header {
+  border-color: color-mix(in srgb, #5c524b 38%, transparent) !important;
+  background: color-mix(in srgb, #3a342f 18%, #4b433d) !important;
+  color: #fdf6e3 !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .leve-modal-neu-header :is([id$='-modal-title'], .font-bold) {
+  color: #fdf6e3 !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .leve-modal-neu-close {
+  border: 1px solid color-mix(in srgb, #5c524b 40%, transparent) !important;
+  background: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
+  color: rgba(245, 241, 230, 0.78) !important;
+  box-shadow:
+    3px 3px 8px color-mix(in srgb, #3a342f 55%, transparent),
+    -2px -2px 6px color-mix(in srgb, #5c524b 30%, #4b433d) !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .leve-modal-neu-close:hover {
+  color: #e65100 !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) > div.custom-scrollbar,
+:is(.task-details-neu-modal, .test-report-neu-modal) .custom-scrollbar {
+  background: #4b433d !important;
+  color: var(--td-neu-text-muted) !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .text-base-content,
+:is(.task-details-neu-modal, .test-report-neu-modal) .text-base-content\/70,
+:is(.task-details-neu-modal, .test-report-neu-modal) .text-base-content\/60,
+:is(.task-details-neu-modal, .test-report-neu-modal) .text-muted {
+  color: var(--td-neu-text-muted) !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .text-primary {
+  color: #e65100 !important;
+}
+
+/* Cards / seções elevadas */
+:is(.task-details-neu-modal, .test-report-neu-modal) :is(
+    .task-modal-section,
+    .task-details-neu-raised,
+    .test-report-neu-section,
+    .test-strategy-neu-card,
+    .test-report-neu-stat-card,
+    .test-report-neu-format-idle
+  ) {
+  border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
+  border-radius: var(--leve-header-radius);
+  background: color-mix(in srgb, #5c524b 11%, #4b433d) !important;
+  box-shadow: var(--td-neu-raised) !important;
+  color: var(--td-neu-text-muted) !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .task-modal-section-accent,
+:is(.task-details-neu-modal, .test-report-neu-modal) .test-report-neu-format-option--active {
+  border: 1px solid color-mix(in srgb, #e65100 38%, #5c524b) !important;
+  background: color-mix(in srgb, #e65100 12%, #4b433d) !important;
+  box-shadow: var(--td-neu-inset) !important;
+  color: #fdf6e3 !important;
+}
+
+/* Inset / trilhos / descrição */
+:is(.task-details-neu-modal, .test-report-neu-modal) :is(
+    .task-details-neu-inset,
+    .task-details-neu-inset-deep,
+    .task-details-neu-description,
+    .task-details-neu-watchers,
+    .test-strategy-neu-inset,
+    .test-report-neu-inset,
+    .test-report-neu-preview-field,
+    .leve-neu-surface-inset
+  ) {
+  border: 1px solid color-mix(in srgb, #3a342f 48%, transparent) !important;
+  background: color-mix(in srgb, #3a342f 24%, #4b433d) !important;
+  box-shadow: var(--td-neu-inset-deep) !important;
+  color: var(--td-neu-text-muted) !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) :is(.task-details-neu-track, .task-details-neu-tabs-track) {
+  border: 1px solid color-mix(in srgb, #3a342f 55%, transparent) !important;
+  border-radius: 9999px !important;
+  background: color-mix(in srgb, #3a342f 32%, #4b433d) !important;
+  box-shadow: var(--td-neu-inset-deep) !important;
+}
+
+/* Chips / pills / abas */
+:is(.task-details-neu-modal, .test-report-neu-modal) :is(
+    .task-details-neu-chip,
+    .leve-neu-pill,
+    .task-details-neu-ghost-btn,
+    .task-details-neu-jira-btn,
+    .task-details-neu-back-btn,
+    .test-report-neu-chip-btn,
+    .test-report-generate-record-btn,
+    .app-btn-outline,
+    .btn-ghost,
+    .btn-outline
+  ):not(.task-details-neu-chip--active):not(.task-details-neu-chip--status-active):not(
+    .leve-neu-pill-active
+  ):not(.task-details-neu-tab--active) {
+  border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
+  border-radius: 9999px;
+  background: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
+  color: var(--td-neu-text-muted) !important;
+  box-shadow: var(--td-neu-raised) !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal)
+  :is(.task-details-neu-chip, .leve-neu-pill, .test-report-neu-chip-btn, .test-report-generate-record-btn):hover:not(
+    :disabled
+  ) {
+  color: #fdf6e3 !important;
+  border-color: color-mix(in srgb, #e65100 28%, #5c524b) !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) :is(.task-details-neu-chip--active, .task-details-neu-tab--active) {
+  border: 1px solid color-mix(in srgb, #e65100 42%, #5c524b) !important;
+  background: #e65100 !important;
+  color: #fdf6e3 !important;
+  box-shadow:
+    var(--td-neu-raised),
+    0 0 12px color-mix(in srgb, #e65100 28%, transparent) !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) :is(.task-details-neu-chip--status-active, .task-details-neu-status-pill--active) {
+  border-color: color-mix(in srgb, #e65100 42%, #5c524b) !important;
+  background: color-mix(in srgb, #e65100 14%, #4b433d) !important;
+  color: #e65100 !important;
+  box-shadow: var(--td-neu-inset) !important;
+}
+
+/* Status rápido — trilho */
+:is(.task-details-neu-modal, .test-report-neu-modal) .task-details-neu-status-track {
+  border: 1px solid color-mix(in srgb, #3a342f 55%, transparent) !important;
+  background: color-mix(in srgb, #3a342f 32%, #4b433d) !important;
+  box-shadow: var(--td-neu-inset-deep) !important;
+}
+
+/* Cabeçalhos de card (BDD, Campos do Jira) — barra escura inset */
+:is(.task-details-neu-modal, .test-report-neu-modal) .task-details-neu-section-header {
+  border-color: color-mix(in srgb, #3a342f 48%, transparent) !important;
+  background: color-mix(in srgb, #3a342f 22%, #4b433d) !important;
+  box-shadow: var(--td-neu-inset) !important;
+  color: #fdf6e3 !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .task-details-neu-section-header :is(h2, h3, .font-semibold) {
+  color: #fdf6e3 !important;
+}
+
+/* Rótulos de seção (RESPONSÁVEL, DESCRIÇÃO, TIPO DE EXECUÇÃO…) */
+:is(.task-details-neu-modal, .test-report-neu-modal) :is(
+    .task-card-field-label,
+    .task-card-section-title,
+    .workspace-panel-section-title
+  ) {
+  color: #e65100 !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) :is(.task-card-title, .task-details-neu-header-section) {
+  color: #fdf6e3 !important;
+}
+
+/* Pill «Resumo» no cabeçalho — vence tema claro legado em index.css */
+:is(.task-details-neu-modal, .test-report-neu-modal) .task-details-neu-header-section {
+  border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
+  background: color-mix(in srgb, #5c524b 11%, #4b433d) !important;
+  color: #fdf6e3 !important;
+  box-shadow: var(--td-neu-raised) !important;
+}
+
+/* Contador nas abas (incl. span com leve-neu-pill-active) */
+:is(.task-details-neu-modal, .test-report-neu-modal)
+  :is(
+    [role='tab'][aria-selected='true'] .task-details-neu-tab-count,
+    .task-details-neu-chip--active .task-details-neu-tab-count,
+    .task-details-neu-tab--active .task-details-neu-tab-count
+  ),
+:is(.task-details-neu-modal, .test-report-neu-modal) .task-details-neu-tab-count.leve-neu-pill-active {
+  border: 1px solid color-mix(in srgb, #3a342f 55%, transparent) !important;
+  background: color-mix(in srgb, #3a342f 42%, #4b433d) !important;
+  color: #fdf6e3 !important;
+  box-shadow: var(--td-neu-inset) !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) [role='tab']:not([aria-selected='true']) .task-details-neu-tab-count {
+  color: var(--td-neu-text-muted) !important;
+}
+
+/* Descrição Jira / prose */
+:is(.task-details-neu-modal, .test-report-neu-modal) :is(.jira-rich-content, .jira-rich-content.prose) {
+  color: #fdf6e3 !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal)
+  .jira-rich-content
+  :is(p, li, span, div, td, th, strong, em, h1, h2, h3, h4, h5, h6) {
+  color: inherit !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .jira-rich-content a {
+  color: #e65100 !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .jira-rich-content :is(ul, ol) {
+  color: #fdf6e3 !important;
+}
+
+/* Anexos Jira */
+:is(.task-details-neu-modal) .file-preview :is(.text-base-content\/50, .text-base-content\/70) {
+  color: var(--td-neu-text-muted) !important;
+}
+
+:is(.task-details-neu-modal) .file-preview .text-error\/80 {
+  color: color-mix(in srgb, #e65100 72%, #fdf6e3) !important;
+}
+
+:is(.task-details-neu-modal) .file-preview .text-base-content\/20 {
+  color: color-mix(in srgb, #fdf6e3 28%, transparent) !important;
+}
+
+/* Prévia relatório — campos que ainda usam bg-white */
+:is(.task-details-neu-modal, .test-report-neu-modal) .bg-white {
+  border: 1px solid color-mix(in srgb, #3a342f 48%, transparent) !important;
+  background: color-mix(in srgb, #3a342f 24%, #4b433d) !important;
+  color: #fdf6e3 !important;
+  box-shadow: var(--td-neu-inset-deep) !important;
+}
+
+/* Editor de caso — painéis de prévia e checkbox */
+:is(.task-details-neu-modal) label:has(.checkbox) {
+  border: 1px solid color-mix(in srgb, #3a342f 48%, transparent) !important;
+  background: color-mix(in srgb, #3a342f 22%, #4b433d) !important;
+  color: #fdf6e3 !important;
+  box-shadow: var(--td-neu-inset) !important;
+}
+
+:is(.task-details-neu-modal) label:has(.checkbox) :is(.font-semibold, span) {
+  color: #fdf6e3 !important;
+}
+
+:is(.task-details-neu-modal) .task-modal-section.leve-neu-surface-inset,
+:is(.task-details-neu-modal) .task-modal-section {
+  color: var(--td-neu-text-muted) !important;
+}
+
+:is(.task-details-neu-modal) .leve-neu-surface-inset.mt-2 :is(p, li, span, .prose) {
+  color: #fdf6e3 !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) :is(h1, h2, h3, h4, h5) {
+  color: #fdf6e3 !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .task-card-muted,
+:is(.task-details-neu-modal, .test-report-neu-modal) .task-details-neu-exec-badge {
+  color: var(--td-neu-text-muted) !important;
+}
+
+/* CTAs primários */
+:is(.task-details-neu-modal, .test-report-neu-modal) :is(
+    .btn-primary,
+    .app-btn-primary-inline,
+    .task-details-neu-primary-cta,
+    .test-report-neu-primary-btn,
+    .test-case-detail-level-option--active
+  ) {
+  border: 1px solid color-mix(in srgb, #e65100 45%, #3a342f) !important;
+  background: #e65100 !important;
+  color: #fdf6e3 !important;
+  box-shadow:
+    0 2px 10px color-mix(in srgb, #e65100 35%, transparent),
+    var(--td-neu-raised) !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) :is(.btn-primary, .task-details-neu-primary-cta):hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+/* Inputs */
+:is(.task-details-neu-modal, .test-report-neu-modal) :is(
+    .input,
+    .textarea,
+    .select:not(.select-ghost),
+    .app-input,
+    .task-details-neu-select,
+    .task-details-neu-textarea
+  ) {
+  border: 1px solid color-mix(in srgb, #3a342f 48%, transparent) !important;
+  background: color-mix(in srgb, #3a342f 28%, #4b433d) !important;
+  color: #fdf6e3 !important;
+  box-shadow: var(--td-neu-inset) !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) :is(.input, .textarea, input)::placeholder {
+  color: rgba(245, 241, 230, 0.5) !important;
+}
+
+/* Badges de contagem nas abas */
+:is(.task-details-neu-modal, .test-report-neu-modal) .task-details-neu-tab-count,
+:is(.task-details-neu-modal, .test-report-neu-modal) [role='tab'] .badge {
+  border: 1px solid color-mix(in srgb, #5c524b 38%, transparent) !important;
+  background: color-mix(in srgb, #3a342f 22%, #4b433d) !important;
+  color: #fdf6e3 !important;
+  box-shadow: var(--td-neu-raised) !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .task-details-neu-tab--active .task-details-neu-tab-count,
+:is(.task-details-neu-modal) .task-details-neu-chip--active .task-details-neu-tab-count,
+:is(.task-details-neu-modal) .leve-neu-pill-active .task-details-neu-tab-count {
+  border: 1px solid color-mix(in srgb, #3a342f 55%, transparent) !important;
+  background: color-mix(in srgb, #3a342f 38%, #4b433d) !important;
+  color: #fdf6e3 !important;
+  box-shadow: var(--td-neu-inset) !important;
+}
+
+/* Sub-abas Testes (Estratégia / Casos de teste) — trilho + pill ativa */
+:is(.task-details-neu-modal) .leve-neu-pill-active:not(.task-details-neu-status-pill--active) {
+  border: 1px solid color-mix(in srgb, #e65100 45%, #5c524b) !important;
+  background: #e65100 !important;
+  color: #fdf6e3 !important;
+  box-shadow:
+    var(--td-neu-raised),
+    0 0 10px color-mix(in srgb, #e65100 22%, transparent) !important;
+}
+
+/* Filtros KPI / chip «Não Executado» — sem brilho claro */
+:is(.task-details-neu-modal) span.leve-neu-pill.leve-neu-pill-active:has(button),
+:is(.task-details-neu-modal) .leve-neu-pill-active.font-semibold {
+  border: 1px solid color-mix(in srgb, #e65100 38%, #5c524b) !important;
+  background: color-mix(in srgb, #e65100 16%, #4b433d) !important;
+  color: #fdf6e3 !important;
+  box-shadow: var(--td-neu-raised) !important;
+  filter: none !important;
+}
+
+:is(.task-details-neu-modal) .leve-neu-pill:not(.leve-neu-pill-active) {
+  background: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
+  color: var(--td-neu-text-muted) !important;
+  box-shadow: var(--td-neu-raised) !important;
+}
+
+/* Selecionar todos + faixa de seleção */
+:is(.task-details-neu-modal) .leve-neu-surface-inset.leve-neu-inset-content:has(.checkbox) {
+  border: 1px solid color-mix(in srgb, #3a342f 48%, transparent) !important;
+  background: color-mix(in srgb, #3a342f 20%, #4b433d) !important;
+  box-shadow: var(--td-neu-inset-deep) !important;
+}
+
+/* Checkbox no modal */
+:is(.task-details-neu-modal, .test-report-neu-modal) .checkbox {
+  border: 1px solid color-mix(in srgb, #5c524b 55%, transparent) !important;
+  background: color-mix(in srgb, #3a342f 28%, #4b433d) !important;
+  --chkbg: #e65100;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .checkbox:checked {
+  border-color: color-mix(in srgb, #e65100 50%, transparent) !important;
+  background: color-mix(in srgb, #e65100 22%, #4b433d) !important;
+  box-shadow: var(--td-neu-inset) !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .checkbox:checked::after {
+  filter: brightness(1.2);
+}
+
+/* Roteiro completo + blocos AÇÃO NECESSÁRIA */
+:is(.task-details-neu-modal) .task-details-neu-roteiro-header,
+:is(.task-details-neu-modal) .task-details-neu-roteiro-shell {
+  border-color: color-mix(in srgb, #3a342f 42%, transparent) !important;
+  background: color-mix(in srgb, #3a342f 18%, #4b433d) !important;
+  box-shadow: var(--td-neu-inset) !important;
+  color: #fdf6e3 !important;
+}
+
+:is(.task-details-neu-modal) .task-details-neu-roteiro-block {
+  border: 1px solid color-mix(in srgb, #3a342f 48%, transparent) !important;
+  background: color-mix(in srgb, #3a342f 26%, #4b433d) !important;
+  box-shadow: var(--td-neu-inset-deep) !important;
+  color: #fdf6e3 !important;
+}
+
+:is(.task-details-neu-modal) .task-details-neu-roteiro-block strong,
+:is(.task-details-neu-modal) .task-details-neu-roteiro-block .font-bold {
+  color: #e65100 !important;
+}
+
+/* Toolbar de ações do caso de teste (editar, copiar…) */
+:is(.task-details-neu-modal) .leve-neu-surface-inset.inline-flex.rounded-full {
+  border: 1px solid color-mix(in srgb, #3a342f 48%, transparent) !important;
+  background: color-mix(in srgb, #3a342f 24%, #4b433d) !important;
+  box-shadow: var(--td-neu-inset-deep) !important;
+}
+
+/* Ícone Campos do Jira */
+:is(.task-details-neu-modal) .leve-settings-section-icon-wrap {
+  border: 1px solid color-mix(in srgb, #e65100 38%, #5c524b) !important;
+  background: color-mix(in srgb, #3a342f 28%, #4b433d) !important;
+  color: #e65100 !important;
+  box-shadow: var(--td-neu-raised), 0 0 10px color-mix(in srgb, #e65100 18%, transparent) !important;
+}
+
+/* Painel accent (lote selecionado) */
+:is(.task-details-neu-modal) .task-modal-section-accent {
+  border: 1px solid color-mix(in srgb, #e65100 32%, #5c524b) !important;
+  background: color-mix(in srgb, #e65100 10%, #4b433d) !important;
+  box-shadow: var(--td-neu-inset) !important;
+}
+
+/* Botão limpar filtros */
+:is(.task-details-neu-modal) button.btn-ghost.text-error {
+  color: oklch(var(--er)) !important;
+  background: color-mix(in srgb, #5c524b 8%, #4b433d) !important;
+  border: 1px solid color-mix(in srgb, oklch(var(--er)) 28%, #5c524b) !important;
+  box-shadow: var(--td-neu-raised) !important;
+}
+
+:is(.task-details-neu-modal) .text-muted,
+:is(.task-details-neu-modal) .font-body.text-muted {
+  color: var(--td-neu-text-muted) !important;
+}
+
+/* Preview do relatório */
+:is(.task-details-neu-modal, .test-report-neu-modal) .test-report-neu-preview-header {
+  border-color: color-mix(in srgb, #5c524b 38%, transparent) !important;
+  background: color-mix(in srgb, #3a342f 18%, #4b433d) !important;
+  color: #fdf6e3 !important;
+}
+
+/* Toggle estratégia */
+:is(.task-details-neu-modal, .test-report-neu-modal) .test-strategy-neu-toggle {
+  border: 1px solid color-mix(in srgb, #3a342f 48%, transparent) !important;
+  background: color-mix(in srgb, #3a342f 28%, #4b433d) !important;
+  box-shadow: var(--td-neu-inset-deep) !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .test-strategy-neu-toggle::after {
+  border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
+  background: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
+  box-shadow: var(--td-neu-raised) !important;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .peer:checked + .test-strategy-neu-toggle {
+  background: color-mix(in srgb, #10b981 35%, #4b433d) !important;
+}
+
+/* Nav footer */
+:is(.task-details-neu-modal, .test-report-neu-modal) .task-details-neu-nav-footer {
+  border: 1px solid color-mix(in srgb, #5c524b 38%, transparent) !important;
+  background: color-mix(in srgb, #3a342f 20%, #4b433d) !important;
+  box-shadow: var(--td-neu-inset-deep) !important;
+}
+
+/* Status exec buttons (success/error/warning) */
+:is(.task-details-neu-modal) .task-details-neu-status-btn.task-details-neu-chip--active.text-success {
+  border-color: color-mix(in srgb, #10b981 35%, #5c524b) !important;
+  background: color-mix(in srgb, #10b981 14%, #4b433d) !important;
+  color: #6ee7b7 !important;
+}
+
+:is(.task-details-neu-modal) .task-details-neu-status-btn.task-details-neu-chip--active.text-error {
+  border-color: color-mix(in srgb, oklch(var(--er)) 35%, #5c524b) !important;
+  background: color-mix(in srgb, oklch(var(--er)) 12%, #4b433d) !important;
+  color: oklch(var(--er)) !important;
+}
+
+:is(.task-details-neu-modal) .task-details-neu-status-btn.task-details-neu-chip--active.text-warning {
+  border-color: color-mix(in srgb, oklch(var(--wa)) 35%, #5c524b) !important;
+  background: color-mix(in srgb, oklch(var(--wa)) 12%, #4b433d) !important;
+  color: #fcd34d !important;
+}
+
+/* Formato relatório — hover */
+:is(.test-report-neu-modal) .test-report-neu-format-idle:hover {
+  border-color: color-mix(in srgb, #e65100 28%, #5c524b) !important;
+}
+
+/* Scrollbar thumb */
+:is(.task-details-neu-modal, .test-report-neu-modal) .custom-scrollbar {
+  scrollbar-color: color-mix(in srgb, #e65100 35%, #4b433d) transparent;
+}

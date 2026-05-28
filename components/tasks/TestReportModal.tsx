@@ -307,8 +307,8 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
                     className={cn(
                       'mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2',
                       isSelected
-                        ? 'border-[var(--leve-header-accent)] bg-[#F2EEE8]'
-                        : 'border-[#DED7CD] bg-[#E5DFD5]'
+                        ? 'border-[#E65100] bg-[color-mix(in_srgb,#E65100_18%,#4B433D)]'
+                        : 'border-[color-mix(in_srgb,#5C524B_55%,transparent)] bg-[color-mix(in_srgb,#3A342F_28%,#4B433D)]'
                     )}
                   >
                     {isSelected ? (
@@ -340,7 +340,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
           </div>
         </div>
 
-        <div className="flex flex-shrink-0 justify-end border-t border-[color-mix(in_srgb,#DED7CD_55%,transparent)] pt-4">
+        <div className="flex flex-shrink-0 justify-end border-t border-[color-mix(in_srgb,#5C524B_38%,transparent)] pt-4">
           <button
             type="button"
             onClick={onClose}

@@ -1,16 +1,22 @@
 /** Classes compartilhadas entre abas do projeto (Dashboard, Tarefas, Documentos, etc.). */
 
 import { cn } from '../../utils/cn';
+import { appDarkPageSurfaceClass } from './appPageNeuUi';
 
 /** Padding horizontal alinhado ao header — conteúdo em largura total da viewport. */
 export const appContentPaddingX = 'px-3 sm:px-4 max-md:px-2';
 
-export const projectViewShell =
-  'tasks-panel-scope w-full min-w-0 max-w-none space-y-3 sm:space-y-4 max-md:space-y-2';
+export const projectViewShell = cn(
+  appDarkPageSurfaceClass,
+  'tasks-panel-scope w-full min-w-0 max-w-none space-y-3 sm:space-y-4 max-md:space-y-2'
+);
 
 /** Lista de projetos (dashboard inicial). */
-export const projectsListShell =
-  `tasks-panel-scope w-full min-w-0 max-w-none py-4 sm:py-5 max-md:py-2 ${appContentPaddingX}`;
+export const projectsListShell = cn(
+  appDarkPageSurfaceClass,
+  'tasks-panel-scope w-full min-w-0 max-w-none py-4 sm:py-5 max-md:py-2',
+  appContentPaddingX
+);
 
 export const appPanelClass = 'app-panel';
 
@@ -94,7 +100,11 @@ export const pageSubtitleClass =
   'app-element-typography w-full text-sm leading-relaxed text-[var(--leve-header-text-muted)]';
 
 /** Container de telas globais (ex.: Configurações). */
-export const settingsContentShell = `w-full min-w-0 max-w-none ${appContentPaddingX}`;
+export const settingsContentShell = cn(
+  appDarkPageSurfaceClass,
+  'w-full min-w-0 max-w-none',
+  appContentPaddingX
+);
 
 /** Grades responsivas para preencher largura disponível. */
 export const denseCardGrid =

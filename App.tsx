@@ -22,6 +22,8 @@ import { useRouterSync } from './hooks/useRouterSync';
 import { isSupabaseAvailable } from './services/supabaseService';
 import { ProjectsDashboardSkeleton } from './components/projectsDashboard/ProjectsDashboardSkeleton';
 import { useAriaLive } from './hooks/useAriaLive';
+import { appDarkNeuRootClass, appDarkPageSurfaceClass } from './components/common/appPageNeuUi';
+import { cn } from './utils/cn';
 
 // Code splitting - Lazy loading de componentes pesados
 const ProjectView = lazyWithRetry(() =>
@@ -53,6 +55,14 @@ const App: React.FC = () => {
         'App'
       );
     }
+  }, []);
+
+  /** Portais (modais, menus) ficam em `body` — classe global para neumorfismo escuro. */
+  useEffect(() => {
+    document.body.classList.add(appDarkNeuRootClass);
+    return () => {
+      document.body.classList.remove(appDarkNeuRootClass);
+    };
   }, []);
 
   /** Remove entradas expiradas do cache de geração de testes (IndexedDB), em idle ou após breve atraso. */
@@ -454,7 +464,13 @@ const App: React.FC = () => {
           </Suspense>
         )}
 
-        <main id="main-content" className="app-page min-h-[calc(100vh-var(--app-header-sticky-offset,4.5rem))]">
+        <main
+          id="main-content"
+          className={cn(
+            'app-page min-h-[calc(100vh-var(--app-header-sticky-offset,4.5rem))]',
+            appDarkPageSurfaceClass
+          )}
+        >
           {storeError && (
             <div className="container mx-auto px-4 py-3">
               <div

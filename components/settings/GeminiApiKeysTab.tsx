@@ -12,7 +12,6 @@ import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { StatusBadge } from './StatusBadge';
 import { Input } from '../common/Input';
 import {
-  leveSettingsCardClass,
   leveSettingsInsetPanelClass,
   leveSettingsLinkClass,
   leveSettingsListClass,
@@ -31,6 +30,13 @@ import {
 } from '../common/projectCardUi';
 import { cn } from '../../utils/cn';
 import toast from 'react-hot-toast';
+import {
+  settingsNeuConfiguredPanelClass,
+  settingsNeuEditBtnClass,
+  settingsNeuInlineActionsClass,
+  settingsNeuModalPanelClass,
+  settingsNeuRemoveBtnClass,
+} from './settingsNeuUi';
 
 interface GeminiApiKeysTabProps {
   onDirtyChange?: (dirty: boolean) => void;
@@ -218,17 +224,17 @@ export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChang
           </div>
         </div>
       ) : (
-        <div className={leveSettingsCardClass}>
+        <div className={settingsNeuConfiguredPanelClass}>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="space-y-1">
-              <p className={leveSettingsMutedTextClass}>Chave API configurada</p>
-              <p className="break-all font-mono text-xs text-[var(--leve-header-text-muted)]">
+            <div className="min-w-0 space-y-1">
+              <p className="font-sans text-sm font-medium text-[#fdf6e3]">Chave API configurada</p>
+              <p className="break-all font-mono text-xs text-[rgba(245,241,230,0.72)]">
                 {apiKey && apiKey.length > 12
                   ? `${apiKey.substring(0, 8)}...${apiKey.substring(apiKey.length - 4)}`
                   : '••••••••'}
               </p>
             </div>
-            <div className="flex shrink-0 gap-2">
+            <div className={settingsNeuInlineActionsClass}>
               <button
                 type="button"
                 onClick={() => {
@@ -238,18 +244,11 @@ export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChang
                   }
                   setShowConfigModal(true);
                 }}
-                className={cn(leveSettingsOutlineBtnClass, 'text-sm')}
+                className={settingsNeuEditBtnClass}
               >
                 Editar
               </button>
-              <button
-                type="button"
-                onClick={handleDisconnect}
-                className={cn(
-                  leveSettingsOutlineBtnClass,
-                  'text-sm text-[#e54b4f] hover:border-[color-mix(in_srgb,#e54b4f_35%,transparent)]'
-                )}
-              >
+              <button type="button" onClick={handleDisconnect} className={settingsNeuRemoveBtnClass}>
                 Remover
               </button>
             </div>
@@ -263,6 +262,7 @@ export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChang
         title="Configurar Chave API do Gemini"
         size="lg"
         maxHeight="90vh"
+        panelClassName={settingsNeuModalPanelClass}
       >
         <div className="space-y-5 pb-2">
           <Input

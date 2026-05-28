@@ -76,6 +76,12 @@
     );
     /** Painéis laterais — rodapé Leve (marrom + creme + laranja) */
     --workspace-panel-bg: #4b433d;
+    /** Neumorfismo do painel lateral — modelo Leve (#4B433D) */
+    --workspace-panel-neu-shadow: #3a342f;
+    --workspace-panel-neu-highlight-inset: #5c524b;
+    --workspace-panel-neu-highlight-raised: #fdf6e3;
+    --workspace-panel-neu-highlight: var(--workspace-panel-neu-highlight-raised);
+    --workspace-panel-metric-radius: 14px;
     --workspace-panel-text: #f5f1e6;
     --workspace-panel-text-muted: rgba(245, 241, 230, 0.72);
     --workspace-panel-accent: #e65100;
@@ -91,7 +97,7 @@
     /** Faixa superior WorkspaceDaisyStats (Projetos, Sucesso, etc.) */
     --workspace-stat-bg: var(--projects-dash-bg);
     --workspace-stat-text: #333333;
-    --workspace-stat-accent: #fc4c02;
+    --workspace-stat-accent: #e65100;
     --workspace-stat-border: rgba(0, 0, 0, 0.06);
     --workspace-stat-radius: 16px;
     /** Tela Meus Projetos — fundo neumórfico (creme Leve) */
@@ -123,18 +129,18 @@
       color-mix(in srgb, var(--workspace-stat-accent) 70%, white) 0%,
       var(--workspace-stat-accent) 100%
     );
-    /** Painéis laterais escuros (métricas / alertas) */
-    --workspace-panel-neu-light: color-mix(in srgb, white 14%, var(--workspace-panel-bg));
-    --workspace-panel-neu-dark: color-mix(in srgb, black 28%, var(--workspace-panel-bg));
+    /** Painéis laterais escuros (métricas / alertas) — rebaixo/relevo na mesma base #4B433D */
+    --workspace-panel-neu-light: color-mix(in srgb, var(--workspace-panel-neu-highlight-inset) 55%, var(--workspace-panel-bg));
+    --workspace-panel-neu-dark: var(--workspace-panel-neu-shadow);
     --workspace-panel-neu-raised:
-      6px 6px 14px var(--workspace-panel-neu-dark),
-      -4px -4px 10px var(--workspace-panel-neu-light);
+      6px 6px 16px color-mix(in srgb, var(--workspace-panel-neu-shadow) 52%, transparent),
+      -4px -4px 10px color-mix(in srgb, var(--workspace-panel-neu-highlight-inset) 28%, var(--workspace-panel-bg));
     --workspace-panel-neu-inset:
-      inset 4px 4px 10px var(--workspace-panel-neu-dark),
-      inset -3px -3px 8px var(--workspace-panel-neu-light);
+      inset 5px 5px 10px var(--workspace-panel-neu-shadow),
+      inset -4px -4px 8px var(--workspace-panel-neu-highlight-inset);
     --workspace-panel-neu-inset-deep:
-      inset 5px 5px 12px var(--workspace-panel-neu-dark),
-      inset -4px -4px 10px var(--workspace-panel-neu-light);
+      inset 6px 6px 12px var(--workspace-panel-neu-shadow),
+      inset -5px -5px 10px var(--workspace-panel-neu-highlight-inset);
     --workspace-panel-radius: 16px;
     /** Listas flutuantes (NeuSelect, ActionMenu, busca, dropdown DaisyUI) — portal em body. */
     --app-menu-bg: var(--workspace-panel-bg);
@@ -153,7 +159,7 @@
     --project-dashboard-insight-text: #333333;
     --project-dashboard-insight-text-muted: rgba(51, 51, 51, 0.65);
     --project-dashboard-insight-title: #421d3a;
-    --project-dashboard-insight-accent: #fc4c02;
+    --project-dashboard-insight-accent: #e65100;
     --project-dashboard-insight-border: rgba(66, 29, 58, 0.1);
     --project-dashboard-insight-chip: rgba(66, 29, 58, 0.06);
     --project-dashboard-insight-badge-bg: #421d3a;
@@ -165,7 +171,7 @@
     --leve-header-bg: #f8f9fa;
     --leve-header-text: #421d3a;
     --leve-header-text-muted: rgba(51, 51, 51, 0.65);
-    --leve-header-accent: #fc4c02;
+    --leve-header-accent: #e65100;
     --leve-header-cream: #f5f1e6;
     --leve-header-border: rgba(66, 29, 58, 0.12);
     --leve-header-radius: 16px;
@@ -274,7 +280,11 @@
     --project-card-accent: #fc4c02;
     --project-card-border: rgba(255, 255, 255, 0.14);
     --project-card-chip: rgba(255, 255, 255, 0.1);
-    --workspace-panel-bg: #3d3632;
+    --workspace-panel-bg: #4b433d;
+    --workspace-panel-neu-shadow: #322c28;
+    --workspace-panel-neu-highlight-inset: #524a44;
+    --workspace-panel-neu-highlight-raised: #f0ebe3;
+    --workspace-panel-neu-highlight: var(--workspace-panel-neu-highlight-raised);
     --workspace-panel-text: #f5f1e6;
     --workspace-panel-text-muted: rgba(245, 241, 230, 0.7);
     --workspace-panel-accent: #fc4c02;
@@ -287,7 +297,7 @@
     --workspace-panel-badge-neutral-text: #f5f1e6;
     --workspace-stat-bg: #2a2430;
     --workspace-stat-text: rgba(255, 255, 255, 0.85);
-    --workspace-stat-accent: #fc4c02;
+    --workspace-stat-accent: #e65100;
     --workspace-stat-border: rgba(255, 255, 255, 0.1);
     --projects-dash-bg: #2a2624;
     --projects-dash-surface: #322e2b;
@@ -310,22 +320,22 @@
     --workspace-stat-neu-inset-deep:
       inset 4px 4px 10px var(--workspace-stat-neu-dark),
       inset -3px -3px 8px var(--workspace-stat-neu-light);
-    --workspace-panel-neu-light: color-mix(in srgb, white 10%, var(--workspace-panel-bg));
-    --workspace-panel-neu-dark: color-mix(in srgb, black 32%, var(--workspace-panel-bg));
+    --workspace-panel-neu-light: color-mix(in srgb, var(--workspace-panel-neu-highlight-inset) 50%, var(--workspace-panel-bg));
+    --workspace-panel-neu-dark: var(--workspace-panel-neu-shadow);
     --workspace-panel-neu-raised:
-      6px 6px 16px var(--workspace-panel-neu-dark),
-      -4px -4px 10px var(--workspace-panel-neu-light);
+      6px 6px 16px color-mix(in srgb, var(--workspace-panel-neu-shadow) 55%, transparent),
+      -4px -4px 10px color-mix(in srgb, var(--workspace-panel-neu-highlight-inset) 25%, var(--workspace-panel-bg));
     --workspace-panel-neu-inset:
-      inset 4px 4px 10px var(--workspace-panel-neu-dark),
-      inset -3px -3px 8px var(--workspace-panel-neu-light);
+      inset 5px 5px 10px var(--workspace-panel-neu-shadow),
+      inset -4px -4px 8px var(--workspace-panel-neu-highlight-inset);
     --workspace-panel-neu-inset-deep:
-      inset 5px 5px 12px var(--workspace-panel-neu-dark),
-      inset -4px -4px 10px var(--workspace-panel-neu-light);
+      inset 6px 6px 12px var(--workspace-panel-neu-shadow),
+      inset -5px -5px 10px var(--workspace-panel-neu-highlight-inset);
     --project-dashboard-insight-bg: var(--app-neu-bg);
     --project-dashboard-insight-text: rgba(255, 255, 255, 0.88);
     --project-dashboard-insight-text-muted: rgba(255, 255, 255, 0.62);
     --project-dashboard-insight-title: #f5f1e6;
-    --project-dashboard-insight-accent: #fc4c02;
+    --project-dashboard-insight-accent: #e65100;
     --project-dashboard-insight-border: rgba(255, 255, 255, 0.1);
     --project-dashboard-insight-chip: rgba(245, 241, 230, 0.08);
     --project-dashboard-insight-badge-bg: #421d3a;
@@ -334,7 +344,7 @@
     --leve-header-bg: #2a2430;
     --leve-header-text: #f5f1e6;
     --leve-header-text-muted: rgba(245, 241, 230, 0.65);
-    --leve-header-accent: #fc4c02;
+    --leve-header-accent: #e65100;
     --leve-header-cream: #f5f1e6;
     --leve-header-border: rgba(245, 241, 230, 0.12);
     --app-neu-bg: var(--projects-dash-bg);
@@ -1265,25 +1275,44 @@
   }
 
   /**
-   * View Documentos — paleta clara neumórfica (#EBE6DE / #F2EEE8 / #E5DFD5).
-   * Trilhos inset · chips/botões raised · ativo inset.
+   * View Documentos — paleta escura neumórfica Leve (#4B433D / #E65100 / #FDF6E3).
+   * Trilhos inset · cards elevados · destaque laranja.
    */
   .documents-view-scope {
-    --doc-neu-dark: #b8aea3;
-    --doc-neu-light: #faf7f2;
-    --doc-neu-raised: 6px 6px 14px var(--doc-neu-dark), -5px -5px 12px var(--doc-neu-light);
-    --doc-neu-inset: inset 4px 4px 10px var(--doc-neu-dark), inset -3px -3px 8px var(--doc-neu-light);
-    --doc-neu-inset-deep: inset 5px 5px 14px var(--doc-neu-dark), inset -4px -4px 10px var(--doc-neu-light);
+    --doc-neu-bg: #4b433d;
+    --doc-neu-dark: #3a342f;
+    --doc-neu-light: #5c524b;
+    --doc-neu-accent: #e65100;
+    --doc-neu-text: #fdf6e3;
+    --doc-neu-text-muted: rgba(245, 241, 230, 0.72);
+    --doc-neu-raised:
+      6px 6px 16px color-mix(in srgb, #3a342f 52%, transparent),
+      -4px -4px 10px color-mix(in srgb, #5c524b 26%, #4b433d);
+    --doc-neu-inset: inset 5px 5px 10px #3a342f, inset -4px -4px 8px #5c524b;
+    --doc-neu-inset-deep: inset 6px 6px 12px #3a342f, inset -5px -5px 10px #5c524b;
+    --leve-neu-bg: #4b433d;
+    --leve-neu-light: #5c524b;
+    --leve-neu-dark: #3a342f;
+    --leve-header-text: #fdf6e3;
+    --leve-header-text-muted: rgba(245, 241, 230, 0.72);
+    --leve-header-accent: #e65100;
+    --leve-header-cream: #fdf6e3;
+    --leve-header-border: color-mix(in srgb, #5c524b 42%, transparent);
+    --leve-neu-raised: var(--doc-neu-raised);
+    --leve-neu-inset: var(--doc-neu-inset);
+    --leve-neu-inset-deep: var(--doc-neu-inset-deep);
   }
 
   .documents-view-scope .documents-neu-section,
   .documents-view-scope .documents-neu-panel,
   .documents-view-scope .documents-neu-card,
-  .documents-view-scope .documents-card {
-    border: 1px solid #ded7cd !important;
+  .documents-view-scope .documents-card,
+  .documents-view-scope .app-panel {
+    border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
     border-radius: var(--leve-header-radius);
-    background: #f2eee8 !important;
+    background: color-mix(in srgb, #5c524b 11%, #4b433d) !important;
     box-shadow: var(--doc-neu-raised) !important;
+    color: var(--doc-neu-text-muted);
   }
 
   .documents-view-scope .documents-neu-summary-track,
@@ -1292,9 +1321,20 @@
   .documents-view-scope .documents-neu-search,
   .documents-view-scope .documents-neu-filter-track,
   .documents-view-scope .documents-neu-progress-track {
-    border: 1px solid #ded7cd !important;
-    background: #e5dfd5 !important;
+    border: 1px solid color-mix(in srgb, #3a342f 42%, transparent) !important;
+    background: color-mix(in srgb, #3a342f 22%, #4b433d) !important;
     box-shadow: var(--doc-neu-inset-deep) !important;
+    color: var(--doc-neu-text-muted);
+  }
+
+  .documents-view-scope .documents-neu-alert-success {
+    border-color: color-mix(in srgb, oklch(var(--su)) 32%, #3a342f) !important;
+    background: color-mix(in srgb, oklch(var(--su)) 12%, #4b433d) !important;
+  }
+
+  .documents-view-scope .documents-neu-alert-info {
+    border-color: color-mix(in srgb, #e65100 28%, #3a342f) !important;
+    background: color-mix(in srgb, #e65100 10%, #4b433d) !important;
   }
 
   .documents-view-scope .documents-neu-filter-track {
@@ -1303,48 +1343,52 @@
 
   .documents-view-scope .documents-neu-progress-track {
     border-radius: 9999px;
-    background: color-mix(in srgb, #ded7cd 28%, #e5dfd5) !important;
+    background: color-mix(in srgb, #3a342f 35%, #4b433d) !important;
   }
 
   .documents-view-scope .documents-neu-progress-fill {
     background: linear-gradient(
       90deg,
-      color-mix(in srgb, #10b981 72%, white) 0%,
-      #10b981 100%
+      color-mix(in srgb, #e65100 75%, #fdf6e3) 0%,
+      #e65100 100%
     ) !important;
-    box-shadow: inset 0 1px 2px color-mix(in srgb, #047857 22%, transparent);
+    box-shadow: 0 1px 3px color-mix(in srgb, #e65100 32%, transparent);
   }
 
   .documents-view-scope .documents-neu-list-track {
-    border: 1px solid color-mix(in srgb, #ded7cd 55%, transparent) !important;
-    background: #ebe6de !important;
+    border: 1px solid color-mix(in srgb, #3a342f 48%, transparent) !important;
+    background: color-mix(in srgb, #3a342f 18%, #4b433d) !important;
     box-shadow: var(--doc-neu-inset-deep) !important;
   }
 
   .documents-view-scope .documents-neu-section:hover,
   .documents-view-scope .documents-neu-card:hover,
   .documents-view-scope .documents-card:hover {
-    border-color: color-mix(in srgb, #ff5c1b 22%, #ded7cd) !important;
+    border-color: color-mix(in srgb, #e65100 28%, #5c524b) !important;
+    box-shadow:
+      7px 7px 18px color-mix(in srgb, #3a342f 55%, transparent),
+      -5px -5px 12px color-mix(in srgb, #5c524b 28%, #4b433d),
+      0 0 0 1px color-mix(in srgb, #e65100 14%, transparent) !important;
   }
 
   .documents-view-scope .dashboard-glass-indicator-card {
-    border: 1px solid #ded7cd !important;
-    background: #f2eee8 !important;
-    box-shadow: var(--doc-neu-raised) !important;
+    border: 1px solid color-mix(in srgb, #5c524b 40%, transparent) !important;
+    background: color-mix(in srgb, #3a342f 18%, #4b433d) !important;
+    box-shadow: var(--doc-neu-inset) !important;
   }
 
   .documents-view-scope .dashboard-glass-indicator-card:hover {
-    border-color: color-mix(in srgb, #ff5c1b 28%, #ded7cd) !important;
-    box-shadow:
-      7px 7px 16px var(--doc-neu-dark),
-      -5px -5px 12px var(--doc-neu-light),
-      0 0 0 1px color-mix(in srgb, #ff5c1b 12%, transparent) !important;
+    border-color: color-mix(in srgb, #e65100 32%, #5c524b) !important;
+    box-shadow: var(--doc-neu-raised) !important;
+    transform: translateY(-1px);
   }
 
   .documents-view-scope .dashboard-glass-indicator-card--active {
-    border-color: color-mix(in srgb, #ff5c1b 38%, #ded7cd) !important;
-    background: color-mix(in srgb, #ff5c1b 8%, #f2eee8) !important;
-    box-shadow: var(--doc-neu-inset) !important;
+    border-color: color-mix(in srgb, #e65100 42%, #5c524b) !important;
+    background: color-mix(in srgb, #e65100 14%, #4b433d) !important;
+    box-shadow:
+      var(--doc-neu-raised),
+      0 0 0 1px color-mix(in srgb, #e65100 20%, transparent) !important;
   }
 
   /** KPIs de categoria no hero escuro — prevalece sobre o tema claro de Documentos acima */
@@ -1375,17 +1419,17 @@
       0 0 0 2px color-mix(in srgb, var(--workspace-panel-accent) 22%, transparent) !important;
   }
 
-  .documents-view-scope .dashboard-neu-spec-remove {
-    border: 1px solid color-mix(in srgb, oklch(var(--er)) 28%, #ded7cd) !important;
-    background: #f2eee8 !important;
+  .documents-view-scope .dashboard-neu-spec-remove,
+  .documents-view-scope .documents-neu-spec-remove {
+    border: 1px solid color-mix(in srgb, oklch(var(--er)) 32%, #5c524b) !important;
+    background: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
     color: oklch(var(--er)) !important;
     box-shadow: var(--doc-neu-raised) !important;
   }
 
   .documents-view-scope .documents-neu-spec-remove:hover:not(:disabled) {
-    border-color: color-mix(in srgb, oklch(var(--er)) 42%, #ded7cd) !important;
+    border-color: color-mix(in srgb, oklch(var(--er)) 45%, #5c524b) !important;
     color: oklch(var(--er)) !important;
-    box-shadow: var(--doc-neu-raised) !important;
   }
 
   .documents-view-scope .documents-neu-btn-primary:active:not(:disabled),
@@ -1400,41 +1444,53 @@
 
   .documents-view-scope .documents-neu-chip,
   .documents-view-scope .documents-neu-filter-pill.leve-neu-pill:not(.leve-neu-pill-active) {
-    border: 1px solid #ded7cd !important;
-    background: #f2eee8 !important;
+    border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
+    background: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
+    color: var(--doc-neu-text-muted) !important;
     box-shadow: var(--doc-neu-raised) !important;
   }
 
   .documents-view-scope .documents-neu-filter-pill.leve-neu-pill-active {
-    border: 1px solid #ded7cd !important;
-    background: color-mix(in srgb, #ff5c1b 14%, #e5dfd5) !important;
-    color: #ff5c1b !important;
-    box-shadow: var(--doc-neu-inset) !important;
+    border: 1px solid color-mix(in srgb, #e65100 45%, #3a342f) !important;
+    background: #e65100 !important;
+    color: #fdf6e3 !important;
+    box-shadow:
+      3px 3px 9px color-mix(in srgb, #3a342f 58%, transparent),
+      -2px -2px 7px color-mix(in srgb, #fdf6e3 22%, #4b433d) !important;
+  }
+
+  .documents-view-scope .documents-neu-search {
+    color: var(--doc-neu-text) !important;
+  }
+
+  .documents-view-scope .documents-neu-search::placeholder {
+    color: var(--doc-neu-text-muted) !important;
+    opacity: 1;
   }
 
   .documents-view-scope .documents-neu-btn-primary,
   .documents-view-scope .documents-card-action-primary {
-    border: 1px solid color-mix(in srgb, #ff5c1b 45%, transparent) !important;
-    background: #ff5c1b !important;
-    color: #ffffff !important;
+    border: 1px solid color-mix(in srgb, #fdf6e3 22%, transparent) !important;
+    background: #e65100 !important;
+    color: #fdf6e3 !important;
     box-shadow: var(--doc-neu-raised) !important;
   }
 
   .documents-view-scope .documents-neu-btn-primary:hover:not(:disabled),
   .documents-view-scope .documents-card-action-primary:hover:not(:disabled) {
-    filter: brightness(1.05);
+    filter: brightness(1.06);
   }
 
   .documents-view-scope .documents-card-action-outline,
   .documents-view-scope .documents-neu-chip.documents-card-action-outline {
-    border: 1px solid #ded7cd !important;
-    background: #f2eee8 !important;
-    color: #401c31 !important;
+    border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
+    background: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
+    color: var(--doc-neu-text) !important;
     box-shadow: var(--doc-neu-raised) !important;
   }
 
   .documents-view-scope .documents-card-action-outline:hover:not(:disabled) {
-    color: #ff5c1b !important;
+    color: #e65100 !important;
   }
 
   .documents-view-scope .documents-card-list-panel .app-btn-primary-inline,
@@ -1455,38 +1511,71 @@
   }
 
   .documents-view-scope .documents-card-actions .documents-card-action-outline {
-    border: 1px solid #ded7cd !important;
-    background: #f2eee8 !important;
-    color: #401c31 !important;
+    border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
+    background: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
+    color: var(--doc-neu-text) !important;
   }
 
   .documents-view-scope .documents-card-actions .documents-card-action-outline:hover:not(:disabled) {
-    color: #ff5c1b !important;
+    color: #e65100 !important;
     box-shadow: var(--doc-neu-raised) !important;
   }
 
   .documents-view-scope .documents-card-actions .documents-card-action-primary {
-    border: 1px solid color-mix(in srgb, #ff5c1b 45%, transparent) !important;
-    background: #ff5c1b !important;
-    color: #ffffff !important;
+    border: 1px solid color-mix(in srgb, #fdf6e3 22%, transparent) !important;
+    background: #e65100 !important;
+    color: #fdf6e3 !important;
     box-shadow: var(--doc-neu-raised) !important;
   }
 
   .documents-view-scope .documents-card-actions .documents-card-action-primary:hover:not(:disabled) {
-    filter: brightness(1.05);
+    filter: brightness(1.06);
   }
 
   .documents-view-scope .documents-card-actions .documents-card-action-remove:hover:not(:disabled) {
     color: oklch(var(--er)) !important;
-    border-color: color-mix(in srgb, oklch(var(--er)) 35%, #ded7cd) !important;
+    border-color: color-mix(in srgb, oklch(var(--er)) 38%, #5c524b) !important;
   }
 
-  :is(.documents-neu-modal, .leve-modal-neu-shell) .documents-neu-inset,
-  :is(.documents-neu-modal, .leve-modal-neu-shell) .documents-modal-input {
-    border: 1px solid #ded7cd !important;
+  .documents-view-scope .documents-card-title,
+  .documents-view-scope .documents-section-title,
+  .documents-view-scope .documents-neu-section [class*='text-[#401'],
+  .documents-view-scope .documents-neu-panel [class*='font-semibold'] {
+    color: var(--doc-neu-text) !important;
+  }
+
+  .documents-view-scope .documents-card-meta,
+  .documents-view-scope .documents-muted,
+  .documents-view-scope [class*='text-[#6B5E5E]'] {
+    color: var(--doc-neu-text-muted) !important;
+  }
+
+  .documents-view-scope .documents-eyebrow,
+  .documents-view-scope [class*='text-[#FF5C1B]'],
+  .documents-view-scope [class*='border-[#FF5C1B]'] {
+    color: var(--doc-neu-accent) !important;
+    border-color: var(--doc-neu-accent) !important;
+  }
+
+  .documents-view-scope .documents-card-title,
+  .documents-view-scope .documents-card-actions,
+  .documents-view-scope .documents-section-header {
+    border-color: color-mix(in srgb, #5c524b 38%, transparent) !important;
+  }
+
+  :is(.documents-neu-modal.tasks-panel-neu-modal) .documents-neu-inset,
+  :is(.documents-neu-modal.tasks-panel-neu-modal) .documents-modal-input {
+    border: 1px solid color-mix(in srgb, #fdf6e3 10%, transparent) !important;
     border-radius: var(--leve-header-radius);
-    background: #e5dfd5 !important;
-    box-shadow: var(--td-neu-inset, var(--doc-neu-inset)) !important;
+    background: #423b37 !important;
+    color: #fdf6e3 !important;
+    box-shadow:
+      inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
+      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e) !important;
+  }
+
+  :is(.documents-neu-modal.tasks-panel-neu-modal) .documents-modal-input::placeholder {
+    color: rgba(245, 241, 230, 0.55) !important;
   }
 
   /** Modal Criar Novo Projeto — herda `.tasks-panel-neu-modal`; reforço nos cards de opção. */
@@ -1497,59 +1586,93 @@
   }
 
   /**
-   * Regras de negócio — paleta clara (#EBE6DE / #F2EEE8 / #E5DFD5).
+   * Regras de negócio — paleta escura neumórfica Leve (#4B433D / #E65100 / #FDF6E3).
    */
   .business-rules-view-scope {
-    --br-neu-dark: #b8aea3;
-    --br-neu-light: #faf7f2;
-    --br-neu-raised: 6px 6px 14px var(--br-neu-dark), -5px -5px 12px var(--br-neu-light);
-    --br-neu-inset: inset 4px 4px 10px var(--br-neu-dark), inset -3px -3px 8px var(--br-neu-light);
-    --br-neu-inset-deep: inset 5px 5px 14px var(--br-neu-dark), inset -4px -4px 10px var(--br-neu-light);
-    --app-neu-bg: #f5f1e6;
-    --leve-neu-bg: #f5f1e6;
+    --br-neu-bg: #4b433d;
+    --br-neu-dark: #3a342f;
+    --br-neu-light: #5c524b;
+    --br-neu-accent: #e65100;
+    --br-neu-text: #fdf6e3;
+    --br-neu-text-muted: rgba(245, 241, 230, 0.72);
+    --br-neu-raised:
+      6px 6px 16px color-mix(in srgb, #3a342f 52%, transparent),
+      -4px -4px 10px color-mix(in srgb, #5c524b 26%, #4b433d);
+    --br-neu-inset: inset 5px 5px 10px #3a342f, inset -4px -4px 8px #5c524b;
+    --br-neu-inset-deep: inset 6px 6px 12px #3a342f, inset -5px -5px 10px #5c524b;
+    --app-neu-bg: #4b433d;
+    --leve-neu-bg: #4b433d;
+    --leve-neu-light: #5c524b;
+    --leve-neu-dark: #3a342f;
+    --leve-header-text: #fdf6e3;
+    --leve-header-text-muted: rgba(245, 241, 230, 0.72);
+    --leve-header-accent: #e65100;
+    --leve-header-cream: #fdf6e3;
+    --leve-header-border: color-mix(in srgb, #5c524b 42%, transparent);
+    --leve-neu-raised: var(--br-neu-raised);
+    --leve-neu-inset: var(--br-neu-inset);
+    --leve-neu-inset-deep: var(--br-neu-inset-deep);
   }
 
-  .business-rules-view-scope .business-rules-neu-list-track {
-    border: 1px solid color-mix(in srgb, #ded7cd 55%, transparent) !important;
-    background: #ebe6de !important;
+  .business-rules-view-scope .business-rules-neu-list-track,
+  .business-rules-view-scope .app-panel {
+    border: 1px solid color-mix(in srgb, #3a342f 48%, transparent) !important;
+    background: color-mix(in srgb, #3a342f 18%, #4b433d) !important;
     box-shadow: var(--br-neu-inset-deep) !important;
+    color: var(--br-neu-text-muted);
   }
 
   .business-rules-view-scope .business-rules-neu-card {
-    border: 1px solid #ded7cd !important;
-    background: #f2eee8 !important;
+    border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
+    background: color-mix(in srgb, #5c524b 11%, #4b433d) !important;
     box-shadow: var(--br-neu-raised) !important;
+    color: var(--br-neu-text-muted);
   }
 
   .business-rules-view-scope .business-rules-neu-card:hover {
-    border-color: color-mix(in srgb, #ff5c1b 20%, #ded7cd) !important;
+    border-color: color-mix(in srgb, #e65100 28%, #5c524b) !important;
+    box-shadow:
+      7px 7px 18px color-mix(in srgb, #3a342f 55%, transparent),
+      -5px -5px 12px color-mix(in srgb, #5c524b 28%, #4b433d),
+      0 0 0 1px color-mix(in srgb, #e65100 14%, transparent) !important;
+  }
+
+  .business-rules-view-scope .business-rules-card-summary:hover {
+    background: color-mix(in srgb, #3a342f 22%, #4b433d) !important;
+  }
+
+  .business-rules-view-scope .business-rules-card-body {
+    border-color: color-mix(in srgb, #5c524b 38%, transparent) !important;
+    background: color-mix(in srgb, #3a342f 14%, #4b433d) !important;
   }
 
   .business-rules-view-scope .business-rules-neu-inset {
-    border: 1px solid #ded7cd !important;
-    background: #e5dfd5 !important;
+    border: 1px solid color-mix(in srgb, #3a342f 42%, transparent) !important;
+    background: color-mix(in srgb, #3a342f 24%, #4b433d) !important;
     box-shadow: var(--br-neu-inset-deep) !important;
+    color: var(--br-neu-text);
   }
 
   .business-rules-view-scope .business-rules-neu-chip,
   .business-rules-view-scope .business-rules-card-action-btn {
-    border: 1px solid #ded7cd !important;
-    background: #f2eee8 !important;
+    border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
+    background: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
+    color: var(--br-neu-text) !important;
     box-shadow: var(--br-neu-raised) !important;
   }
 
   .business-rules-view-scope .business-rules-card-action-btn:hover:not(:disabled) {
-    color: #ff5c1b !important;
+    color: #e65100 !important;
   }
 
   .business-rules-view-scope .business-rules-card-action-btn.text-error {
     color: oklch(var(--er)) !important;
-    border-color: color-mix(in srgb, oklch(var(--er)) 30%, #ded7cd) !important;
+    border-color: color-mix(in srgb, oklch(var(--er)) 32%, #5c524b) !important;
   }
 
   .business-rules-view-scope .business-rules-card-action-btn.text-error:hover:not(:disabled) {
     color: oklch(var(--er)) !important;
-    border-color: color-mix(in srgb, oklch(var(--er)) 42%, #ded7cd) !important;
+    border-color: color-mix(in srgb, oklch(var(--er)) 45%, #5c524b) !important;
   }
 
   .business-rules-view-scope .business-rules-neu-chip:active,
@@ -1565,40 +1688,252 @@
   }
 
   .business-rules-view-scope .business-rules-neu-category-badge--primary {
-    background: #ff5c1b !important;
-    color: #ffffff !important;
-    border-color: color-mix(in srgb, #ff5c1b 35%, #ded7cd) !important;
+    background: #e65100 !important;
+    color: #fdf6e3 !important;
+    border-color: color-mix(in srgb, #e65100 45%, #3a342f) !important;
   }
 
   .business-rules-view-scope .business-rules-neu-category-badge--secondary,
   .business-rules-view-scope .business-rules-neu-category-badge--purple {
     background: #421d3a !important;
     color: #f5f1e6 !important;
-    border-color: color-mix(in srgb, #421d3a 28%, #ded7cd) !important;
+    border-color: color-mix(in srgb, #421d3a 35%, #5c524b) !important;
   }
 
   .business-rules-view-scope .business-rules-neu-category-badge--accent {
-    background: #f2eee8 !important;
-    color: #401c31 !important;
-    border-color: color-mix(in srgb, #ff5c1b 38%, #ded7cd) !important;
+    background: color-mix(in srgb, #e65100 12%, #4b433d) !important;
+    color: #fdf6e3 !important;
+    border-color: color-mix(in srgb, #e65100 38%, #5c524b) !important;
   }
 
   .business-rules-view-scope .business-rules-neu-category-badge--info {
-    background: #f2eee8 !important;
-    color: #6b5e5e !important;
-    border-color: #ded7cd !important;
+    background: color-mix(in srgb, #5c524b 12%, #4b433d) !important;
+    color: var(--br-neu-text-muted) !important;
+    border-color: color-mix(in srgb, #5c524b 42%, transparent) !important;
   }
 
   .business-rules-view-scope .business-rules-neu-category-badge--success {
-    background: #f2eee8 !important;
-    color: #047857 !important;
-    border-color: color-mix(in srgb, #047857 28%, #ded7cd) !important;
+    background: color-mix(in srgb, #10b981 14%, #4b433d) !important;
+    color: #6ee7b7 !important;
+    border-color: color-mix(in srgb, #10b981 32%, #5c524b) !important;
   }
 
   .business-rules-view-scope .business-rules-neu-category-badge--warning {
-    background: #f2eee8 !important;
-    color: #92400e !important;
-    border-color: color-mix(in srgb, #ca8a04 35%, #ded7cd) !important;
+    background: color-mix(in srgb, #ca8a04 14%, #4b433d) !important;
+    color: #fcd34d !important;
+    border-color: color-mix(in srgb, #ca8a04 35%, #5c524b) !important;
+  }
+
+  .business-rules-view-scope .business-rules-card-title,
+  .business-rules-view-scope .business-rules-card-linked,
+  .business-rules-view-scope .business-rules-neu-inset :is(.prose-headings, .prose-p, .prose-strong),
+  .business-rules-view-scope [class*='text-[#401'] {
+    color: var(--br-neu-text) !important;
+  }
+
+  .business-rules-view-scope .business-rules-card-label,
+  .business-rules-view-scope .business-rules-card-chevron,
+  .business-rules-view-scope [class*='text-[#6B5E5E]'] {
+    color: var(--br-neu-text-muted) !important;
+  }
+
+  .business-rules-view-scope .business-rules-card-title.group-open\:border-\[\#DED7CD\],
+  .business-rules-view-scope details[open] .business-rules-card-title {
+    border-color: color-mix(in srgb, #5c524b 38%, transparent) !important;
+  }
+
+  .business-rules-view-scope .business-rules-card-actions,
+  .business-rules-view-scope [class*='border-[#DED7CD]'] {
+    border-color: color-mix(in srgb, #5c524b 38%, transparent) !important;
+  }
+
+  .business-rules-view-scope [class*='prose-h2:border'],
+  .business-rules-view-scope [class*='prose-h3:border'] {
+    border-color: color-mix(in srgb, #5c524b 38%, transparent) !important;
+  }
+
+  /**
+   * Tela Configurações — paleta escura neumórfica Leve (#4B433D / #E65100 / #FDF6E3).
+   */
+  .settings-view-scope {
+    --st-neu-bg: #4b433d;
+    --st-neu-dark: #3a342f;
+    --st-neu-light: #5c524b;
+    --st-neu-accent: #e65100;
+    --st-neu-text: #fdf6e3;
+    --st-neu-text-muted: rgba(245, 241, 230, 0.72);
+    --st-neu-raised:
+      6px 6px 16px color-mix(in srgb, #3a342f 52%, transparent),
+      -4px -4px 10px color-mix(in srgb, #5c524b 26%, #4b433d);
+    --st-neu-inset: inset 5px 5px 10px #3a342f, inset -4px -4px 8px #5c524b;
+    --st-neu-inset-deep: inset 6px 6px 12px #3a342f, inset -5px -5px 10px #5c524b;
+    --leve-neu-bg: #4b433d;
+    --leve-neu-light: #5c524b;
+    --leve-neu-dark: #3a342f;
+    --leve-header-text: #fdf6e3;
+    --leve-header-text-muted: rgba(245, 241, 230, 0.72);
+    --leve-header-accent: #e65100;
+    --leve-header-cream: #fdf6e3;
+    --leve-header-bg: #4b433d;
+    --leve-header-border: color-mix(in srgb, #5c524b 42%, transparent);
+    --leve-neu-raised: var(--st-neu-raised);
+    --leve-neu-inset: var(--st-neu-inset);
+    --leve-neu-inset-deep: var(--st-neu-inset-deep);
+    color: var(--st-neu-text-muted);
+  }
+
+  .settings-view-scope :is(h1, h2, h3, h4, .leve-settings-section-title) {
+    color: var(--st-neu-text) !important;
+  }
+
+  .settings-view-scope .leve-settings-panel,
+  .settings-view-scope .leve-neu-surface.leve-settings-panel,
+  .settings-view-scope .leve-settings-card {
+    border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
+    border-radius: var(--leve-header-radius);
+    background: color-mix(in srgb, #5c524b 11%, #4b433d) !important;
+    box-shadow: var(--st-neu-raised) !important;
+    color: var(--st-neu-text-muted);
+  }
+
+  .settings-view-scope .leve-neu-surface-inset,
+  .settings-view-scope .leve-settings-inset-panel {
+    border: 1px solid color-mix(in srgb, #3a342f 42%, transparent) !important;
+    background: color-mix(in srgb, #3a342f 24%, #4b433d) !important;
+    box-shadow: var(--st-neu-inset-deep) !important;
+    color: var(--st-neu-text-muted);
+  }
+
+  .settings-view-scope .leve-settings-tabs-track,
+  .settings-view-scope .leve-settings-prefs-tabs-track {
+    border: 1px solid color-mix(in srgb, #3a342f 55%, transparent) !important;
+    border-radius: 9999px !important;
+    background: color-mix(in srgb, #3a342f 32%, #4b433d) !important;
+    box-shadow: var(--st-neu-inset-deep) !important;
+  }
+
+  .settings-view-scope .leve-settings-panel:hover,
+  .settings-view-scope .leve-settings-card:hover {
+    border-color: color-mix(in srgb, #e65100 28%, #5c524b) !important;
+  }
+
+  .settings-view-scope .leve-settings-section-icon-wrap {
+    border: 1px solid color-mix(in srgb, #e65100 38%, #5c524b) !important;
+    background: color-mix(in srgb, #3a342f 28%, #4b433d) !important;
+    box-shadow:
+      var(--st-neu-raised),
+      0 0 12px color-mix(in srgb, #e65100 22%, transparent) !important;
+    color: #e65100 !important;
+  }
+
+  .settings-view-scope .app-btn-primary-inline,
+  .settings-view-scope .leve-settings-primary-btn {
+    border: 1px solid color-mix(in srgb, #e65100 45%, #3a342f) !important;
+    background: #e65100 !important;
+    color: #fdf6e3 !important;
+    box-shadow:
+      0 2px 10px color-mix(in srgb, #e65100 35%, transparent),
+      var(--st-neu-raised) !important;
+  }
+
+  .settings-view-scope .app-btn-primary-inline:hover:not(:disabled),
+  .settings-view-scope .leve-settings-primary-btn:hover:not(:disabled) {
+    filter: brightness(1.08);
+  }
+
+  .settings-view-scope :is(.workspace-chrome-pill, .app-btn-outline):not(.app-neu-action-btn--active) {
+    border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
+    background: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
+    color: #fdf6e3 !important;
+    box-shadow: var(--st-neu-raised) !important;
+  }
+
+  .settings-view-scope :is(.workspace-chrome-pill, .app-btn-outline):hover:not(:disabled) {
+    color: #e65100 !important;
+    border-color: color-mix(in srgb, #e65100 32%, #5c524b) !important;
+  }
+
+  .settings-view-scope :is(.app-input, .input, .textarea, .select):not(.select-ghost) {
+    border: 1px solid color-mix(in srgb, #3a342f 48%, transparent) !important;
+    background: color-mix(in srgb, #3a342f 28%, #4b433d) !important;
+    color: #fdf6e3 !important;
+    box-shadow: var(--st-neu-inset) !important;
+  }
+
+  .settings-view-scope :is(.app-input, .input, .textarea, input)::placeholder {
+    color: rgba(245, 241, 230, 0.5) !important;
+  }
+
+  .settings-view-scope code,
+  .settings-view-scope .leve-view-inline-code {
+    border: 1px solid color-mix(in srgb, #5c524b 35%, transparent);
+    background: color-mix(in srgb, #3a342f 22%, #4b433d) !important;
+    color: #fdf6e3 !important;
+  }
+
+  .settings-view-scope [role='status'] {
+    border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
+    background: color-mix(in srgb, #3a342f 18%, #4b433d) !important;
+    color: var(--st-neu-text-muted) !important;
+    box-shadow: var(--st-neu-raised) !important;
+  }
+
+  .settings-view-scope [role='status'].border-\[color-mix\(in_srgb\,\#10b981_35\%\,transparent\)\] {
+    border-color: color-mix(in srgb, #10b981 35%, transparent) !important;
+    background: color-mix(in srgb, #10b981 12%, #4b433d) !important;
+    color: #6ee7b7 !important;
+  }
+
+  .settings-view-scope a[class*='text-[var(--leve-header-accent)]'],
+  .settings-view-scope .leve-settings-link {
+    color: #e65100 !important;
+  }
+
+  .settings-view-scope a[class*='text-[var(--leve-header-accent)]']:hover,
+  .settings-view-scope .leve-settings-link:hover {
+    color: color-mix(in srgb, #e65100 85%, #fdf6e3) !important;
+  }
+
+  .settings-view-scope .border-t,
+  .settings-view-scope [class*='border-[color-mix'] {
+    border-color: color-mix(in srgb, #5c524b 38%, transparent) !important;
+  }
+
+  /* Chave API configurada (Gemini) — painel inset + ações elevadas */
+  .settings-view-scope .settings-neu-configured-panel {
+    border: 1px solid color-mix(in srgb, #3a342f 48%, transparent) !important;
+    background: color-mix(in srgb, #3a342f 24%, #4b433d) !important;
+    box-shadow: var(--st-neu-inset-deep) !important;
+    color: rgba(245, 241, 230, 0.72);
+  }
+
+  .settings-view-scope .settings-neu-kbd {
+    border: 1px solid color-mix(in srgb, #3a342f 42%, transparent) !important;
+    background: color-mix(in srgb, #3a342f 28%, #4b433d) !important;
+    box-shadow: var(--st-neu-inset) !important;
+    color: #fdf6e3 !important;
+  }
+
+  .settings-view-scope .settings-neu-action-btn {
+    border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
+    background: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
+    color: #fdf6e3 !important;
+    box-shadow: var(--st-neu-raised) !important;
+  }
+
+  .settings-view-scope .settings-neu-action-btn:hover:not(:disabled) {
+    color: #e65100 !important;
+    border-color: color-mix(in srgb, #e65100 32%, #5c524b) !important;
+  }
+
+  .settings-view-scope .settings-neu-action-btn:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: var(--st-neu-inset) !important;
+  }
+
+  .settings-view-scope .settings-neu-remove-btn:hover:not(:disabled) {
+    color: oklch(var(--er)) !important;
+    border-color: color-mix(in srgb, oklch(var(--er)) 38%, #5c524b) !important;
   }
 
   /** Modal de detalhe da tarefa (Resumo, BDD, Testes…) — paleta clara neumórfica. */
@@ -2405,6 +2740,21 @@
     background: color-mix(in srgb, var(--workspace-panel-neu-dark) 15%, var(--workspace-panel-bg));
     box-shadow: var(--workspace-panel-neu-inset);
   }
+
+  /** Pills dentro de trilho rebaixado — elevados (telas escuras). Detalhe em `app-global-dark-neu.css`. */
+  .app-dark-page-surface .workspace-chrome-inset > .workspace-chrome-pill:not(.workspace-chrome-pill-active),
+  .app-dark-page-surface .workspace-chrome-inset > .dashboard-neu-filter-btn:not(.dashboard-neu-filter-btn--active):not(.workspace-chrome-pill-active) {
+    background: color-mix(in srgb, var(--workspace-panel-neu-light) 10%, var(--workspace-panel-bg));
+    color: var(--workspace-panel-text);
+    box-shadow: var(--workspace-panel-neu-raised);
+  }
+
+  .app-dark-page-surface .workspace-chrome-inset > .workspace-chrome-pill:not(.workspace-chrome-pill-active):hover:not(:disabled),
+  .app-dark-page-surface .workspace-chrome-inset > .dashboard-neu-filter-btn:not(.dashboard-neu-filter-btn--active):not(.workspace-chrome-pill-active):hover:not(:disabled) {
+    color: var(--workspace-panel-text);
+    box-shadow: var(--workspace-panel-neu-hover, var(--workspace-panel-neu-raised));
+  }
+
   .workspace-chrome-pill {
     border: 1px solid color-mix(in srgb, var(--workspace-panel-neu-light) 30%, transparent);
     border-radius: 9999px;
@@ -2629,9 +2979,12 @@
   }
   .workspace-panel-neu-shell {
     border-radius: var(--workspace-panel-radius);
-    border: 1px solid color-mix(in srgb, var(--workspace-panel-neu-light) 30%, transparent);
-    background: var(--workspace-panel-bg);
-    box-shadow: var(--workspace-panel-neu-raised);
+    border: 1px solid color-mix(in srgb, var(--workspace-panel-neu-highlight-inset) 42%, transparent);
+    background-color: var(--workspace-panel-bg) !important;
+    box-shadow: var(--workspace-panel-neu-raised) !important;
+    transition:
+      box-shadow 200ms ease,
+      border-color 200ms ease;
   }
   .workspace-panel-neu-inset {
     border-radius: var(--workspace-panel-inner-radius);
@@ -2676,32 +3029,29 @@
     box-shadow: var(--workspace-panel-neu-inset);
   }
   .workspace-panel-neu-metric-tile {
-    border-radius: var(--workspace-panel-inner-radius);
-    border: 1px solid color-mix(in srgb, var(--workspace-panel-neu-light) 20%, transparent);
-    background: color-mix(in srgb, var(--workspace-panel-neu-dark) 10%, var(--workspace-panel-bg));
+    border-radius: var(--workspace-panel-metric-radius);
+    border: none;
+    background: var(--workspace-panel-bg);
     box-shadow: var(--workspace-panel-neu-inset);
-    transition:
-      box-shadow 200ms ease,
-      border-color 200ms ease;
+    transition: box-shadow 200ms ease;
   }
   .workspace-panel-neu-metric-tile:hover {
-    border-color: color-mix(in srgb, var(--workspace-panel-accent) 40%, transparent);
     box-shadow:
-      inset 3px 3px 8px var(--workspace-panel-neu-dark),
-      inset -2px -2px 6px var(--workspace-panel-neu-light),
-      0 0 0 1px color-mix(in srgb, var(--workspace-panel-accent) 25%, transparent);
+      inset 5px 5px 10px var(--workspace-panel-neu-shadow),
+      inset -4px -4px 8px var(--workspace-panel-neu-highlight-inset),
+      0 0 0 1px color-mix(in srgb, var(--workspace-panel-accent) 22%, transparent);
   }
   .workspace-panel-neu-icon-wrap {
     border-radius: 9999px;
-    background: var(--workspace-panel-text);
+    background: var(--workspace-panel-neu-highlight-raised);
     color: var(--workspace-panel-accent);
     box-shadow:
-      3px 3px 8px var(--workspace-panel-neu-dark),
-      -2px -2px 6px var(--workspace-panel-neu-light);
+      3px 3px 8px color-mix(in srgb, var(--workspace-panel-neu-shadow) 65%, transparent),
+      -2px -2px 6px color-mix(in srgb, var(--workspace-panel-neu-highlight-inset) 45%, var(--workspace-panel-bg));
   }
   .workspace-panel-neu-dist-track {
-    border-radius: var(--workspace-panel-inner-radius);
-    background: color-mix(in srgb, var(--workspace-panel-neu-dark) 18%, var(--workspace-panel-bg));
+    border-radius: 9999px;
+    background: var(--workspace-panel-bg);
     box-shadow: var(--workspace-panel-neu-inset-deep);
   }
   .workspace-panel-neu-value-badge {
@@ -2709,8 +3059,8 @@
     background: var(--workspace-panel-badge-bg);
     color: var(--workspace-panel-badge-text);
     box-shadow:
-      2px 2px 6px var(--workspace-panel-neu-dark),
-      -1px -1px 4px var(--workspace-panel-neu-light);
+      2px 2px 6px color-mix(in srgb, var(--workspace-panel-neu-shadow) 55%, transparent),
+      -1px -1px 4px color-mix(in srgb, var(--workspace-panel-neu-highlight-raised) 35%, var(--workspace-panel-bg));
   }
   .workspace-panel-neu-action-btn {
     border-radius: var(--workspace-panel-inner-radius);
@@ -3811,8 +4161,8 @@
       0 0 0 2px color-mix(in srgb, var(--workspace-stat-accent) 22%, transparent);
   }
 
-  /** Aba Dashboard do projeto — fundo bege + neumorfismo (cores Leve preservadas). */
-  .dashboard-neu-scope {
+  /** Aba Dashboard do projeto — fundo bege (somente fora da superfície escura). */
+  .dashboard-neu-scope:not(.app-dark-page-surface) {
     --app-neu-bg: var(--leve-header-cream);
     --leve-neu-bg: var(--leve-header-cream);
     --project-dashboard-insight-bg: var(--leve-header-cream);
@@ -3881,14 +4231,16 @@
 
   .dashboard-hero-chrome .dashboard-neu-filter-btn {
     border: 1px solid color-mix(in srgb, var(--workspace-panel-neu-light) 30%, transparent) !important;
-    background: color-mix(in srgb, var(--workspace-panel-neu-dark) 12%, var(--workspace-panel-bg)) !important;
-    box-shadow: var(--workspace-panel-neu-inset) !important;
-    color: var(--workspace-panel-text-muted) !important;
+    background: color-mix(in srgb, var(--workspace-panel-neu-light) 10%, var(--workspace-panel-bg)) !important;
+    box-shadow: var(--workspace-panel-neu-raised) !important;
+    color: var(--workspace-panel-text) !important;
   }
 
   .dashboard-hero-chrome .dashboard-neu-filter-btn:hover:not(:disabled) {
     color: var(--workspace-panel-text) !important;
-    box-shadow: var(--workspace-panel-neu-inset) !important;
+    box-shadow:
+      5px 5px 12px var(--workspace-panel-neu-dark),
+      -4px -4px 10px var(--workspace-panel-neu-light) !important;
   }
 
   .dashboard-hero-chrome .dashboard-neu-filter-btn--active,
@@ -3901,10 +4253,18 @@
   }
 
   .dashboard-hero-chrome .dashboard-neu-filter-icon-wrap {
-    border: 1px solid color-mix(in srgb, var(--workspace-panel-text) 35%, transparent);
-    background: var(--workspace-panel-bg);
+    border: 1px solid color-mix(in srgb, var(--workspace-panel-accent) 35%, transparent);
+    background: color-mix(in srgb, var(--workspace-panel-neu-dark) 14%, var(--workspace-panel-bg));
     color: var(--workspace-panel-accent);
-    box-shadow: var(--workspace-panel-neu-raised);
+    box-shadow:
+      3px 3px 8px var(--workspace-panel-neu-dark),
+      -2px -2px 6px var(--workspace-panel-neu-light);
+  }
+
+  .dashboard-hero-chrome .dashboard-neu-filter-btn:hover:not(:disabled) .dashboard-neu-filter-icon-wrap {
+    box-shadow:
+      4px 4px 10px var(--workspace-panel-neu-dark),
+      -3px -3px 8px color-mix(in srgb, var(--workspace-panel-neu-highlight-raised) 35%, var(--workspace-panel-bg));
   }
 
   .dashboard-hero-chrome .dashboard-glass-indicator-card {
@@ -4571,6 +4931,7 @@
     .projects-dash-page,
     .business-rules-view-scope,
     .documents-view-scope,
+    .settings-view-scope,
     .dashboard-neu-scope
   ) {
     overflow-x: clip;
@@ -4826,4 +5187,487 @@
   .dashboard-hero-chrome .dashboard-glass-indicator-grid {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/**
+ * Meus Projetos — painel lateral (ProjectsDashboardSidebar).
+ * Fora de @layer para vencer DaisyUI `bg-base-100` e utilitários Tailwind.
+ * Modelo: fundo #4B433D + faixas rebaixadas + ícones/badges elevados.
+ */
+.projects-dash-page .projects-dashboard-sidebar-panel {
+  --workspace-panel-bg: #4b433d;
+  --workspace-panel-neu-shadow: #3a342f;
+  --workspace-panel-neu-highlight-inset: #5c524b;
+  --workspace-panel-neu-highlight-raised: #fdf6e3;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, #5c524b 42%, transparent);
+  background-color: #4b433d !important;
+  background-image: none !important;
+  color: #f5f1e6;
+  box-shadow:
+    6px 6px 16px color-mix(in srgb, #3a342f 52%, transparent),
+    -4px -4px 10px color-mix(in srgb, #5c524b 28%, #4b433d) !important;
+}
+
+.projects-dash-page .projects-dashboard-sidebar-panel .workspace-panel-neu-metric-tile {
+  border: none;
+  border-radius: 14px;
+  background-color: #4b433d !important;
+  background-image: none !important;
+  box-shadow:
+    inset 5px 5px 10px #3a342f,
+    inset -4px -4px 8px #5c524b !important;
+}
+
+.projects-dash-page .projects-dashboard-sidebar-panel .workspace-panel-neu-icon-wrap {
+  background-color: #fdf6e3 !important;
+  color: #e65100;
+  box-shadow:
+    3px 3px 8px color-mix(in srgb, #3a342f 65%, transparent),
+    -2px -2px 6px color-mix(in srgb, #5c524b 45%, #4b433d) !important;
+}
+
+.projects-dash-page .projects-dashboard-sidebar-panel .workspace-panel-neu-value-badge {
+  background-color: #e65100 !important;
+  color: #f5f1e6;
+  box-shadow:
+    2px 2px 6px color-mix(in srgb, #3a342f 55%, transparent),
+    -1px -1px 4px color-mix(in srgb, #fdf6e3 35%, #4b433d) !important;
+}
+
+.projects-dash-page .projects-dashboard-sidebar-panel .workspace-panel-neu-dist-track {
+  border-radius: 9999px;
+  background-color: #4b433d !important;
+  box-shadow:
+    inset 6px 6px 12px #3a342f,
+    inset -5px -5px 10px #5c524b !important;
+}
+
+.projects-dash-page .projects-dashboard-sidebar-panel [id='consolidated-metrics-heading'],
+.projects-dash-page .projects-dashboard-sidebar-panel [id='task-dist-heading'] {
+  color: #e65100;
+  border-bottom-color: #e65100;
+}
+
+/**
+ * Meus Projetos — faixa hero (dashboard-hero-chrome): título, KPIs, filtros rápidos.
+ */
+.app-dark-page-surface .dashboard-hero-chrome.app-dark-hero-chrome,
+.projects-dash-page .dashboard-hero-chrome.projects-dashboard-hero-chrome,
+.projects-dash-page .projects-dashboard-hero-chrome.dashboard-hero-chrome {
+  --workspace-panel-bg: #4b433d;
+  --workspace-stat-bg: #4b433d;
+  --workspace-stat-text: #f5f1e6;
+  --workspace-stat-text-muted: rgba(245, 241, 230, 0.72);
+  --workspace-stat-accent: #e65100;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, #5c524b 42%, transparent);
+  background-color: #4b433d !important;
+  background-image: none !important;
+  color: #f5f1e6;
+  box-shadow:
+    6px 6px 16px color-mix(in srgb, #3a342f 52%, transparent),
+    -4px -4px 10px color-mix(in srgb, #5c524b 28%, #4b433d) !important;
+}
+
+.app-dark-page-surface .app-dark-hero-chrome .projects-dash-stat-card,
+.projects-dash-page .projects-dashboard-hero-chrome .projects-dash-stat-card {
+  border: none !important;
+  border-radius: 14px;
+  background-color: #4b433d !important;
+  background-image: none !important;
+  box-shadow:
+    inset 5px 5px 10px #3a342f,
+    inset -4px -4px 8px #5c524b !important;
+}
+
+.app-dark-page-surface .app-dark-hero-chrome .projects-dash-stat-card:hover,
+.projects-dash-page .projects-dashboard-hero-chrome .projects-dash-stat-card:hover {
+  box-shadow:
+    inset 5px 5px 10px #3a342f,
+    inset -4px -4px 8px #5c524b,
+    0 0 0 1px color-mix(in srgb, #e65100 22%, transparent) !important;
+  transform: none;
+}
+
+.app-dark-page-surface .app-dark-hero-chrome .workspace-stat-neu-track,
+.projects-dash-page .projects-dashboard-hero-chrome .workspace-stat-neu-track {
+  background-color: #4b433d !important;
+  box-shadow:
+    inset 4px 4px 10px #3a342f,
+    inset -3px -3px 8px #5c524b !important;
+}
+
+.app-dark-page-surface .app-dark-hero-chrome .projects-dash-neu-icon-btn,
+.app-dark-page-surface .app-dark-hero-chrome .projects-dash-neu-badge,
+.projects-dash-page .projects-dashboard-hero-chrome .projects-dash-neu-icon-btn,
+.projects-dash-page .projects-dashboard-hero-chrome .projects-dash-neu-badge {
+  background-color: #4b433d !important;
+  border-color: color-mix(in srgb, #5c524b 40%, transparent) !important;
+  color: #f5f1e6 !important;
+  box-shadow:
+    3px 3px 8px color-mix(in srgb, #3a342f 55%, transparent),
+    -2px -2px 6px color-mix(in srgb, #5c524b 35%, #4b433d) !important;
+}
+
+.app-dark-page-surface .app-dark-hero-chrome .projects-dash-neu-select,
+.app-dark-page-surface .app-dark-hero-chrome .neu-select-trigger.projects-dash-neu-select,
+.projects-dash-page .projects-dashboard-hero-chrome .projects-dash-neu-select,
+.projects-dash-page .projects-dashboard-hero-chrome .neu-select-trigger.projects-dash-neu-select {
+  background-color: color-mix(in srgb, #3a342f 28%, #4b433d) !important;
+  background-image: none !important;
+  color: #f5f1e6 !important;
+  border: 1px solid color-mix(in srgb, #5c524b 35%, transparent) !important;
+  box-shadow:
+    inset 4px 4px 10px #3a342f,
+    inset -3px -3px 8px #5c524b !important;
+}
+
+.app-dark-page-surface .app-dark-hero-chrome .projects-dash-quick-filters-toolbar,
+.projects-dash-page .projects-dashboard-hero-chrome .projects-dash-quick-filters-toolbar {
+  background-color: #4b433d !important;
+  border-color: color-mix(in srgb, #fdf6e3 14%, transparent) !important;
+  box-shadow:
+    inset 5px 5px 12px #3a342f,
+    inset -4px -4px 10px #5c524b !important;
+}
+
+.app-dark-page-surface .app-dark-hero-chrome .projects-dash-quick-filters-pill,
+.projects-dash-page .projects-dashboard-hero-chrome .projects-dash-quick-filters-pill {
+  background-color: color-mix(in srgb, #3a342f 40%, #4b433d) !important;
+  color: #dcdcdc !important;
+  box-shadow:
+    inset 4px 4px 10px #3a342f,
+    inset -3px -3px 8px #5c524b !important;
+}
+
+.app-dark-page-surface .app-dark-hero-chrome .projects-dash-quick-filters-pill--active,
+.projects-dash-page .projects-dashboard-hero-chrome .projects-dash-quick-filters-pill--active {
+  background-color: #e65100 !important;
+  color: #f5f1e6 !important;
+  box-shadow:
+    2px 2px 6px color-mix(in srgb, #3a342f 55%, transparent),
+    -1px -1px 4px color-mix(in srgb, #fdf6e3 30%, #4b433d) !important;
+}
+
+.app-dark-page-surface .app-dark-hero-chrome .workspace-chrome-badge:not(.dashboard-neu-filter-icon-wrap),
+.projects-dash-page .projects-dashboard-hero-chrome .workspace-chrome-badge:not(.dashboard-neu-filter-icon-wrap) {
+  background-color: color-mix(in srgb, #3a342f 32%, #4b433d) !important;
+  color: #e65100 !important;
+  box-shadow:
+    inset 3px 3px 8px #3a342f,
+    inset -2px -2px 6px #5c524b !important;
+}
+
+/**
+ * Telas autenticadas — fundo #4B433D (substitui bege global ao redor dos painéis).
+ */
+.app-dark-page-surface,
+.app-dark-page-surface .tasks-panel-scope,
+.projects-dashboard-page-surface,
+.projects-dashboard-page-surface .tasks-panel-scope {
+  --projects-dash-bg: #4b433d;
+  --app-neu-bg: #4b433d;
+  --projects-dash-surface: #4b433d;
+  --projects-dash-neu-light: #5c524b;
+  --projects-dash-neu-dark: #3a342f;
+  --projects-dash-neu-raised:
+    6px 6px 16px color-mix(in srgb, #3a342f 48%, transparent),
+    -4px -4px 10px color-mix(in srgb, #5c524b 20%, #4b433d);
+  --projects-dash-neu-inset:
+    inset 5px 5px 12px #3a342f,
+    inset -4px -4px 10px #5c524b;
+  background-color: #4b433d !important;
+  background-image: radial-gradient(
+    ellipse 130% 85% at 50% -15%,
+    color-mix(in srgb, #5c524b 20%, #4b433d),
+    #4b433d 52%
+  ) !important;
+}
+
+.app-neu-scope:has(.app-dark-page-surface),
+.min-h-screen:has(.app-dark-page-surface),
+main:has(.app-dark-page-surface),
+.app-neu-scope:has(.projects-dashboard-page-surface),
+.min-h-screen:has(.projects-dashboard-page-surface),
+main:has(.projects-dashboard-page-surface) {
+  background-color: #4b433d !important;
+}
+
+.app-dark-page-surface .projects-dash-surface-raised,
+.projects-dashboard-page-surface .projects-dash-surface-raised {
+  border: 1px solid color-mix(in srgb, #5c524b 38%, transparent) !important;
+  background-color: #4b433d !important;
+  box-shadow:
+    6px 6px 16px color-mix(in srgb, #3a342f 45%, transparent),
+    -4px -4px 10px color-mix(in srgb, #5c524b 18%, #4b433d) !important;
+}
+
+/**
+ * Aba Dashboard do projeto — paleta escura #4B433D + neumorfismo Leve.
+ * Títulos creme (#FDF6E3), métricas laranja (#E65100), sombras #3A342F / #5C524B.
+ */
+.app-dark-page-surface.dashboard-neu-scope,
+.app-dark-page-surface .dashboard-neu-scope {
+  --app-neu-bg: #4b433d;
+  --app-neu-surface: #4b433d;
+  --app-neu-light: #5c524b;
+  --app-neu-dark: #3a342f;
+  --app-neu-raised:
+    6px 6px 16px color-mix(in srgb, #3a342f 52%, transparent),
+    -4px -4px 10px color-mix(in srgb, #5c524b 28%, #4b433d);
+  --app-neu-inset: inset 5px 5px 10px #3a342f, inset -4px -4px 8px #5c524b;
+  --app-neu-inset-deep: inset 6px 6px 12px #3a342f, inset -5px -5px 10px #5c524b;
+  --app-neu-hover:
+    7px 7px 18px color-mix(in srgb, #3a342f 55%, transparent),
+    -5px -5px 12px color-mix(in srgb, #fdf6e3 10%, #4b433d),
+    0 0 0 1px color-mix(in srgb, #e65100 18%, transparent);
+  --leve-neu-bg: #4b433d;
+  --leve-neu-light: #5c524b;
+  --leve-neu-dark: #3a342f;
+  --leve-neu-raised: var(--app-neu-raised);
+  --leve-neu-inset: var(--app-neu-inset);
+  --leve-neu-inset-deep: var(--app-neu-inset-deep);
+  --leve-neu-hover: var(--app-neu-hover);
+  --leve-header-text: #f5f1e6;
+  --leve-header-text-muted: rgba(245, 241, 230, 0.72);
+  --leve-header-accent: #e65100;
+  --leve-header-cream: #fdf6e3;
+  --leve-header-border: rgba(245, 241, 230, 0.14);
+  --workspace-stat-bg: #4b433d;
+  --workspace-stat-text: #fdf6e3;
+  --workspace-stat-text-muted: rgba(245, 241, 230, 0.72);
+  --workspace-stat-accent: #e65100;
+  --project-dashboard-insight-bg: #4b433d;
+  --project-dashboard-insight-text: #f5f1e6;
+  --project-dashboard-insight-text-muted: rgba(245, 241, 230, 0.72);
+  --project-dashboard-insight-title: #fdf6e3;
+  --project-dashboard-insight-accent: #e65100;
+  --project-dashboard-insight-border: rgba(245, 241, 230, 0.14);
+  --project-dashboard-insight-chip: rgba(245, 241, 230, 0.08);
+  --project-dashboard-insight-badge-bg: color-mix(in srgb, #3a342f 50%, #4b433d);
+  --project-dashboard-insight-badge-text: #fdf6e3;
+}
+
+.app-dark-page-surface .dashboard-neu-scope .dashboard-neu-insight-card,
+.app-dark-page-surface.dashboard-neu-scope .dashboard-neu-insight-card {
+  border: 1px solid color-mix(in srgb, #5c524b 48%, transparent) !important;
+  background-color: color-mix(in srgb, #5c524b 11%, #4b433d) !important;
+  background-image: none !important;
+  box-shadow:
+    6px 6px 16px color-mix(in srgb, #3a342f 52%, transparent),
+    -4px -4px 10px color-mix(in srgb, #5c524b 28%, #4b433d) !important;
+}
+
+.app-dark-page-surface .dashboard-neu-scope .dashboard-neu-insight-card:hover,
+.app-dark-page-surface.dashboard-neu-scope .dashboard-neu-insight-card:hover {
+  border-color: color-mix(in srgb, #e65100 30%, #5c524b) !important;
+  box-shadow:
+    7px 7px 18px color-mix(in srgb, #3a342f 55%, transparent),
+    -5px -5px 12px color-mix(in srgb, #5c524b 30%, #4b433d),
+    0 0 0 1px color-mix(in srgb, #e65100 16%, transparent) !important;
+  transform: none;
+}
+
+.app-dark-page-surface .dashboard-neu-scope .dashboard-neu-insight-inset,
+.app-dark-page-surface.dashboard-neu-scope .dashboard-neu-insight-inset,
+.app-dark-page-surface .dashboard-neu-scope .dashboard-neu-donut-well,
+.app-dark-page-surface.dashboard-neu-scope .dashboard-neu-donut-well {
+  border: 1px solid color-mix(in srgb, #3a342f 42%, transparent) !important;
+  background-color: color-mix(in srgb, #3a342f 24%, #4b433d) !important;
+  background-image: none !important;
+  box-shadow:
+    inset 5px 5px 10px #3a342f,
+    inset -4px -4px 8px #5c524b !important;
+}
+
+.app-dark-page-surface .dashboard-neu-scope .dashboard-neu-insight-track,
+.app-dark-page-surface.dashboard-neu-scope .dashboard-neu-insight-track {
+  border: none !important;
+  background-color: color-mix(in srgb, #3a342f 38%, #4b433d) !important;
+  box-shadow:
+    inset 4px 4px 10px #3a342f,
+    inset -3px -3px 8px #5c524b !important;
+}
+
+.app-dark-page-surface .dashboard-neu-scope .dashboard-neu-insight-track-fill,
+.app-dark-page-surface.dashboard-neu-scope .dashboard-neu-insight-track-fill {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, #e65100 78%, #fdf6e3) 0%,
+    #e65100 100%
+  ) !important;
+  box-shadow: 0 1px 3px color-mix(in srgb, #e65100 32%, transparent) !important;
+}
+
+.app-dark-page-surface .dashboard-neu-scope .leve-neu-surface,
+.app-dark-page-surface.dashboard-neu-scope .leve-neu-surface {
+  border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
+  background-color: #4b433d !important;
+  background-image: none !important;
+  box-shadow:
+    6px 6px 16px color-mix(in srgb, #3a342f 52%, transparent),
+    -4px -4px 10px color-mix(in srgb, #5c524b 26%, #4b433d) !important;
+}
+
+.app-dark-page-surface .dashboard-neu-scope .leve-neu-surface-inset,
+.app-dark-page-surface.dashboard-neu-scope .leve-neu-surface-inset {
+  border: 1px solid color-mix(in srgb, #3a342f 40%, transparent) !important;
+  background-color: color-mix(in srgb, #3a342f 20%, #4b433d) !important;
+  box-shadow:
+    inset 5px 5px 10px #3a342f,
+    inset -4px -4px 8px #5c524b !important;
+}
+
+/**
+ * Dashboard hero — Filtrar / Exportar (trilho rebaixado + botões e ícones elevados).
+ */
+.app-dark-page-surface .dashboard-hero-chrome .dashboard-neu-filter-toolbar,
+.app-dark-page-surface .dashboard-hero-chrome .dashboard-neu-filter-toolbar.workspace-chrome-inset {
+  gap: 0.35rem !important;
+  padding: 0.35rem !important;
+  border: 1px solid color-mix(in srgb, #3a342f 55%, transparent) !important;
+  border-radius: 9999px !important;
+  background-color: color-mix(in srgb, #3a342f 32%, #4b433d) !important;
+  box-shadow:
+    inset 6px 6px 14px #3a342f,
+    inset -5px -5px 11px #5c524b !important;
+}
+
+.app-dark-page-surface .dashboard-hero-chrome .dashboard-neu-filter-toolbar > .dashboard-neu-filter-btn,
+.app-dark-page-surface .dashboard-hero-chrome .dashboard-neu-filter-btn.workspace-chrome-pill {
+  border: 1px solid color-mix(in srgb, #5c524b 45%, transparent) !important;
+  background-color: color-mix(in srgb, #5c524b 12%, #4b433d) !important;
+  color: #fdf6e3 !important;
+  box-shadow:
+    4px 4px 10px color-mix(in srgb, #3a342f 58%, transparent),
+    -3px -3px 8px color-mix(in srgb, #5c524b 32%, #4b433d) !important;
+}
+
+.app-dark-page-surface .dashboard-hero-chrome .dashboard-neu-filter-btn.workspace-chrome-pill:hover:not(:disabled) {
+  color: #fdf6e3 !important;
+  border-color: color-mix(in srgb, #e65100 28%, #5c524b) !important;
+  box-shadow:
+    5px 5px 12px color-mix(in srgb, #3a342f 62%, transparent),
+    -4px -4px 10px color-mix(in srgb, #fdf6e3 10%, #4b433d) !important;
+}
+
+.app-dark-page-surface .dashboard-hero-chrome .dashboard-neu-filter-btn--active,
+.app-dark-page-surface .dashboard-hero-chrome .dashboard-neu-filter-btn.workspace-chrome-pill-active {
+  background-color: #e65100 !important;
+  color: #fdf6e3 !important;
+  border-color: color-mix(in srgb, #e65100 50%, #3a342f) !important;
+  box-shadow:
+    3px 3px 9px color-mix(in srgb, #3a342f 60%, transparent),
+    -2px -2px 7px color-mix(in srgb, #fdf6e3 28%, #4b433d),
+    0 0 0 1px color-mix(in srgb, #e65100 22%, transparent) !important;
+}
+
+.app-dark-page-surface .dashboard-hero-chrome .dashboard-neu-filter-icon-wrap {
+  border: 1px solid color-mix(in srgb, #e65100 38%, #5c524b) !important;
+  background-color: color-mix(in srgb, #3a342f 18%, #4b433d) !important;
+  color: #e65100 !important;
+  box-shadow:
+    3px 3px 8px color-mix(in srgb, #3a342f 55%, transparent),
+    -2px -2px 6px color-mix(in srgb, #fdf6e3 22%, #4b433d) !important;
+}
+
+.app-dark-page-surface .dashboard-hero-chrome .dashboard-neu-filter-btn:hover:not(:disabled) .dashboard-neu-filter-icon-wrap {
+  box-shadow:
+    4px 4px 10px color-mix(in srgb, #3a342f 58%, transparent),
+    -3px -3px 8px color-mix(in srgb, #fdf6e3 28%, #4b433d) !important;
+}
+
+.app-dark-page-surface .dashboard-hero-chrome .dashboard-neu-filter-count,
+.app-dark-page-surface .dashboard-hero-chrome .dashboard-neu-filter-count.workspace-chrome-count-active {
+  border: 1px solid color-mix(in srgb, #fdf6e3 35%, transparent) !important;
+  background-color: #fdf6e3 !important;
+  color: #4b433d !important;
+  box-shadow:
+    2px 2px 5px color-mix(in srgb, #3a342f 50%, transparent),
+    -1px -1px 3px color-mix(in srgb, #fdf6e3 40%, #4b433d) !important;
+}
+
+.app-dark-page-surface .dashboard-hero-chrome .dashboard-neu-filter-toolbar > div[aria-hidden] {
+  background-color: color-mix(in srgb, #3a342f 65%, transparent) !important;
+  box-shadow: 1px 0 0 color-mix(in srgb, #5c524b 35%, transparent) !important;
+}
+
+/* KPIs do hero (GlassIndicatorCards) — inset na superfície escura */
+.app-dark-page-surface .dashboard-neu-scope .dashboard-hero-chrome .dashboard-glass-indicator-card,
+.app-dark-page-surface.dashboard-neu-scope .dashboard-hero-chrome .dashboard-glass-indicator-card {
+  border: 1px solid color-mix(in srgb, #5c524b 40%, transparent) !important;
+  background-color: color-mix(in srgb, #3a342f 20%, #4b433d) !important;
+  box-shadow:
+    inset 4px 4px 10px #3a342f,
+    inset -3px -3px 8px #5c524b !important;
+}
+
+.app-dark-page-surface .dashboard-neu-scope .dashboard-hero-chrome .dashboard-glass-indicator-card:hover,
+.app-dark-page-surface.dashboard-neu-scope .dashboard-hero-chrome .dashboard-glass-indicator-card:hover {
+  border-color: color-mix(in srgb, #e65100 32%, #5c524b) !important;
+  box-shadow:
+    3px 3px 10px color-mix(in srgb, #3a342f 48%, transparent),
+    -2px -2px 8px color-mix(in srgb, #5c524b 24%, #4b433d) !important;
+  transform: translateY(-1px);
+}
+
+.app-dark-page-surface .dashboard-neu-scope .dashboard-hero-chrome .dashboard-glass-indicator-card--active,
+.app-dark-page-surface.dashboard-neu-scope .dashboard-hero-chrome .dashboard-glass-indicator-card--active {
+  border-color: color-mix(in srgb, #e65100 42%, #5c524b) !important;
+  background-color: color-mix(in srgb, #e65100 14%, #4b433d) !important;
+  box-shadow:
+    2px 2px 8px color-mix(in srgb, #3a342f 50%, transparent),
+    -1px -1px 6px color-mix(in srgb, #fdf6e3 12%, #4b433d),
+    0 0 0 1px color-mix(in srgb, #e65100 22%, transparent) !important;
+}
+
+/* Atividades recentes — shell e tiles */
+.app-dark-page-surface .dashboard-neu-scope .workspace-panel-neu-shell,
+.app-dark-page-surface.dashboard-neu-scope .workspace-panel-neu-shell {
+  background-color: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
+  box-shadow:
+    6px 6px 16px color-mix(in srgb, #3a342f 52%, transparent),
+    -4px -4px 10px color-mix(in srgb, #5c524b 26%, #4b433d) !important;
+}
+
+.app-dark-page-surface .dashboard-neu-scope .workspace-panel-neu-metric-tile,
+.app-dark-page-surface.dashboard-neu-scope .workspace-panel-neu-metric-tile {
+  background-color: color-mix(in srgb, #3a342f 18%, #4b433d) !important;
+  box-shadow:
+    inset 4px 4px 10px #3a342f,
+    inset -3px -3px 8px #5c524b !important;
+}
+
+.app-dark-page-surface .dashboard-neu-scope .workspace-stat-neu-track,
+.app-dark-page-surface.dashboard-neu-scope .workspace-stat-neu-track {
+  background-color: color-mix(in srgb, #3a342f 35%, #4b433d) !important;
+  box-shadow:
+    inset 4px 4px 10px #3a342f,
+    inset -3px -3px 8px #5c524b !important;
+}
+
+.app-dark-page-surface .dashboard-neu-scope .workspace-stat-neu-fill,
+.app-dark-page-surface.dashboard-neu-scope .workspace-stat-neu-fill {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, #e65100 75%, #fdf6e3) 0%,
+    #e65100 100%
+  ) !important;
+}
+
+/* Chips / legendas interativas dentro dos cards */
+.app-dark-page-surface .dashboard-neu-scope .dashboard-neu-insight-inset,
+.app-dark-page-surface.dashboard-neu-scope .dashboard-neu-insight-inset {
+  border: 1px solid color-mix(in srgb, #3a342f 38%, transparent) !important;
+}
+
+.app-dark-page-surface .dashboard-neu-scope .dashboard-empty-state-shell .font-heading,
+.app-dark-page-surface.dashboard-neu-scope .dashboard-empty-state-shell .font-heading {
+  color: var(--leve-header-text) !important;
+}
+
+.app-dark-page-surface .dashboard-neu-scope .dashboard-empty-state-shell .font-body,
+.app-dark-page-surface.dashboard-neu-scope .dashboard-empty-state-shell .font-body {
+  color: var(--leve-header-text-muted) !important;
 }

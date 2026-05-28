@@ -16,7 +16,8 @@ export interface ConsolidatedMetricsProps {
   variant?: 'embedded' | 'standalone';
 }
 
-const EMBEDDED_TILE = 'workspace-panel-neu-metric-tile border-0';
+/** Evita borda duplicada — relevo vem de `workspaceMetricTileClass`. */
+const EMBEDDED_TILE = 'border-0';
 
 export const ConsolidatedMetrics = React.memo<ConsolidatedMetricsProps>(
   ({ projects, className, variant = 'standalone' }) => {

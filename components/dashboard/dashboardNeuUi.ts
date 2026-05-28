@@ -1,4 +1,5 @@
 import { cn } from '../../utils/cn';
+import { appDarkPageSurfaceClass } from '../common/appPageNeuUi';
 import {
   viewHeroChromeClass,
   viewHeroFilterChipClass,
@@ -25,7 +26,11 @@ import {
 } from '../common/neuUi';
 
 /** Escopo bege do dashboard — ativa --app-neu-* e sombras em index.css. */
-export const dashboardNeuScopeClass = cn('dashboard-neu-scope', 'app-neu-scope');
+export const dashboardNeuScopeClass = cn(
+  'dashboard-neu-scope',
+  'app-neu-scope',
+  appDarkPageSurfaceClass
+);
 
 export const dashboardHeroChromeClass = viewHeroChromeClass;
 export const dashboardHeroHeaderShellClass = viewHeroHeaderShellClass;
@@ -120,3 +125,25 @@ export const dashboardChartShellClass = cn(
 );
 
 export const dashboardDashedPanelClass = 'neu-dashed-panel !p-4 sm:!p-6';
+
+/** Banner de carregamento / sincronização. */
+export const dashboardLoadingBannerClass = cn(
+  'leve-neu-surface-inset flex items-center gap-2 px-3 py-2.5 text-sm',
+  'text-[var(--leve-header-text-muted)]'
+);
+
+/** Alerta de erro do store. */
+export const dashboardErrorBannerClass = cn(
+  'leve-neu-surface-inset border border-error/30 px-3 py-2.5 text-sm text-error',
+  'bg-[color-mix(in_srgb,var(--destructive)_8%,var(--leve-neu-bg))]'
+);
+
+/** Empty state dentro do dashboard — painel elevado. */
+export const dashboardEmptyStateShellClass = cn(
+  'dashboard-empty-state-shell leve-neu-surface rounded-[var(--leve-header-radius)] px-4 py-6 sm:px-6 sm:py-8'
+);
+
+/** Poço para sparkline / blocos interativos leves. */
+export const dashboardInsightWellClass = cn(
+  'dashboard-neu-insight-inset inline-block rounded-[var(--project-dashboard-insight-inner-radius)] p-2'
+);
