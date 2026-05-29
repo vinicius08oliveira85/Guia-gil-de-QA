@@ -139,7 +139,7 @@ export const tasksPanelSearchClearBtnClass = cn(
 );
 
 export const tasksPanelSearchHintClass =
-  'mt-1.5 font-sans text-xs text-[var(--workspace-panel-text-muted)]';
+  'mt-1.5 font-sans text-xs text-[var(--workspace-panel-text-muted)] max-md:hidden';
 
 /* ── Chips de filtros ativos (lista de tarefas) ──────────────── */
 
@@ -363,29 +363,25 @@ export const tasksPanelToolbarShellClass = cn(
   'tasks-panel-toolbar-compact',
   appNeuActionTrackClass,
   'flex flex-wrap items-center justify-end gap-1 px-1 py-0.5 sm:gap-1.5 sm:px-1.5 sm:py-1',
-  'max-md:flex-col max-md:items-stretch max-md:gap-1 max-md:p-1.5'
+  'w-full'
 );
 
 export const tasksPanelToolbarExportBtnClass = cn(
   appNeuActionBtnClass,
   'tasks-panel-toolbar-export-btn min-h-7 gap-1 px-2 py-0.5 text-[11px] font-semibold',
-  '[&_svg]:h-3.5 [&_svg]:w-3.5',
-  'max-md:w-full max-md:min-h-8 max-md:justify-center max-md:px-3 max-md:py-1.5 max-md:text-xs'
+  '[&_svg]:h-3.5 [&_svg]:w-3.5'
 );
 
 export const tasksPanelToolbarFieldClass = cn(
-  'tasks-panel-toolbar-field inline-flex min-w-0 items-center gap-1',
-  'max-md:w-full max-md:justify-between max-md:gap-1.5'
+  'tasks-panel-toolbar-field inline-flex min-w-0 items-center gap-1'
 );
 
 export const tasksPanelToolbarLabelClass = cn(
-  'shrink-0 font-sans text-[9px] font-semibold uppercase leading-none tracking-wide text-[var(--workspace-panel-text-muted)]',
-  'max-md:mb-0 max-md:w-12 max-md:shrink-0'
+  'shrink-0 font-sans text-[9px] font-semibold uppercase leading-none tracking-wide text-[var(--workspace-panel-text-muted)]'
 );
 
 export const tasksPanelToolbarSelectClass = cn(
   'tasks-panel-neu-select tasks-panel-toolbar-select app-element-typography h-7 min-h-7 w-auto min-w-[4.75rem]',
-  'max-md:min-h-8 max-md:min-w-0 max-md:flex-1',
   'border-0 px-2 text-[11px] text-[var(--workspace-panel-text)]'
 );
 
