@@ -30,6 +30,7 @@ export const BacklogItemFilterSelect: React.FC<BacklogItemFilterSelectProps> = (
       className={cn(appSelectClass, 'max-w-none')}
       aria-label="Filtrar itens do backlog"
     >
+      <option value="all">Todos (Fila e Concluídos)</option>
       <option value="queue">Fila (To Do / backlog)</option>
       <option value="completed">Concluídos</option>
     </AppSelect>

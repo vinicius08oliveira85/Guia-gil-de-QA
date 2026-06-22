@@ -126,6 +126,7 @@ describe('backlogTasks', () => {
     expect(filterBacklogCompletedTasks(tasks).map(t => t.id)).toEqual(['2']);
     expect(filterBacklogTasksByItemFilter(tasks, 'queue').map(t => t.id)).toEqual(['1', '3']);
     expect(filterBacklogTasksByItemFilter(tasks, 'completed').map(t => t.id)).toEqual(['2']);
+    expect(filterBacklogTasksByItemFilter(tasks, 'all').map(t => t.id)).toEqual(['1', '2', '3']);
   });
 
   it('applyBacklogSecondaryFilters por tipo, prioridade e story points', () => {

@@ -282,7 +282,13 @@ export const TasksView: React.FC<{
 
   const backlogScopeLabel = useMemo(() => {
     const parts: string[] = [];
-    parts.push(backlogItemFilter === 'completed' ? 'Concluídos' : 'Fila');
+    parts.push(
+      backlogItemFilter === 'completed'
+        ? 'Concluídos'
+        : backlogItemFilter === 'all'
+          ? 'Fila e Concluídos'
+          : 'Fila'
+    );
     if (backlogSprintFilter !== BACKLOG_SPRINT_FILTER_ALL) parts.push('Sprint filtrada');
     if (backlogTypeFilter !== 'all') parts.push(`Tipo ${backlogTypeFilter}`);
     if (backlogPriorityFilter !== 'all') parts.push(`Prioridade ${backlogPriorityFilter}`);

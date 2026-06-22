@@ -103,6 +103,11 @@ export const BacklogFiltersToolbar: React.FC<BacklogFiltersToolbarProps> = ({
           <>
             <strong>Concluídos</strong> — Done ou Jira encerrado — exceto Epics.
           </>
+        ) : itemFilter === 'all' ? (
+          <>
+            <strong>Fila e concluídos</strong> — To Do, backlog Jira e itens Done/encerrados — exceto
+            Epics.
+          </>
         ) : (
           <>
             <strong>To Do</strong> ou fila Jira (Backlog, A fazer) — exceto Epics.
@@ -119,6 +124,7 @@ export const BacklogFiltersToolbar: React.FC<BacklogFiltersToolbarProps> = ({
           onChange={v => onItemFilterChange(v as BacklogItemFilter)}
           ariaLabel="Filtrar itens do backlog"
         >
+          <option value="all">Todos (Fila e Concluídos)</option>
           <option value="queue">Fila (To Do / backlog)</option>
           <option value="completed">Concluídos</option>
         </BacklogToolbarField>

@@ -8,7 +8,7 @@ export type TasksListMode = 'all' | 'backlog';
 export type BacklogSortBy = 'priority' | 'storyPoints' | 'storyPointsAsc' | 'id';
 
 /** Escopo de itens exibidos na subvisão Backlog. */
-export type BacklogItemFilter = 'queue' | 'completed';
+export type BacklogItemFilter = 'all' | 'queue' | 'completed';
 
 export type BacklogTypeFilter = 'all' | JiraTaskType;
 
@@ -153,12 +153,19 @@ export function countBacklogCompletedTasks(tasks: readonly JiraTask[]): number {
   return filterBacklogCompletedTasks(tasks).length;
 }
 
-/** Filtra tarefas do backlog conforme fila ou concluídos. */
+/** Tarefa elegível na visão backlog (fila ou concluída), exceto Epic. */
+export function isBacklogScopeTask(task: JiraTask): boolean {
+  return isBacklogTask(task) || isBacklogCompletedTask(task);
+}
+
+/** Filtra tarefas do backlog conforme fila, concluídos ou ambos. */
 export function filterBacklogTasksByItemFilter(
   tasks: readonly JiraTask[],
   itemFilter: BacklogItemFilter
 ): JiraTask[] {
-  return itemFilter === 'completed' ? filterBacklogCompletedTasks(tasks) : filterBacklogTasks(tasks);
+  if (itemFilter === 'completed') return filterBacklogCompletedTasks(tasks);
+  if (itemFilter === 'all') return tasks.filter(isBacklogScopeTask);
+  return filterBacklogTasks(tasks);
 }
 
 /** Filtros adicionais do backlog (tipo, prioridade, story points). */
