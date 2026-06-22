@@ -191,10 +191,10 @@ export const ProjectCard = React.memo<ProjectCardProps>(
               )}
             >
               <Bug
-                className="h-3 w-3 shrink-0 text-[color-mix(in_srgb,#f87171_88%,var(--project-card-accent))]"
+                className="h-3 w-3 shrink-0 text-[color-mix(in_srgb,#dc2626_88%,var(--project-card-accent))]"
                 aria-hidden
               />
-              <span className="text-[11px] font-bold tabular-nums text-[color-mix(in_srgb,#fca5a5_92%,var(--project-card-text))]">
+              <span className="text-[11px] font-bold tabular-nums text-[color-mix(in_srgb,#b91c1c_82%,var(--project-card-text))]">
                 {openBugsCount}
               </span>
             </div>

@@ -15,7 +15,7 @@ import {
   neuSegmentedTrackClass,
 } from './neuUi';
 
-/** Shell compartilhado — ProjectCard e NewProjectCard (neumorfismo + roxo/laranja Leve). */
+/** Shell compartilhado — ProjectCard e NewProjectCard (neumorfismo + skin-color Leve na listagem). */
 export const projectCardShellClass = cn(
   'group project-card-neu-shell relative flex h-full flex-col overflow-hidden font-sans',
   'rounded-[var(--project-card-radius)]',

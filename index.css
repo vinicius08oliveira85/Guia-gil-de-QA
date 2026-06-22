@@ -39,7 +39,7 @@
     --brand-cta-hover: #e34f00;
     --brand-cta-foreground: #fffaf5;
     --brand-highlight: #109685;
-    /** Cards de projeto (ProjectsDashboard) — roxo profundo + laranja Leve */
+    /** Cards de projeto (global/header) — roxo profundo; listagem usa skin-color em `.projects-dash-page` */
     --project-card-bg: #421d3a;
     --project-card-bg-hover: #4a2442;
     --project-card-text: #ffffff;
@@ -5656,6 +5656,44 @@
   box-shadow:
     inset 3px 3px 8px #3a342f,
     inset -2px -2px 6px #5c524b !important;
+}
+
+/**
+ * Meus Projetos — cards de projeto (skin-color Leve).
+ * Referência: levesaude.com.br — `bg-skin-color` #FCF9EC, texto #451E44, destaque #FB4C00.
+ */
+.projects-dash-page {
+  --project-card-bg: #fcf9ec;
+  --project-card-bg-hover: #f5f1dc;
+  --project-card-text: #451e44;
+  --project-card-text-muted: rgba(69, 30, 68, 0.72);
+  --project-card-text-subtle: rgba(69, 30, 68, 0.55);
+  --project-card-accent: #fb4c00;
+  --project-card-border: rgba(69, 30, 68, 0.12);
+  --project-card-chip: rgba(69, 30, 68, 0.06);
+  --project-card-neu-light: color-mix(in srgb, white 62%, #fcf9ec);
+  --project-card-neu-dark: color-mix(in srgb, black 14%, #fcf9ec);
+  --project-card-neu-raised:
+    6px 6px 14px color-mix(in srgb, #3a342f 22%, #fcf9ec),
+    -5px -5px 12px color-mix(in srgb, white 72%, #fcf9ec);
+  --project-card-neu-raised-sm:
+    4px 4px 10px color-mix(in srgb, #3a342f 18%, #fcf9ec),
+    -3px -3px 8px color-mix(in srgb, white 68%, #fcf9ec);
+  --project-card-neu-inset:
+    inset 4px 4px 10px color-mix(in srgb, #3a342f 16%, #fcf9ec),
+    inset -3px -3px 8px color-mix(in srgb, white 65%, #fcf9ec);
+  --project-card-neu-inset-deep:
+    inset 5px 5px 12px color-mix(in srgb, #3a342f 20%, #fcf9ec),
+    inset -4px -4px 10px color-mix(in srgb, white 60%, #fcf9ec);
+  --project-card-neu-hover:
+    8px 8px 20px color-mix(in srgb, #3a342f 26%, #fcf9ec),
+    -6px -6px 16px color-mix(in srgb, white 75%, #fcf9ec),
+    0 0 0 1px color-mix(in srgb, #fb4c00 22%, transparent);
+  --project-card-progress-fill: linear-gradient(
+    90deg,
+    color-mix(in srgb, #fb4c00 72%, white) 0%,
+    #fb4c00 100%
+  );
 }
 
 /**
