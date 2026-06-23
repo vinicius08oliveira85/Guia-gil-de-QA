@@ -1,4 +1,5 @@
 import { JiraTask } from '../types';
+import { coerceString } from './coerceString';
 
 /**
  * Categorias de status do Jira para agrupamento e análise
@@ -17,10 +18,9 @@ export type JiraStatusCategory =
  * @param jiraStatus - Nome do status do Jira (ex: "VALIDAÇÃO", "EM ANDAMENTO", "CONCLUÍDO")
  * @returns Categoria do status
  */
-export const categorizeJiraStatus = (jiraStatus: string | undefined): JiraStatusCategory => {
-  if (!jiraStatus) return 'Pendente';
-
-  const status = jiraStatus.toLowerCase().trim();
+export const categorizeJiraStatus = (jiraStatus: unknown): JiraStatusCategory => {
+  const status = coerceString(jiraStatus).toLowerCase();
+  if (!status) return 'Pendente';
 
   // Concluído: Status que indicam conclusão
   if (
@@ -110,6 +110,14 @@ export const getTaskStatusCategory = (task: JiraTask): JiraStatusCategory => {
   return categorizeJiraStatus(task.jiraStatus);
 };
 
+function resolveTaskJiraStatusLabel(task: JiraTask): string {
+  return (
+    coerceString(task.jiraStatus) ||
+    coerceString(task.status) ||
+    'Sem Status'
+  );
+}
+
 /**
  * Agrupa tarefas por categoria de status
  *
@@ -177,7 +185,7 @@ export const groupTasksByJiraStatus = (tasks: JiraTask[]): Map<string, JiraTask[
   const grouped = new Map<string, JiraTask[]>();
 
   tasks.forEach(task => {
-    const status = task.jiraStatus || task.status || 'Sem Status';
+    const status = resolveTaskJiraStatusLabel(task);
     const current = grouped.get(status) || [];
     grouped.set(status, [...current, task]);
   });
@@ -195,7 +203,7 @@ export const countTasksByJiraStatus = (tasks: JiraTask[]): Record<string, number
   const counts: Record<string, number> = {};
 
   tasks.forEach(task => {
-    const status = task.jiraStatus || task.status || 'Sem Status';
+    const status = resolveTaskJiraStatusLabel(task);
     counts[status] = (counts[status] || 0) + 1;
   });
 

@@ -1,4 +1,5 @@
 import { JiraTask } from '../types';
+import { coerceOptionalString } from './coerceString';
 
 const MAX_TEST_PHASE_RECURSION_DEPTH = 100;
 const testPhaseSubtaskIndexCache = new WeakMap<readonly JiraTask[], Map<string, JiraTask[]>>();
@@ -170,7 +171,7 @@ export const getTestPhaseStatus = (
 
     const index = new Map<string, JiraTask[]>();
     for (const currentTask of tasks) {
-      const parentId = currentTask.parentId?.trim();
+      const parentId = coerceOptionalString(currentTask.parentId);
       if (!parentId) continue;
 
       const siblings = index.get(parentId);
@@ -192,7 +193,7 @@ export const getTestPhaseStatus = (
     cache: Map<string, 'Concluído' | 'Pendente'>,
     depth: number
   ): 'Concluído' | 'Pendente' => {
-    const taskKey = currentTask.id?.trim();
+    const taskKey = coerceOptionalString(currentTask.id);
 
     if (taskKey) {
       const cached = cache.get(taskKey);

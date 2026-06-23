@@ -13,6 +13,7 @@ import {
   Building2,
 } from 'lucide-react';
 import type { Project } from '../types';
+import { coerceString } from './coerceString';
 
 export type ProjectIconKind =
   | 'general'
@@ -179,7 +180,7 @@ const KEYWORD_RULES: KeywordRule[] = [
 ];
 
 function normalizeText(value: string | undefined | null): string {
-  return (value ?? '')
+  return coerceString(value)
     .toLowerCase()
     .normalize('NFD')
     .replace(/\p{M}/gu, '');

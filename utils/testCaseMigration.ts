@@ -1,4 +1,5 @@
 import type { TestCase } from '../types';
+import { coerceOptionalString, coerceString } from './coerceString';
 
 const VALID_STATUS: TestCase['status'][] = ['Not Run', 'Passed', 'Failed', 'Blocked'];
 
@@ -32,16 +33,18 @@ function pickOptionalString(o: Record<string, unknown>, keys: string[]): string 
 
 /** Ambiente estruturado ou linha `Ambiente:` em parâmetros (legado/importação). */
 export function getTestCaseEnvironment(tc: TestCase): string | undefined {
-  const direct = tc.environment?.trim();
+  const direct = coerceOptionalString(tc.environment);
   if (direct) return direct;
-  return (tc.parameters || '').match(/Ambiente:\s*([^\n]+)/i)?.[1]?.trim();
+  const parameters = coerceString(tc.parameters);
+  return parameters.match(/Ambiente:\s*([^\n]+)/i)?.[1]?.trim();
 }
 
 /** Suíte estruturada ou linha `Suíte:` em parâmetros. */
 export function getTestCaseSuite(tc: TestCase): string | undefined {
-  const direct = tc.suite?.trim();
+  const direct = coerceOptionalString(tc.suite);
   if (direct) return direct;
-  return (tc.parameters || '').match(/Suíte:\s*([^\n]+)/i)?.[1]?.trim();
+  const parameters = coerceString(tc.parameters);
+  return parameters.match(/Suíte:\s*([^\n]+)/i)?.[1]?.trim();
 }
 
 /**

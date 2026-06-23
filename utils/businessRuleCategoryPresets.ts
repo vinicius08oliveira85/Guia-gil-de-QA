@@ -1,5 +1,6 @@
 import type { BusinessRule, Project } from '../types';
 import { DEFAULT_BUSINESS_RULE_CATEGORY, normalizeBusinessRule } from './businessRuleDefaults';
+import { coerceString } from './coerceString';
 
 /** Valores iniciais sugeridos quando o projeto ainda não definiu a lista explicitamente. */
 export const DEFAULT_BUSINESS_RULE_CATEGORY_PRESETS = [
@@ -13,8 +14,8 @@ export const DEFAULT_BUSINESS_RULE_CATEGORY_PRESETS = [
 
 /** Rótulo efetivo da categoria da regra (trim ou padrão "Geral"). */
 export function businessRuleCategoryLabel(rule: BusinessRule): string {
-  const t = rule.category?.trim();
-  return t ? t : DEFAULT_BUSINESS_RULE_CATEGORY;
+  const t = coerceString(rule.category);
+  return t || DEFAULT_BUSINESS_RULE_CATEGORY;
 }
 
 /** Lista salva no projeto ou cópia dos padrões quando `undefined` ou lista vazia (ex.: após remover todos os presets). */
@@ -28,7 +29,7 @@ export function effectiveCategoryPresets(project: Project): string[] {
 export function getMergedBusinessRuleCategories(project: Project, rules: BusinessRule[]): string[] {
   const set = new Set<string>();
   for (const x of effectiveCategoryPresets(project)) {
-    const t = x.trim();
+    const t = coerceString(x);
     if (t) set.add(t);
   }
   for (const r of rules) set.add(businessRuleCategoryLabel(r));
