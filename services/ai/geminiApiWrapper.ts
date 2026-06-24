@@ -448,10 +448,14 @@ export async function callGeminiWithRetry(
             maxDelay: isAlternateModel ? 12_000 : 60_000,
             maxTotalTimeout: isAlternateModel ? 35_000 : 90_000,
             useJitter: true,
-            /** 404 em qualquer modelo: troca imediata para o próximo da cadeia. 503/5xx fazem retry com backoff. */
+            /**
+             * 404/429 em qualquer modelo: falha imediata → avança para o próximo da cadeia.
+             * Sem 429 não esperamos 60s de backoff dentro do mesmo modelo.
+             * 503/5xx fazem retry com backoff dentro do modelo.
+             */
             isRetryable: err => {
               const st = extractHttpStatus(err);
-              if (st === 404) {
+              if (st === 404 || st === 429) {
                 return false;
               }
               return isRetryableGeminiError(err);

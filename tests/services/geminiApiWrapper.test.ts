@@ -88,7 +88,7 @@ describe('callGeminiWithRetry', () => {
     vi.mocked(geminiApiKeyManager.getExhaustedKeysInfo).mockReturnValue([]);
   });
 
-  it('429 com "quota" na mensagem (comum na API Google para RPM) não invalida a key; retorna GEMINI_RATE_LIMITED', async () => {
+  it('429 não retenta no mesmo modelo — avança imediatamente pela cadeia e retorna GEMINI_RATE_LIMITED ao esgotar', async () => {
     generateContentMock.mockRejectedValue({
       status: 429,
       message: 'quota exceeded for generate_content',
@@ -98,17 +98,19 @@ describe('callGeminiWithRetry', () => {
       callGeminiWithRetry({ model: 'gemini-2.0-flash', contents: 'conteudo de teste' })
     ).rejects.toMatchObject({ code: 'GEMINI_RATE_LIMITED', status: 429 });
 
-    expect(generateContentMock.mock.calls.length).toBeGreaterThanOrEqual(3);
+    // Uma chamada por modelo da cadeia (sem retry dentro do mesmo modelo)
+    expect(generateContentMock.mock.calls.length).toBe(3); // 2.0-flash + 2.5-flash-lite + 2.0-flash-lite
     expect(geminiApiKeyManager.markCurrentKeyAsExhausted).not.toHaveBeenCalled();
   });
 
-  it('não deve invalidar a key em 429 genérico (rate limit); após falhas retorna GEMINI_RATE_LIMITED', async () => {
+  it('429 genérico: não retenta no mesmo modelo; retorna GEMINI_RATE_LIMITED', async () => {
     generateContentMock.mockRejectedValue({ status: 429, message: 'Too many requests per minute' });
 
     await expect(
       callGeminiWithRetry({ model: 'gemini-2.0-flash', contents: 'conteudo de teste' })
     ).rejects.toMatchObject({ code: 'GEMINI_RATE_LIMITED', status: 429 });
 
+    expect(generateContentMock.mock.calls.length).toBe(3);
     expect(geminiApiKeyManager.markCurrentKeyAsExhausted).not.toHaveBeenCalled();
   });
 
