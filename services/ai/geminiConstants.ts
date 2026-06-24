@@ -17,8 +17,8 @@ export const GEMINI_API_VERSION = 'v1beta' as const;
  */
 export const GEMINI_MODEL_FALLBACK_CANDIDATES = [
   'gemini-2.5-flash-lite',
-  'gemini-2.0-flash',
   'gemini-1.5-flash',
+  'gemini-2.0-flash',
 ] as const;
 
 function normalizeGeminiModelId(id: string): string {

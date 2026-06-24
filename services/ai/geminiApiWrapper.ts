@@ -55,19 +55,27 @@ export function isGeminiTemporaryServiceError(error: unknown): boolean {
   return s === 500 || s === 502 || s === 503 || s === 504;
 }
 
-function lastErrorWarrantsAlternateGeminiModel(error: unknown): boolean {
-  if (isGeminiRateLimitOrQuotaError(error)) {
-    return false;
-  }
+/**
+ * Após esgotar retries no modelo atual, indica se vale tentar o próximo da cadeia.
+ * 429/503 em modelos alternativos costumam ser por modelo — seguimos para o próximo.
+ */
+function lastErrorWarrantsAlternateGeminiModel(error: unknown, modelIndex: number): boolean {
   const e = error as GeminiAppError;
   if (e?.code === 'GEMINI_TEMP_UNAVAILABLE') {
     return true;
   }
   const st = extractHttpStatus(error);
-  if (st === 401 || st === 403 || st === 429) {
+  if (st === 401 || st === 403) {
     return false;
   }
-  if (st === 404 || st === 500 || st === 502 || st === 503 || st === 504) {
+  if (st === 429 || st === 404 || st === 500 || st === 502 || st === 503 || st === 504) {
+    return true;
+  }
+  if (isGeminiRateLimitOrQuotaError(error)) {
+    return modelIndex > 0;
+  }
+  const msg = getErrorMessage(error).toLowerCase();
+  if (msg.includes('timeout máximo total') && (st === 429 || st === 503 || (st !== null && st >= 500))) {
     return true;
   }
   return false;
@@ -340,8 +348,8 @@ export async function callGeminiWithRetry(
   for (let modelIndex = 0; modelIndex < modelChain.length; modelIndex++) {
     const modelId = modelChain[modelIndex];
     const isAlternateModel = modelIndex > 0;
-    /** Modelos alternativos: menos tentativas/backoff para percorrer a cadeia mais rápido em 503. */
-    const effectiveMaxRetries = isAlternateModel ? 2 : GEMINI_HTTP_MAX_RETRIES;
+    /** Alternativos: 1 tentativa — em 429/503 passamos logo ao próximo modelo da cadeia. */
+    const effectiveMaxRetries = isAlternateModel ? 1 : GEMINI_HTTP_MAX_RETRIES;
 
     for (let keyAttempt = 0; keyAttempt < maxKeyRetries; keyAttempt++) {
       const apiKey = geminiApiKeyManager.getCurrentKey();
@@ -475,7 +483,7 @@ export async function callGeminiWithRetry(
     }
 
     const hasNextModel = modelIndex < modelChain.length - 1;
-    if (hasNextModel && lastErrorWarrantsAlternateGeminiModel(lastError)) {
+    if (hasNextModel && lastErrorWarrantsAlternateGeminiModel(lastError, modelIndex)) {
       logger.warn(
         `Falha no modelo Gemini "${modelId}"; tentando o próximo da cadeia.`,
         'callGeminiWithRetry',

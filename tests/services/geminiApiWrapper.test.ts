@@ -89,7 +89,7 @@ describe('callGeminiWithRetry', () => {
   });
 
   it('429 com "quota" na mensagem (comum na API Google para RPM) não invalida a key; retorna GEMINI_RATE_LIMITED', async () => {
-    generateContentMock.mockRejectedValueOnce({
+    generateContentMock.mockRejectedValue({
       status: 429,
       message: 'quota exceeded for generate_content',
     });
@@ -98,7 +98,7 @@ describe('callGeminiWithRetry', () => {
       callGeminiWithRetry({ model: 'gemini-2.0-flash', contents: 'conteudo de teste' })
     ).rejects.toMatchObject({ code: 'GEMINI_RATE_LIMITED', status: 429 });
 
-    expect(generateContentMock).toHaveBeenCalledTimes(1);
+    expect(generateContentMock.mock.calls.length).toBeGreaterThanOrEqual(3);
     expect(geminiApiKeyManager.markCurrentKeyAsExhausted).not.toHaveBeenCalled();
   });
 
@@ -134,10 +134,26 @@ describe('callGeminiWithRetry', () => {
     expect(generateContentMock).not.toHaveBeenCalled();
   });
 
-  it('503 no terceiro modelo da cadeia pode obter sucesso (ex.: gemini-2.0-flash)', async () => {
+  it('503 no terceiro modelo da cadeia pode obter sucesso (ex.: gemini-1.5-flash)', async () => {
     generateContentMock
       .mockRejectedValueOnce({ status: 503, message: 'Service Unavailable' })
       .mockRejectedValueOnce({ status: 503, message: 'Service Unavailable' })
+      .mockResolvedValueOnce({ text: 'ok-1.5' });
+
+    const result = await callGeminiWithRetry({
+      model: 'gemini-2.5-flash',
+      contents: 'x',
+    });
+
+    expect(result.text).toBe('ok-1.5');
+    expect(generateContentMock.mock.calls[2][0].model).toBe('gemini-1.5-flash');
+  });
+
+  it('429 em modelo alternativo deve tentar o próximo da cadeia', async () => {
+    generateContentMock
+      .mockRejectedValueOnce({ status: 503, message: 'Service Unavailable' })
+      .mockRejectedValueOnce({ status: 503, message: 'Service Unavailable' })
+      .mockRejectedValueOnce({ status: 429, message: 'quota exceeded' })
       .mockResolvedValueOnce({ text: 'ok-2.0' });
 
     const result = await callGeminiWithRetry({
@@ -146,7 +162,7 @@ describe('callGeminiWithRetry', () => {
     });
 
     expect(result.text).toBe('ok-2.0');
-    expect(generateContentMock.mock.calls[2][0].model).toBe('gemini-2.0-flash');
+    expect(generateContentMock.mock.calls[3][0].model).toBe('gemini-2.0-flash');
   });
 
   it('deve retornar erro amigável para indisponibilidade 503 após esgotar a cadeia de modelos', async () => {
