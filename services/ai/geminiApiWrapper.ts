@@ -195,7 +195,14 @@ function isRetryableGeminiError(error: unknown): boolean {
     const st = err.status || err.statusCode;
 
     if (typeof st === 'number') {
-      if (st === 429 || st === 408 || st === 502 || st === 504 || (st >= 500 && st < 600)) {
+      if (
+        st === 429 ||
+        st === 408 ||
+        st === 502 ||
+        st === 503 ||
+        st === 504 ||
+        (st >= 500 && st < 600)
+      ) {
         return true;
       }
     }
@@ -214,6 +221,7 @@ function isRetryableGeminiError(error: unknown): boolean {
     msg.includes('abort') ||
     msg.includes('deadline exceeded') ||
     msg.includes('temporarily unavailable') ||
+    msg.includes('service unavailable') ||
     msg.includes('try again later') ||
     msg.includes('cold') ||
     msg.includes('internal error') ||
@@ -302,8 +310,8 @@ function extractRetryInfo(error: unknown): { retryAfter?: number; status?: numbe
  * @returns Resposta da API
  * @throws Erro se todas as tentativas falharem
  */
-/** Total de tentativas por modelo na mesma chamada (inclui a 1.ª). Reduzido para feedback mais rápido em instabilidade. */
-const GEMINI_HTTP_MAX_RETRIES = 2;
+/** Tentativas por modelo na mesma chamada (inclui a 1.ª). */
+const GEMINI_HTTP_MAX_RETRIES = 3;
 
 export async function callGeminiWithRetry(
   params: GeminiGenerateContentParams
@@ -428,14 +436,14 @@ export async function callGeminiWithRetry(
             maxRetries: effectiveMaxRetries,
             initialDelay: isAlternateModel ? 2000 : 5000,
             backoffMultiplier: 2,
-            maxDelay: isAlternateModel ? 12_000 : 180_000,
-            maxTotalTimeout: isAlternateModel ? 22_000 : 45_000,
+            maxDelay: isAlternateModel ? 30_000 : 180_000,
+            maxTotalTimeout: isAlternateModel ? 90_000 : 90_000,
             useJitter: true,
-            /** No modelo principal, 503/404 não repetem no mesmo modelo: passa logo para `gemini-2.5-flash-lite`. */
+            /** 404 no modelo principal: troca imediata para o próximo da cadeia. 503/5xx fazem retry com backoff. */
             isRetryable: err => {
               if (modelIndex === 0) {
                 const st = extractHttpStatus(err);
-                if (st === 503 || st === 404) {
+                if (st === 404) {
                   return false;
                 }
               }

@@ -31,8 +31,13 @@ export interface RetryOptions {
  */
 function isRetryableError(error: unknown): boolean {
   if (error instanceof Error) {
-    // Verificar se é erro 429
-    if (error.message.includes('429') || error.message.includes('Too Many Requests')) {
+    // Verificar se é erro 429 ou indisponibilidade temporária (503/5xx)
+    if (
+      error.message.includes('429') ||
+      error.message.includes('Too Many Requests') ||
+      error.message.includes('503') ||
+      error.message.includes('Service Unavailable')
+    ) {
       return true;
     }
 
@@ -46,11 +51,14 @@ function isRetryableError(error: unknown): boolean {
     }
   }
 
-  // Verificar se é um objeto de erro com status 429
+  // Verificar se é um objeto de erro com status recuperável (429, 503, 5xx)
   if (typeof error === 'object' && error !== null) {
     const err = error as Record<string, unknown>;
-    if (err.status === 429 || err.statusCode === 429) {
-      return true;
+    const status = err.status ?? err.statusCode;
+    if (typeof status === 'number') {
+      if (status === 429 || status === 503 || (status >= 500 && status < 600)) {
+        return true;
+      }
     }
   }
 
