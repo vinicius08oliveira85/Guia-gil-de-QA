@@ -317,7 +317,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                   label={<span className={createProjectFieldLabelClass}>Nome do Projeto *</span>}
                   type="text"
                   value={newName}
-                  onChange={v => setNewName(v)}
+                  onChange={e => setNewName(e.target.value)}
                   placeholder="Ex: E-commerce App"
                   className={createProjectInputClass}
                   maxLength={100}
@@ -482,7 +482,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                   label={<span className={createProjectFieldLabelClass}>Nome do Projeto</span>}
                   type="text"
                   value={newName}
-                  onChange={v => setNewName(v)}
+                  onChange={e => setNewName(e.target.value)}
                   className={createProjectInputClass}
                   maxLength={100}
                 />
