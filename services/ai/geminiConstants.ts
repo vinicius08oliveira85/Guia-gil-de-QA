@@ -11,8 +11,15 @@ export const GEMINI_DEFAULT_MODEL = envModel || 'gemini-2.5-flash';
 /** Versão REST do Generative Language API usada pelo SDK (`@google/genai`); modelos recentes costumam exigir v1beta. */
 export const GEMINI_API_VERSION = 'v1beta' as const;
 
-/** Único modelo alternativo na cadeia padrão (após o preferido / default). */
-export const GEMINI_MODEL_FALLBACK_CANDIDATES = ['gemini-2.5-flash-lite'] as const;
+/**
+ * Modelos alternativos na cadeia (após o preferido / default).
+ * Ordem: versão lite da família 2.5 → 2.0 (costuma estar mais estável) → 1.5 (cota gratuita clássica).
+ */
+export const GEMINI_MODEL_FALLBACK_CANDIDATES = [
+  'gemini-2.5-flash-lite',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
+] as const;
 
 function normalizeGeminiModelId(id: string): string {
   return id.replace(/^models\//, '').trim();

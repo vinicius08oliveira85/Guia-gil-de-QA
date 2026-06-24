@@ -134,15 +134,30 @@ describe('callGeminiWithRetry', () => {
     expect(generateContentMock).not.toHaveBeenCalled();
   });
 
+  it('503 no terceiro modelo da cadeia pode obter sucesso (ex.: gemini-2.0-flash)', async () => {
+    generateContentMock
+      .mockRejectedValueOnce({ status: 503, message: 'Service Unavailable' })
+      .mockRejectedValueOnce({ status: 503, message: 'Service Unavailable' })
+      .mockResolvedValueOnce({ text: 'ok-2.0' });
+
+    const result = await callGeminiWithRetry({
+      model: 'gemini-2.5-flash',
+      contents: 'x',
+    });
+
+    expect(result.text).toBe('ok-2.0');
+    expect(generateContentMock.mock.calls[2][0].model).toBe('gemini-2.0-flash');
+  });
+
   it('deve retornar erro amigável para indisponibilidade 503 após esgotar a cadeia de modelos', async () => {
     generateContentMock.mockRejectedValue({ status: 503, message: 'Service Unavailable' });
 
     await expect(
-      callGeminiWithRetry({ model: 'gemini-2.0-flash', contents: 'conteudo de teste' })
+      callGeminiWithRetry({ model: 'gemini-2.5-flash', contents: 'conteudo de teste' })
     ).rejects.toMatchObject({ code: 'GEMINI_TEMP_UNAVAILABLE', status: 503 });
 
     expect(geminiApiKeyManager.markCurrentKeyAsExhausted).not.toHaveBeenCalled();
-    expect(generateContentMock.mock.calls.length).toBeGreaterThanOrEqual(2);
+    expect(generateContentMock.mock.calls.length).toBeGreaterThanOrEqual(4);
   });
 
   it('503 no primeiro modelo deve tentar o próximo e retornar sucesso se a segunda chamada responder', async () => {

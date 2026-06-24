@@ -10,7 +10,7 @@ const codeToMessage: Record<string, string> = {
   GEMINI_RATE_LIMITED:
     'Limite temporário do Gemini (429 — requisições por minuto ou cota). Aguarde alguns minutos, use outra chave Gemini em Configurações, altere o modelo para gemini-1.5-flash nas configurações do app ou configure uma chave OpenAI (GPT-4o-mini) no .env como backup.',
   GEMINI_TEMP_UNAVAILABLE:
-    'Serviço do Gemini indisponível no momento. Tente novamente em alguns minutos.',
+    'Serviço do Gemini indisponível (503) após tentar vários modelos. Aguarde alguns minutos, defina VITE_GEMINI_MODEL=gemini-1.5-flash no deploy ou configure VITE_OPENAI_API_KEY para fallback automático.',
   GEMINI_KEYS_INVALID:
     'API key do Gemini inválida ou sem permissão. Atualize as credenciais em Configurações > API Keys.',
   GEMINI_NO_KEY: 'Nenhuma API key do Gemini configurada. Adicione uma em Configurações > API Keys.',

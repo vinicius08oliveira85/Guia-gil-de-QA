@@ -340,7 +340,8 @@ export async function callGeminiWithRetry(
   for (let modelIndex = 0; modelIndex < modelChain.length; modelIndex++) {
     const modelId = modelChain[modelIndex];
     const isAlternateModel = modelIndex > 0;
-    const effectiveMaxRetries = GEMINI_HTTP_MAX_RETRIES;
+    /** Modelos alternativos: menos tentativas/backoff para percorrer a cadeia mais rápido em 503. */
+    const effectiveMaxRetries = isAlternateModel ? 2 : GEMINI_HTTP_MAX_RETRIES;
 
     for (let keyAttempt = 0; keyAttempt < maxKeyRetries; keyAttempt++) {
       const apiKey = geminiApiKeyManager.getCurrentKey();
@@ -434,10 +435,10 @@ export async function callGeminiWithRetry(
           },
           {
             maxRetries: effectiveMaxRetries,
-            initialDelay: isAlternateModel ? 2000 : 5000,
+            initialDelay: isAlternateModel ? 1500 : 5000,
             backoffMultiplier: 2,
-            maxDelay: isAlternateModel ? 30_000 : 180_000,
-            maxTotalTimeout: isAlternateModel ? 90_000 : 90_000,
+            maxDelay: isAlternateModel ? 12_000 : 60_000,
+            maxTotalTimeout: isAlternateModel ? 35_000 : 90_000,
             useJitter: true,
             /** 404 no modelo principal: troca imediata para o próximo da cadeia. 503/5xx fazem retry com backoff. */
             isRetryable: err => {
