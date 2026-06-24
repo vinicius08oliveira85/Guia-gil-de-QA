@@ -134,19 +134,19 @@ describe('callGeminiWithRetry', () => {
     expect(generateContentMock).not.toHaveBeenCalled();
   });
 
-  it('503 no terceiro modelo da cadeia pode obter sucesso (ex.: gemini-1.5-flash)', async () => {
+  it('503 no terceiro modelo da cadeia pode obter sucesso (ex.: gemini-2.0-flash-lite)', async () => {
     generateContentMock
       .mockRejectedValueOnce({ status: 503, message: 'Service Unavailable' })
       .mockRejectedValueOnce({ status: 503, message: 'Service Unavailable' })
-      .mockResolvedValueOnce({ text: 'ok-1.5' });
+      .mockResolvedValueOnce({ text: 'ok-lite-2.0' });
 
     const result = await callGeminiWithRetry({
       model: 'gemini-2.5-flash',
       contents: 'x',
     });
 
-    expect(result.text).toBe('ok-1.5');
-    expect(generateContentMock.mock.calls[2][0].model).toBe('gemini-1.5-flash');
+    expect(result.text).toBe('ok-lite-2.0');
+    expect(generateContentMock.mock.calls[2][0].model).toBe('gemini-2.0-flash-lite');
   });
 
   it('429 em modelo alternativo deve tentar o próximo da cadeia', async () => {

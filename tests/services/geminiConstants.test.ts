@@ -9,7 +9,7 @@ describe('getGeminiModelFallbackChain', () => {
     const chain = getGeminiModelFallbackChain('gemini-2.0-flash');
     expect(chain[0]).toBe('gemini-2.0-flash');
     expect(chain).toContain('gemini-2.5-flash-lite');
-    expect(chain).toContain('gemini-1.5-flash');
+    expect(chain).toContain('gemini-2.0-flash-lite');
     expect(chain.length).toBe(3);
     expect(new Set(chain).size).toBe(chain.length);
   });
@@ -20,7 +20,7 @@ describe('getGeminiModelFallbackChain', () => {
     expect(chain).toEqual([
       GEMINI_DEFAULT_MODEL,
       'gemini-2.5-flash-lite',
-      'gemini-1.5-flash',
+      'gemini-2.0-flash-lite',
       'gemini-2.0-flash',
     ]);
   });

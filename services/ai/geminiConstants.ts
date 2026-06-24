@@ -13,11 +13,12 @@ export const GEMINI_API_VERSION = 'v1beta' as const;
 
 /**
  * Modelos alternativos na cadeia (após o preferido / default).
- * Ordem: versão lite da família 2.5 → 2.0 (costuma estar mais estável) → 1.5 (cota gratuita clássica).
+ * Apenas IDs suportados em v1beta (gemini-1.5-flash foi descontinuado → 404).
+ * @see https://ai.google.dev/gemini-api/docs/models
  */
 export const GEMINI_MODEL_FALLBACK_CANDIDATES = [
   'gemini-2.5-flash-lite',
-  'gemini-1.5-flash',
+  'gemini-2.0-flash-lite',
   'gemini-2.0-flash',
 ] as const;
 

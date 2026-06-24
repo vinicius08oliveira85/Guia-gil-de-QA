@@ -6,11 +6,11 @@ const fallbackMessage = 'Não foi possível completar a ação com a IA. Tente n
 
 const codeToMessage: Record<string, string> = {
   GEMINI_QUOTA_EXCEEDED:
-    'Cota do Gemini esgotada ou limite diário atingido. Tente: trocar a API key em Configurações > API Keys; mudar o modelo para gemini-1.5-flash (costuma ter cota mais estável no gratuito); ou configurar VITE_OPENAI_API_KEY (GPT-4o-mini) para o app usar OpenAI automaticamente quando o Gemini estiver limitado.',
+    'Cota do Gemini esgotada ou limite diário atingido. Tente: trocar a API key em Configurações > API Keys; definir VITE_GEMINI_MODEL=gemini-2.0-flash-lite no deploy; ou configurar VITE_OPENAI_API_KEY (GPT-4o-mini) para fallback automático.',
   GEMINI_RATE_LIMITED:
-    'Limite temporário do Gemini (429 — requisições por minuto ou cota). Aguarde alguns minutos, use outra chave Gemini em Configurações, altere o modelo para gemini-1.5-flash nas configurações do app ou configure uma chave OpenAI (GPT-4o-mini) no .env como backup.',
+    'Limite temporário do Gemini (429 — requisições por minuto ou cota). Aguarde alguns minutos, use outra chave Gemini em Configurações, defina VITE_GEMINI_MODEL=gemini-2.0-flash-lite ou configure uma chave OpenAI (GPT-4o-mini) no .env como backup.',
   GEMINI_TEMP_UNAVAILABLE:
-    'Serviço do Gemini indisponível (503) após tentar vários modelos. Aguarde alguns minutos, defina VITE_GEMINI_MODEL=gemini-1.5-flash no deploy ou configure VITE_OPENAI_API_KEY para fallback automático.',
+    'Serviço do Gemini indisponível (503) após tentar vários modelos. Aguarde alguns minutos, defina VITE_GEMINI_MODEL=gemini-2.0-flash-lite no deploy ou configure VITE_OPENAI_API_KEY para fallback automático.',
   GEMINI_KEYS_INVALID:
     'API key do Gemini inválida ou sem permissão. Atualize as credenciais em Configurações > API Keys.',
   GEMINI_NO_KEY: 'Nenhuma API key do Gemini configurada. Adicione uma em Configurações > API Keys.',
@@ -64,7 +64,7 @@ export const getFriendlyAIErrorMessage = (error: unknown): string => {
   if (message) {
     const lower = message.toLowerCase();
     if (lower.includes('rate limit') || lower.includes('quota') || lower.includes('usage limit')) {
-      return `${codeToMessage.OPENAI_RATE_LIMIT} Se usar Gemini, considere gemini-1.5-flash ou chave OpenAI em paralelo.`;
+      return `${codeToMessage.OPENAI_RATE_LIMIT} Se usar Gemini, considere gemini-2.0-flash-lite ou chave OpenAI em paralelo.`;
     }
     if (
       lower.includes('invalid api key') ||
