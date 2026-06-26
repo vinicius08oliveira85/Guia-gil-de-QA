@@ -9,6 +9,7 @@ import React, {
 } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ExpansibleButton } from './ExpansibleButton';
+import { JiraBrandIcon } from './JiraBrandIcon';
 import {
   Plus,
   Loader2,
@@ -18,6 +19,7 @@ import {
 import { Project } from '../../types';
 import { Modal } from './Modal';
 import { useProjectsStore } from '../../store/projectsStore';
+import { useTaskTrackingHeaderStore } from '../../store/taskTrackingHeaderStore';
 import { useJiraSync } from '../../hooks/useJiraSync';
 import { isSupabaseAvailable } from '../../services/supabaseService';
 import toast from 'react-hot-toast';
@@ -74,6 +76,7 @@ export const Header: React.FC<HeaderProps> = ({
   const selectProject = useProjectsStore(s => s.selectProject);
   const selectedProjectId = useProjectsStore(s => s.selectedProjectId);
   const selectedProject = getSelectedProject();
+  const taskTrackingJiraAction = useTaskTrackingHeaderStore(s => s.jiraAction);
   const location = useLocation();
   const navigate = useNavigate();
   const {
@@ -384,10 +387,37 @@ export const Header: React.FC<HeaderProps> = ({
     </>
   ) : undefined;
 
-  const mobileLeadingSlot =
-    leadingContent && (selectedProject || (!selectedProject && showDashboardActions)) ? (
-      <div className="flex flex-wrap items-center gap-2">{leadingContent}</div>
-    ) : undefined;
+  /** Botão Jira da tela Acompanhamento de Tarefas — registrado pelo painel de Filas. */
+  const taskTrackingJiraButton = taskTrackingJiraAction ? (
+    <ExpansibleButton
+      neuVariant="header"
+      icon={
+        taskTrackingJiraAction.isSyncing ? (
+          <Loader2 className="h-[18px] w-[18px] flex-shrink-0 animate-spin" aria-hidden />
+        ) : (
+          <JiraBrandIcon className="h-[18px] w-[18px] flex-shrink-0" />
+        )
+      }
+      label={taskTrackingJiraAction.isSyncing ? 'Atualizando…' : 'Jira'}
+      onClick={taskTrackingJiraAction.onSync}
+      disabled={taskTrackingJiraAction.disabled}
+      ariaLabel="Atualizar fila exportada do Jira"
+      title={taskTrackingJiraAction.title}
+      isExpanded={false}
+    />
+  ) : null;
+
+  const mobileLeadingSlot = (() => {
+    const showProjectLeading =
+      leadingContent && (selectedProject || (!selectedProject && showDashboardActions));
+    if (!showProjectLeading && !taskTrackingJiraButton) return undefined;
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        {showProjectLeading ? leadingContent : null}
+        {taskTrackingJiraButton}
+      </div>
+    );
+  })();
 
   return (
     <header
@@ -493,6 +523,11 @@ export const Header: React.FC<HeaderProps> = ({
             {leadingContent ? (
               <div className="relative hidden min-w-0 shrink-0 items-center gap-1.5 overflow-hidden md:flex">
                 {leadingContent}
+              </div>
+            ) : null}
+            {taskTrackingJiraButton ? (
+              <div className="relative hidden min-w-0 shrink-0 items-center gap-1.5 overflow-hidden md:flex">
+                {taskTrackingJiraButton}
               </div>
             ) : null}
 
