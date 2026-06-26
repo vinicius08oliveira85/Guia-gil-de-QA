@@ -130,18 +130,21 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
 
   return (
     <div
-      className={`file-preview file-preview-icon ${className}`}
+      className={`file-preview file-preview-icon flex flex-col items-center text-center ${className}`}
       style={{ width, height }}
       onClick={onClick}
     >
       <IconComponent />
       {!iconOnly && (
-        <div className="file-preview-info">
-          <span className="file-preview-filename truncate" title={filename}>
+        <div className="file-preview-info mt-1 flex w-full min-w-0 flex-col items-center gap-0.5">
+          <span
+            className="file-preview-filename w-full break-words text-[11px] leading-tight line-clamp-2 [overflow-wrap:anywhere]"
+            title={filename}
+          >
             {filename}
           </span>
           {size && (
-            <span className="file-preview-size text-xs text-base-content/60">
+            <span className="file-preview-size text-[10px] text-base-content/60">
               {formatSize(size)}
             </span>
           )}
@@ -202,14 +205,17 @@ export const PDFPreview: React.FC<
   const finalUrl = url || '';
 
   return (
-    <div className={`file-preview file-preview-pdf ${className}`}>
+    <div className={`file-preview file-preview-pdf flex flex-col items-center text-center ${className}`}>
       <FileText className="w-16 h-16 text-red-500" />
-      <div className="file-preview-info">
-        <span className="file-preview-filename truncate" title={filename}>
+      <div className="file-preview-info mt-1 flex w-full min-w-0 flex-col items-center gap-0.5">
+        <span
+          className="file-preview-filename w-full break-words text-[11px] leading-tight line-clamp-2 [overflow-wrap:anywhere]"
+          title={filename}
+        >
           {filename}
         </span>
         {size && (
-          <span className="file-preview-size text-xs text-base-content/60">{formatSize(size)}</span>
+          <span className="file-preview-size text-[10px] text-base-content/60">{formatSize(size)}</span>
         )}
       </div>
       {onView && (

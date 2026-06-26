@@ -250,6 +250,12 @@ export interface JiraTask {
   testCasesSnapshotHash?: string;
   /** SLAs do Jira Service Management (Time to resolution, Time to first response, etc.). */
   jiraSlas?: JiraTaskSla[];
+  /** Nome do serviço / projeto JSM (quando disponível na API). */
+  jiraServiceName?: string;
+  /** Setor ou diretoria (custom field ou portal JSM). */
+  jiraSectorName?: string;
+  /** Tipo de solicitação do Jira Service Management. */
+  jiraRequestTypeName?: string;
 }
 
 /** SLA de uma issue no Jira Service Management. */

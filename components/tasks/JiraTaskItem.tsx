@@ -154,6 +154,10 @@ import {
 } from '../../utils/taskCardQa';
 import { JiraQueueMetaChips } from './JiraQueueMetaChips';
 import { JiraTaskSlaSummary } from './JiraTaskSlaSummary';
+import {
+  JiraFilasCommentsSection,
+  JiraFilasExtraFieldsGrid,
+} from './JiraFilasSummarySections';
 
 /** Destaque da ação IA principal — halo via tokens Daisy (oklch) + animação existente. */
 const gerarTudoDestaqueClass =
@@ -876,6 +880,7 @@ export const JiraTaskItem: React.FC<{
                 </div>
               ) : null}
             </div>
+            <JiraFilasExtraFieldsGrid task={task} cardClassName={taskModalSectionClass} />
           </>
         ) : (
           project &&
@@ -925,6 +930,23 @@ export const JiraTaskItem: React.FC<{
             <p className="text-base-content/70 italic">Sem descrição</p>
           )}
         </div>
+
+        {hideTestFeatures ? <JiraFilasCommentsSection task={task} className="space-y-2" /> : null}
+
+        {hideTestFeatures && task.jiraAttachments && task.jiraAttachments.length > 0 ? (
+          <div className="space-y-2">
+            <h4 className="text-sm font-semibold text-base-content/70">Anexos do Jira</h4>
+            <div className={cn(taskModalSectionClass, 'p-2.5')}>
+              <ul className="space-y-1 text-sm text-base-content">
+                {task.jiraAttachments.map(att => (
+                  <li key={att.id} className="truncate">
+                    {att.filename}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        ) : null}
 
         {/* Ações de Teste */}
         {!hideTestFeatures && taskTestStatus && (taskTestStatus === 'testar' || taskTestStatus === 'testando') && (

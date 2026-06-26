@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Download, Loader2, RefreshCw, Search, X } from 'lucide-react';
+import { Download, Filter, Loader2, RefreshCw, Search, X } from 'lucide-react';
 import {
   getJiraConfig,
   getJiraProjects,
@@ -12,6 +12,7 @@ import {
   type JiraQueue,
 } from '../../services/jiraService';
 import { enrichTasksWithJiraSlas } from '../../services/jira/sla';
+import { enrichTasksWithJsmSummary } from '../../services/jira/jsmRequest';
 import { jiraIssueToTask } from '../../services/jira/issueToTask';
 import { buildJiraSprintSyncContext } from '../../services/jira/sprintSync';
 import { mapJiraStatusToTaskStatus } from '../../services/jira/mappers';
@@ -20,6 +21,7 @@ import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { useTaskTrackingHeaderStore } from '../../store/taskTrackingHeaderStore';
 import { isValidJiraKey } from '../../utils/jiraFieldMapper';
 import {
+  classifyTaskSla,
   getJiraFilasFilterLabel,
   isJiraFilasFilterActive,
   matchesJiraFilasFilter,
@@ -32,6 +34,24 @@ import { AppSelect } from '../common/AppSelect';
 import { EmptyState } from '../common/EmptyState';
 import { Spinner } from '../common/Spinner';
 import { JiraFilasTaskList } from './JiraFilasTaskList';
+import { Modal } from '../common/Modal';
+import {
+  tasksPanelNeuModalPanelClass,
+  tasksPanelNeuModalTitleClass,
+  tasksViewPageHeaderShellClass,
+  tasksViewPageJiraBadgeClass,
+  tasksViewPageSubtitleClass,
+  tasksViewPageTitleClass,
+} from '../tasks/tasksPanelNeuStyles';
+import {
+  JiraFilasFiltersModalContent,
+  SLA_FILTER_OPTIONS,
+  EMPTY_JIRA_FILAS_FILTERS,
+  countActiveJiraFilasFilters,
+  getTaskAssigneeLabel,
+  getTaskStatusLabel,
+  type JiraFilasLocalFilters,
+} from './JiraFilasFiltersModalContent';
 import {
   jiraSolusFieldClass,
   jiraSolusFieldLabelClass,
@@ -42,10 +62,7 @@ import {
   jiraSolusSearchInputClass,
   jiraSolusSearchWrapClass,
   jiraSolusSecondaryBtnClass,
-  jiraSolusSectionTitleClass,
   jiraSolusSelectClass,
-  jiraSolusSubtitleClass,
-  jiraSolusBadgeClass,
   jiraSolusToolbarClass,
 } from './jiraSolusNeuUi';
 import {
@@ -93,6 +110,8 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
   const [selectedQueueId, setSelectedQueueId] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [issueKeyInput, setIssueKeyInput] = useState('');
+  const [localFilters, setLocalFilters] = useState<JiraFilasLocalFilters>(EMPTY_JIRA_FILAS_FILTERS);
+  const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
 
   const [isLoadingProjects, setIsLoadingProjects] = useState(false);
   const [isLoadingQueues, setIsLoadingQueues] = useState(false);
@@ -211,19 +230,77 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
     [tasks, selectedProjectKey, jiraStatuses]
   );
 
+  const activeLocalFiltersCount = useMemo(
+    () => countActiveJiraFilasFilters(localFilters),
+    [localFilters]
+  );
+
+  const matchesLocalFilters = useCallback(
+    (task: JiraTask): boolean => {
+      if (localFilters.statuses.length > 0 && !localFilters.statuses.includes(getTaskStatusLabel(task))) {
+        return false;
+      }
+      if (
+        localFilters.slaBuckets.length > 0 &&
+        !localFilters.slaBuckets.includes(classifyTaskSla(task, Date.now(), slaRiskWindowHours))
+      ) {
+        return false;
+      }
+      if (localFilters.types.length > 0 && !localFilters.types.includes(task.type)) {
+        return false;
+      }
+      if (
+        localFilters.assignees.length > 0 &&
+        !localFilters.assignees.includes(getTaskAssigneeLabel(task))
+      ) {
+        return false;
+      }
+      return true;
+    },
+    [localFilters, slaRiskWindowHours]
+  );
+
   const filteredTasks = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    const tasksByFilter = tasks.filter(t =>
-      matchesJiraFilasFilter(t, activeFilter, Date.now(), slaRiskWindowHours)
-    );
-    if (!q) return tasksByFilter;
-    return tasksByFilter.filter(
-      t =>
+    return tasks.filter(t => {
+      if (!matchesJiraFilasFilter(t, activeFilter, Date.now(), slaRiskWindowHours)) return false;
+      if (!matchesLocalFilters(t)) return false;
+      if (!q) return true;
+      return (
         t.id.toLowerCase().includes(q) ||
         t.title.toLowerCase().includes(q) ||
-        (t.description && t.description.toLowerCase().includes(q))
-    );
-  }, [tasks, searchQuery, activeFilter, slaRiskWindowHours]);
+        (!!t.description && t.description.toLowerCase().includes(q))
+      );
+    });
+  }, [tasks, searchQuery, activeFilter, slaRiskWindowHours, matchesLocalFilters]);
+
+  const filterOptions = useMemo(() => {
+    const statuses = new Set<string>();
+    const types = new Set<string>();
+    const assignees = new Set<string>();
+    for (const task of tasks) {
+      statuses.add(getTaskStatusLabel(task));
+      types.add(task.type);
+      assignees.add(getTaskAssigneeLabel(task));
+    }
+    const sortPt = (a: string, b: string) => a.localeCompare(b, 'pt-BR');
+    return {
+      statuses: Array.from(statuses).sort(sortPt),
+      types: Array.from(types).sort(sortPt),
+      assignees: Array.from(assignees).sort(sortPt),
+    };
+  }, [tasks]);
+
+  const filterCounts = useMemo(
+    () => ({
+      status: (value: string) => tasks.filter(t => getTaskStatusLabel(t) === value).length,
+      sla: (value: (typeof SLA_FILTER_OPTIONS)[number]['value']) =>
+        tasks.filter(t => classifyTaskSla(t, Date.now(), slaRiskWindowHours) === value).length,
+      type: (value: string) => tasks.filter(t => t.type === value).length,
+      assignee: (value: string) => tasks.filter(t => getTaskAssigneeLabel(t) === value).length,
+    }),
+    [tasks, slaRiskWindowHours]
+  );
 
   const mergeImportedTasks = useCallback((imported: JiraTask[]) => {
     setTasks(prev => {
@@ -232,6 +309,22 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
       return normalizeTasksParentIdsAcyclic(Array.from(map.values()));
     });
   }, [setTasks]);
+
+  const enrichFilasTasks = useCallback(
+    async (
+      config: NonNullable<ReturnType<typeof getJiraConfig>>,
+      imported: JiraTask[],
+      onProgress?: (current: number, total?: number) => void
+    ) => {
+      const withSlas = await enrichTasksWithJiraSlas(config, imported, {
+        onProgress: (done, total) => onProgress?.(done, total),
+      });
+      return enrichTasksWithJsmSummary(config, withSlas, {
+        onProgress: (done, total) => onProgress?.(done, total),
+      });
+    },
+    []
+  );
 
   const fetchQueueTasksFromJira = useCallback(
     async (onIssueProgress?: (current: number, total?: number) => void) => {
@@ -266,11 +359,9 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
         )
       );
 
-      return enrichTasksWithJiraSlas(config, converted, {
-        onProgress: (done, total) => onIssueProgress?.(done, total),
-      });
+      return enrichFilasTasks(config, converted, onIssueProgress);
     },
-    [selectedProjectKey, selectedQueue, tasks]
+    [selectedProjectKey, selectedQueue, tasks, enrichFilasTasks]
   );
 
   const handleImportQueue = useCallback(async () => {
@@ -366,7 +457,9 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
         }
       }
 
-      const withSlas = await enrichTasksWithJiraSlas(config, updated);
+      const withSlas = await enrichFilasTasks(config, updated, (current, total) =>
+        setImportProgress({ current, total })
+      );
 
       const updatedById = new Map(withSlas.map(t => [t.id, t]));
       setTasks(prev =>
@@ -432,7 +525,7 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
         sprintCtx: sprintCtxRef.current ?? undefined,
       });
 
-      const [withSla] = await enrichTasksWithJiraSlas(config, [task]);
+      const [withSla] = await enrichFilasTasks(config, [task]);
       mergeImportedTasks([withSla]);
       setIssueKeyInput('');
       handleSuccess(`Tarefa ${key} importada do Jira.`);
@@ -471,7 +564,7 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
           existingTask: existing,
           sprintCtx: sprintCtxRef.current ?? undefined,
         });
-        const [withSla] = await enrichTasksWithJiraSlas(config, [updated]);
+        const [withSla] = await enrichFilasTasks(config, [updated]);
         mergeImportedTasks([withSla]);
         handleSuccess('Tarefa atualizada do Jira.');
       } catch (err) {
@@ -546,25 +639,27 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
 
   return (
     <div className="space-y-5" role="region" aria-label="Filas do Jira">
-      <header className="min-w-0">
-        <div className="mb-1.5 flex flex-wrap items-center gap-2">
-          <h2 className={jiraSolusSectionTitleClass}>Filas do Jira</h2>
-          {selectedProjectKey ? (
-            <span className={jiraSolusBadgeClass}>Jira: {selectedProjectKey}</span>
-          ) : null}
-          {selectedQueue ? (
-            <span className={jiraSolusBadgeClass}>Fila: {selectedQueue.name}</span>
-          ) : null}
-          {hasActiveFilter ? (
-            <span className={jiraSolusBadgeClass}>Filtro: {activeFilterLabel}</span>
-          ) : null}
+      <header className={tasksViewPageHeaderShellClass}>
+        <div className="min-w-0">
+          <div className="mb-1.5 flex flex-wrap items-center gap-2">
+            <h1 className={tasksViewPageTitleClass}>Filas do Jira</h1>
+            {selectedProjectKey ? (
+              <span className={tasksViewPageJiraBadgeClass}>Jira: {selectedProjectKey}</span>
+            ) : null}
+            {selectedQueue ? (
+              <span className={tasksViewPageJiraBadgeClass}>Fila: {selectedQueue.name}</span>
+            ) : null}
+            {hasActiveFilter ? (
+              <span className={tasksViewPageJiraBadgeClass}>Filtro: {activeFilterLabel}</span>
+            ) : null}
+          </div>
+          <p className={cn(tasksViewPageSubtitleClass, 'max-w-2xl')}>
+            Selecione o projeto e a fila do Jira Service Management para importar apenas as tarefas
+            relevantes. Use o botão <strong>Jira</strong> no topo da tela para atualizar apenas as
+            tarefas já importadas (status, SLA e campos), como em Tarefas &amp; Testes dos Projetos.
+            Também é possível importar uma issue pelo ID.
+          </p>
         </div>
-        <p className={cn(jiraSolusSubtitleClass, 'mt-0')}>
-          Selecione o projeto e a fila do Jira Service Management para importar apenas as tarefas
-          relevantes. Use o botão <strong>Jira</strong> no topo da tela para atualizar apenas as
-          tarefas já importadas (status, SLA e campos), como em Tarefas &amp; Testes dos Projetos.
-          Também é possível importar uma issue pelo ID.
-        </p>
       </header>
 
       <section className={cn(jiraSolusInnerPanelClass, 'space-y-4')} aria-label="Importação do Jira">
@@ -716,30 +811,44 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
           </div>
         ) : null}
 
-        <div className={jiraSolusSearchWrapClass}>
-          <Search
-            className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--brand-text-muted)]"
-            aria-hidden
-          />
-          <input
-            type="search"
-            inputMode="search"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Buscar por ID, título ou palavra-chave…"
-            className={jiraSolusSearchInputClass}
-            aria-label="Busca rápida nas tarefas importadas"
-          />
-          {searchQuery ? (
-            <button
-              type="button"
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--brand-text-muted)] transition-colors hover:text-[var(--project-card-accent)]"
-              aria-label="Limpar busca"
-            >
-              <X className="h-4 w-4" aria-hidden />
-            </button>
-          ) : null}
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className={cn(jiraSolusSearchWrapClass, 'min-w-0 flex-1')}>
+            <Search
+              className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--brand-text-muted)]"
+              aria-hidden
+            />
+            <input
+              type="search"
+              inputMode="search"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Buscar por ID, título ou palavra-chave…"
+              className={jiraSolusSearchInputClass}
+              aria-label="Busca rápida nas tarefas importadas"
+            />
+            {searchQuery ? (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--brand-text-muted)] transition-colors hover:text-[var(--project-card-accent)]"
+                aria-label="Limpar busca"
+              >
+                <X className="h-4 w-4" aria-hidden />
+              </button>
+            ) : null}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsFiltersModalOpen(true)}
+            className={cn(jiraSolusSecondaryBtnClass, 'shrink-0 self-stretch sm:self-auto')}
+            disabled={tasks.length === 0}
+            aria-label="Abrir filtros das tarefas importadas"
+            aria-haspopup="dialog"
+          >
+            <Filter className="h-4 w-4 shrink-0" aria-hidden />
+            Filtros{activeLocalFiltersCount > 0 ? ` (${activeLocalFiltersCount})` : ''}
+          </button>
         </div>
         {hasActiveFilter ? (
           <div className="flex flex-wrap items-center gap-2">
@@ -780,15 +889,27 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
           />
         ) : tasks.length > 0 ? (
           <EmptyState
-            title="Nenhuma tarefa corresponde à busca"
+            title="Nenhuma tarefa corresponde aos filtros"
             description={
-              hasActiveFilter
-                ? 'Ajuste os filtros ou limpe o filtro aplicado pelo Dashboard.'
-                : 'Ajuste os termos da busca para ver as tarefas importadas.'
+              activeLocalFiltersCount > 0
+                ? 'Ajuste ou limpe os filtros aplicados para ver as tarefas importadas.'
+                : hasActiveFilter
+                  ? 'Ajuste os filtros ou limpe o filtro aplicado pelo Dashboard.'
+                  : 'Ajuste os termos da busca para ver as tarefas importadas.'
             }
             action={{
-              label: hasActiveFilter ? 'Limpar filtro' : 'Limpar busca',
-              onClick: hasActiveFilter ? onClearFilter : () => setSearchQuery(''),
+              label:
+                activeLocalFiltersCount > 0
+                  ? 'Limpar filtros'
+                  : hasActiveFilter
+                    ? 'Limpar filtro'
+                    : 'Limpar busca',
+              onClick:
+                activeLocalFiltersCount > 0
+                  ? () => setLocalFilters(EMPTY_JIRA_FILAS_FILTERS)
+                  : hasActiveFilter
+                    ? onClearFilter
+                    : () => setSearchQuery(''),
               variant: 'primary',
             }}
           />
@@ -803,6 +924,26 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
           />
         )}
       </section>
+
+      <Modal
+        isOpen={isFiltersModalOpen}
+        onClose={() => setIsFiltersModalOpen(false)}
+        title="Filtros"
+        size="4xl"
+        panelClassName={tasksPanelNeuModalPanelClass}
+        titleClassName={tasksPanelNeuModalTitleClass}
+      >
+        <JiraFilasFiltersModalContent
+          filters={localFilters}
+          onChange={setLocalFilters}
+          statusOptions={filterOptions.statuses}
+          typeOptions={filterOptions.types}
+          assigneeOptions={filterOptions.assignees}
+          counts={filterCounts}
+          activeFiltersCount={activeLocalFiltersCount}
+          onClearAll={() => setLocalFilters(EMPTY_JIRA_FILAS_FILTERS)}
+        />
+      </Modal>
     </div>
   );
 };

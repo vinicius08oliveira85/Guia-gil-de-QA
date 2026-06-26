@@ -29,6 +29,10 @@ import { getJiraConfig } from '../../services/jiraService';
 import { fetchJiraAttachmentAsDataUrl } from '../../utils/jiraAttachmentFetch';
 import { TaskWithChildren } from './JiraTaskItem';
 import { JiraTaskSlaSummary } from './JiraTaskSlaSummary';
+import {
+  JiraFilasCommentsSection,
+  JiraFilasExtraFieldsGrid,
+} from './JiraFilasSummarySections';
 import { TaskLinksView } from './TaskLinksView';
 import { getTaskDependents } from '../../utils/dependencyService';
 import { cn } from '../../utils/cn';
@@ -426,6 +430,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 </div>
               ) : null}
             </div>
+            <JiraFilasExtraFieldsGrid task={task} />
           </>
         ) : null}
 
@@ -513,6 +518,8 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             )}
           </div>
         </section>
+
+        {hideTestFeatures ? <JiraFilasCommentsSection task={task} className="space-y-2" /> : null}
 
         {(() => {
           const versions = getTaskVersions(task);

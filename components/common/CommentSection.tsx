@@ -20,10 +20,12 @@ import {
 
 interface CommentSectionProps {
   comments: Comment[];
-  onAddComment: (content: string) => void;
+  onAddComment?: (content: string) => void;
   onEditComment?: (commentId: string, content: string) => void;
   onDeleteComment?: (commentId: string) => void;
   currentUser?: string;
+  /** Somente leitura — exibe comentários do Jira sem formulário de envio. */
+  readOnly?: boolean;
 }
 
 export const CommentSection: React.FC<CommentSectionProps> = ({
@@ -32,6 +34,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   onEditComment,
   onDeleteComment,
   currentUser = 'Você',
+  readOnly = false,
 }) => {
   const [newComment, setNewComment] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -56,6 +59,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   };
 
   const handleSubmit = () => {
+    if (readOnly || !onAddComment) return;
     if (newComment.trim()) {
       onAddComment(newComment.trim());
       setNewComment('');
@@ -83,24 +87,26 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   return (
     <div className="space-y-4 font-sans">
       <h3 className={leveTaskModalFieldLabelClass}>Comentários ({comments.length})</h3>
-      <div className={cn(leveTaskModalInsetClass, 'space-y-2')}>
-        <textarea
-          value={newComment}
-          onChange={e => setNewComment(e.target.value)}
-          placeholder="Adicionar comentário..."
-          rows={3}
-          className={leveTaskModalTextareaClass}
-        />
-        <button
-          type="button"
-          onClick={handleSubmit}
-          disabled={!newComment.trim()}
-          className={cn(leveViewPrimaryBtnClass, 'disabled:cursor-not-allowed disabled:opacity-50')}
-          aria-label="Enviar comentário"
-        >
-          Comentar
-        </button>
-      </div>
+      {!readOnly && onAddComment ? (
+        <div className={cn(leveTaskModalInsetClass, 'space-y-2')}>
+          <textarea
+            value={newComment}
+            onChange={e => setNewComment(e.target.value)}
+            placeholder="Adicionar comentário..."
+            rows={3}
+            className={leveTaskModalTextareaClass}
+          />
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={!newComment.trim()}
+            className={cn(leveViewPrimaryBtnClass, 'disabled:cursor-not-allowed disabled:opacity-50')}
+            aria-label="Enviar comentário"
+          >
+            Comentar
+          </button>
+        </div>
+      ) : null}
 
       <div className="space-y-3">
         {comments.map(comment => (
@@ -135,6 +141,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                     </span>
                   </div>
                   {comment.author === currentUser &&
+                    !readOnly &&
                     !comment.fromJira &&
                     (onEditComment || onDeleteComment) && (
                       <div className="flex gap-2">
