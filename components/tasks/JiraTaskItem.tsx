@@ -35,6 +35,10 @@ import {
   Timer,
   Star,
   Download,
+  User,
+  UserCheck,
+  Clock,
+  CalendarPlus,
 } from 'lucide-react';
 import { TestStrategyCard } from './TestStrategyCard';
 import { ToolsSelector } from './ToolsSelector';
@@ -152,6 +156,7 @@ import {
   getTaskRiskBadgeClass,
   getTaskQaCoverageAlerts,
 } from '../../utils/taskCardQa';
+import { classifyTaskSla, type SlaBucket } from '../../utils/jiraFilasMetrics';
 
 /** Destaque da ação IA principal — halo via tokens Daisy (oklch) + animação existente. */
 const gerarTudoDestaqueClass =
@@ -253,6 +258,12 @@ export const JiraTaskItem: React.FC<{
   onToggleFavorite?: () => void;
   /** Detalhes inline abertos/fechados — breadcrumb no projeto. */
   onDetailsOpenChange?: (taskId: string, isOpen: boolean) => void;
+  /**
+   * Oculta tudo relacionado a testes (botão "Testar", indicadores de casos de
+   * teste) e exibe metadados de acompanhamento (Relator, Responsável, SLA, Data
+   * de Criação). Usado na aba Filas (Jira).
+   */
+  hideTestFeatures?: boolean;
 }> = React.memo(
   ({
     task,
@@ -298,6 +309,7 @@ export const JiraTaskItem: React.FC<{
     onOpenModal,
     onToggleFavorite,
     onDetailsOpenChange,
+    hideTestFeatures = false,
   }) => {
     const reduceMotion = useReducedMotion();
     const [isDetailsOpen, setIsDetailsOpen] = useState(false); // Colapsado por padrão para compactar
@@ -369,6 +381,45 @@ export const JiraTaskItem: React.FC<{
     }, [taskRiskLevel, taskRiskSignals]);
     const storyPointsDisplay = useMemo(() => resolveTaskStoryPoints(task), [task]);
     const displaySprint = useMemo(() => resolveTaskDisplaySprint(task), [task]);
+
+    /** Metadados de acompanhamento (aba Filas): Relator, Responsável, SLA e Data de Criação. */
+    const queueMeta = useMemo(() => {
+      if (!hideTestFeatures) return null;
+      const formatDate = (value?: string) => {
+        if (!value) return null;
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? null : date.toLocaleDateString('pt-BR');
+      };
+      const slaBucketLabels: Record<SlaBucket, string> = {
+        onTrack: 'No prazo',
+        atRisk: 'Em risco',
+        overdue: 'Atrasada',
+        noDueDate: 'Sem prazo',
+      };
+      const slaBucket = classifyTaskSla(task);
+      const dueLabel = formatDate(task.dueDate);
+      return {
+        reporter: task.reporter?.displayName?.trim() || '—',
+        assignee: (task.jiraAssignee?.displayName ?? task.assignee)?.trim() || '—',
+        slaBucket,
+        slaLabel: dueLabel
+          ? `${slaBucketLabels[slaBucket]} · ${dueLabel}`
+          : slaBucketLabels[slaBucket],
+        createdAt: formatDate(task.createdAt) ?? '—',
+      };
+    }, [hideTestFeatures, task]);
+
+    const queueSlaToneClass = useMemo(() => {
+      if (!queueMeta) return '';
+      switch (queueMeta.slaBucket) {
+        case 'overdue':
+          return 'text-error';
+        case 'atRisk':
+          return 'text-warning';
+        default:
+          return '';
+      }
+    }, [queueMeta]);
 
     const iaAnalysisStale = useMemo(() => {
       if (!task.iaAnalysis) return false;
@@ -1850,13 +1901,53 @@ export const JiraTaskItem: React.FC<{
                       />
                     </>
                   ) : null}
-                  {showTestExecutionSummary ? (
+                  {showTestExecutionSummary && !hideTestFeatures ? (
                     <span
                       className={cn(getTaskRiskBadgeClass(taskRiskLevel), tasksListMetadataBadgeClass)}
                       title={taskRiskTooltip}
                     >
                       {taskRiskLevel}
                     </span>
+                  ) : null}
+                  {queueMeta ? (
+                    <>
+                      <TaskCardMetadataSeparator />
+                      <span
+                        className={cn(tasksListMetadataBadgeClass, 'inline-flex shrink-0 items-center gap-1')}
+                        title={`Relator: ${queueMeta.reporter}`}
+                      >
+                        <User className="h-3 w-3 shrink-0" aria-hidden />
+                        {queueMeta.reporter}
+                      </span>
+                      <TaskCardMetadataSeparator />
+                      <span
+                        className={cn(tasksListMetadataBadgeClass, 'inline-flex shrink-0 items-center gap-1')}
+                        title={`Responsável: ${queueMeta.assignee}`}
+                      >
+                        <UserCheck className="h-3 w-3 shrink-0" aria-hidden />
+                        {queueMeta.assignee}
+                      </span>
+                      <TaskCardMetadataSeparator />
+                      <span
+                        className={cn(
+                          tasksListMetadataBadgeClass,
+                          'inline-flex shrink-0 items-center gap-1',
+                          queueSlaToneClass
+                        )}
+                        title={`SLA: ${queueMeta.slaLabel}`}
+                      >
+                        <Clock className="h-3 w-3 shrink-0" aria-hidden />
+                        {queueMeta.slaLabel}
+                      </span>
+                      <TaskCardMetadataSeparator />
+                      <span
+                        className={cn(tasksListMetadataBadgeClass, 'inline-flex shrink-0 items-center gap-1')}
+                        title={`Data de criação: ${queueMeta.createdAt}`}
+                      >
+                        <CalendarPlus className="h-3 w-3 shrink-0" aria-hidden />
+                        {queueMeta.createdAt}
+                      </span>
+                    </>
                   ) : null}
                 </TaskCardMetadataStrip>
               }
@@ -1941,7 +2032,7 @@ export const JiraTaskItem: React.FC<{
               }
               titleTrailing={
                 <>
-                  {(task.type === 'Tarefa' || task.type === 'Bug') && (
+                  {!hideTestFeatures && (task.type === 'Tarefa' || task.type === 'Bug') && (
                     <TestCasesFreshnessIndicator
                       task={task}
                       variant="compact"
@@ -1949,7 +2040,7 @@ export const JiraTaskItem: React.FC<{
                       className="inline-flex shrink-0"
                     />
                   )}
-                  {showTaskQaInsights ? (
+                  {!hideTestFeatures && showTaskQaInsights ? (
                     <TaskCardQaInsights
                       variant="inline"
                       counts={{
@@ -2009,7 +2100,7 @@ export const JiraTaskItem: React.FC<{
                         </span>
                       </li>
                     ) : null}
-                    {(task.type === 'Tarefa' || task.type === 'Bug') && (
+                    {!hideTestFeatures && (task.type === 'Tarefa' || task.type === 'Bug') && (
                       <li className="menu-title">
                         <span className="font-body text-xs font-normal text-muted">
                           Métricas: ✓ {testExecutionSummary.passed} · ✗ {testExecutionSummary.failed}{' '}
@@ -2035,6 +2126,7 @@ export const JiraTaskItem: React.FC<{
                         </button>
                       </li>
                     ) : null}
+                    {!hideTestFeatures && (
                     <li>
                       <button
                         type="button"
@@ -2055,6 +2147,7 @@ export const JiraTaskItem: React.FC<{
                                 : 'Iniciar teste'}
                       </button>
                     </li>
+                    )}
                     <li className="menu-title mt-1">
                       <span className="font-body text-xs font-normal text-muted">Status Jira</span>
                     </li>
@@ -2143,6 +2236,7 @@ export const JiraTaskItem: React.FC<{
               )}
               onClick={e => e.stopPropagation()}
             >
+              {hideTestFeatures ? null : (
               <TaskActionStrip
                 aiPhaseMessage={aiPhaseMessage}
                 isAiProcessing={isAiProcessing}
@@ -2166,6 +2260,7 @@ export const JiraTaskItem: React.FC<{
                 testStatusLabelOverride={containerTestStatusLabel}
                 onTestStatusClick={handleTestStatusBadgeClick}
               />
+              )}
 
             </div>
           </div>

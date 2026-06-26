@@ -117,6 +117,7 @@ export const JiraFilasTaskList: React.FC<JiraFilasTaskListProps> = ({
             isTransitioningJiraStatus={isTransitioningJiraStatus === task.id}
             onUpdateFromJira={onUpdateFromJira}
             isUpdatingFromJira={isUpdatingFromJira === task.id}
+            hideTestFeatures
           >
             {task.children.map(child => renderNode(child, level + 1))}
           </JiraTaskItem>
