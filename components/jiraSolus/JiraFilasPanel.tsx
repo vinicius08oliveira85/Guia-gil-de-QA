@@ -373,12 +373,10 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
         )
       );
 
-      const primaryIds = new Set(converted.map(task => task.id));
       const withRelated = await importFilasRelatedIssues(config, converted, {
         jiraProjectKey: selectedProjectKey,
         sprintCtx,
         existingTasks: tasks,
-        primaryTaskIds: primaryIds,
         onProgress: (done, total) => onIssueProgress?.(done, total),
       });
 
@@ -488,7 +486,6 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
         jiraProjectKey: selectedProjectKey || undefined,
         sprintCtx: sprintCtxRef.current ?? undefined,
         existingTasks: tasks,
-        primaryTaskIds: new Set(importedTasks.map(task => task.id)),
       });
 
       const enriched = await enrichFilasTasks(config, withRelated, (current, total) =>
@@ -561,7 +558,7 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
         jiraProjectKey: selectedProjectKey || key.split('-')[0],
         sprintCtx: sprintCtxRef.current ?? undefined,
         existingTasks: tasks,
-        primaryTaskIds: new Set([key]),
+        rootTaskIds: new Set([key]),
       });
 
       const enriched = await enrichFilasTasks(config, withRelated);
@@ -607,7 +604,7 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
           jiraProjectKey: selectedProjectKey || taskId.split('-')[0],
           sprintCtx: sprintCtxRef.current ?? undefined,
           existingTasks: tasks,
-          primaryTaskIds: new Set([taskId]),
+          rootTaskIds: new Set([taskId]),
         });
         const enriched = await enrichFilasTasks(config, withRelated);
         mergeImportedTasks(enriched);

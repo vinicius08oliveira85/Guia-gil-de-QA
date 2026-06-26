@@ -42,7 +42,7 @@ describe('importFilasRelatedIssues', () => {
     });
 
     const result = await importFilasRelatedIssues(config, [primary], {
-      primaryTaskIds: new Set(['SUS-1']),
+      rootTaskIds: new Set(['SUS-1']),
     });
 
     expect(getJiraIssueByKey).toHaveBeenCalledWith(config, 'SUS-2');
@@ -64,23 +64,48 @@ describe('importFilasRelatedIssues', () => {
 
     const result = await importFilasRelatedIssues(config, [primary], {
       existingTasks: [existing],
-      primaryTaskIds: new Set(['SUS-1']),
+      rootTaskIds: new Set(['SUS-1']),
     });
 
     expect(getJiraIssueByKey).not.toHaveBeenCalled();
     expect(result.find(t => t.id === 'SUS-2')?.parentId).toBe('SUS-1');
   });
 
-  it('não altera parentId de tarefas primárias importadas da fila', async () => {
+  it('não altera parentId de tarefas raiz importadas por ID', async () => {
     const primary = makeTask({
       issueLinks: [{ id: '1', type: 'Blocks', relatedKey: 'SUS-1', direction: 'inward' }],
     });
 
     const result = await importFilasRelatedIssues(config, [primary], {
-      primaryTaskIds: new Set(['SUS-1']),
+      rootTaskIds: new Set(['SUS-1']),
     });
 
     expect(result.find(t => t.id === 'SUS-1')?.parentId).toBeUndefined();
     expect(getJiraIssueByKey).not.toHaveBeenCalled();
+  });
+
+  it('vincula tarefas da mesma importação em lote pelo issue link', async () => {
+    const parent: JiraTask = {
+      id: 'SUS-1',
+      title: 'Principal',
+      description: '',
+      status: 'To Do',
+      type: 'Tarefa',
+      testCases: [],
+      issueLinks: [{ id: '1', type: 'Blocks', relatedKey: 'SUS-2', direction: 'outward' }],
+    };
+    const child: JiraTask = {
+      id: 'SUS-2',
+      title: 'Relacionada na fila',
+      description: '',
+      status: 'To Do',
+      type: 'Tarefa',
+      testCases: [],
+    };
+
+    const result = await importFilasRelatedIssues(config, [parent, child]);
+
+    expect(getJiraIssueByKey).not.toHaveBeenCalled();
+    expect(result.find(t => t.id === 'SUS-2')?.parentId).toBe('SUS-1');
   });
 });

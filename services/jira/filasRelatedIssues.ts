@@ -15,7 +15,13 @@ export interface ImportFilasRelatedIssuesOptions {
   sprintCtx?: JiraSprintSyncContext;
   /** Tarefas já presentes na fila local (mescladas antes de resolver vínculos). */
   existingTasks?: JiraTask[];
-  /** IDs importados diretamente (fila ou ID); não são re-parentados por issue link. */
+  /**
+   * IDs importados explicitamente por chave (ex.: PROJ-123).
+   * Essas tarefas permanecem raiz e não são re-parentadas por issue link.
+   * Importações em lote (filas) não devem preencher este conjunto.
+   */
+  rootTaskIds?: Set<string>;
+  /** @deprecated Use rootTaskIds */
   primaryTaskIds?: Set<string>;
   concurrency?: number;
   /** Profundidade de busca recursiva de relacionamentos (padrão: 2). */
@@ -85,9 +91,10 @@ function applyParentLinkFromIssueRelation(
   relatedTask: JiraTask,
   parentTaskId: string,
   taskById: Map<string, JiraTask>,
-  primaryTaskIds: Set<string>
+  rootTaskIds: Set<string>
 ): JiraTask {
-  if (primaryTaskIds.has(relatedTask.id)) return relatedTask;
+  if (relatedTask.id === parentTaskId) return relatedTask;
+  if (rootTaskIds.has(relatedTask.id)) return relatedTask;
 
   const jiraParentId = relatedTask.parentId?.trim();
   if (jiraParentId && taskById.has(jiraParentId)) {
@@ -107,7 +114,7 @@ function applyParentLinkFromIssueRelation(
 function linkExistingRelatedTasks(
   sourceTasks: JiraTask[],
   taskById: Map<string, JiraTask>,
-  primaryTaskIds: Set<string>
+  rootTaskIds: Set<string>
 ): void {
   for (const task of sourceTasks) {
     if (!task.issueLinks?.length) continue;
@@ -120,7 +127,7 @@ function linkExistingRelatedTasks(
         related,
         task.id,
         taskById,
-        primaryTaskIds
+        rootTaskIds
       );
       if (linked.parentId !== related.parentId) {
         taskById.set(relatedKey, linked);
@@ -142,8 +149,8 @@ export async function importFilasRelatedIssues(
 
   const concurrency = options.concurrency ?? DEFAULT_CONCURRENCY;
   const maxDepth = options.maxDepth ?? DEFAULT_MAX_DEPTH;
-  const primaryTaskIds =
-    options.primaryTaskIds ?? new Set(importedTasks.map(task => task.id));
+  const rootTaskIds =
+    options.rootTaskIds ?? options.primaryTaskIds ?? new Set<string>();
 
   const taskById = new Map<string, JiraTask>();
   for (const task of options.existingTasks ?? []) {
@@ -153,7 +160,7 @@ export async function importFilasRelatedIssues(
     taskById.set(task.id, task);
   }
 
-  linkExistingRelatedTasks(importedTasks, taskById, primaryTaskIds);
+  linkExistingRelatedTasks(importedTasks, taskById, rootTaskIds);
 
   let frontier = [...importedTasks];
   let depth = 0;
@@ -179,7 +186,7 @@ export async function importFilasRelatedIssues(
             task,
             target.parentTaskId,
             taskById,
-            primaryTaskIds
+            rootTaskIds
           );
         } catch (error) {
           logger.warn('Falha ao importar tarefa relacionada do Jira.', 'filasRelatedIssues', {
@@ -210,6 +217,8 @@ export async function importFilasRelatedIssues(
     frontier = added;
     depth += 1;
   }
+
+  linkExistingRelatedTasks(Array.from(taskById.values()), taskById, rootTaskIds);
 
   const importedIds = new Set(importedTasks.map(task => task.id));
   const result = [...importedTasks];
