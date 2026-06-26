@@ -13,7 +13,9 @@ export const TASK_TRACKING_RESTORED_EVENT = 'qa-task-tracking-restored';
 
 export interface TaskTrackingQueueSelection {
   projectKey: string;
-  queueId: string;
+  /** @deprecated Use queueIds para seleção múltipla. */
+  queueId?: string;
+  queueIds?: string[];
 }
 
 /** Snapshot exportável do Acompanhamento de Tarefas. */
@@ -88,18 +90,26 @@ function readStoredSlaRiskWindowHours(): number {
   return Number.isFinite(value) && value > 0 ? value : DEFAULT_SLA_RISK_WINDOW_HOURS;
 }
 
+function normalizeQueueIds(selection: Partial<TaskTrackingQueueSelection> | null | undefined): string[] {
+  if (!selection) return [];
+  if (Array.isArray(selection.queueIds) && selection.queueIds.length > 0) {
+    return selection.queueIds.map(id => id.trim()).filter(Boolean);
+  }
+  if (typeof selection.queueId === 'string' && selection.queueId.trim()) {
+    return [selection.queueId.trim()];
+  }
+  return [];
+}
+
 function readStoredQueueSelection(): TaskTrackingQueueSelection | null {
   const raw = readSessionItem(FILAS_QUEUE_STORAGE_KEY);
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as Partial<TaskTrackingQueueSelection>;
-    if (
-      typeof parsed.projectKey === 'string' &&
-      parsed.projectKey.trim() &&
-      typeof parsed.queueId === 'string' &&
-      parsed.queueId.trim()
-    ) {
-      return { projectKey: parsed.projectKey.trim(), queueId: parsed.queueId.trim() };
+    const projectKey = typeof parsed.projectKey === 'string' ? parsed.projectKey.trim() : '';
+    const queueIds = normalizeQueueIds(parsed);
+    if (projectKey && queueIds.length > 0) {
+      return { projectKey, queueIds, queueId: queueIds[0] };
     }
     return null;
   } catch {
@@ -126,8 +136,20 @@ export function writeTaskTrackingSnapshot(snapshot: TaskTrackingSnapshot): void 
   const projectKey = snapshot.selectedProjectKey.trim();
   writeSessionItem(FILAS_PROJECT_STORAGE_KEY, projectKey || null);
 
-  if (snapshot.queueSelection?.projectKey && snapshot.queueSelection.queueId) {
-    writeSessionItem(FILAS_QUEUE_STORAGE_KEY, JSON.stringify(snapshot.queueSelection));
+  if (snapshot.queueSelection?.projectKey) {
+    const queueIds = normalizeQueueIds(snapshot.queueSelection);
+    if (queueIds.length > 0) {
+      writeSessionItem(
+        FILAS_QUEUE_STORAGE_KEY,
+        JSON.stringify({
+          projectKey: snapshot.queueSelection.projectKey.trim(),
+          queueIds,
+          queueId: queueIds[0],
+        })
+      );
+    } else {
+      writeSessionItem(FILAS_QUEUE_STORAGE_KEY, null);
+    }
   } else {
     writeSessionItem(FILAS_QUEUE_STORAGE_KEY, null);
   }
@@ -136,25 +158,40 @@ export function writeTaskTrackingSnapshot(snapshot: TaskTrackingSnapshot): void 
   writeLocalItem(FILAS_SLA_RISK_WINDOW_STORAGE_KEY, String(snapshot.slaRiskWindowHours));
 }
 
-/** Lê o ID da fila salvo para um projeto Jira. */
-export function readStoredQueueIdForProject(projectKey: string): string {
-  if (!projectKey) return '';
+/** Lê os IDs das filas salvas para um projeto Jira. */
+export function readStoredQueueIdsForProject(projectKey: string): string[] {
+  if (!projectKey) return [];
   const selection = readStoredQueueSelection();
-  return selection?.projectKey === projectKey ? selection.queueId : '';
+  if (selection?.projectKey !== projectKey) return [];
+  return selection.queueIds ?? normalizeQueueIds(selection);
 }
 
-/** Persiste a seleção de fila para um projeto Jira. */
-export function writeStoredQueueIdForProject(projectKey: string, queueId: string): void {
+/** @deprecated Use readStoredQueueIdsForProject. */
+export function readStoredQueueIdForProject(projectKey: string): string {
+  return readStoredQueueIdsForProject(projectKey)[0] ?? '';
+}
+
+/** Persiste a seleção de filas para um projeto Jira. */
+export function writeStoredQueueIdsForProject(projectKey: string, queueIds: string[]): void {
   const normalizedProject = projectKey.trim();
-  const normalizedQueue = queueId.trim();
-  if (!normalizedProject || !normalizedQueue) {
+  const normalizedQueueIds = queueIds.map(id => id.trim()).filter(Boolean);
+  if (!normalizedProject || normalizedQueueIds.length === 0) {
     writeSessionItem(FILAS_QUEUE_STORAGE_KEY, null);
     return;
   }
   writeSessionItem(
     FILAS_QUEUE_STORAGE_KEY,
-    JSON.stringify({ projectKey: normalizedProject, queueId: normalizedQueue })
+    JSON.stringify({
+      projectKey: normalizedProject,
+      queueIds: normalizedQueueIds,
+      queueId: normalizedQueueIds[0],
+    })
   );
+}
+
+/** @deprecated Use writeStoredQueueIdsForProject. */
+export function writeStoredQueueIdForProject(projectKey: string, queueId: string): void {
+  writeStoredQueueIdsForProject(projectKey, queueId ? [queueId] : []);
 }
 
 /** Notifica componentes na mesma aba que o acompanhamento foi restaurado via importação. */
@@ -190,13 +227,11 @@ export function normalizeTaskTrackingBackup(raw: unknown): TaskTrackingSnapshot 
 
   let queueSelection: TaskTrackingQueueSelection | null = null;
   if (o.queueSelection && typeof o.queueSelection === 'object') {
-    const q = o.queueSelection as Record<string, unknown>;
-    if (typeof q.projectKey === 'string' && typeof q.queueId === 'string') {
-      const pk = q.projectKey.trim();
-      const qid = q.queueId.trim();
-      if (pk && qid) {
-        queueSelection = { projectKey: pk, queueId: qid };
-      }
+    const q = o.queueSelection as Partial<TaskTrackingQueueSelection>;
+    const pk = typeof q.projectKey === 'string' ? q.projectKey.trim() : '';
+    const queueIds = normalizeQueueIds(q);
+    if (pk && queueIds.length > 0) {
+      queueSelection = { projectKey: pk, queueIds, queueId: queueIds[0] };
     }
   }
 

@@ -41,14 +41,16 @@ describe('taskTrackingStorage', () => {
 
     expect(readTaskTrackingSnapshot()).toEqual({
       selectedProjectKey: 'SUS',
-      queueSelection: { projectKey: 'SUS', queueId: '42' },
+      queueSelection: { projectKey: 'SUS', queueId: '42', queueIds: ['42'] },
       tasks: [{ id: 'SUS-1', title: 'Tarefa', type: 'Tarefa', status: 'To Do' }],
       slaRiskWindowHours: 72,
     });
     expect(sessionStorage.getItem(FILAS_PROJECT_STORAGE_KEY)).toBe('SUS');
-    expect(sessionStorage.getItem(FILAS_QUEUE_STORAGE_KEY)).toBe(
-      JSON.stringify({ projectKey: 'SUS', queueId: '42' })
-    );
+    expect(JSON.parse(sessionStorage.getItem(FILAS_QUEUE_STORAGE_KEY)!)).toEqual({
+      projectKey: 'SUS',
+      queueId: '42',
+      queueIds: ['42'],
+    });
     expect(localStorage.getItem(FILAS_SLA_RISK_WINDOW_STORAGE_KEY)).toBe('72');
     expect(JSON.parse(localStorage.getItem(FILAS_TASKS_STORAGE_KEY)!)).toHaveLength(1);
   });

@@ -89,3 +89,29 @@ export const jiraSolusSearchInputClass = cn(
   'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1',
   'focus-visible:outline-[color-mix(in_srgb,var(--project-card-accent)_45%,transparent)]'
 );
+
+/* ── Árvore de filas JSM (sidebar) ───────────────────────────── */
+
+export const jiraFilasQueueTreePanelClass = cn(
+  'rounded-[var(--leve-header-radius)] border border-[var(--brand-surface-border)]',
+  'bg-[color-mix(in_srgb,var(--app-neu-bg)_55%,white)] font-sans'
+);
+
+export const jiraFilasQueueTreeTitleClass = cn(
+  'flex items-center gap-2 border-b border-[var(--brand-surface-border)] px-3 py-2.5',
+  'font-sans text-sm font-bold text-[var(--brand-text-strong)]'
+);
+
+export const jiraFilasQueueTreeGroupClass = cn(
+  'flex items-center gap-2 px-2 py-1.5',
+  'font-sans text-xs text-[var(--brand-text-strong)]'
+);
+
+export const jiraFilasQueueTreeItemClass = cn(
+  'flex cursor-pointer items-center gap-2 py-1.5 pl-7 pr-2',
+  'font-sans text-xs text-[var(--brand-text-strong)]',
+  'transition-colors hover:bg-[color-mix(in_srgb,var(--project-card-accent)_8%,transparent)]'
+);
+
+export const jiraFilasQueueTreeItemSelectedClass =
+  'bg-[color-mix(in_srgb,var(--project-card-accent)_12%,transparent)]';

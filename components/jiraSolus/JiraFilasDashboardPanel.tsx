@@ -26,11 +26,21 @@ import {
   formatWorkspaceStatPercent,
 } from '../common/projectCardUi';
 import {
+  tasksViewPageHeaderShellClass,
+  tasksViewPageJiraBadgeClass,
+  tasksViewPageSubtitleClass,
+  tasksViewPageTitleClass,
+} from '../tasks/tasksPanelNeuStyles';
+import {
   jiraSolusFieldLabelClass,
   jiraSolusInnerPanelClass,
   jiraSolusSectionTitleClass,
   jiraSolusSelectClass,
 } from './jiraSolusNeuUi';
+import {
+  JiraFilasDistributionBar,
+  type JiraFilasDistributionSegment,
+} from './JiraFilasDistributionBar';
 
 export interface JiraFilasDashboardPanelProps {
   tasks: JiraTask[];
@@ -216,8 +226,91 @@ export const JiraFilasDashboardPanel: React.FC<JiraFilasDashboardPanelProps> = (
     },
   ];
 
+  const statusSegments: JiraFilasDistributionSegment[] = [
+    {
+      key: 'todo',
+      label: 'A fazer',
+      value: metrics.statusCounts['To Do'],
+      colorClass: 'bg-[var(--brand-cta)]',
+      filter: { kind: 'status', status: 'To Do' },
+    },
+    {
+      key: 'in-progress',
+      label: 'Em andamento',
+      value: metrics.statusCounts['In Progress'],
+      colorClass: 'bg-warning',
+      filter: { kind: 'status', status: 'In Progress' },
+    },
+    {
+      key: 'done',
+      label: 'Concluídas',
+      value: metrics.statusCounts.Done,
+      colorClass: 'bg-success',
+      filter: { kind: 'status', status: 'Done' },
+    },
+    {
+      key: 'blocked',
+      label: 'Bloqueadas',
+      value: metrics.statusCounts.Blocked,
+      colorClass: 'bg-error',
+      filter: { kind: 'status', status: 'Blocked' },
+    },
+  ];
+
+  const slaSegments: JiraFilasDistributionSegment[] = [
+    {
+      key: 'on-track',
+      label: 'No prazo',
+      value: metrics.slaCounts.onTrack,
+      colorClass: 'bg-success',
+      filter: { kind: 'sla', bucket: 'onTrack' },
+    },
+    {
+      key: 'at-risk',
+      label: 'Em risco',
+      value: metrics.slaCounts.atRisk,
+      colorClass: 'bg-warning',
+      filter: { kind: 'sla', bucket: 'atRisk' },
+    },
+    {
+      key: 'overdue',
+      label: 'Atrasadas',
+      value: metrics.slaCounts.overdue,
+      colorClass: 'bg-error',
+      filter: { kind: 'sla', bucket: 'overdue' },
+    },
+    {
+      key: 'no-due',
+      label: 'Sem prazo',
+      value: metrics.slaCounts.noDueDate,
+      colorClass: 'bg-[color-mix(in_srgb,var(--brand-text-muted)_45%,transparent)]',
+      filter: { kind: 'sla', bucket: 'noDueDate' },
+    },
+  ];
+
+  const slaCompliance =
+    metrics.total > 0
+      ? Math.round((metrics.slaCounts.onTrack / metrics.total) * 100)
+      : 0;
+  const slaAtRiskOrOverdue = metrics.slaCounts.atRisk + metrics.slaCounts.overdue;
+
   return (
     <div className="space-y-5" role="region" aria-label="Indicadores das filas do Jira">
+      <header className={tasksViewPageHeaderShellClass}>
+        <div className="min-w-0">
+          <div className="mb-1.5 flex flex-wrap items-center gap-2">
+            <h1 className={tasksViewPageTitleClass}>Dashboard</h1>
+            {selectedProjectKey ? (
+              <span className={tasksViewPageJiraBadgeClass}>Jira: {selectedProjectKey}</span>
+            ) : null}
+          </div>
+          <p className={cn(tasksViewPageSubtitleClass, 'max-w-2xl')}>
+            Visão consolidada de status e SLA das tarefas importadas. Clique em um indicador para
+            filtrar a lista na aba Filas (Jira).
+          </p>
+        </div>
+      </header>
+
       <section aria-label="Resumo das filas">
         <IndicatorGrid
           items={summaryItems}
@@ -226,25 +319,41 @@ export const JiraFilasDashboardPanel: React.FC<JiraFilasDashboardPanelProps> = (
         />
       </section>
 
-      <section className={cn(jiraSolusInnerPanelClass, 'space-y-3')} aria-label="Distribuição por status">
-        <h3 className={jiraSolusSectionTitleClass}>
-          Status das tarefas
-          {selectedProjectKey ? (
-            <span className="ml-2 font-sans text-xs font-medium text-[var(--brand-text-muted)]">
-              Jira: {selectedProjectKey}
-            </span>
-          ) : null}
-        </h3>
+      <section className={cn(jiraSolusInnerPanelClass, 'space-y-4')} aria-label="Distribuição por status">
+        <h3 className={jiraSolusSectionTitleClass}>Status das tarefas</h3>
         <IndicatorGrid
           items={statusItems}
           activeFilter={activeFilter}
           onApplyFilter={onApplyFilter}
         />
+        <JiraFilasDistributionBar
+          segments={statusSegments}
+          total={metrics.total}
+          ariaLabel={`Distribuição de status: ${metrics.statusCounts['To Do']} a fazer, ${metrics.statusCounts['In Progress']} em andamento, ${metrics.statusCounts.Done} concluídas, ${metrics.statusCounts.Blocked} bloqueadas`}
+          onApplyFilter={onApplyFilter}
+        />
       </section>
 
-      <section className={cn(jiraSolusInnerPanelClass, 'space-y-3')} aria-label="Indicadores de SLA">
+      <section className={cn(jiraSolusInnerPanelClass, 'space-y-4')} aria-label="Indicadores de SLA">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h3 className={jiraSolusSectionTitleClass}>SLA das tarefas</h3>
+          <div className="min-w-0">
+            <h3 className={jiraSolusSectionTitleClass}>SLA das tarefas</h3>
+            <p className="mt-1 font-sans text-xs text-[var(--brand-text-muted)]">
+              <strong className="font-semibold text-[var(--brand-text-strong)]">
+                {slaCompliance}%
+              </strong>{' '}
+              no prazo
+              {slaAtRiskOrOverdue > 0 ? (
+                <>
+                  {' · '}
+                  <strong className="font-semibold text-[var(--brand-text-strong)]">
+                    {formatWorkspaceStatCount(slaAtRiskOrOverdue)}
+                  </strong>{' '}
+                  exigindo atenção
+                </>
+              ) : null}
+            </p>
+          </div>
           <label className="flex min-w-[12rem] flex-col gap-1">
             <span className={jiraSolusFieldLabelClass}>Janela de risco</span>
             <select
@@ -261,6 +370,12 @@ export const JiraFilasDashboardPanel: React.FC<JiraFilasDashboardPanelProps> = (
           </label>
         </div>
         <IndicatorGrid items={slaItems} activeFilter={activeFilter} onApplyFilter={onApplyFilter} />
+        <JiraFilasDistributionBar
+          segments={slaSegments}
+          total={metrics.total}
+          ariaLabel={`Distribuição de SLA: ${metrics.slaCounts.onTrack} no prazo, ${metrics.slaCounts.atRisk} em risco, ${metrics.slaCounts.overdue} atrasadas, ${metrics.slaCounts.noDueDate} sem prazo`}
+          onApplyFilter={onApplyFilter}
+        />
       </section>
     </div>
   );
