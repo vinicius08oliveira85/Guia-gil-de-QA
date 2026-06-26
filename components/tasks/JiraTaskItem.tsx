@@ -35,10 +35,6 @@ import {
   Timer,
   Star,
   Download,
-  User,
-  UserCheck,
-  Clock,
-  CalendarPlus,
 } from 'lucide-react';
 import { TestStrategyCard } from './TestStrategyCard';
 import { ToolsSelector } from './ToolsSelector';
@@ -156,7 +152,7 @@ import {
   getTaskRiskBadgeClass,
   getTaskQaCoverageAlerts,
 } from '../../utils/taskCardQa';
-import { classifyTaskSla, type SlaBucket } from '../../utils/jiraFilasMetrics';
+import { JiraQueueMetaChips } from './JiraQueueMetaChips';
 
 /** Destaque da ação IA principal — halo via tokens Daisy (oklch) + animação existente. */
 const gerarTudoDestaqueClass =
@@ -381,45 +377,6 @@ export const JiraTaskItem: React.FC<{
     }, [taskRiskLevel, taskRiskSignals]);
     const storyPointsDisplay = useMemo(() => resolveTaskStoryPoints(task), [task]);
     const displaySprint = useMemo(() => resolveTaskDisplaySprint(task), [task]);
-
-    /** Metadados de acompanhamento (aba Filas): Relator, Responsável, SLA e Data de Criação. */
-    const queueMeta = useMemo(() => {
-      if (!hideTestFeatures) return null;
-      const formatDate = (value?: string) => {
-        if (!value) return null;
-        const date = new Date(value);
-        return Number.isNaN(date.getTime()) ? null : date.toLocaleDateString('pt-BR');
-      };
-      const slaBucketLabels: Record<SlaBucket, string> = {
-        onTrack: 'No prazo',
-        atRisk: 'Em risco',
-        overdue: 'Atrasada',
-        noDueDate: 'Sem prazo',
-      };
-      const slaBucket = classifyTaskSla(task);
-      const dueLabel = formatDate(task.dueDate);
-      return {
-        reporter: task.reporter?.displayName?.trim() || '—',
-        assignee: (task.jiraAssignee?.displayName ?? task.assignee)?.trim() || '—',
-        slaBucket,
-        slaLabel: dueLabel
-          ? `${slaBucketLabels[slaBucket]} · ${dueLabel}`
-          : slaBucketLabels[slaBucket],
-        createdAt: formatDate(task.createdAt) ?? '—',
-      };
-    }, [hideTestFeatures, task]);
-
-    const queueSlaToneClass = useMemo(() => {
-      if (!queueMeta) return '';
-      switch (queueMeta.slaBucket) {
-        case 'overdue':
-          return 'text-error';
-        case 'atRisk':
-          return 'text-warning';
-        default:
-          return '';
-      }
-    }, [queueMeta]);
 
     const iaAnalysisStale = useMemo(() => {
       if (!task.iaAnalysis) return false;
@@ -2014,51 +1971,7 @@ export const JiraTaskItem: React.FC<{
                       className="shrink-0"
                     />
                   ) : null}
-                  {queueMeta ? (
-                    <div className="flex min-w-0 flex-nowrap items-center gap-1.5 sm:gap-2">
-                      <span
-                        className={cn(
-                          tasksListMetadataBadgeClass,
-                          'inline-flex min-w-0 items-center gap-1'
-                        )}
-                        title={`Relator: ${queueMeta.reporter}`}
-                      >
-                        <User className="h-3 w-3 shrink-0" aria-hidden />
-                        <span className="max-w-[8rem] truncate">{queueMeta.reporter}</span>
-                      </span>
-                      <span
-                        className={cn(
-                          tasksListMetadataBadgeClass,
-                          'inline-flex min-w-0 items-center gap-1'
-                        )}
-                        title={`Responsável: ${queueMeta.assignee}`}
-                      >
-                        <UserCheck className="h-3 w-3 shrink-0" aria-hidden />
-                        <span className="max-w-[8rem] truncate">{queueMeta.assignee}</span>
-                      </span>
-                      <span
-                        className={cn(
-                          tasksListMetadataBadgeClass,
-                          'inline-flex shrink-0 items-center gap-1',
-                          queueSlaToneClass
-                        )}
-                        title={`SLA: ${queueMeta.slaLabel}`}
-                      >
-                        <Clock className="h-3 w-3 shrink-0" aria-hidden />
-                        {queueMeta.slaLabel}
-                      </span>
-                      <span
-                        className={cn(
-                          tasksListMetadataBadgeClass,
-                          'inline-flex shrink-0 items-center gap-1'
-                        )}
-                        title={`Data de criação: ${queueMeta.createdAt}`}
-                      >
-                        <CalendarPlus className="h-3 w-3 shrink-0" aria-hidden />
-                        {queueMeta.createdAt}
-                      </span>
-                    </div>
-                  ) : null}
+                  {hideTestFeatures ? <JiraQueueMetaChips task={task} /> : null}
                 </>
               }
               className="task-card-header-mobile-compact"

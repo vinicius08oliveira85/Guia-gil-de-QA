@@ -40,23 +40,37 @@ export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImpo
     const result = await importProjectsFromBackup(file, {
       syncToSupabase: syncAfterImport,
     });
-    if (result.imported === 0) {
-      handleWarning('Nenhum projeto válido foi importado. Verifique o formato do arquivo.');
-    } else {
-      let msg = `${result.imported} projeto(s) importado(s) para o armazenamento local.`;
-      if (syncAfterImport) {
-        if (result.supabaseSynced > 0) {
-          msg += ` ${result.supabaseSynced} enviado(s) ao Supabase.`;
-        }
-        if (result.supabaseSyncFailed > 0) {
-          handleWarning(
-            `${result.supabaseSyncFailed} projeto(s) não foram enviados ao Supabase (dados locais foram salvos).`
-          );
-        }
-      }
-      handleSuccess(msg);
-      await onImportComplete?.();
+    const hasProjects = result.imported > 0;
+    const hasTaskTracking = result.taskTrackingTasksRestored > 0;
+
+    if (!hasProjects && !hasTaskTracking) {
+      handleWarning('Nenhum dado válido foi importado. Verifique o formato do arquivo.');
+      return;
     }
+
+    const parts: string[] = [];
+    if (hasProjects) {
+      parts.push(`${result.imported} projeto(s) importado(s) para o armazenamento local`);
+    }
+    if (hasTaskTracking) {
+      parts.push(
+        `acompanhamento de tarefas restaurado (${result.taskTrackingTasksRestored} tarefa(s))`
+      );
+    }
+    let msg = `${parts.join('; ')}.`;
+
+    if (syncAfterImport && hasProjects) {
+      if (result.supabaseSynced > 0) {
+        msg += ` ${result.supabaseSynced} enviado(s) ao Supabase.`;
+      }
+      if (result.supabaseSyncFailed > 0) {
+        handleWarning(
+          `${result.supabaseSyncFailed} projeto(s) não foram enviados ao Supabase (dados locais foram salvos).`
+        );
+      }
+    }
+    handleSuccess(msg);
+    await onImportComplete?.();
   };
 
   const handleExport = async () => {
@@ -131,9 +145,9 @@ export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImpo
             <HardDrive className="h-6 w-6" aria-hidden />
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className={leveSettingsSectionTitleClass}>Dados locais (IndexedDB)</h3>
+            <h3 className={leveSettingsSectionTitleClass}>Dados locais</h3>
             <p className={leveSettingsSectionSubtitleClass}>
-              Exporte ou restaure todos os projetos deste dispositivo
+              Exporte ou restaure projetos e o Acompanhamento de Tarefas deste dispositivo
             </p>
           </div>
         </div>
@@ -142,9 +156,10 @@ export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImpo
       <div className={leveSettingsInsetPanelClass}>
         <p className={leveSettingsMutedTextClass}>
           Em navegadores compatíveis (Chrome, Edge), você escolhe onde salvar ou de qual arquivo
-          carregar o JSON; nos demais, o navegador usa download e seletor de arquivo padrão. Útil
-          quando o Supabase está indisponível ou para migrar de máquina. A importação substitui
-          projetos com o mesmo ID.
+          carregar o JSON; nos demais, o navegador usa download e seletor de arquivo padrão. O
+          backup inclui todos os projetos (IndexedDB) e o Acompanhamento de Tarefas — tarefas
+          importadas das filas Jira, projeto/fila selecionados e janela de SLA. A importação
+          substitui projetos com o mesmo ID e restaura o acompanhamento salvo no arquivo.
         </p>
 
         <label className={cn(leveSettingsCheckboxPanelClass, 'mt-4 flex cursor-pointer items-start gap-3')}>

@@ -21,9 +21,14 @@ import {
   cleanupTestCasesForNonTaskTypesSync,
 } from '../utils/testCaseCleanup';
 import { withAcyclicTaskParents } from '../utils/taskParentCycle';
+import {
+  readTaskTrackingSnapshot,
+  restoreTaskTrackingFromBackup,
+  type TaskTrackingSnapshot,
+} from './taskTrackingStorage';
 
 /** Versão do envelope JSON de backup (independente do DB_VERSION do IndexedDB). */
-export const BACKUP_EXPORT_FORMAT_VERSION = 1;
+export const BACKUP_EXPORT_FORMAT_VERSION = 2;
 
 let db: IDBDatabase | undefined;
 
@@ -464,25 +469,29 @@ function extractProjectsArray(parsed: unknown): unknown[] {
   if (Array.isArray(parsed)) {
     return parsed;
   }
-  if (
-    parsed &&
-    typeof parsed === 'object' &&
-    Array.isArray((parsed as { projects?: unknown }).projects)
-  ) {
-    return (parsed as { projects: unknown[] }).projects;
+  if (parsed && typeof parsed === 'object') {
+    const envelope = parsed as { projects?: unknown; taskTracking?: unknown };
+    if (Array.isArray(envelope.projects)) {
+      return envelope.projects;
+    }
+    if (envelope.taskTracking !== undefined) {
+      return [];
+    }
   }
   throw new Error(
     'Formato de backup inválido: esperado um array de projetos ou um objeto com propriedade "projects" (array).'
   );
 }
 
-/** Envelope JSON de backup local (IndexedDB), usado em exportação por download ou File System Access API. */
+/** Envelope JSON de backup local (IndexedDB + Acompanhamento de Tarefas). */
 export type LocalBackupEnvelope = {
   backupFormatVersion: number;
   dbVersion: number;
   exportedAt: string;
   app: string;
   projects: Project[];
+  /** Acompanhamento de Tarefas (Filas Jira) — presente a partir do formato v2. */
+  taskTracking?: TaskTrackingSnapshot;
 };
 
 /**
@@ -490,12 +499,14 @@ export type LocalBackupEnvelope = {
  */
 export const buildLocalBackupData = async (): Promise<LocalBackupEnvelope> => {
   const projects = await loadProjectsFromIndexedDB();
+  const taskTracking = readTaskTrackingSnapshot();
   return {
     backupFormatVersion: BACKUP_EXPORT_FORMAT_VERSION,
     dbVersion: DB_VERSION,
     exportedAt: new Date().toISOString(),
     app: 'qa-agile-guide',
     projects,
+    taskTracking,
   };
 };
 
@@ -534,6 +545,8 @@ export type ImportBackupResult = {
   skipped: number;
   supabaseSynced: number;
   supabaseSyncFailed: number;
+  /** Quantidade de tarefas restauradas no Acompanhamento de Tarefas (0 se ausente no arquivo). */
+  taskTrackingTasksRestored: number;
 };
 
 /**
@@ -568,6 +581,19 @@ export const importProjectsFromBackup = async (
   let skipped = 0;
   let supabaseSynced = 0;
   let supabaseSyncFailed = 0;
+  let taskTrackingTasksRestored = 0;
+
+  const taskTrackingRaw =
+    parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? (parsed as { taskTracking?: unknown }).taskTracking
+      : undefined;
+  if (taskTrackingRaw !== undefined) {
+    const restored = restoreTaskTrackingFromBackup(taskTrackingRaw);
+    if (restored) {
+      const snapshot = readTaskTrackingSnapshot();
+      taskTrackingTasksRestored = snapshot.tasks.length;
+    }
+  }
 
   for (let i = 0; i < rawProjects.length; i++) {
     const normalized = normalizeImportedProject(rawProjects[i]);
@@ -600,10 +626,13 @@ export const importProjectsFromBackup = async (
 
   logger.info(
     `Importação de backup concluída: ${imported} projeto(s) gravados, ${skipped} ignorado(s)` +
+      (taskTrackingTasksRestored > 0
+        ? `; acompanhamento: ${taskTrackingTasksRestored} tarefa(s)`
+        : '') +
       (trySyncRemote ? `; Supabase: ${supabaseSynced} ok, ${supabaseSyncFailed} falha(s)` : ''),
     'dbService'
   );
-  return { imported, skipped, supabaseSynced, supabaseSyncFailed };
+  return { imported, skipped, supabaseSynced, supabaseSyncFailed, taskTrackingTasksRestored };
 };
 
 /**

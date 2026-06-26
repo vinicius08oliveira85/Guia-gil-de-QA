@@ -2,10 +2,14 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { LANDING_SECTIONS } from '../landing/landingSections';
 import { cn } from '../../utils/cn';
 import type { JiraTask } from '../../types';
+import { type JiraFilasFilter } from '../../utils/jiraFilasMetrics';
 import {
-  DEFAULT_SLA_RISK_WINDOW_HOURS,
-  type JiraFilasFilter,
-} from '../../utils/jiraFilasMetrics';
+  FILAS_PROJECT_STORAGE_KEY,
+  FILAS_SLA_RISK_WINDOW_STORAGE_KEY,
+  FILAS_TASKS_STORAGE_KEY,
+  readTaskTrackingSnapshot,
+  TASK_TRACKING_RESTORED_EVENT,
+} from '../../services/taskTrackingStorage';
 import { projectsListShell } from '../common/viewUi';
 import { Breadcrumbs, type BreadcrumbItem } from '../common/Breadcrumbs';
 import { JiraFilasPanel } from './JiraFilasPanel';
@@ -28,29 +32,17 @@ const TABS: { id: JiraSolusTab; label: string }[] = [
   { id: 'filas', label: 'Filas (Jira)' },
 ];
 
-const FILAS_PROJECT_STORAGE_KEY = 'jira-solus-filas-project-key';
-const FILAS_TASKS_STORAGE_KEY = 'jira-solus-filas-tasks';
-const FILAS_SLA_RISK_WINDOW_STORAGE_KEY = 'jira-solus-filas-sla-risk-window-hours';
-
-function readStoredTasks(): JiraTask[] {
-  try {
-    const raw = localStorage.getItem(FILAS_TASKS_STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as JiraTask[]) : [];
-  } catch {
-    return [];
+function applySnapshotToState(
+  snapshot: ReturnType<typeof readTaskTrackingSnapshot>,
+  setters: {
+    setTasks: React.Dispatch<React.SetStateAction<JiraTask[]>>;
+    setSelectedProjectKey: React.Dispatch<React.SetStateAction<string>>;
+    setSlaRiskWindowHours: React.Dispatch<React.SetStateAction<number>>;
   }
-}
-
-function readStoredSlaRiskWindowHours(): number {
-  try {
-    const raw = localStorage.getItem(FILAS_SLA_RISK_WINDOW_STORAGE_KEY);
-    const value = raw ? Number(raw) : DEFAULT_SLA_RISK_WINDOW_HOURS;
-    return Number.isFinite(value) && value > 0 ? value : DEFAULT_SLA_RISK_WINDOW_HOURS;
-  } catch {
-    return DEFAULT_SLA_RISK_WINDOW_HOURS;
-  }
+): void {
+  setters.setTasks(snapshot.tasks);
+  setters.setSelectedProjectKey(snapshot.selectedProjectKey);
+  setters.setSlaRiskWindowHours(snapshot.slaRiskWindowHours);
 }
 
 /**
@@ -60,19 +52,28 @@ function readStoredSlaRiskWindowHours(): number {
 export const JiraSolusView = React.memo(() => {
   const [activeTab, setActiveTab] = useState<JiraSolusTab>('dashboard');
 
-  const [tasks, setTasks] = useState<JiraTask[]>(() => readStoredTasks());
-  const [selectedProjectKey, setSelectedProjectKey] = useState(() => {
-    try {
-      return sessionStorage.getItem(FILAS_PROJECT_STORAGE_KEY) ?? '';
-    } catch {
-      return '';
-    }
-  });
+  const initialSnapshot = useMemo(() => readTaskTrackingSnapshot(), []);
+  const [tasks, setTasks] = useState<JiraTask[]>(() => initialSnapshot.tasks);
+  const [selectedProjectKey, setSelectedProjectKey] = useState(
+    () => initialSnapshot.selectedProjectKey
+  );
   const [jiraStatuses, setJiraStatuses] = useState<Array<{ name: string; color: string }>>([]);
-  const [slaRiskWindowHours, setSlaRiskWindowHours] = useState(() =>
-    readStoredSlaRiskWindowHours()
+  const [slaRiskWindowHours, setSlaRiskWindowHours] = useState(
+    () => initialSnapshot.slaRiskWindowHours
   );
   const [activeFilter, setActiveFilter] = useState<JiraFilasFilter>({ kind: 'all' });
+
+  useEffect(() => {
+    const handleRestored = () => {
+      applySnapshotToState(readTaskTrackingSnapshot(), {
+        setTasks,
+        setSelectedProjectKey,
+        setSlaRiskWindowHours,
+      });
+    };
+    window.addEventListener(TASK_TRACKING_RESTORED_EVENT, handleRestored);
+    return () => window.removeEventListener(TASK_TRACKING_RESTORED_EVENT, handleRestored);
+  }, []);
 
   useEffect(() => {
     try {

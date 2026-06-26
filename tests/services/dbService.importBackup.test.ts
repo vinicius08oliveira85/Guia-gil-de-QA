@@ -51,6 +51,7 @@ describe('importProjectsFromBackup', () => {
     expect(result.skipped).toBe(0);
     expect(result.supabaseSynced).toBe(0);
     expect(result.supabaseSyncFailed).toBe(0);
+    expect(result.taskTrackingTasksRestored).toBe(0);
     expect(supabaseService.saveProjectToSupabase).not.toHaveBeenCalled();
   });
 
@@ -88,5 +89,40 @@ describe('importProjectsFromBackup', () => {
     expect(result.imported).toBe(1);
     expect(result.supabaseSynced).toBe(0);
     expect(supabaseService.saveProjectToSupabase).not.toHaveBeenCalled();
+  });
+
+  it('restaura acompanhamento de tarefas quando presente no envelope', async () => {
+    const file = jsonFile({
+      projects: [{ id: 'imp-5', name: 'Com filas' }],
+      taskTracking: {
+        selectedProjectKey: 'SUS',
+        queueSelection: { projectKey: 'SUS', queueId: '10' },
+        tasks: [{ id: 'SUS-1', title: 'Fila', type: 'Tarefa', status: 'To Do' }],
+        slaRiskWindowHours: 48,
+      },
+    });
+
+    const result = await importProjectsFromBackup(file);
+
+    expect(result.imported).toBe(1);
+    expect(result.taskTrackingTasksRestored).toBe(1);
+    expect(localStorage.getItem('jira-solus-filas-tasks')).toContain('SUS-1');
+    expect(sessionStorage.getItem('jira-solus-filas-project-key')).toBe('SUS');
+  });
+
+  it('importa apenas acompanhamento de tarefas sem projetos no envelope', async () => {
+    const file = jsonFile({
+      taskTracking: {
+        selectedProjectKey: 'ABC',
+        tasks: [{ id: 'ABC-2', title: 'Só filas', type: 'Tarefa', status: 'In Progress' }],
+        slaRiskWindowHours: 120,
+      },
+    });
+
+    const result = await importProjectsFromBackup(file);
+
+    expect(result.imported).toBe(0);
+    expect(result.taskTrackingTasksRestored).toBe(1);
+    expect(sessionStorage.getItem('jira-solus-filas-project-key')).toBe('ABC');
   });
 });

@@ -51,39 +51,10 @@ import {
   jiraIntegrationProgressTrackClass,
 } from '../jira/jiraIntegrationUi';
 
-const FILAS_QUEUE_STORAGE_KEY = 'jira-solus-filas-queue';
-
-interface StoredQueueSelection {
-  projectKey: string;
-  queueId: string;
-}
-
-function readStoredQueueId(projectKey: string): string {
-  if (!projectKey) return '';
-  try {
-    const raw = sessionStorage.getItem(FILAS_QUEUE_STORAGE_KEY);
-    if (!raw) return '';
-    const parsed = JSON.parse(raw) as StoredQueueSelection;
-    return parsed.projectKey === projectKey ? parsed.queueId : '';
-  } catch {
-    return '';
-  }
-}
-
-function writeStoredQueueId(projectKey: string, queueId: string): void {
-  try {
-    if (!projectKey || !queueId) {
-      sessionStorage.removeItem(FILAS_QUEUE_STORAGE_KEY);
-      return;
-    }
-    sessionStorage.setItem(
-      FILAS_QUEUE_STORAGE_KEY,
-      JSON.stringify({ projectKey, queueId } satisfies StoredQueueSelection)
-    );
-  } catch {
-    /* ignore */
-  }
-}
+import {
+  readStoredQueueIdForProject,
+  writeStoredQueueIdForProject,
+} from '../../services/taskTrackingStorage';
 
 export interface JiraFilasPanelProps {
   tasks: JiraTask[];
@@ -187,11 +158,11 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
       .then(queues => {
         if (cancelled) return;
         setJiraQueues(queues);
-        const storedQueueId = readStoredQueueId(selectedProjectKey);
+        const storedQueueId = readStoredQueueIdForProject(selectedProjectKey);
         const storedQueue = queues.find(queue => queue.id === storedQueueId);
         const nextQueueId = storedQueue?.id ?? '';
         setSelectedQueueId(nextQueueId);
-        writeStoredQueueId(selectedProjectKey, nextQueueId);
+        writeStoredQueueIdForProject(selectedProjectKey, nextQueueId);
       })
       .catch(err => {
         if (!cancelled) {
@@ -210,7 +181,7 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
   }, [selectedProjectKey, handleError]);
 
   useEffect(() => {
-    writeStoredQueueId(selectedProjectKey, selectedQueueId);
+    writeStoredQueueIdForProject(selectedProjectKey, selectedQueueId);
   }, [selectedProjectKey, selectedQueueId]);
 
   const selectedQueue = useMemo(
