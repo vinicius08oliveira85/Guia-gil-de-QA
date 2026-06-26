@@ -12,8 +12,6 @@ export interface JiraQueueTreeGroup {
   items: JiraQueueTreeItem[];
 }
 
-const FAVORITES_GROUP_ID = 'favoritos';
-const FAVORITES_GROUP_LABEL = 'Favoritos';
 const OTHER_GROUP_ID = 'outras';
 const OTHER_GROUP_LABEL = 'Outras';
 
@@ -22,12 +20,13 @@ const CATEGORY_SUFFIX_RE = /\s*[[(]([^[\]()]+)[\])]\s*$/;
 /**
  * Extrai categoria e rótulo curto a partir do nome da fila JSM.
  * Ex.: "Abertos [Governança]" → { category: "Governança", label: "Abertos" }.
+ * Filas sem sufixo (ex.: "Todas abertas", "Minhas") retornam category null e são omitidas.
  */
-export function parseJiraQueueName(name: string): { category: string; label: string } {
+export function parseJiraQueueName(name: string): { category: string | null; label: string } {
   const trimmed = name.trim();
   const match = trimmed.match(CATEGORY_SUFFIX_RE);
   if (!match) {
-    return { category: FAVORITES_GROUP_LABEL, label: trimmed };
+    return { category: null, label: trimmed };
   }
   return {
     category: match[1].trim(),
@@ -37,17 +36,16 @@ export function parseJiraQueueName(name: string): { category: string; label: str
 
 /**
  * Agrupa filas do JSM em categorias expansíveis (modelo sidebar do Jira).
+ * Filas globais sem categoria (Favoritos no JSM) são ignoradas.
  */
 export function buildJiraQueueTree(queues: JiraQueue[]): JiraQueueTreeGroup[] {
   const groups = new Map<string, JiraQueueTreeItem[]>();
 
   for (const queue of queues) {
     const { category, label } = parseJiraQueueName(queue.name);
-    const groupId =
-      category === FAVORITES_GROUP_LABEL
-        ? FAVORITES_GROUP_ID
-        : category.toLowerCase().replace(/\s+/g, '-');
-    const groupLabel = category === FAVORITES_GROUP_LABEL ? FAVORITES_GROUP_LABEL : category;
+    if (!category) continue;
+
+    const groupId = category.toLowerCase().replace(/\s+/g, '-');
 
     if (!groups.has(groupId)) {
       groups.set(groupId, []);
@@ -55,22 +53,13 @@ export function buildJiraQueueTree(queues: JiraQueue[]): JiraQueueTreeGroup[] {
     groups.get(groupId)!.push({ queue, label });
   }
 
-  const result: JiraQueueTreeGroup[] = [];
-
-  if (groups.has(FAVORITES_GROUP_ID)) {
-    result.push({
-      id: FAVORITES_GROUP_ID,
-      label: FAVORITES_GROUP_LABEL,
-      items: sortQueueItems(groups.get(FAVORITES_GROUP_ID)!),
-    });
-    groups.delete(FAVORITES_GROUP_ID);
-  }
-
   const sortedGroupIds = Array.from(groups.keys()).sort((a, b) => {
     const labelA = groups.get(a)?.[0] ? parseJiraQueueName(groups.get(a)![0].queue.name).category : a;
     const labelB = groups.get(b)?.[0] ? parseJiraQueueName(groups.get(b)![0].queue.name).category : b;
-    return labelA.localeCompare(labelB, 'pt-BR');
+    return (labelA ?? '').localeCompare(labelB ?? '', 'pt-BR');
   });
+
+  const result: JiraQueueTreeGroup[] = [];
 
   for (const groupId of sortedGroupIds) {
     const items = groups.get(groupId);
@@ -83,16 +72,6 @@ export function buildJiraQueueTree(queues: JiraQueue[]): JiraQueueTreeGroup[] {
     });
   }
 
-  if (result.length === 0 && queues.length > 0) {
-    return [
-      {
-        id: OTHER_GROUP_ID,
-        label: OTHER_GROUP_LABEL,
-        items: sortQueueItems(queues.map(queue => ({ queue, label: queue.name }))),
-      },
-    ];
-  }
-
   return result;
 }
 
@@ -100,10 +79,16 @@ function sortQueueItems(items: JiraQueueTreeItem[]): JiraQueueTreeItem[] {
   return [...items].sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'));
 }
 
+export function getSelectableQueueIds(queues: JiraQueue[]): Set<string> {
+  return new Set(
+    buildJiraQueueTree(queues).flatMap(group => group.items.map(item => item.queue.id))
+  );
+}
+
 export function getQueueIdsFromSelection(
   selectedQueueIds: Iterable<string>,
   queues: JiraQueue[]
 ): string[] {
-  const available = new Set(queues.map(queue => queue.id));
+  const available = getSelectableQueueIds(queues);
   return Array.from(selectedQueueIds).filter(id => available.has(id));
 }

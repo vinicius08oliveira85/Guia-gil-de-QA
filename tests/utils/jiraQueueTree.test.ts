@@ -21,9 +21,9 @@ describe('parseJiraQueueName', () => {
     });
   });
 
-  it('coloca filas sem sufixo em Favoritos', () => {
+  it('ignora filas sem sufixo de categoria (Favoritos no JSM)', () => {
     expect(parseJiraQueueName('Todas abertas')).toEqual({
-      category: 'Favoritos',
+      category: null,
       label: 'Todas abertas',
     });
   });
@@ -37,11 +37,21 @@ describe('buildJiraQueueTree', () => {
       makeQueue('3', 'Abertos [Governança]'),
       makeQueue('4', 'Minhas [Governança]'),
       makeQueue('5', 'Abertos (Solus)'),
+      makeQueue('6', 'Abertos (APP)'),
     ]);
 
-    expect(tree.map(group => group.label)).toEqual(['Favoritos', 'Governança', 'Solus']);
-    expect(tree[0].items.map(item => item.label)).toEqual(['Minhas', 'Todas abertas']);
+    expect(tree.map(group => group.label)).toEqual(['APP', 'Governança', 'Solus']);
+    expect(tree[0].items.map(item => item.label)).toEqual(['Abertos']);
     expect(tree[1].items.map(item => item.label)).toEqual(['Abertos', 'Minhas']);
     expect(tree[2].items.map(item => item.label)).toEqual(['Abertos']);
+  });
+
+  it('retorna vazio quando só há filas globais sem categoria', () => {
+    expect(
+      buildJiraQueueTree([
+        makeQueue('1', 'Todas abertas'),
+        makeQueue('2', 'Minhas'),
+      ])
+    ).toEqual([]);
   });
 });

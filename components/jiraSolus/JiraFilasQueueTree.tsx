@@ -96,6 +96,17 @@ export const JiraFilasQueueTree: React.FC<JiraFilasQueueTreeProps> = ({
     );
   }
 
+  if (tree.length === 0) {
+    return (
+      <div className={jiraFilasQueueTreePanelClass}>
+        <p className="px-3 py-2 font-sans text-sm text-[var(--brand-text-muted)]">
+          Nenhuma fila categorizada encontrada. Selecione filas com sufixo de área (ex.: Abertos
+          [APP]).
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className={jiraFilasQueueTreePanelClass} role="tree" aria-label="Filas do Jira Service Management">
       <div className={jiraFilasQueueTreeTitleClass}>
