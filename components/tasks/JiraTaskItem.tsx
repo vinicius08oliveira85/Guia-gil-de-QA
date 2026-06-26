@@ -1909,46 +1909,6 @@ export const JiraTaskItem: React.FC<{
                       {taskRiskLevel}
                     </span>
                   ) : null}
-                  {queueMeta ? (
-                    <>
-                      <TaskCardMetadataSeparator />
-                      <span
-                        className={cn(tasksListMetadataBadgeClass, 'inline-flex shrink-0 items-center gap-1')}
-                        title={`Relator: ${queueMeta.reporter}`}
-                      >
-                        <User className="h-3 w-3 shrink-0" aria-hidden />
-                        {queueMeta.reporter}
-                      </span>
-                      <TaskCardMetadataSeparator />
-                      <span
-                        className={cn(tasksListMetadataBadgeClass, 'inline-flex shrink-0 items-center gap-1')}
-                        title={`Responsável: ${queueMeta.assignee}`}
-                      >
-                        <UserCheck className="h-3 w-3 shrink-0" aria-hidden />
-                        {queueMeta.assignee}
-                      </span>
-                      <TaskCardMetadataSeparator />
-                      <span
-                        className={cn(
-                          tasksListMetadataBadgeClass,
-                          'inline-flex shrink-0 items-center gap-1',
-                          queueSlaToneClass
-                        )}
-                        title={`SLA: ${queueMeta.slaLabel}`}
-                      >
-                        <Clock className="h-3 w-3 shrink-0" aria-hidden />
-                        {queueMeta.slaLabel}
-                      </span>
-                      <TaskCardMetadataSeparator />
-                      <span
-                        className={cn(tasksListMetadataBadgeClass, 'inline-flex shrink-0 items-center gap-1')}
-                        title={`Data de criação: ${queueMeta.createdAt}`}
-                      >
-                        <CalendarPlus className="h-3 w-3 shrink-0" aria-hidden />
-                        {queueMeta.createdAt}
-                      </span>
-                    </>
-                  ) : null}
                 </TaskCardMetadataStrip>
               }
               controls={
@@ -2053,6 +2013,51 @@ export const JiraTaskItem: React.FC<{
                       iaAnalysisStale={iaAnalysisStale}
                       className="shrink-0"
                     />
+                  ) : null}
+                  {queueMeta ? (
+                    <div className="flex min-w-0 flex-nowrap items-center gap-1.5 sm:gap-2">
+                      <span
+                        className={cn(
+                          tasksListMetadataBadgeClass,
+                          'inline-flex min-w-0 items-center gap-1'
+                        )}
+                        title={`Relator: ${queueMeta.reporter}`}
+                      >
+                        <User className="h-3 w-3 shrink-0" aria-hidden />
+                        <span className="max-w-[8rem] truncate">{queueMeta.reporter}</span>
+                      </span>
+                      <span
+                        className={cn(
+                          tasksListMetadataBadgeClass,
+                          'inline-flex min-w-0 items-center gap-1'
+                        )}
+                        title={`Responsável: ${queueMeta.assignee}`}
+                      >
+                        <UserCheck className="h-3 w-3 shrink-0" aria-hidden />
+                        <span className="max-w-[8rem] truncate">{queueMeta.assignee}</span>
+                      </span>
+                      <span
+                        className={cn(
+                          tasksListMetadataBadgeClass,
+                          'inline-flex shrink-0 items-center gap-1',
+                          queueSlaToneClass
+                        )}
+                        title={`SLA: ${queueMeta.slaLabel}`}
+                      >
+                        <Clock className="h-3 w-3 shrink-0" aria-hidden />
+                        {queueMeta.slaLabel}
+                      </span>
+                      <span
+                        className={cn(
+                          tasksListMetadataBadgeClass,
+                          'inline-flex shrink-0 items-center gap-1'
+                        )}
+                        title={`Data de criação: ${queueMeta.createdAt}`}
+                      >
+                        <CalendarPlus className="h-3 w-3 shrink-0" aria-hidden />
+                        {queueMeta.createdAt}
+                      </span>
+                    </div>
                   ) : null}
                 </>
               }
