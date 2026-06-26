@@ -1,4 +1,5 @@
 import React, { useState, Suspense, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Link, Database, Settings as SettingsIcon, Key, HardDrive } from 'lucide-react';
 import { BackButton } from '../common/BackButton';
 import { LocalDataManagement } from '../common/LocalDataManagement';
@@ -64,16 +65,15 @@ const tabs: { id: TabType; label: string; icon: React.ComponentType<{ className?
 ];
 
 interface SettingsViewProps {
-  onClose: () => void;
   onProjectImported?: (project: Project) => void;
   onLocalBackupRestored?: () => void | Promise<void>;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
-  onClose,
   onProjectImported,
   onLocalBackupRestored,
 }) => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>('jira');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
@@ -82,7 +82,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     if (hasUnsavedChanges) {
       setShowCloseConfirm(true);
     } else {
-      onClose();
+      navigate('/');
     }
   };
 
@@ -193,7 +193,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         onClose={() => setShowCloseConfirm(false)}
         onConfirm={() => {
           setShowCloseConfirm(false);
-          onClose();
+          navigate('/');
         }}
         title="Mudanças não salvas"
         message="Você tem alterações não salvas. Deseja sair mesmo assim?"

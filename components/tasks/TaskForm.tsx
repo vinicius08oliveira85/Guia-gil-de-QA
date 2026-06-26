@@ -264,11 +264,11 @@ export const TaskForm: React.FC<{
             <AppSelect
               id="type"
               value={taskData.type}
-              onChange={e =>
+              onChange={value =>
                 setTaskData({
                   ...taskData,
-                  type: e.target.value as JiraTaskType,
-                  parentId: e.target.value === 'Epic' ? '' : taskData.parentId,
+                  type: value as JiraTaskType,
+                  parentId: value === 'Epic' ? '' : taskData.parentId,
                 })
               }
               className={selectClass}
@@ -290,7 +290,7 @@ export const TaskForm: React.FC<{
             <AppSelect
               id="priority"
               value={taskData.priority}
-              onChange={e => setTaskData({ ...taskData, priority: e.target.value as TaskPriority })}
+              onChange={value => setTaskData({ ...taskData, priority: value as TaskPriority })}
               className={selectClass}
             >
               <option value="Baixa">Baixa</option>
@@ -310,7 +310,7 @@ export const TaskForm: React.FC<{
             <AppSelect
               id="severity"
               value={taskData.severity}
-              onChange={e => setTaskData({ ...taskData, severity: e.target.value as BugSeverity })}
+              onChange={value => setTaskData({ ...taskData, severity: value as BugSeverity })}
               disabled={taskData.type !== 'Bug'}
               className={selectClass}
             >
@@ -332,7 +332,7 @@ export const TaskForm: React.FC<{
               <AppSelect
                 id="parentId"
                 value={taskData.parentId}
-                onChange={e => setTaskData({ ...taskData, parentId: e.target.value })}
+                onChange={value => setTaskData({ ...taskData, parentId: value })}
                 className={selectClass}
               >
                 <option value="">Nenhum</option>

@@ -8,6 +8,7 @@ export interface NavigationMenuItem {
   label: string;
   icon?: React.ReactNode;
   onClick: () => void;
+  ariaLabel?: string;
 }
 
 export interface NavigationMenuDrawerProps {
@@ -186,6 +187,7 @@ export const NavigationMenuRail: React.FC<NavigationMenuRailProps> = ({
         )}
         data-active={currentId === item.id ? 'true' : 'false'}
         aria-current={currentId === item.id ? 'page' : undefined}
+        aria-label={item.ariaLabel ?? item.label}
       >
         {item.icon ? <span className="mr-1.5 inline-flex shrink-0">{item.icon}</span> : null}
         {item.label}

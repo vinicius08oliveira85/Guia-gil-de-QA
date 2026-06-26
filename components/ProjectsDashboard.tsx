@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Project } from '../types';
@@ -32,9 +33,9 @@ import { useAriaLive } from '../hooks/useAriaLive';
 import { projectsListShell } from './common/viewUi';
 import { viewHeroChromeClass } from './common/viewHeroChromeUi';
 import {
-  tasksViewHeaderFilterIconClass,
-  tasksViewHeaderIconWrapClass,
-} from './tasks/tasksPanelNeuStyles';
+  viewHeroToolbarIconClass,
+  viewHeroToolbarIconWrapClass,
+} from './common/viewHeroChromeUi';
 import {
   projectsDashboardFilterPillClass,
   projectsDashboardQuickFiltersDividerClass,
@@ -67,10 +68,9 @@ function projectHasOpenBugs(project: Project): boolean {
 
 export const ProjectsDashboard: React.FC<{
   projects: Project[];
-  onSelectProject: (id: string) => void;
   onCreateProject: (name: string, description: string, templateId?: string) => Promise<void>;
-  onOpenSettings?: () => void;
-}> = ({ projects, onSelectProject, onCreateProject, onOpenSettings }) => {
+}> = ({ projects, onCreateProject }) => {
+  const navigate = useNavigate();
   const [isCreating, setIsCreating] = useState(false);
   const [isCreateSubmitting, setIsCreateSubmitting] = useState(false);
   const [retryCooldownUntil, setRetryCooldownUntil] = useState<number | null>(null);
@@ -94,9 +94,9 @@ export const ProjectsDashboard: React.FC<{
       // Armazenar taskId no sessionStorage para ser lido pelo ProjectView
       sessionStorage.setItem('taskIdToFocus', taskId);
       // Selecionar o projeto (isso abrirá o ProjectView)
-      onSelectProject(projectId);
+      navigate(`/projects/${projectId}`);
     },
-    [onSelectProject]
+    [navigate]
   );
 
   // Escutar eventos para abrir modal de criação
@@ -337,8 +337,8 @@ export const ProjectsDashboard: React.FC<{
             isOpen={isCreating}
             onClose={() => setIsCreating(false)}
             onCreateProject={onCreateProject}
-            onOpenSettings={onOpenSettings}
-            onProjectImported={project => onSelectProject(project.id)}
+            onOpenSettings={() => navigate('/settings')}
+            onProjectImported={project => navigate(`/projects/${project.id}`)}
             onCreateBusyChange={setIsCreateSubmitting}
           />
 
@@ -361,7 +361,7 @@ export const ProjectsDashboard: React.FC<{
                     <ProjectCard
                       project={p}
                       className="h-full"
-                      onSelect={() => onSelectProject(p.id)}
+                      onSelect={() => navigate(`/projects/${p.id}`)}
                       onTaskClick={taskId => handleNavigateToTask(p.id, taskId)}
                     />
                   </div>
@@ -462,7 +462,7 @@ export const ProjectsDashboard: React.FC<{
                 healthProjects={projectsNeedingAttention}
                 testExecutionAlertProjects={projectsTestAlertList}
                 taskWorkflowBuckets={taskWorkflowBuckets}
-                onSelectProject={onSelectProject}
+                onSelectProject={id => navigate(`/projects/${id}`)}
                 listFilterNeedsAttention={quickFilter === 'needsAttention'}
                 onToggleListFilterNeedsAttention={() =>
                   setQuickFilter(quickFilter === 'needsAttention' ? 'all' : 'needsAttention')
@@ -476,16 +476,6 @@ export const ProjectsDashboard: React.FC<{
     </>
   );
 };
-
-type ProjectFilterSegment = 'todos' | 'bugs' | 'attention';
-
-function projectFilterSegmentRound(segments: ProjectFilterSegment[], slot: ProjectFilterSegment): string {
-  if (segments.length === 1) return 'rounded-full';
-  const idx = segments.indexOf(slot);
-  if (idx === 0) return 'rounded-l-full';
-  if (idx === segments.length - 1) return 'rounded-r-full';
-  return 'rounded-none';
-}
 
 function ProjectQuickFiltersGroup({
   quickFilter,
@@ -502,15 +492,7 @@ function ProjectQuickFiltersGroup({
   bugsCount: number;
   attentionCount: number;
 }) {
-  const segments = useMemo(() => {
-    const list: ProjectFilterSegment[] = ['todos'];
-    if (showBugsFilter) list.push('bugs');
-    if (showAttentionFilter) list.push('attention');
-    return list;
-  }, [showBugsFilter, showAttentionFilter]);
-
-  const pillClass = (active: boolean, slot: ProjectFilterSegment) =>
-    projectsDashboardQuickFiltersPillClass(active, projectFilterSegmentRound(segments, slot));
+  const pillClass = (active: boolean) => projectsDashboardQuickFiltersPillClass(active);
 
   return (
     <div
@@ -521,7 +503,7 @@ function ProjectQuickFiltersGroup({
       <button
         type="button"
         onClick={() => setQuickFilter('all')}
-        className={pillClass(quickFilter === 'all', 'todos')}
+        className={pillClass(quickFilter === 'all')}
         aria-pressed={quickFilter === 'all'}
       >
         Todos
@@ -532,11 +514,11 @@ function ProjectQuickFiltersGroup({
           <button
             type="button"
             onClick={() => setQuickFilter(quickFilter === 'withBugs' ? 'all' : 'withBugs')}
-            className={pillClass(quickFilter === 'withBugs', 'bugs')}
+            className={pillClass(quickFilter === 'withBugs')}
             aria-pressed={quickFilter === 'withBugs'}
           >
-            <span className={tasksViewHeaderIconWrapClass} aria-hidden>
-              <Bug className={tasksViewHeaderFilterIconClass} />
+            <span className={viewHeroToolbarIconWrapClass} aria-hidden>
+              <Bug className={viewHeroToolbarIconClass} />
             </span>
             Com bugs ({bugsCount})
           </button>
@@ -550,11 +532,11 @@ function ProjectQuickFiltersGroup({
             onClick={() =>
               setQuickFilter(quickFilter === 'needsAttention' ? 'all' : 'needsAttention')
             }
-            className={pillClass(quickFilter === 'needsAttention', 'attention')}
+            className={pillClass(quickFilter === 'needsAttention')}
             aria-pressed={quickFilter === 'needsAttention'}
           >
-            <span className={tasksViewHeaderIconWrapClass} aria-hidden>
-              <AlertTriangle className={tasksViewHeaderFilterIconClass} />
+            <span className={viewHeroToolbarIconWrapClass} aria-hidden>
+              <AlertTriangle className={viewHeroToolbarIconClass} />
             </span>
             Atenção ({attentionCount})
           </button>

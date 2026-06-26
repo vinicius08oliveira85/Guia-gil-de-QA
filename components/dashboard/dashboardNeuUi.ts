@@ -1,5 +1,5 @@
 import { cn } from '../../utils/cn';
-import { appDarkPageSurfaceClass } from '../common/appPageNeuUi';
+import { workspaceSurfaceLightClass } from '../common/appPageNeuUi';
 import {
   viewHeroChromeClass,
   viewHeroFilterChipClass,
@@ -25,11 +25,14 @@ import {
   neuTrackClass,
 } from '../common/neuUi';
 
-/** Escopo bege do dashboard — ativa --app-neu-* e sombras em index.css. */
+/**
+ * Escopo claro do dashboard — ativa `--app-neu-*` / `--leve-*` claros (LandingPage)
+ * e a paleta clara de `--workspace-panel-*` no chrome/hero.
+ */
 export const dashboardNeuScopeClass = cn(
   'dashboard-neu-scope',
   'app-neu-scope',
-  appDarkPageSurfaceClass
+  workspaceSurfaceLightClass
 );
 
 export const dashboardHeroChromeClass = viewHeroChromeClass;

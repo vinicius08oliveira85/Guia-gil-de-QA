@@ -75,11 +75,13 @@ export const TestExecutionCard: React.FC<TestExecutionCardProps> = ({
         </div>
         <div className={dashboardProgressTrackClass}>
           <div
-            className={cn(dashboardProgressFillClass, 'transition-all duration-300', {
-              'bg-success': testExecution.passRate >= 80,
-              'bg-warning': testExecution.passRate >= 60 && testExecution.passRate < 80,
-              'bg-error': testExecution.passRate < 60,
-            })}
+            className={cn(
+              dashboardProgressFillClass,
+              'transition-all duration-300',
+              testExecution.passRate >= 80 && 'bg-success',
+              testExecution.passRate >= 60 && testExecution.passRate < 80 && 'bg-warning',
+              testExecution.passRate < 60 && 'bg-error'
+            )}
             style={{ width: `${testExecution.passRate}%` }}
           />
         </div>

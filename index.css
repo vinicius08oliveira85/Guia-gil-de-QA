@@ -656,32 +656,29 @@
     isolation: isolate;
   }
 
-  /** NeuSelect / AppSelect — paleta escura (sem background-image; chevron é ícone Lucide). */
+  /** NeuSelect / AppSelect — paleta CLARA via tokens (sem background-image; chevron é ícone Lucide). */
   .tasks-panel-dark-surface .neu-select-trigger.tasks-panel-neu-select,
   .tasks-panel-dark-surface .tasks-panel-neu-select.neu-select-trigger {
-    color: #fdf6e3;
-    border-color: color-mix(in srgb, #fdf6e3 10%, transparent);
-    background-color: #423b37;
+    color: var(--workspace-panel-text);
+    border-color: var(--workspace-panel-border);
+    background-color: color-mix(in srgb, var(--workspace-panel-neu-dark) 22%, var(--workspace-panel-bg));
     background-image: none;
-    box-shadow:
-      inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
-      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e);
+    box-shadow: var(--workspace-panel-neu-inset);
   }
 
   .tasks-panel-dark-surface .neu-select-trigger.tasks-panel-neu-select:hover:not(:disabled),
   .tasks-panel-dark-surface .tasks-panel-neu-select.neu-select-trigger:hover:not(:disabled) {
-    border-color: color-mix(in srgb, #d85414 35%, transparent);
-    color: #fdf6e3;
+    border-color: color-mix(in srgb, var(--workspace-panel-accent) 35%, transparent);
+    color: var(--workspace-panel-text);
   }
 
   .tasks-panel-dark-surface .neu-select-trigger.tasks-panel-neu-select:focus-visible,
   .tasks-panel-dark-surface .tasks-panel-neu-select.neu-select-trigger:focus-visible {
     outline: none;
-    border-color: color-mix(in srgb, #d85414 45%, transparent);
+    border-color: color-mix(in srgb, var(--workspace-panel-accent) 45%, transparent);
     box-shadow:
-      inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
-      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e),
-      0 0 0 2px color-mix(in srgb, #d85414 35%, transparent);
+      var(--workspace-panel-neu-inset),
+      0 0 0 2px color-mix(in srgb, var(--workspace-panel-accent) 35%, transparent);
   }
 
   .tasks-panel-dark-surface .backlog-toolbar-select.neu-select-trigger {
@@ -716,282 +713,301 @@
     height: 0.875rem;
   }
 
-  /** Modais escuros neumórficos (filtros, exportar, tarefa, regras). */
+  /**
+   * Tokens base para modais renderizados em portal. Eles não herdam
+   * `.workspace-surface-light`, então a paleta precisa nascer no próprio shell.
+   */
+  :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal, .task-details-neu-modal, .test-report-neu-modal).leve-modal-neu-shell {
+    --modal-neu-shell-bg: #ebe6de;
+    --modal-neu-bg: #f2eee8;
+    --modal-neu-surface: #e5dfd5;
+    --modal-neu-border: #ded7cd;
+    --modal-neu-light: #ffffff;
+    --modal-neu-text: #401c31;
+    --modal-neu-text-muted: #6b5e5e;
+    --modal-neu-placeholder: #8a7d76;
+    --modal-neu-accent: #ff5c1b;
+    --modal-neu-accent-legacy: #e65100;
+    --modal-neu-accent-contrast: #ffffff;
+    --modal-neu-raised:
+      6px 6px 14px color-mix(in srgb, var(--modal-neu-border) 72%, transparent),
+      -4px -4px 10px color-mix(in srgb, var(--modal-neu-light) 52%, var(--modal-neu-bg));
+    --modal-neu-inset:
+      inset 4px 4px 10px color-mix(in srgb, var(--modal-neu-border) 58%, transparent),
+      inset -3px -3px 8px color-mix(in srgb, var(--modal-neu-light) 24%, var(--modal-neu-surface));
+    --modal-neu-inset-deep:
+      inset 5px 5px 14px color-mix(in srgb, var(--modal-neu-border) 64%, transparent),
+      inset -4px -4px 10px color-mix(in srgb, var(--modal-neu-light) 22%, var(--modal-neu-surface));
+    --modal-neu-shell-shadow:
+      10px 10px 28px color-mix(in srgb, var(--modal-neu-border) 68%, transparent),
+      -6px -6px 16px color-mix(in srgb, var(--modal-neu-light) 30%, var(--modal-neu-bg)),
+      0 24px 48px color-mix(in srgb, var(--modal-neu-text) 14%, transparent);
+  }
+
+  /**
+   * Modais neumórficos — paleta CLARA padrão (LandingPage / Jira x Solus).
+   * As classes internas continuam usando `--leve-*` e `--workspace-panel-*`,
+   * mas esses tokens agora apontam para a fonte única `--modal-neu-*`.
+   */
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal).leve-modal-neu-shell {
-    --leve-header-text: #fdf6e3;
-    --leve-header-text-muted: #dcdcdc;
-    --leve-header-accent: #d85414;
-    --leve-neu-bg: #4a423e;
-    --leve-neu-surface: #423b37;
-    --color-primary: #d85414;
-    --text-primary: #fdf6e3;
-    --text-secondary: #b8b3ad;
-    --muted-foreground: #b8b3ad;
-    border-color: color-mix(in srgb, #fdf6e3 14%, transparent);
-    background: #4a423e;
-    color: #dcdcdc;
-    box-shadow:
-      6px 6px 14px color-mix(in srgb, #423b37 55%, transparent),
-      -4px -4px 10px color-mix(in srgb, #fdf6e3 12%, #4a423e),
-      0 20px 50px color-mix(in srgb, #000 35%, transparent);
+    --leve-header-text: var(--modal-neu-text);
+    --leve-header-text-muted: var(--modal-neu-text-muted);
+    --leve-header-accent: var(--modal-neu-accent);
+    --leve-neu-bg: var(--modal-neu-bg);
+    --leve-neu-surface: var(--modal-neu-surface);
+    --color-primary: var(--modal-neu-accent);
+    --text-primary: var(--modal-neu-text);
+    --text-secondary: var(--modal-neu-text-muted);
+    --muted-foreground: var(--modal-neu-text-muted);
+    --workspace-panel-bg: var(--modal-neu-shell-bg);
+    --workspace-panel-text: var(--modal-neu-text);
+    --workspace-panel-text-muted: var(--modal-neu-text-muted);
+    --workspace-panel-accent: var(--modal-neu-accent);
+    --workspace-panel-border: var(--modal-neu-border);
+    --workspace-panel-neu-dark: var(--modal-neu-border);
+    --workspace-panel-neu-highlight-raised: var(--modal-neu-light);
+    --workspace-panel-neu-light: color-mix(in srgb, var(--modal-neu-light) 70%, var(--modal-neu-shell-bg));
+    --workspace-panel-neu-raised: var(--modal-neu-raised);
+    --workspace-panel-neu-inset: var(--modal-neu-inset);
+    --workspace-panel-neu-inset-deep: var(--modal-neu-inset-deep);
+    border-color: var(--modal-neu-border);
+    background: var(--modal-neu-shell-bg);
+    color: var(--modal-neu-text-muted);
+    box-shadow: var(--modal-neu-shell-shadow);
   }
 
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal) .leve-modal-neu-header {
-    border-color: color-mix(in srgb, #fdf6e3 12%, transparent);
-    background: #423b37;
-    color: #dcdcdc;
+    border-color: var(--modal-neu-border);
+    background: var(--modal-neu-bg);
+    color: var(--modal-neu-text);
   }
 
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal)
     .leve-modal-neu-header
     :is([id$='-modal-title'], .font-bold) {
-    color: #fdf6e3 !important;
+    color: var(--modal-neu-text) !important;
   }
 
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal) > div.custom-scrollbar {
-    background: #4a423e;
-    color: #dcdcdc !important;
+    background: var(--modal-neu-shell-bg);
+    color: var(--modal-neu-text-muted) !important;
   }
 
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal) .text-base-content,
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal) .text-base-content\/70,
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal) .text-base-content\/60 {
-    color: #dcdcdc !important;
+    color: var(--modal-neu-text-muted) !important;
   }
 
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal) .leve-modal-neu-close {
-    border: 1px solid color-mix(in srgb, #fdf6e3 12%, transparent);
-    background: #423b37;
-    color: #dcdcdc;
+    border: 1px solid var(--modal-neu-border);
+    background: var(--modal-neu-bg);
+    color: var(--modal-neu-text-muted);
     box-shadow:
-      inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
-      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e);
+      3px 3px 8px color-mix(in srgb, var(--modal-neu-border) 45%, transparent),
+      -2px -2px 6px color-mix(in srgb, var(--modal-neu-light) 18%, var(--modal-neu-bg));
   }
 
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal) .leve-modal-neu-close:hover {
-    color: #d85414;
+    color: var(--modal-neu-accent);
   }
 
   .tasks-panel-neu-modal .task-modal-section {
-    border-color: color-mix(in srgb, #fdf6e3 10%, transparent);
-    background: #423b37;
-    box-shadow:
-      inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
-      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e);
+    border-color: var(--modal-neu-border);
+    background: var(--modal-neu-bg);
+    box-shadow: var(--modal-neu-inset);
   }
 
   .tasks-panel-neu-modal .task-card-field-label,
   .tasks-panel-neu-modal .task-card-section-title {
-    color: #dcdcdc;
+    color: var(--modal-neu-text-muted);
   }
 
   .tasks-panel-neu-modal .task-card-muted,
   .tasks-panel-neu-modal .task-card-title {
-    color: #dcdcdc;
+    color: var(--modal-neu-text-muted);
   }
 
   .tasks-panel-neu-modal .task-card-title {
-    color: #fdf6e3;
+    color: var(--modal-neu-text);
   }
 
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal, .settings-neu-modal)
     :is(.app-input, .input, .textarea, .select):not(.select-ghost) {
-    border-color: color-mix(in srgb, #fdf6e3 10%, transparent);
-    background-color: #423b37;
-    color: #fdf6e3;
-    box-shadow:
-      inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
-      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e);
+    border-color: var(--modal-neu-border);
+    background-color: var(--modal-neu-bg);
+    color: var(--modal-neu-text);
+    box-shadow: var(--modal-neu-inset);
   }
 
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal, .settings-neu-modal)
     :is(.input.input-bordered, .input.app-input, .jira-integration-modal-input) {
-    background-color: #423b37 !important;
-    box-shadow:
-      inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
-      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e) !important;
-    border-color: color-mix(in srgb, #fdf6e3 10%, transparent) !important;
-    color: #fdf6e3 !important;
+    background-color: var(--modal-neu-bg) !important;
+    box-shadow: var(--modal-neu-inset) !important;
+    border-color: var(--modal-neu-border) !important;
+    color: var(--modal-neu-text) !important;
   }
 
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal, .settings-neu-modal)
     .jira-integration-modal-input.shadow-none,
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal, .settings-neu-modal)
     .input.jira-integration-modal-input.bg-white {
-    background-color: #423b37 !important;
-    box-shadow:
-      inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
-      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e) !important;
+    background-color: var(--modal-neu-bg) !important;
+    box-shadow: var(--modal-neu-inset) !important;
   }
 
   .tasks-panel-neu-modal :is(.app-input, .input, .textarea, input, textarea)::placeholder,
   .tasks-panel-neu-modal .placeholder\:text-text-secondary::placeholder {
-    color: #b8b3ad !important;
+    color: var(--modal-neu-placeholder) !important;
     opacity: 1 !important;
   }
 
   .tasks-panel-neu-modal input.bg-transparent,
   .tasks-panel-neu-modal input[class*='bg-transparent'] {
-    color: #fdf6e3 !important;
-    -webkit-text-fill-color: #fdf6e3;
+    color: var(--modal-neu-text) !important;
+    -webkit-text-fill-color: var(--modal-neu-text);
   }
 
   .tasks-panel-neu-modal input.bg-transparent::placeholder,
   .tasks-panel-neu-modal input[class*='bg-transparent']::placeholder {
-    color: #b8b3ad !important;
+    color: var(--modal-neu-placeholder) !important;
     opacity: 1 !important;
-    -webkit-text-fill-color: #b8b3ad;
+    -webkit-text-fill-color: var(--modal-neu-placeholder);
   }
 
   .tasks-panel-neu-modal :is(.app-input, .input, .textarea, .select):focus {
     outline: none;
-    border-color: color-mix(in srgb, #d85414 45%, transparent);
+    border-color: color-mix(in srgb, var(--modal-neu-accent) 45%, transparent);
     box-shadow:
-      inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
-      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e),
-      0 0 0 2px color-mix(in srgb, #d85414 35%, transparent);
+      var(--modal-neu-inset),
+      0 0 0 2px color-mix(in srgb, var(--modal-neu-accent) 35%, transparent);
   }
 
   .tasks-panel-neu-modal .btn-primary,
   .tasks-panel-neu-modal .btn.btn-primary {
-    border: 1px solid color-mix(in srgb, #fdf6e3 22%, transparent);
-    background: #d85414;
-    color: #ffffff;
-    box-shadow:
-      2px 2px 6px color-mix(in srgb, #423b37 55%, transparent),
-      -1px -1px 4px color-mix(in srgb, #fdf6e3 14%, #4a423e);
+    border: 1px solid color-mix(in srgb, var(--modal-neu-accent) 55%, transparent);
+    background: var(--modal-neu-accent);
+    color: var(--modal-neu-accent-contrast);
+    box-shadow: var(--modal-neu-raised);
   }
 
   .tasks-panel-neu-modal .btn-outline {
-    border: 1px solid color-mix(in srgb, #fdf6e3 12%, transparent);
-    background: #423b37;
-    color: #dcdcdc;
-    box-shadow:
-      inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
-      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e);
+    border: 1px solid var(--modal-neu-border);
+    background: var(--modal-neu-bg);
+    color: var(--modal-neu-text);
+    box-shadow: var(--modal-neu-inset);
   }
 
   .tasks-panel-neu-modal .checkbox-primary {
-    --chkbg: #d85414;
-    --chkfg: #ffffff;
-    border-color: color-mix(in srgb, #d85414 55%, transparent);
+    --chkbg: var(--modal-neu-accent);
+    --chkfg: var(--modal-neu-accent-contrast);
+    border-color: color-mix(in srgb, var(--modal-neu-accent) 55%, transparent);
   }
 
   .tasks-panel-neu-modal :is(.bg-surface, [class*='bg-surface']) {
-    border-color: color-mix(in srgb, #fdf6e3 10%, transparent) !important;
-    background-color: #423b37 !important;
-    color: #dcdcdc !important;
+    border-color: var(--modal-neu-border) !important;
+    background-color: var(--modal-neu-bg) !important;
+    color: var(--modal-neu-text-muted) !important;
   }
 
   .tasks-panel-neu-modal :is(.text-text-secondary, .text-text-primary),
   .tasks-panel-neu-modal label.text-text-secondary {
-    color: #dcdcdc !important;
+    color: var(--modal-neu-text-muted) !important;
   }
 
   .tasks-panel-neu-modal .text-text-primary {
-    color: #fdf6e3 !important;
+    color: var(--modal-neu-text) !important;
   }
 
   .tasks-panel-neu-modal .hover\:bg-surface-hover:hover,
   .tasks-panel-neu-modal .hover\:text-text-primary:hover {
-    background-color: color-mix(in srgb, #fdf6e3 8%, #423b37) !important;
-    color: #fdf6e3 !important;
+    background-color: color-mix(in srgb, var(--modal-neu-border) 35%, var(--modal-neu-bg)) !important;
+    color: var(--modal-neu-text) !important;
   }
 
   .tasks-panel-neu-modal :is(.border-surface-border, [class*='border-surface']) {
-    border-color: color-mix(in srgb, #fdf6e3 10%, transparent) !important;
+    border-color: var(--modal-neu-border) !important;
   }
 
   .tasks-panel-neu-modal :is(textarea, input).bg-surface,
   .tasks-panel-neu-modal textarea.bg-surface {
-    color: #fdf6e3 !important;
+    color: var(--modal-neu-text) !important;
   }
 
   .tasks-panel-neu-modal :is(textarea, input).bg-surface::placeholder {
-    color: #b8b3ad !important;
+    color: var(--modal-neu-placeholder) !important;
     opacity: 1 !important;
   }
 
   .tasks-panel-neu-modal code {
     border-radius: 0.25rem;
-    background: color-mix(in srgb, #fdf6e3 8%, #423b37);
-    color: #d85414;
+    background: color-mix(in srgb, var(--modal-neu-border) 30%, var(--modal-neu-bg));
+    color: var(--modal-neu-accent);
     padding: 0.125rem 0.375rem;
   }
 
-  /** Sobrescreve `.leve-modal-neu-shell` (seções claras #f2eee8) em modais escuros. */
+  /** Reforça as seções claras (`.task-modal-section`) sobre `.leve-modal-neu-shell`. */
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal).leve-modal-neu-shell .task-modal-section,
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal).leve-modal-neu-shell .task-modal-section-accent {
-    border: 1px solid color-mix(in srgb, #fdf6e3 10%, transparent) !important;
-    background: #423b37 !important;
-    box-shadow:
-      inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
-      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e) !important;
+    border: 1px solid var(--modal-neu-border) !important;
+    background: var(--modal-neu-bg) !important;
+    box-shadow: var(--modal-neu-inset) !important;
   }
 
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal).leve-modal-neu-shell .task-modal-section:hover {
-    box-shadow:
-      inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
-      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e) !important;
+    box-shadow: var(--modal-neu-inset) !important;
   }
 
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal, .settings-neu-modal) .neu-select-trigger,
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal, .settings-neu-modal) .jira-integration-select {
-    color: #fdf6e3;
-    border: 1px solid color-mix(in srgb, #fdf6e3 10%, transparent);
+    color: var(--modal-neu-text);
+    border: 1px solid var(--modal-neu-border);
     border-radius: var(--leve-header-radius);
-    background-color: #423b37;
+    background-color: var(--modal-neu-bg);
     background-image: none !important;
-    box-shadow:
-      inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
-      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e);
+    box-shadow: var(--modal-neu-inset);
   }
 
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal, .settings-neu-modal)
     :is(.neu-select-trigger, .jira-integration-select):hover:not(:disabled) {
-    border-color: color-mix(in srgb, #d85414 35%, transparent);
-    color: #fdf6e3;
+    border-color: color-mix(in srgb, var(--modal-neu-accent) 35%, transparent);
+    color: var(--modal-neu-text);
   }
 
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal, .settings-neu-modal)
     :is(.neu-select-trigger, .jira-integration-select):focus-visible {
     outline: none;
-    border-color: color-mix(in srgb, #d85414 45%, transparent);
+    border-color: color-mix(in srgb, var(--modal-neu-accent) 45%, transparent);
     box-shadow:
-      inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
-      inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e),
-      0 0 0 2px color-mix(in srgb, #d85414 35%, transparent);
+      var(--modal-neu-inset),
+      0 0 0 2px color-mix(in srgb, var(--modal-neu-accent) 35%, transparent);
   }
 
-  /** Ícone (?) de ajuda — sem halo `btn-ghost` em modais escuros. */
+  /** Ícone (?) de ajuda — pill inset claro. */
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal, .create-project-neu-modal)
     .help-tooltip-trigger {
-    border: 1px solid color-mix(in srgb, #fdf6e3 12%, transparent) !important;
-    background: #423b37 !important;
+    border: 1px solid var(--modal-neu-border) !important;
+    background: var(--modal-neu-bg) !important;
     background-image: none !important;
-    color: #dcdcdc !important;
-    box-shadow:
-      inset 3px 3px 8px color-mix(in srgb, #423b37 70%, transparent),
-      inset -2px -2px 6px color-mix(in srgb, #fdf6e3 10%, #4a423e) !important;
+    color: var(--modal-neu-text-muted) !important;
+    box-shadow: var(--modal-neu-inset) !important;
     --tw-shadow: 0 0 #0000 !important;
     --tw-shadow-colored: 0 0 #0000 !important;
   }
 
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal, .create-project-neu-modal)
     .help-tooltip-trigger:hover {
-    color: #d85414 !important;
-    border-color: color-mix(in srgb, #d85414 35%, transparent) !important;
+    color: var(--modal-neu-accent) !important;
+    border-color: color-mix(in srgb, var(--modal-neu-accent) 35%, transparent) !important;
   }
 
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal).leve-modal-neu-shell
     :is(.btn-ghost.btn-circle, .btn-ghost.btn-xs) {
-    border: 1px solid color-mix(in srgb, #fdf6e3 12%, transparent) !important;
-    background: #423b37 !important;
+    border: 1px solid var(--modal-neu-border) !important;
+    background: var(--modal-neu-bg) !important;
     background-image: none !important;
-    color: #dcdcdc !important;
-    box-shadow:
-      inset 3px 3px 8px color-mix(in srgb, #423b37 70%, transparent),
-      inset -2px -2px 6px color-mix(in srgb, #fdf6e3 10%, #4a423e) !important;
+    color: var(--modal-neu-text-muted) !important;
+    box-shadow: var(--modal-neu-inset) !important;
     --tw-shadow: 0 0 #0000 !important;
   }
 
@@ -1322,32 +1338,46 @@
   }
 
   /**
-   * View Documentos — paleta escura neumórfica Leve (#4B433D / #E65100 / #FDF6E3).
-   * Trilhos inset · cards elevados · destaque laranja.
+   * View Documentos — paleta CLARA neumórfica (identidade LandingPage / Jira x Solus):
+   * superfície quase branca (#F8F9FA), sombras suaves, texto roxo (#4F2557) e destaque laranja.
    */
   .documents-view-scope {
-    --doc-neu-bg: #4b433d;
-    --doc-neu-dark: #3a342f;
-    --doc-neu-light: #5c524b;
+    --doc-neu-bg: #f8f9fa;
+    --doc-neu-dark: #dfe1e5;
+    --doc-neu-light: #ffffff;
     --doc-neu-accent: #e65100;
-    --doc-neu-text: #fdf6e3;
-    --doc-neu-text-muted: rgba(245, 241, 230, 0.72);
+    --doc-neu-accent-contrast: #ffffff;
+    --doc-neu-category-requisitos-text: #b3450b;
+    --doc-neu-text: #4f2557;
+    --doc-neu-text-muted: rgba(79, 37, 87, 0.7);
     --doc-neu-raised:
-      6px 6px 16px color-mix(in srgb, #3a342f 52%, transparent),
-      -4px -4px 10px color-mix(in srgb, #5c524b 26%, #4b433d);
-    --doc-neu-inset: inset 5px 5px 10px #3a342f, inset -4px -4px 8px #5c524b;
-    --doc-neu-inset-deep: inset 6px 6px 12px #3a342f, inset -5px -5px 10px #5c524b;
-    --leve-neu-bg: #4b433d;
-    --leve-neu-light: #5c524b;
-    --leve-neu-dark: #3a342f;
-    --leve-header-text: #fdf6e3;
-    --leve-header-text-muted: rgba(245, 241, 230, 0.72);
+      6px 6px 16px color-mix(in srgb, var(--doc-neu-dark) 60%, transparent),
+      -4px -4px 10px var(--doc-neu-light);
+    --doc-neu-inset:
+      inset 4px 4px 10px color-mix(in srgb, var(--doc-neu-dark) 70%, transparent),
+      inset -3px -3px 8px var(--doc-neu-light);
+    --doc-neu-inset-deep:
+      inset 6px 6px 12px color-mix(in srgb, var(--doc-neu-dark) 80%, transparent),
+      inset -5px -5px 10px var(--doc-neu-light);
+    --leve-neu-bg: #f8f9fa;
+    --leve-neu-light: #ffffff;
+    --leve-neu-dark: #dfe1e5;
+    --leve-header-text: #4f2557;
+    --leve-header-text-muted: rgba(79, 37, 87, 0.7);
     --leve-header-accent: #e65100;
-    --leve-header-cream: #fdf6e3;
-    --leve-header-border: color-mix(in srgb, #5c524b 42%, transparent);
+    --leve-header-cream: #ffffff;
+    --leve-header-border: color-mix(in srgb, #4f2557 12%, transparent);
     --leve-neu-raised: var(--doc-neu-raised);
     --leve-neu-inset: var(--doc-neu-inset);
     --leve-neu-inset-deep: var(--doc-neu-inset-deep);
+    /* Família app-neu (usada por .tasks-panel-scope .leve-neu-surface/.app-panel) —
+       sobrescreve o tema global 'dim' para manter superfícies claras nesta aba. */
+    --app-neu-bg: #f8f9fa;
+    --app-neu-surface: #ffffff;
+    --app-neu-light: #ffffff;
+    --app-neu-dark: #dfe1e5;
+    --app-neu-raised: var(--doc-neu-raised);
+    --app-neu-inset: var(--doc-neu-inset);
   }
 
   .documents-view-scope .documents-neu-section,
@@ -1355,9 +1385,9 @@
   .documents-view-scope .documents-neu-card,
   .documents-view-scope .documents-card,
   .documents-view-scope .app-panel {
-    border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
+    border: 1px solid color-mix(in srgb, var(--doc-neu-dark) 70%, transparent) !important;
     border-radius: var(--leve-header-radius);
-    background: color-mix(in srgb, #5c524b 11%, #4b433d) !important;
+    background: color-mix(in srgb, var(--doc-neu-light) 60%, var(--doc-neu-bg)) !important;
     box-shadow: var(--doc-neu-raised) !important;
     color: var(--doc-neu-text-muted);
   }
@@ -1368,20 +1398,20 @@
   .documents-view-scope .documents-neu-search,
   .documents-view-scope .documents-neu-filter-track,
   .documents-view-scope .documents-neu-progress-track {
-    border: 1px solid color-mix(in srgb, #3a342f 42%, transparent) !important;
-    background: color-mix(in srgb, #3a342f 22%, #4b433d) !important;
+    border: 1px solid color-mix(in srgb, var(--doc-neu-dark) 60%, transparent) !important;
+    background: color-mix(in srgb, var(--doc-neu-dark) 22%, var(--doc-neu-bg)) !important;
     box-shadow: var(--doc-neu-inset-deep) !important;
     color: var(--doc-neu-text-muted);
   }
 
   .documents-view-scope .documents-neu-alert-success {
-    border-color: color-mix(in srgb, oklch(var(--su)) 32%, #3a342f) !important;
-    background: color-mix(in srgb, oklch(var(--su)) 12%, #4b433d) !important;
+    border-color: color-mix(in srgb, oklch(var(--su)) 32%, var(--doc-neu-dark)) !important;
+    background: color-mix(in srgb, oklch(var(--su)) 12%, var(--doc-neu-bg)) !important;
   }
 
   .documents-view-scope .documents-neu-alert-info {
-    border-color: color-mix(in srgb, #e65100 28%, #3a342f) !important;
-    background: color-mix(in srgb, #e65100 10%, #4b433d) !important;
+    border-color: color-mix(in srgb, var(--doc-neu-accent) 28%, var(--doc-neu-dark)) !important;
+    background: color-mix(in srgb, var(--doc-neu-accent) 8%, var(--doc-neu-bg)) !important;
   }
 
   .documents-view-scope .documents-neu-filter-track {
@@ -1390,52 +1420,52 @@
 
   .documents-view-scope .documents-neu-progress-track {
     border-radius: 9999px;
-    background: color-mix(in srgb, #3a342f 35%, #4b433d) !important;
+    background: color-mix(in srgb, var(--doc-neu-dark) 35%, var(--doc-neu-bg)) !important;
   }
 
   .documents-view-scope .documents-neu-progress-fill {
     background: linear-gradient(
       90deg,
-      color-mix(in srgb, #e65100 75%, #fdf6e3) 0%,
-      #e65100 100%
+      color-mix(in srgb, var(--doc-neu-accent) 78%, var(--doc-neu-accent-contrast)) 0%,
+      var(--doc-neu-accent) 100%
     ) !important;
-    box-shadow: 0 1px 3px color-mix(in srgb, #e65100 32%, transparent);
+    box-shadow: 0 1px 3px color-mix(in srgb, var(--doc-neu-accent) 32%, transparent);
   }
 
   .documents-view-scope .documents-neu-list-track {
-    border: 1px solid color-mix(in srgb, #3a342f 48%, transparent) !important;
-    background: color-mix(in srgb, #3a342f 18%, #4b433d) !important;
+    border: 1px solid color-mix(in srgb, var(--doc-neu-dark) 60%, transparent) !important;
+    background: color-mix(in srgb, var(--doc-neu-dark) 18%, var(--doc-neu-bg)) !important;
     box-shadow: var(--doc-neu-inset-deep) !important;
   }
 
   .documents-view-scope .documents-neu-section:hover,
   .documents-view-scope .documents-neu-card:hover,
   .documents-view-scope .documents-card:hover {
-    border-color: color-mix(in srgb, #e65100 28%, #5c524b) !important;
+    border-color: color-mix(in srgb, var(--doc-neu-accent) 28%, var(--doc-neu-dark)) !important;
     box-shadow:
-      7px 7px 18px color-mix(in srgb, #3a342f 55%, transparent),
-      -5px -5px 12px color-mix(in srgb, #5c524b 28%, #4b433d),
-      0 0 0 1px color-mix(in srgb, #e65100 14%, transparent) !important;
+      7px 7px 18px color-mix(in srgb, var(--doc-neu-dark) 60%, transparent),
+      -5px -5px 12px var(--doc-neu-light),
+      0 0 0 1px color-mix(in srgb, var(--doc-neu-accent) 14%, transparent) !important;
   }
 
   .documents-view-scope .dashboard-glass-indicator-card {
-    border: 1px solid color-mix(in srgb, #5c524b 40%, transparent) !important;
-    background: color-mix(in srgb, #3a342f 18%, #4b433d) !important;
+    border: 1px solid color-mix(in srgb, var(--doc-neu-dark) 65%, transparent) !important;
+    background: color-mix(in srgb, var(--doc-neu-dark) 18%, var(--doc-neu-bg)) !important;
     box-shadow: var(--doc-neu-inset) !important;
   }
 
   .documents-view-scope .dashboard-glass-indicator-card:hover {
-    border-color: color-mix(in srgb, #e65100 32%, #5c524b) !important;
+    border-color: color-mix(in srgb, var(--doc-neu-accent) 32%, var(--doc-neu-dark)) !important;
     box-shadow: var(--doc-neu-raised) !important;
     transform: translateY(-1px);
   }
 
   .documents-view-scope .dashboard-glass-indicator-card--active {
-    border-color: color-mix(in srgb, #e65100 42%, #5c524b) !important;
-    background: color-mix(in srgb, #e65100 14%, #4b433d) !important;
+    border-color: color-mix(in srgb, var(--doc-neu-accent) 42%, var(--doc-neu-dark)) !important;
+    background: color-mix(in srgb, var(--doc-neu-accent) 12%, var(--doc-neu-bg)) !important;
     box-shadow:
       var(--doc-neu-raised),
-      0 0 0 1px color-mix(in srgb, #e65100 20%, transparent) !important;
+      0 0 0 1px color-mix(in srgb, var(--doc-neu-accent) 20%, transparent) !important;
   }
 
   /** KPIs de categoria no hero escuro — prevalece sobre o tema claro de Documentos acima */
@@ -1468,14 +1498,14 @@
 
   .documents-view-scope .dashboard-neu-spec-remove,
   .documents-view-scope .documents-neu-spec-remove {
-    border: 1px solid color-mix(in srgb, oklch(var(--er)) 32%, #5c524b) !important;
-    background: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
+    border: 1px solid color-mix(in srgb, oklch(var(--er)) 32%, var(--doc-neu-dark)) !important;
+    background: color-mix(in srgb, var(--doc-neu-light) 60%, var(--doc-neu-bg)) !important;
     color: oklch(var(--er)) !important;
     box-shadow: var(--doc-neu-raised) !important;
   }
 
   .documents-view-scope .documents-neu-spec-remove:hover:not(:disabled) {
-    border-color: color-mix(in srgb, oklch(var(--er)) 45%, #5c524b) !important;
+    border-color: color-mix(in srgb, oklch(var(--er)) 45%, var(--doc-neu-dark)) !important;
     color: oklch(var(--er)) !important;
   }
 
@@ -1491,19 +1521,19 @@
 
   .documents-view-scope .documents-neu-chip,
   .documents-view-scope .documents-neu-filter-pill.leve-neu-pill:not(.leve-neu-pill-active) {
-    border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
-    background: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
+    border: 1px solid color-mix(in srgb, var(--doc-neu-dark) 70%, transparent) !important;
+    background: color-mix(in srgb, var(--doc-neu-light) 55%, var(--doc-neu-bg)) !important;
     color: var(--doc-neu-text-muted) !important;
     box-shadow: var(--doc-neu-raised) !important;
   }
 
   .documents-view-scope .documents-neu-filter-pill.leve-neu-pill-active {
-    border: 1px solid color-mix(in srgb, #e65100 45%, #3a342f) !important;
-    background: #e65100 !important;
-    color: #fdf6e3 !important;
+    border: 1px solid color-mix(in srgb, var(--doc-neu-accent) 45%, var(--doc-neu-dark)) !important;
+    background: var(--doc-neu-accent) !important;
+    color: var(--doc-neu-accent-contrast) !important;
     box-shadow:
-      3px 3px 9px color-mix(in srgb, #3a342f 58%, transparent),
-      -2px -2px 7px color-mix(in srgb, #fdf6e3 22%, #4b433d) !important;
+      3px 3px 9px color-mix(in srgb, var(--doc-neu-dark) 58%, transparent),
+      -2px -2px 7px var(--doc-neu-light) !important;
   }
 
   .documents-view-scope .documents-neu-search {
@@ -1517,9 +1547,9 @@
 
   .documents-view-scope .documents-neu-btn-primary,
   .documents-view-scope .documents-card-action-primary {
-    border: 1px solid color-mix(in srgb, #fdf6e3 22%, transparent) !important;
-    background: #e65100 !important;
-    color: #fdf6e3 !important;
+    border: 1px solid color-mix(in srgb, var(--doc-neu-accent) 55%, transparent) !important;
+    background: var(--doc-neu-accent) !important;
+    color: var(--doc-neu-accent-contrast) !important;
     box-shadow: var(--doc-neu-raised) !important;
   }
 
@@ -1530,14 +1560,14 @@
 
   .documents-view-scope .documents-card-action-outline,
   .documents-view-scope .documents-neu-chip.documents-card-action-outline {
-    border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
-    background: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
+    border: 1px solid color-mix(in srgb, var(--doc-neu-dark) 70%, transparent) !important;
+    background: color-mix(in srgb, var(--doc-neu-light) 55%, var(--doc-neu-bg)) !important;
     color: var(--doc-neu-text) !important;
     box-shadow: var(--doc-neu-raised) !important;
   }
 
   .documents-view-scope .documents-card-action-outline:hover:not(:disabled) {
-    color: #e65100 !important;
+    color: var(--doc-neu-accent) !important;
   }
 
   .documents-view-scope .documents-card-list-panel .app-btn-primary-inline,
@@ -1558,20 +1588,20 @@
   }
 
   .documents-view-scope .documents-card-actions .documents-card-action-outline {
-    border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
-    background: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
+    border: 1px solid color-mix(in srgb, var(--doc-neu-dark) 70%, transparent) !important;
+    background: color-mix(in srgb, var(--doc-neu-light) 55%, var(--doc-neu-bg)) !important;
     color: var(--doc-neu-text) !important;
   }
 
   .documents-view-scope .documents-card-actions .documents-card-action-outline:hover:not(:disabled) {
-    color: #e65100 !important;
+    color: var(--doc-neu-accent) !important;
     box-shadow: var(--doc-neu-raised) !important;
   }
 
   .documents-view-scope .documents-card-actions .documents-card-action-primary {
-    border: 1px solid color-mix(in srgb, #fdf6e3 22%, transparent) !important;
-    background: #e65100 !important;
-    color: #fdf6e3 !important;
+    border: 1px solid color-mix(in srgb, var(--doc-neu-accent) 55%, transparent) !important;
+    background: var(--doc-neu-accent) !important;
+    color: var(--doc-neu-accent-contrast) !important;
     box-shadow: var(--doc-neu-raised) !important;
   }
 
@@ -1581,7 +1611,7 @@
 
   .documents-view-scope .documents-card-actions .documents-card-action-remove:hover:not(:disabled) {
     color: oklch(var(--er)) !important;
-    border-color: color-mix(in srgb, oklch(var(--er)) 38%, #5c524b) !important;
+    border-color: color-mix(in srgb, oklch(var(--er)) 38%, var(--doc-neu-dark)) !important;
   }
 
   .documents-view-scope .documents-card-title,
@@ -1607,7 +1637,7 @@
   .documents-view-scope .documents-card-title,
   .documents-view-scope .documents-card-actions,
   .documents-view-scope .documents-section-header {
-    border-color: color-mix(in srgb, #5c524b 38%, transparent) !important;
+    border-color: color-mix(in srgb, var(--doc-neu-dark) 80%, transparent) !important;
   }
 
   :is(.documents-neu-modal.tasks-panel-neu-modal) .documents-neu-inset,
@@ -1633,29 +1663,41 @@
   }
 
   /**
-   * Regras de negócio — paleta escura neumórfica Leve (#4B433D / #E65100 / #FDF6E3).
+   * Regras de negócio — paleta CLARA neumórfica (identidade LandingPage / Jira x Solus):
+   * superfície quase branca (#F8F9FA), sombras suaves, texto roxo (#4F2557) e destaque laranja.
    */
   .business-rules-view-scope {
-    --br-neu-bg: #4b433d;
-    --br-neu-dark: #3a342f;
-    --br-neu-light: #5c524b;
+    --br-neu-bg: #f8f9fa;
+    --br-neu-dark: #dfe1e5;
+    --br-neu-light: #ffffff;
     --br-neu-accent: #e65100;
-    --br-neu-text: #fdf6e3;
-    --br-neu-text-muted: rgba(245, 241, 230, 0.72);
+    --br-neu-accent-contrast: #ffffff;
+    --br-neu-category-accent-text: #b3450b;
+    --br-neu-text: #4f2557;
+    --br-neu-text-muted: rgba(79, 37, 87, 0.7);
     --br-neu-raised:
-      6px 6px 16px color-mix(in srgb, #3a342f 52%, transparent),
-      -4px -4px 10px color-mix(in srgb, #5c524b 26%, #4b433d);
-    --br-neu-inset: inset 5px 5px 10px #3a342f, inset -4px -4px 8px #5c524b;
-    --br-neu-inset-deep: inset 6px 6px 12px #3a342f, inset -5px -5px 10px #5c524b;
-    --app-neu-bg: #4b433d;
-    --leve-neu-bg: #4b433d;
-    --leve-neu-light: #5c524b;
-    --leve-neu-dark: #3a342f;
-    --leve-header-text: #fdf6e3;
-    --leve-header-text-muted: rgba(245, 241, 230, 0.72);
+      6px 6px 16px color-mix(in srgb, var(--br-neu-dark) 60%, transparent),
+      -4px -4px 10px var(--br-neu-light);
+    --br-neu-inset:
+      inset 4px 4px 10px color-mix(in srgb, var(--br-neu-dark) 70%, transparent),
+      inset -3px -3px 8px var(--br-neu-light);
+    --br-neu-inset-deep:
+      inset 6px 6px 12px color-mix(in srgb, var(--br-neu-dark) 80%, transparent),
+      inset -5px -5px 10px var(--br-neu-light);
+    --app-neu-bg: #f8f9fa;
+    --app-neu-surface: #ffffff;
+    --app-neu-light: #ffffff;
+    --app-neu-dark: #dfe1e5;
+    --app-neu-raised: var(--br-neu-raised);
+    --app-neu-inset: var(--br-neu-inset);
+    --leve-neu-bg: #f8f9fa;
+    --leve-neu-light: #ffffff;
+    --leve-neu-dark: #dfe1e5;
+    --leve-header-text: #4f2557;
+    --leve-header-text-muted: rgba(79, 37, 87, 0.7);
     --leve-header-accent: #e65100;
-    --leve-header-cream: #fdf6e3;
-    --leve-header-border: color-mix(in srgb, #5c524b 42%, transparent);
+    --leve-header-cream: #ffffff;
+    --leve-header-border: color-mix(in srgb, #4f2557 12%, transparent);
     --leve-neu-raised: var(--br-neu-raised);
     --leve-neu-inset: var(--br-neu-inset);
     --leve-neu-inset-deep: var(--br-neu-inset-deep);
@@ -1663,63 +1705,63 @@
 
   .business-rules-view-scope .business-rules-neu-list-track,
   .business-rules-view-scope .app-panel {
-    border: 1px solid color-mix(in srgb, #3a342f 48%, transparent) !important;
-    background: color-mix(in srgb, #3a342f 18%, #4b433d) !important;
+    border: 1px solid color-mix(in srgb, var(--br-neu-dark) 60%, transparent) !important;
+    background: color-mix(in srgb, var(--br-neu-dark) 18%, var(--br-neu-bg)) !important;
     box-shadow: var(--br-neu-inset-deep) !important;
     color: var(--br-neu-text-muted);
   }
 
   .business-rules-view-scope .business-rules-neu-card {
-    border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
-    background: color-mix(in srgb, #5c524b 11%, #4b433d) !important;
+    border: 1px solid color-mix(in srgb, var(--br-neu-dark) 70%, transparent) !important;
+    background: color-mix(in srgb, var(--br-neu-light) 60%, var(--br-neu-bg)) !important;
     box-shadow: var(--br-neu-raised) !important;
     color: var(--br-neu-text-muted);
   }
 
   .business-rules-view-scope .business-rules-neu-card:hover {
-    border-color: color-mix(in srgb, #e65100 28%, #5c524b) !important;
+    border-color: color-mix(in srgb, var(--br-neu-accent) 28%, var(--br-neu-dark)) !important;
     box-shadow:
-      7px 7px 18px color-mix(in srgb, #3a342f 55%, transparent),
-      -5px -5px 12px color-mix(in srgb, #5c524b 28%, #4b433d),
-      0 0 0 1px color-mix(in srgb, #e65100 14%, transparent) !important;
+      7px 7px 18px color-mix(in srgb, var(--br-neu-dark) 60%, transparent),
+      -5px -5px 12px var(--br-neu-light),
+      0 0 0 1px color-mix(in srgb, var(--br-neu-accent) 14%, transparent) !important;
   }
 
   .business-rules-view-scope .business-rules-card-summary:hover {
-    background: color-mix(in srgb, #3a342f 22%, #4b433d) !important;
+    background: color-mix(in srgb, var(--br-neu-dark) 22%, var(--br-neu-bg)) !important;
   }
 
   .business-rules-view-scope .business-rules-card-body {
-    border-color: color-mix(in srgb, #5c524b 38%, transparent) !important;
-    background: color-mix(in srgb, #3a342f 14%, #4b433d) !important;
+    border-color: color-mix(in srgb, var(--br-neu-dark) 70%, transparent) !important;
+    background: color-mix(in srgb, var(--br-neu-dark) 12%, var(--br-neu-bg)) !important;
   }
 
   .business-rules-view-scope .business-rules-neu-inset {
-    border: 1px solid color-mix(in srgb, #3a342f 42%, transparent) !important;
-    background: color-mix(in srgb, #3a342f 24%, #4b433d) !important;
+    border: 1px solid color-mix(in srgb, var(--br-neu-dark) 60%, transparent) !important;
+    background: color-mix(in srgb, var(--br-neu-dark) 24%, var(--br-neu-bg)) !important;
     box-shadow: var(--br-neu-inset-deep) !important;
     color: var(--br-neu-text);
   }
 
   .business-rules-view-scope .business-rules-neu-chip,
   .business-rules-view-scope .business-rules-card-action-btn {
-    border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
-    background: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
+    border: 1px solid color-mix(in srgb, var(--br-neu-dark) 70%, transparent) !important;
+    background: color-mix(in srgb, var(--br-neu-light) 55%, var(--br-neu-bg)) !important;
     color: var(--br-neu-text) !important;
     box-shadow: var(--br-neu-raised) !important;
   }
 
   .business-rules-view-scope .business-rules-card-action-btn:hover:not(:disabled) {
-    color: #e65100 !important;
+    color: var(--br-neu-accent) !important;
   }
 
   .business-rules-view-scope .business-rules-card-action-btn.text-error {
     color: oklch(var(--er)) !important;
-    border-color: color-mix(in srgb, oklch(var(--er)) 32%, #5c524b) !important;
+    border-color: color-mix(in srgb, oklch(var(--er)) 32%, var(--br-neu-dark)) !important;
   }
 
   .business-rules-view-scope .business-rules-card-action-btn.text-error:hover:not(:disabled) {
     color: oklch(var(--er)) !important;
-    border-color: color-mix(in srgb, oklch(var(--er)) 45%, #5c524b) !important;
+    border-color: color-mix(in srgb, oklch(var(--er)) 45%, var(--br-neu-dark)) !important;
   }
 
   .business-rules-view-scope .business-rules-neu-chip:active,
@@ -1735,40 +1777,40 @@
   }
 
   .business-rules-view-scope .business-rules-neu-category-badge--primary {
-    background: #e65100 !important;
-    color: #fdf6e3 !important;
-    border-color: color-mix(in srgb, #e65100 45%, #3a342f) !important;
+    background: var(--br-neu-accent) !important;
+    color: var(--br-neu-accent-contrast) !important;
+    border-color: color-mix(in srgb, var(--br-neu-accent) 60%, transparent) !important;
   }
 
   .business-rules-view-scope .business-rules-neu-category-badge--secondary,
   .business-rules-view-scope .business-rules-neu-category-badge--purple {
     background: #421d3a !important;
     color: #f5f1e6 !important;
-    border-color: color-mix(in srgb, #421d3a 35%, #5c524b) !important;
+    border-color: color-mix(in srgb, #421d3a 55%, transparent) !important;
   }
 
   .business-rules-view-scope .business-rules-neu-category-badge--accent {
-    background: color-mix(in srgb, #e65100 12%, #4b433d) !important;
-    color: #fdf6e3 !important;
-    border-color: color-mix(in srgb, #e65100 38%, #5c524b) !important;
+    background: color-mix(in srgb, var(--br-neu-accent) 14%, var(--br-neu-bg)) !important;
+    color: var(--br-neu-category-accent-text) !important;
+    border-color: color-mix(in srgb, var(--br-neu-accent) 40%, transparent) !important;
   }
 
   .business-rules-view-scope .business-rules-neu-category-badge--info {
-    background: color-mix(in srgb, #5c524b 12%, #4b433d) !important;
+    background: color-mix(in srgb, var(--br-neu-dark) 30%, var(--br-neu-bg)) !important;
     color: var(--br-neu-text-muted) !important;
-    border-color: color-mix(in srgb, #5c524b 42%, transparent) !important;
+    border-color: color-mix(in srgb, var(--br-neu-dark) 75%, transparent) !important;
   }
 
   .business-rules-view-scope .business-rules-neu-category-badge--success {
-    background: color-mix(in srgb, #10b981 14%, #4b433d) !important;
-    color: #6ee7b7 !important;
-    border-color: color-mix(in srgb, #10b981 32%, #5c524b) !important;
+    background: color-mix(in srgb, #10b981 16%, var(--br-neu-bg)) !important;
+    color: #047857 !important;
+    border-color: color-mix(in srgb, #10b981 38%, transparent) !important;
   }
 
   .business-rules-view-scope .business-rules-neu-category-badge--warning {
-    background: color-mix(in srgb, #ca8a04 14%, #4b433d) !important;
-    color: #fcd34d !important;
-    border-color: color-mix(in srgb, #ca8a04 35%, #5c524b) !important;
+    background: color-mix(in srgb, #ca8a04 18%, var(--br-neu-bg)) !important;
+    color: #b45309 !important;
+    border-color: color-mix(in srgb, #ca8a04 40%, transparent) !important;
   }
 
   .business-rules-view-scope .business-rules-card-title,
@@ -1786,43 +1828,49 @@
 
   .business-rules-view-scope .business-rules-card-title.group-open\:border-\[\#DED7CD\],
   .business-rules-view-scope details[open] .business-rules-card-title {
-    border-color: color-mix(in srgb, #5c524b 38%, transparent) !important;
+    border-color: color-mix(in srgb, var(--br-neu-dark) 80%, transparent) !important;
   }
 
   .business-rules-view-scope .business-rules-card-actions,
   .business-rules-view-scope [class*='border-[#DED7CD]'] {
-    border-color: color-mix(in srgb, #5c524b 38%, transparent) !important;
+    border-color: color-mix(in srgb, var(--br-neu-dark) 80%, transparent) !important;
   }
 
   .business-rules-view-scope [class*='prose-h2:border'],
   .business-rules-view-scope [class*='prose-h3:border'] {
-    border-color: color-mix(in srgb, #5c524b 38%, transparent) !important;
+    border-color: color-mix(in srgb, var(--br-neu-dark) 80%, transparent) !important;
   }
 
   /**
-   * Tela Configurações — paleta escura neumórfica Leve (#4B433D / #E65100 / #FDF6E3).
+   * Tela Configurações — paleta CLARA neumórfica (LandingPage / modais).
    */
   .settings-view-scope {
-    --st-neu-bg: #4b433d;
-    --st-neu-dark: #3a342f;
-    --st-neu-light: #5c524b;
-    --st-neu-accent: #e65100;
-    --st-neu-text: #fdf6e3;
-    --st-neu-text-muted: rgba(245, 241, 230, 0.72);
+    --st-neu-bg: #f2eee8;
+    --st-neu-shell-bg: #ebe6de;
+    --st-neu-surface: #e5dfd5;
+    --st-neu-dark: #ded7cd;
+    --st-neu-light: #ffffff;
+    --st-neu-accent: #ff5c1b;
+    --st-neu-text: #401c31;
+    --st-neu-text-muted: #6b5e5e;
     --st-neu-raised:
-      6px 6px 16px color-mix(in srgb, #3a342f 52%, transparent),
-      -4px -4px 10px color-mix(in srgb, #5c524b 26%, #4b433d);
-    --st-neu-inset: inset 5px 5px 10px #3a342f, inset -4px -4px 8px #5c524b;
-    --st-neu-inset-deep: inset 6px 6px 12px #3a342f, inset -5px -5px 10px #5c524b;
-    --leve-neu-bg: #4b433d;
-    --leve-neu-light: #5c524b;
-    --leve-neu-dark: #3a342f;
-    --leve-header-text: #fdf6e3;
-    --leve-header-text-muted: rgba(245, 241, 230, 0.72);
-    --leve-header-accent: #e65100;
-    --leve-header-cream: #fdf6e3;
-    --leve-header-bg: #4b433d;
-    --leve-header-border: color-mix(in srgb, #5c524b 42%, transparent);
+      6px 6px 16px color-mix(in srgb, var(--st-neu-dark) 70%, transparent),
+      -4px -4px 10px color-mix(in srgb, var(--st-neu-light) 55%, var(--st-neu-bg));
+    --st-neu-inset:
+      inset 5px 5px 10px color-mix(in srgb, var(--st-neu-dark) 58%, transparent),
+      inset -4px -4px 8px color-mix(in srgb, var(--st-neu-light) 24%, var(--st-neu-surface));
+    --st-neu-inset-deep:
+      inset 6px 6px 12px color-mix(in srgb, var(--st-neu-dark) 64%, transparent),
+      inset -5px -5px 10px color-mix(in srgb, var(--st-neu-light) 22%, var(--st-neu-surface));
+    --leve-neu-bg: var(--st-neu-bg);
+    --leve-neu-light: var(--st-neu-light);
+    --leve-neu-dark: var(--st-neu-dark);
+    --leve-header-text: var(--st-neu-text);
+    --leve-header-text-muted: var(--st-neu-text-muted);
+    --leve-header-accent: var(--st-neu-accent);
+    --leve-header-cream: var(--st-neu-bg);
+    --leve-header-bg: var(--st-neu-shell-bg);
+    --leve-header-border: color-mix(in srgb, var(--st-neu-dark) 70%, transparent);
     --leve-neu-raised: var(--st-neu-raised);
     --leve-neu-inset: var(--st-neu-inset);
     --leve-neu-inset-deep: var(--st-neu-inset-deep);
@@ -1836,50 +1884,50 @@
   .settings-view-scope .leve-settings-panel,
   .settings-view-scope .leve-neu-surface.leve-settings-panel,
   .settings-view-scope .leve-settings-card {
-    border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
+    border: 1px solid color-mix(in srgb, var(--st-neu-dark) 42%, transparent) !important;
     border-radius: var(--leve-header-radius);
-    background: color-mix(in srgb, #5c524b 11%, #4b433d) !important;
+    background: color-mix(in srgb, var(--st-neu-dark) 11%, var(--st-neu-bg)) !important;
     box-shadow: var(--st-neu-raised) !important;
     color: var(--st-neu-text-muted);
   }
 
   .settings-view-scope .leve-neu-surface-inset,
   .settings-view-scope .leve-settings-inset-panel {
-    border: 1px solid color-mix(in srgb, #3a342f 42%, transparent) !important;
-    background: color-mix(in srgb, #3a342f 24%, #4b433d) !important;
+    border: 1px solid color-mix(in srgb, var(--st-neu-dark) 42%, transparent) !important;
+    background: color-mix(in srgb, var(--st-neu-dark) 24%, var(--st-neu-bg)) !important;
     box-shadow: var(--st-neu-inset-deep) !important;
     color: var(--st-neu-text-muted);
   }
 
   .settings-view-scope .leve-settings-tabs-track,
   .settings-view-scope .leve-settings-prefs-tabs-track {
-    border: 1px solid color-mix(in srgb, #3a342f 55%, transparent) !important;
+    border: 1px solid color-mix(in srgb, var(--st-neu-dark) 55%, transparent) !important;
     border-radius: 9999px !important;
-    background: color-mix(in srgb, #3a342f 32%, #4b433d) !important;
+    background: color-mix(in srgb, var(--st-neu-dark) 32%, var(--st-neu-bg)) !important;
     box-shadow: var(--st-neu-inset-deep) !important;
   }
 
   .settings-view-scope .leve-settings-panel:hover,
   .settings-view-scope .leve-settings-card:hover {
-    border-color: color-mix(in srgb, #e65100 28%, #5c524b) !important;
+    border-color: color-mix(in srgb, var(--st-neu-accent) 28%, var(--st-neu-dark)) !important;
   }
 
   .settings-view-scope .leve-settings-section-icon-wrap {
-    border: 1px solid color-mix(in srgb, #e65100 38%, #5c524b) !important;
-    background: color-mix(in srgb, #3a342f 28%, #4b433d) !important;
+    border: 1px solid color-mix(in srgb, var(--st-neu-accent) 38%, var(--st-neu-dark)) !important;
+    background: color-mix(in srgb, var(--st-neu-dark) 28%, var(--st-neu-bg)) !important;
     box-shadow:
       var(--st-neu-raised),
-      0 0 12px color-mix(in srgb, #e65100 22%, transparent) !important;
-    color: #e65100 !important;
+      0 0 12px color-mix(in srgb, var(--st-neu-accent) 22%, transparent) !important;
+    color: var(--st-neu-accent) !important;
   }
 
   .settings-view-scope .app-btn-primary-inline,
   .settings-view-scope .leve-settings-primary-btn {
-    border: 1px solid color-mix(in srgb, #e65100 45%, #3a342f) !important;
-    background: #e65100 !important;
-    color: #fdf6e3 !important;
+    border: 1px solid color-mix(in srgb, var(--st-neu-accent) 45%, var(--st-neu-dark)) !important;
+    background: var(--st-neu-accent) !important;
+    color: #ffffff !important;
     box-shadow:
-      0 2px 10px color-mix(in srgb, #e65100 35%, transparent),
+      0 2px 10px color-mix(in srgb, var(--st-neu-accent) 35%, transparent),
       var(--st-neu-raised) !important;
   }
 
@@ -1889,60 +1937,60 @@
   }
 
   .settings-view-scope :is(.workspace-chrome-pill, .app-btn-outline):not(.app-neu-action-btn--active) {
-    border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
-    background: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
-    color: #fdf6e3 !important;
+    border: 1px solid color-mix(in srgb, var(--st-neu-dark) 42%, transparent) !important;
+    background: color-mix(in srgb, var(--st-neu-dark) 10%, var(--st-neu-bg)) !important;
+    color: var(--st-neu-text) !important;
     box-shadow: var(--st-neu-raised) !important;
   }
 
   .settings-view-scope :is(.workspace-chrome-pill, .app-btn-outline):hover:not(:disabled) {
-    color: #e65100 !important;
-    border-color: color-mix(in srgb, #e65100 32%, #5c524b) !important;
+    color: var(--st-neu-accent) !important;
+    border-color: color-mix(in srgb, var(--st-neu-accent) 32%, var(--st-neu-dark)) !important;
   }
 
   .settings-view-scope :is(.app-input, .input, .textarea, .select):not(.select-ghost) {
-    border: 1px solid color-mix(in srgb, #3a342f 48%, transparent) !important;
-    background: color-mix(in srgb, #3a342f 28%, #4b433d) !important;
-    color: #fdf6e3 !important;
+    border: 1px solid color-mix(in srgb, var(--st-neu-dark) 48%, transparent) !important;
+    background: color-mix(in srgb, var(--st-neu-dark) 28%, var(--st-neu-bg)) !important;
+    color: var(--st-neu-text) !important;
     box-shadow: var(--st-neu-inset) !important;
   }
 
   /** DaisyUI `input-bordered` — evita fundo claro sobrepondo o inset neumórfico. */
   .settings-view-scope :is(.input.input-bordered, .input.app-input, .textarea.textarea-bordered) {
-    background-color: color-mix(in srgb, #3a342f 28%, #4b433d) !important;
+    background-color: color-mix(in srgb, var(--st-neu-dark) 28%, var(--st-neu-bg)) !important;
     box-shadow: var(--st-neu-inset) !important;
-    border-color: color-mix(in srgb, #3a342f 48%, transparent) !important;
-    color: #fdf6e3 !important;
+    border-color: color-mix(in srgb, var(--st-neu-dark) 48%, transparent) !important;
+    color: var(--st-neu-text) !important;
   }
 
   .settings-view-scope .jira-integration-modal-input.input {
-    background-color: color-mix(in srgb, #3a342f 28%, #4b433d) !important;
+    background-color: color-mix(in srgb, var(--st-neu-dark) 28%, var(--st-neu-bg)) !important;
     box-shadow: var(--st-neu-inset) !important;
-    border-color: color-mix(in srgb, #3a342f 48%, transparent) !important;
-    color: #fdf6e3 !important;
+    border-color: color-mix(in srgb, var(--st-neu-dark) 48%, transparent) !important;
+    color: var(--st-neu-text) !important;
   }
 
   /** AppSelect / NeuSelect na integração Jira e demais abas de settings. */
   .settings-view-scope :is(.neu-select-trigger, .jira-integration-select) {
-    border: 1px solid color-mix(in srgb, #3a342f 48%, transparent) !important;
+    border: 1px solid color-mix(in srgb, var(--st-neu-dark) 48%, transparent) !important;
     border-radius: var(--leve-header-radius) !important;
-    background-color: color-mix(in srgb, #3a342f 28%, #4b433d) !important;
+    background-color: color-mix(in srgb, var(--st-neu-dark) 28%, var(--st-neu-bg)) !important;
     background-image: none !important;
-    color: #fdf6e3 !important;
+    color: var(--st-neu-text) !important;
     box-shadow: var(--st-neu-inset) !important;
   }
 
   .settings-view-scope :is(.neu-select-trigger, .jira-integration-select):hover:not(:disabled) {
-    border-color: color-mix(in srgb, #e65100 28%, #5c524b) !important;
-    color: #fdf6e3 !important;
+    border-color: color-mix(in srgb, var(--st-neu-accent) 28%, var(--st-neu-dark)) !important;
+    color: var(--st-neu-text) !important;
   }
 
   .settings-view-scope :is(.neu-select-trigger, .jira-integration-select):focus-visible {
     outline: none !important;
-    border-color: color-mix(in srgb, #e65100 45%, transparent) !important;
+    border-color: color-mix(in srgb, var(--st-neu-accent) 45%, transparent) !important;
     box-shadow:
       var(--st-neu-inset),
-      0 0 0 2px color-mix(in srgb, #e65100 18%, transparent) !important;
+      0 0 0 2px color-mix(in srgb, var(--st-neu-accent) 18%, transparent) !important;
   }
 
   .settings-view-scope .jira-integration-inset-panel,
@@ -1952,29 +2000,29 @@
 
   /** Barra de progresso — integração Jira (trilho rebaixado + fill com brilho). */
   .settings-view-scope .jira-integration-progress-track {
-    border: 1px solid color-mix(in srgb, #3a342f 42%, transparent);
-    background: color-mix(in srgb, #3a342f 32%, #4b433d);
+    border: 1px solid color-mix(in srgb, var(--st-neu-dark) 42%, transparent);
+    background: color-mix(in srgb, var(--st-neu-dark) 32%, var(--st-neu-bg));
     box-shadow: var(--leve-neu-inset-deep);
   }
 
   .settings-view-scope .jira-integration-progress-fill {
-    border-top: 1px solid color-mix(in srgb, #fdf6e3 20%, transparent);
+    border-top: 1px solid color-mix(in srgb, var(--st-neu-text) 20%, transparent);
     background: linear-gradient(
       180deg,
-      color-mix(in srgb, #e65100 55%, #fdf6e3) 0%,
-      #e65100 38%,
-      color-mix(in srgb, #e65100 88%, #3a342f) 100%
+      color-mix(in srgb, var(--st-neu-accent) 55%, #ffffff) 0%,
+      var(--st-neu-accent) 38%,
+      color-mix(in srgb, var(--st-neu-accent) 88%, var(--st-neu-dark)) 100%
     ) !important;
     box-shadow:
-      0 2px 6px color-mix(in srgb, #e65100 42%, transparent),
-      inset 0 1px 0 color-mix(in srgb, #fdf6e3 32%, transparent),
-      inset 0 -1px 2px color-mix(in srgb, #3a342f 35%, transparent);
+      0 2px 6px color-mix(in srgb, var(--st-neu-accent) 42%, transparent),
+      inset 0 1px 0 color-mix(in srgb, var(--st-neu-text) 32%, transparent),
+      inset 0 -1px 2px color-mix(in srgb, var(--st-neu-dark) 35%, transparent);
   }
 
   /** Spinners — círculo inset neumórfico */
   .settings-view-scope .jira-integration-spinner-shell {
-    border: 1px solid color-mix(in srgb, #3a342f 42%, transparent);
-    background: color-mix(in srgb, #3a342f 22%, #4b433d);
+    border: 1px solid color-mix(in srgb, var(--st-neu-dark) 42%, transparent);
+    background: color-mix(in srgb, var(--st-neu-dark) 22%, var(--st-neu-bg));
     box-shadow: var(--leve-neu-inset);
   }
 
@@ -1990,14 +2038,14 @@
 
   /** Botão desconectar — danger neumórfico */
   .settings-view-scope .jira-integration-disconnect-btn {
-    border: 1px solid color-mix(in srgb, oklch(var(--er)) 32%, #5c524b) !important;
-    background: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
+    border: 1px solid color-mix(in srgb, oklch(var(--er)) 32%, var(--st-neu-dark)) !important;
+    background: color-mix(in srgb, var(--st-neu-dark) 10%, var(--st-neu-bg)) !important;
     color: oklch(var(--er)) !important;
     box-shadow: var(--st-neu-raised) !important;
   }
 
   .settings-view-scope .jira-integration-disconnect-btn:hover:not(:disabled) {
-    border-color: color-mix(in srgb, oklch(var(--er)) 45%, #5c524b) !important;
+    border-color: color-mix(in srgb, oklch(var(--er)) 45%, var(--st-neu-dark)) !important;
     color: oklch(var(--er)) !important;
     box-shadow: var(--st-neu-raised) !important;
   }
@@ -2009,14 +2057,14 @@
 
   /** Links / ações secundárias — pill neumórfica */
   .settings-view-scope .jira-integration-link-pill {
-    border: 1px solid color-mix(in srgb, #5c524b 38%, transparent);
-    background: color-mix(in srgb, #5c524b 10%, #4b433d);
+    border: 1px solid color-mix(in srgb, var(--st-neu-dark) 38%, transparent);
+    background: color-mix(in srgb, var(--st-neu-dark) 10%, var(--st-neu-bg));
     box-shadow: var(--st-neu-inset);
     text-decoration: none;
   }
 
   .settings-view-scope .jira-integration-link-pill:hover {
-    color: #e65100 !important;
+    color: var(--st-neu-accent) !important;
     box-shadow: var(--st-neu-raised);
   }
 
@@ -2031,9 +2079,9 @@
   }
 
   .settings-view-scope .jira-integration-status-badge--connected {
-    border-color: color-mix(in srgb, #10b981 35%, #5c524b) !important;
-    background: color-mix(in srgb, #10b981 12%, #4b433d) !important;
-    color: #6ee7b7 !important;
+    border-color: color-mix(in srgb, #10b981 35%, var(--st-neu-dark)) !important;
+    background: color-mix(in srgb, #10b981 12%, var(--st-neu-bg)) !important;
+    color: #047857 !important;
   }
 
   .settings-view-scope .jira-integration-status-badge--connected span[aria-hidden] {
@@ -2041,13 +2089,13 @@
   }
 
   .settings-view-scope .jira-integration-status-badge--disconnected {
-    border-color: color-mix(in srgb, #5c524b 42%, transparent) !important;
-    background: color-mix(in srgb, #3a342f 18%, #4b433d) !important;
+    border-color: color-mix(in srgb, var(--st-neu-dark) 42%, transparent) !important;
+    background: color-mix(in srgb, var(--st-neu-dark) 18%, var(--st-neu-bg)) !important;
     color: var(--st-neu-text-muted) !important;
   }
 
   .settings-view-scope .jira-integration-status-badge--disconnected span[aria-hidden] {
-    background: rgba(245, 241, 230, 0.55) !important;
+    background: color-mix(in srgb, var(--st-neu-text) 55%, transparent) !important;
   }
 
   /** Botão importar — desabilitado “afundado” (sem sombra elevada) */
@@ -2055,9 +2103,9 @@
   .settings-view-scope .jira-integration-save-btn:disabled {
     opacity: 0.72;
     transform: translateY(1px);
-    border-color: color-mix(in srgb, #5c524b 38%, transparent) !important;
-    background: color-mix(in srgb, #3a342f 28%, #4b433d) !important;
-    color: rgba(245, 241, 230, 0.55) !important;
+    border-color: color-mix(in srgb, var(--st-neu-dark) 38%, transparent) !important;
+    background: color-mix(in srgb, var(--st-neu-dark) 28%, var(--st-neu-bg)) !important;
+    color: color-mix(in srgb, var(--st-neu-text) 55%, transparent) !important;
     box-shadow: none !important;
     filter: none;
   }
@@ -2065,74 +2113,74 @@
   /** Rodapé do modal — separador com profundidade */
   .settings-view-scope .jira-integration-modal-footer,
   :is(.settings-neu-modal) .jira-integration-modal-footer {
-    border-top: 1px solid color-mix(in srgb, #3a342f 48%, transparent);
-    box-shadow: inset 0 1px 0 color-mix(in srgb, #5c524b 22%, transparent);
+    border-top: 1px solid color-mix(in srgb, var(--st-neu-dark) 48%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--st-neu-dark) 22%, transparent);
   }
 
   .settings-view-scope :is(.app-input, .input, .textarea, input)::placeholder {
-    color: rgba(245, 241, 230, 0.5) !important;
+    color: color-mix(in srgb, var(--st-neu-text) 50%, transparent) !important;
   }
 
   .settings-view-scope code,
   .settings-view-scope .leve-view-inline-code {
-    border: 1px solid color-mix(in srgb, #5c524b 35%, transparent);
-    background: color-mix(in srgb, #3a342f 22%, #4b433d) !important;
-    color: #fdf6e3 !important;
+    border: 1px solid color-mix(in srgb, var(--st-neu-dark) 35%, transparent);
+    background: color-mix(in srgb, var(--st-neu-dark) 22%, var(--st-neu-bg)) !important;
+    color: var(--st-neu-text) !important;
   }
 
   .settings-view-scope [role='status'] {
-    border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
-    background: color-mix(in srgb, #3a342f 18%, #4b433d) !important;
+    border: 1px solid color-mix(in srgb, var(--st-neu-dark) 42%, transparent) !important;
+    background: color-mix(in srgb, var(--st-neu-dark) 18%, var(--st-neu-bg)) !important;
     color: var(--st-neu-text-muted) !important;
     box-shadow: var(--st-neu-raised) !important;
   }
 
   .settings-view-scope [role='status'].border-\[color-mix\(in_srgb\,\#10b981_35\%\,transparent\)\] {
     border-color: color-mix(in srgb, #10b981 35%, transparent) !important;
-    background: color-mix(in srgb, #10b981 12%, #4b433d) !important;
-    color: #6ee7b7 !important;
+    background: color-mix(in srgb, #10b981 12%, var(--st-neu-bg)) !important;
+    color: #047857 !important;
   }
 
   .settings-view-scope a[class*='text-[var(--leve-header-accent)]'],
   .settings-view-scope .leve-settings-link {
-    color: #e65100 !important;
+    color: var(--st-neu-accent) !important;
   }
 
   .settings-view-scope a[class*='text-[var(--leve-header-accent)]']:hover,
   .settings-view-scope .leve-settings-link:hover {
-    color: color-mix(in srgb, #e65100 85%, #fdf6e3) !important;
+    color: color-mix(in srgb, var(--st-neu-accent) 85%, var(--st-neu-text)) !important;
   }
 
   .settings-view-scope .border-t,
   .settings-view-scope [class*='border-[color-mix'] {
-    border-color: color-mix(in srgb, #5c524b 38%, transparent) !important;
+    border-color: color-mix(in srgb, var(--st-neu-dark) 38%, transparent) !important;
   }
 
   /* Chave API configurada (Gemini) — painel inset + ações elevadas */
   .settings-view-scope .settings-neu-configured-panel {
-    border: 1px solid color-mix(in srgb, #3a342f 48%, transparent) !important;
-    background: color-mix(in srgb, #3a342f 24%, #4b433d) !important;
+    border: 1px solid color-mix(in srgb, var(--st-neu-dark) 48%, transparent) !important;
+    background: color-mix(in srgb, var(--st-neu-dark) 24%, var(--st-neu-bg)) !important;
     box-shadow: var(--st-neu-inset-deep) !important;
-    color: rgba(245, 241, 230, 0.72);
+    color: var(--st-neu-text-muted);
   }
 
   .settings-view-scope .settings-neu-kbd {
-    border: 1px solid color-mix(in srgb, #3a342f 42%, transparent) !important;
-    background: color-mix(in srgb, #3a342f 28%, #4b433d) !important;
+    border: 1px solid color-mix(in srgb, var(--st-neu-dark) 42%, transparent) !important;
+    background: color-mix(in srgb, var(--st-neu-dark) 28%, var(--st-neu-bg)) !important;
     box-shadow: var(--st-neu-inset) !important;
-    color: #fdf6e3 !important;
+    color: var(--st-neu-text) !important;
   }
 
   .settings-view-scope .settings-neu-action-btn {
-    border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
-    background: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
-    color: #fdf6e3 !important;
+    border: 1px solid color-mix(in srgb, var(--st-neu-dark) 42%, transparent) !important;
+    background: color-mix(in srgb, var(--st-neu-dark) 10%, var(--st-neu-bg)) !important;
+    color: var(--st-neu-text) !important;
     box-shadow: var(--st-neu-raised) !important;
   }
 
   .settings-view-scope .settings-neu-action-btn:hover:not(:disabled) {
-    color: #e65100 !important;
-    border-color: color-mix(in srgb, #e65100 32%, #5c524b) !important;
+    color: var(--st-neu-accent) !important;
+    border-color: color-mix(in srgb, var(--st-neu-accent) 32%, var(--st-neu-dark)) !important;
   }
 
   .settings-view-scope .settings-neu-action-btn:active:not(:disabled) {
@@ -2142,7 +2190,7 @@
 
   .settings-view-scope .settings-neu-remove-btn:hover:not(:disabled) {
     color: oklch(var(--er)) !important;
-    border-color: color-mix(in srgb, oklch(var(--er)) 38%, #5c524b) !important;
+    border-color: color-mix(in srgb, oklch(var(--er)) 38%, var(--st-neu-dark)) !important;
   }
 
   /** Modal de detalhe da tarefa (Resumo, BDD, Testes…) — paleta clara neumórfica. */
@@ -3814,8 +3862,23 @@
     cursor: not-allowed;
   }
 
-  /** Painel flutuante (dropdown, resultados de busca) — neumorfismo escuro (portal em body). */
+  /** Painel flutuante (dropdown, resultados de busca) — neumorfismo claro (portal em body). */
   .app-menu-panel {
+    --app-menu-bg: var(--modal-neu-shell-bg, #ebe6de);
+    --app-menu-surface: color-mix(in srgb, var(--modal-neu-border, #ded7cd) 12%, var(--modal-neu-bg, #f2eee8));
+    --app-menu-text: var(--modal-neu-text, #401c31);
+    --app-menu-text-muted: var(--modal-neu-text-muted, #6b5e5e);
+    --app-menu-accent: var(--modal-neu-accent, #ff5c1b);
+    --app-menu-border: color-mix(in srgb, var(--modal-neu-border, #ded7cd) 86%, transparent);
+    --app-menu-raised:
+      5px 5px 12px color-mix(in srgb, var(--modal-neu-border, #ded7cd) 62%, transparent),
+      -3px -3px 8px color-mix(in srgb, var(--modal-neu-light, #ffffff) 45%, var(--modal-neu-bg, #f2eee8));
+    --app-menu-inset:
+      inset 4px 4px 10px color-mix(in srgb, var(--modal-neu-border, #ded7cd) 56%, transparent),
+      inset -3px -3px 8px color-mix(in srgb, var(--modal-neu-light, #ffffff) 22%, var(--modal-neu-surface, #e5dfd5));
+    --app-menu-hover:
+      7px 7px 18px color-mix(in srgb, var(--modal-neu-border, #ded7cd) 68%, transparent),
+      -5px -5px 12px color-mix(in srgb, var(--modal-neu-light, #ffffff) 55%, var(--modal-neu-bg, #f2eee8));
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
@@ -3834,7 +3897,7 @@
     color: var(--app-menu-text);
   }
 
-  /** Item de lista / opção de menu — pill neumórfico escuro. */
+  /** Item de lista / opção de menu — pill neumórfico claro. */
   .app-menu-item {
     display: flex;
     width: 100%;
@@ -3860,6 +3923,7 @@
 
   .app-menu-item:hover:not(:disabled) {
     color: var(--app-menu-accent);
+    border-color: color-mix(in srgb, var(--app-menu-accent) 30%, var(--app-menu-border));
     box-shadow: var(--app-menu-hover);
   }
 
@@ -3899,6 +3963,21 @@
   /** Menus DaisyUI (dropdown-content menu) — mesma paleta das listas flutuantes. */
   .app-page .menu,
   .dropdown-content.menu {
+    --app-menu-bg: var(--modal-neu-shell-bg, #ebe6de);
+    --app-menu-surface: color-mix(in srgb, var(--modal-neu-border, #ded7cd) 12%, var(--modal-neu-bg, #f2eee8));
+    --app-menu-text: var(--modal-neu-text, #401c31);
+    --app-menu-text-muted: var(--modal-neu-text-muted, #6b5e5e);
+    --app-menu-accent: var(--modal-neu-accent, #ff5c1b);
+    --app-menu-border: color-mix(in srgb, var(--modal-neu-border, #ded7cd) 86%, transparent);
+    --app-menu-raised:
+      5px 5px 12px color-mix(in srgb, var(--modal-neu-border, #ded7cd) 62%, transparent),
+      -3px -3px 8px color-mix(in srgb, var(--modal-neu-light, #ffffff) 45%, var(--modal-neu-bg, #f2eee8));
+    --app-menu-inset:
+      inset 4px 4px 10px color-mix(in srgb, var(--modal-neu-border, #ded7cd) 56%, transparent),
+      inset -3px -3px 8px color-mix(in srgb, var(--modal-neu-light, #ffffff) 22%, var(--modal-neu-surface, #e5dfd5));
+    --app-menu-hover:
+      7px 7px 18px color-mix(in srgb, var(--modal-neu-border, #ded7cd) 68%, transparent),
+      -5px -5px 12px color-mix(in srgb, var(--modal-neu-light, #ffffff) 55%, var(--modal-neu-bg, #f2eee8));
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
@@ -6007,4 +6086,178 @@ main:has(.projects-dashboard-page-surface) {
 .app-dark-page-surface .dashboard-neu-scope .dashboard-empty-state-shell .font-body,
 .app-dark-page-surface.dashboard-neu-scope .dashboard-empty-state-shell .font-body {
   color: var(--leve-header-text-muted) !important;
+}
+
+/* ============================================================
+   Escopos de superfície do workspace.
+   Use `.workspace-surface-light` em telas claras (LandingPage / Jira x Solus /
+   Projetos) e `.workspace-surface-dark` em telas internas escuras
+   (ProjectView / Tarefas / Dashboard interno).
+   ============================================================ */
+:is(.workspace-surface-dark, [data-workspace-surface='dark']) {
+  --workspace-panel-bg: #4b433d;
+  --workspace-panel-neu-shadow: #3a342f;
+  --workspace-panel-neu-highlight-inset: #5c524b;
+  --workspace-panel-neu-highlight-raised: #fdf6e3;
+  --workspace-panel-neu-highlight: var(--workspace-panel-neu-highlight-raised);
+  --workspace-panel-neu-light: color-mix(in srgb, var(--workspace-panel-neu-highlight-inset) 55%, var(--workspace-panel-bg));
+  --workspace-panel-neu-dark: var(--workspace-panel-neu-shadow);
+  --workspace-panel-neu-raised:
+    6px 6px 16px color-mix(in srgb, var(--workspace-panel-neu-shadow) 52%, transparent),
+    -4px -4px 10px color-mix(in srgb, var(--workspace-panel-neu-highlight-inset) 28%, var(--workspace-panel-bg));
+  --workspace-panel-neu-inset:
+    inset 5px 5px 10px var(--workspace-panel-neu-shadow),
+    inset -4px -4px 8px var(--workspace-panel-neu-highlight-inset);
+  --workspace-panel-neu-inset-deep:
+    inset 6px 6px 12px var(--workspace-panel-neu-shadow),
+    inset -5px -5px 10px var(--workspace-panel-neu-highlight-inset);
+  --workspace-panel-text: #f5f1e6;
+  --workspace-panel-text-muted: rgba(245, 241, 230, 0.72);
+  --workspace-panel-accent: #e65100;
+  --workspace-panel-border: rgba(245, 241, 230, 0.14);
+  --workspace-panel-chip: rgba(245, 241, 230, 0.08);
+  --workspace-panel-divider: rgba(245, 241, 230, 0.18);
+  --workspace-panel-badge-bg: #e65100;
+  --workspace-panel-badge-text: #f5f1e6;
+  --workspace-panel-badge-neutral-bg: rgba(245, 241, 230, 0.14);
+  --workspace-panel-badge-neutral-text: #f5f1e6;
+}
+
+:is(.workspace-surface-light, [data-workspace-surface='light']) {
+  /* Paleta neumórfica idêntica à LandingPage (app-surface / --leve-neu-*):
+     superfície quase branca, sombras suaves (9% preto) e bordas claras. */
+  --workspace-panel-bg: #f8f9fa;
+  --workspace-panel-neu-shadow: color-mix(in srgb, black 9%, #f8f9fa);
+  --workspace-panel-neu-highlight-inset: color-mix(in srgb, white 80%, #f8f9fa);
+  --workspace-panel-neu-highlight-raised: #ffffff;
+  --workspace-panel-neu-highlight: #ffffff;
+  /* Compostos re-resolvidos aqui (var() é "achatado" onde declarado): sem isso,
+     herdariam os hex escuros do :root e manteriam sombras/fundos escuros. */
+  --workspace-panel-neu-light: color-mix(in srgb, var(--workspace-panel-neu-highlight-inset) 55%, var(--workspace-panel-bg));
+  --workspace-panel-neu-dark: var(--workspace-panel-neu-shadow);
+  --workspace-panel-neu-raised:
+    6px 6px 16px color-mix(in srgb, var(--workspace-panel-neu-shadow) 45%, transparent),
+    -4px -4px 12px color-mix(in srgb, var(--workspace-panel-neu-highlight-inset) 60%, var(--workspace-panel-bg));
+  --workspace-panel-neu-inset:
+    inset 4px 4px 10px color-mix(in srgb, var(--workspace-panel-neu-shadow) 70%, transparent),
+    inset -3px -3px 8px color-mix(in srgb, var(--workspace-panel-neu-highlight-inset) 70%, var(--workspace-panel-bg));
+  --workspace-panel-neu-inset-deep:
+    inset 6px 6px 12px var(--workspace-panel-neu-shadow),
+    inset -5px -5px 10px var(--workspace-panel-neu-highlight-inset);
+  --workspace-panel-text: #4f2557;
+  --workspace-panel-text-muted: rgba(79, 37, 87, 0.7);
+  --workspace-panel-accent: #e65100;
+  --workspace-panel-border: color-mix(in srgb, white 55%, transparent);
+  --workspace-panel-chip: rgba(79, 37, 87, 0.05);
+  --workspace-panel-divider: rgba(79, 37, 87, 0.1);
+  --workspace-panel-badge-bg: #4f2557;
+  --workspace-panel-badge-text: #f5f1e6;
+  --workspace-panel-badge-neutral-bg: rgba(79, 37, 87, 0.08);
+  --workspace-panel-badge-neutral-text: #4f2557;
+}
+
+/* Painel lateral (métricas + alertas) — superfície clara.
+   Redefine as variáveis que a regra escura aplica diretamente no painel. */
+.projects-dash-page:is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dashboard-sidebar-panel {
+  --workspace-panel-bg: #f8f9fa;
+  --workspace-panel-neu-shadow: color-mix(in srgb, black 9%, #f8f9fa);
+  --workspace-panel-neu-highlight-inset: color-mix(in srgb, white 80%, #f8f9fa);
+  --workspace-panel-neu-highlight-raised: #ffffff;
+  border: 1px solid color-mix(in srgb, white 55%, transparent);
+  background-color: var(--workspace-panel-bg) !important;
+  background-image: none !important;
+  color: var(--workspace-panel-text);
+  box-shadow: var(--workspace-panel-neu-raised) !important;
+}
+
+.projects-dash-page:is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dashboard-sidebar-panel .workspace-panel-neu-metric-tile {
+  background-color: color-mix(in srgb, var(--workspace-panel-neu-dark) 10%, var(--workspace-panel-bg)) !important;
+  background-image: none !important;
+  box-shadow: var(--workspace-panel-neu-inset) !important;
+}
+
+.projects-dash-page:is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dashboard-sidebar-panel .workspace-panel-neu-icon-wrap {
+  background-color: #ffffff !important;
+  color: var(--workspace-panel-accent);
+  box-shadow: var(--workspace-panel-neu-raised) !important;
+}
+
+.projects-dash-page:is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dashboard-sidebar-panel .workspace-panel-neu-value-badge {
+  background-color: var(--workspace-panel-accent) !important;
+  color: #ffffff;
+  box-shadow: var(--workspace-panel-neu-raised) !important;
+}
+
+.projects-dash-page:is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dashboard-sidebar-panel .workspace-panel-neu-dist-track {
+  background-color: color-mix(in srgb, var(--workspace-panel-neu-dark) 12%, var(--workspace-panel-bg)) !important;
+  box-shadow: var(--workspace-panel-neu-inset) !important;
+}
+
+.projects-dash-page:is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dashboard-sidebar-panel [id='consolidated-metrics-heading'],
+.projects-dash-page:is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dashboard-sidebar-panel [id='task-dist-heading'] {
+  color: var(--workspace-panel-accent);
+  border-bottom-color: color-mix(in srgb, var(--workspace-panel-accent) 35%, transparent);
+}
+
+/* Grupo segmentado de filtros rápidos — claro */
+:is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dash-quick-filters-toolbar {
+  border-color: var(--workspace-panel-border);
+  background: color-mix(in srgb, var(--workspace-panel-neu-dark) 12%, var(--workspace-panel-bg));
+  box-shadow: var(--workspace-panel-neu-inset);
+}
+
+:is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dash-quick-filters-divider {
+  background: var(--workspace-panel-divider);
+}
+
+:is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dash-quick-filters-pill {
+  border: 1px solid color-mix(in srgb, var(--workspace-panel-border) 80%, transparent);
+  background: var(--workspace-panel-bg);
+  color: var(--workspace-panel-text-muted);
+  box-shadow: var(--workspace-panel-neu-raised);
+}
+
+:is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dash-quick-filters-pill:hover:not(:disabled) {
+  color: var(--workspace-panel-text);
+}
+
+:is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dash-quick-filters-pill--active {
+  border-color: transparent;
+  background: var(--workspace-panel-accent);
+  color: #ffffff;
+  box-shadow: var(--workspace-panel-neu-raised);
+}
+
+/* CTA / pills ativos (ex.: "Adicionar Tarefa", abas e filtros ativos) — laranja
+   padrão, alinhado aos demais botões primários (em vez do roxo de badge). */
+:is(.workspace-surface-light, [data-workspace-surface='light']) .workspace-chrome-pill-active {
+  border-color: transparent;
+  background: var(--workspace-panel-accent);
+  color: #ffffff;
+}
+
+:is(.workspace-surface-light, [data-workspace-surface='light']) .workspace-chrome-pill-active:hover:not(:disabled) {
+  color: #ffffff;
+}
+
+/* Dashboard interno — Atividades recentes (shell + tiles claros) */
+:is(.workspace-surface-light, [data-workspace-surface='light']) .dashboard-neu-scope .recent-activity-shell.workspace-panel-neu-shell {
+  border: 1px solid color-mix(in srgb, var(--workspace-panel-border) 90%, transparent);
+  background-color: var(--workspace-panel-bg) !important;
+  color: var(--workspace-panel-text);
+  box-shadow: var(--workspace-panel-neu-raised) !important;
+}
+
+:is(.workspace-surface-light, [data-workspace-surface='light']) .dashboard-neu-scope .recent-activity-item.workspace-panel-neu-metric-tile {
+  border: 1px solid color-mix(in srgb, var(--workspace-panel-border) 75%, transparent);
+  background-color: var(--workspace-panel-neu-highlight-raised) !important;
+  box-shadow: var(--workspace-panel-neu-raised) !important;
+}
+
+:is(.workspace-surface-light, [data-workspace-surface='light']) .dashboard-neu-scope .recent-activity-item.workspace-panel-neu-metric-tile:hover {
+  border-color: color-mix(in srgb, var(--workspace-panel-accent) 22%, transparent);
+  box-shadow:
+    7px 7px 18px color-mix(in srgb, var(--workspace-panel-neu-shadow) 45%, transparent),
+    -5px -5px 12px color-mix(in srgb, var(--workspace-panel-neu-highlight-inset) 55%, var(--workspace-panel-bg)),
+    0 0 0 1px color-mix(in srgb, var(--workspace-panel-accent) 14%, transparent) !important;
 }

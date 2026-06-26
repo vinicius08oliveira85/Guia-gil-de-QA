@@ -5,7 +5,7 @@ import App from '../../App';
 import { useProjectsStore } from '../../store/projectsStore';
 import type { Project } from '../../types';
 import { createDbMocks, createMockProject } from './mocks';
-import { resetStore } from './helpers';
+import { resetStore, setInitialRoute } from './helpers';
 import { wireDbServiceMocks, wireSupabaseLoadMock } from './wireDbServiceMocks';
 import * as dbService from '../../services/dbService';
 
@@ -105,9 +105,10 @@ describe('Testes de UX', () => {
 
   describe('4.2 Feedback Visual', () => {
     it('deve exibir toast de sucesso ao criar projeto', async () => {
+      setInitialRoute('/projects');
       render(<App />);
       await waitFor(() => {
-        expect(screen.getByText(/Meus Projetos/i)).toBeInTheDocument();
+        expect(screen.getByText(/Projetos \(Testes\)/i)).toBeInTheDocument();
       });
 
       const store = useProjectsStore.getState();
@@ -177,9 +178,10 @@ describe('Testes de UX', () => {
     });
 
     it('deve anunciar mudanças de estado para screen readers', async () => {
+      setInitialRoute('/projects');
       render(<App />);
       await waitFor(() => {
-        expect(screen.getByText(/Meus Projetos/i)).toBeInTheDocument();
+        expect(screen.getByText(/Projetos \(Testes\)/i)).toBeInTheDocument();
       });
 
       await useProjectsStore.getState().createProject('Projeto Acessível', 'Descrição');

@@ -10,6 +10,7 @@ export interface AppSelectProps {
   children: React.ReactNode;
   'aria-label'?: string;
   placeholder?: string;
+  title?: string;
 }
 
 function optionsFromChildren(children: React.ReactNode): NeuSelectOption[] {

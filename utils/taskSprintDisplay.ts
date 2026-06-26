@@ -116,7 +116,7 @@ export function groupBacklogRootsBySprint<T extends JiraTask>(
 
   const groups = Array.from(map.values());
   for (const group of groups) {
-    group.tasks.sort(taskComparator);
+    (group.tasks as T[]).sort(taskComparator);
   }
   groups.sort(compareBacklogSprintGroups);
   return groups;

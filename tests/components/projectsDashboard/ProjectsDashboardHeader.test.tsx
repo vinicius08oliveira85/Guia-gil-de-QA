@@ -17,8 +17,8 @@ describe('ProjectsDashboardHeader', () => {
 
   it('expõe região nomeada pelo título para leitores de tela', () => {
     render(<ProjectsDashboardHeader {...baseProps} />);
-    expect(screen.getByRole('region', { name: /Meus Projetos/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1, name: /Meus Projetos/i })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: /Projetos \(Testes\)/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: /Projetos \(Testes\)/i })).toBeInTheDocument();
   });
 
   it('agrupa meta do workspace com rótulo acessível', () => {

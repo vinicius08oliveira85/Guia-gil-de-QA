@@ -1,28 +1,6 @@
 import * as React from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '../../utils/cn';
-import { headerNeuChipIdleClass } from './headerNeuUi';
-
-const buttonVariants = {
-  initial: {
-    gap: 0,
-    paddingLeft: '.5rem',
-    paddingRight: '.5rem',
-  },
-  animate: (isExpanded: boolean) => ({
-    gap: isExpanded ? '.5rem' : 0,
-    paddingLeft: isExpanded ? '.75rem' : '.5rem',
-    paddingRight: isExpanded ? '.75rem' : '.5rem',
-  }),
-};
-
-const spanVariants = {
-  initial: { width: 0, opacity: 0 },
-  animate: { width: 'auto', opacity: 1 },
-  exit: { width: 0, opacity: 0 },
-};
-
-const transition = { delay: 0.1, type: 'spring' as const, bounce: 0, duration: 0.6 };
+import { headerNeuToolbarPillSecondaryClass } from './headerNeuUi';
 
 export interface ExpansibleButtonProps {
   icon: React.ReactNode;
@@ -39,7 +17,8 @@ export interface ExpansibleButtonProps {
 }
 
 /**
- * Botão que mostra apenas o ícone quando recolhido e expande animadamente para exibir o texto ao lado.
+ * Botão estático com ícone + rótulo sempre visíveis (sem expansão no hover).
+ * Mantém a interface de props anterior por compatibilidade com o Header.
  */
 export const ExpansibleButton: React.FC<ExpansibleButtonProps> = ({
   icon,
@@ -54,8 +33,6 @@ export const ExpansibleButton: React.FC<ExpansibleButtonProps> = ({
   neuVariant = 'default',
 }) => {
   const isHeaderNeu = neuVariant === 'header';
-  const [isHovered, setIsHovered] = React.useState(false);
-  const isLabelVisible = isHovered;
 
   const handleClick = () => {
     onExpandedChange?.(!isExpanded);
@@ -63,49 +40,27 @@ export const ExpansibleButton: React.FC<ExpansibleButtonProps> = ({
   };
 
   return (
-    <motion.button
+    <button
       title={title}
       type="button"
-      variants={buttonVariants}
-      initial={false}
-      animate="animate"
-      custom={isLabelVisible}
-      transition={transition}
       onClick={handleClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       disabled={disabled}
       aria-label={ariaLabel ?? label}
-      aria-pressed={isExpanded}
       className={cn(
         isHeaderNeu
-          ? cn(headerNeuChipIdleClass, 'gap-0 py-1.5 sm:justify-start', isExpanded && 'app-header-neu-chip--active')
+          ? headerNeuToolbarPillSecondaryClass
           : cn(
-              'btn btn-ghost relative flex min-h-[44px] min-w-[44px] items-center justify-center gap-0 overflow-visible rounded-full py-1.5 text-xs font-semibold sm:justify-start',
+              'btn btn-ghost relative flex min-h-[44px] items-center justify-start gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold',
               'text-[color-mix(in_srgb,var(--foreground)_68%,transparent)]',
               'hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] hover:text-[var(--foreground)]',
               'border-0 outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[oklch(var(--p))]'
             ),
-        'disabled:cursor-not-allowed disabled:opacity-50',
         className
       )}
     >
       <span className="flex-shrink-0">{icon}</span>
-      <AnimatePresence initial={false}>
-        {isLabelVisible && (
-          <motion.span
-            variants={spanVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            transition={transition}
-            className="overflow-hidden whitespace-nowrap"
-          >
-            {label}
-          </motion.span>
-        )}
-      </AnimatePresence>
-    </motion.button>
+      <span className="whitespace-nowrap">{label}</span>
+    </button>
   );
 };
 

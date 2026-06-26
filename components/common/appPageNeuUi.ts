@@ -6,6 +6,12 @@ import { cn } from '../../utils/cn';
  */
 export const appDarkPageSurfaceClass = 'app-dark-page-surface';
 
+/** Escopo explícito para tokens claros de workspace (LandingPage / Jira x Solus / Projetos). */
+export const workspaceSurfaceLightClass = 'workspace-surface-light';
+
+/** Escopo explícito para tokens escuros de workspace (ProjectView / Tarefas / Dashboard interno). */
+export const workspaceSurfaceDarkClass = 'workspace-surface-dark';
+
 /** Faixa hero (dashboard-hero-chrome): título, KPIs, filtros. */
 export const appDarkHeroChromeMarkerClass = 'app-dark-hero-chrome';
 

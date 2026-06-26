@@ -6,6 +6,22 @@ import { isValidJiraKey } from '../../utils/jiraFieldMapper';
 export type GetJiraIssuesOptions = {
   /** IDs do custom field Sprint (ex.: customfield_10020) para forçar retorno na busca JQL. */
   sprintFieldIds?: string[];
+  /** JQL customizado (ex.: fila do Jira Service Management). */
+  jql?: string;
+};
+
+export const getJiraIssuesByJql = async (
+  config: JiraConfig,
+  jql: string,
+  maxResults?: number,
+  onProgress?: (current: number, total?: number) => void,
+  options?: Omit<GetJiraIssuesOptions, 'jql'>
+): Promise<JiraIssue[]> => {
+  const trimmedJql = jql.trim();
+  if (!trimmedJql) {
+    throw new Error('JQL inválido para busca de issues.');
+  }
+  return getJiraIssues(config, '', maxResults, onProgress, { ...options, jql: trimmedJql });
 };
 
 export const getJiraIssues = async (
@@ -15,7 +31,12 @@ export const getJiraIssues = async (
   onProgress?: (current: number, total?: number) => void,
   options?: GetJiraIssuesOptions
 ): Promise<JiraIssue[]> => {
-  const jql = `project = ${projectKey} ORDER BY created DESC`;
+  const jql =
+    options?.jql?.trim() ||
+    (projectKey ? `project = ${projectKey} ORDER BY created DESC` : '');
+  if (!jql) {
+    throw new Error('Informe o projeto ou um JQL para buscar issues.');
+  }
   const pageSize = 100;
   const CONCURRENT_REQUESTS = 4;
   const allIssues: JiraIssue[] = [];
@@ -82,7 +103,12 @@ export const getJiraIssues = async (
     return response;
   };
 
-  logger.info(`Buscando TODAS as issues do projeto ${projectKey}`, 'jiraService');
+  logger.info(
+    projectKey
+      ? `Buscando issues do projeto ${projectKey}`
+      : `Buscando issues via JQL: ${jql.slice(0, 120)}`,
+    'jiraService'
+  );
   const firstResponse = await fetchPage({ startAt: 0 }, 'Página 1');
   pushIssues(firstResponse.issues || [], firstResponse.total);
 
@@ -197,7 +223,9 @@ export const getJiraIssues = async (
   logger.debug(`Tipos encontrados no Jira: ${uniqueTypes.slice(0, 10).join(', ')}`, 'jiraService');
 
   logger.info(
-    `Total de issues buscadas: ${allIssues.length} para o projeto ${projectKey}`,
+    projectKey
+      ? `Total de issues buscadas: ${allIssues.length} para o projeto ${projectKey}`
+      : `Total de issues buscadas via JQL: ${allIssues.length}`,
     'jiraService'
   );
   logger.info(

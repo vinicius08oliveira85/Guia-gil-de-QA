@@ -152,7 +152,7 @@ export const ExportPreferences: React.FC = () => {
             <input
               type="text"
               value={newTemplateName}
-              onChange={v => setNewTemplateName(v)}
+              onChange={e => setNewTemplateName(e.target.value)}
               placeholder="Nome do template..."
               className={cn(leveSettingsInputClass, 'flex-1')}
               onKeyPress={e => e.key === 'Enter' && handleSaveTemplate()}
@@ -239,9 +239,9 @@ export const ExportPreferences: React.FC = () => {
                   <label className="mb-2 block text-sm text-[var(--leve-header-text-muted)]">Frequência</label>
                   <AppSelect
                     value={preferences.schedule?.frequency || 'daily'}
-                    onChange={e =>
+                    onChange={value =>
                       handleScheduleChange({
-                        frequency: e.target.value as 'daily' | 'weekly' | 'monthly',
+                        frequency: value as 'daily' | 'weekly' | 'monthly',
                       })
                     }
                     className={cn(leveSettingsSelectClass, 'w-full')}

@@ -80,7 +80,7 @@ export const ProjectTrailHeader: React.FC<ProjectTrailHeaderProps> = ({
             <AppSelect
               className="app-select h-10 min-h-0 text-sm"
               value={selectedVersion}
-              onChange={event => onVersionChange(event.target.value)}
+              onChange={onVersionChange}
             >
               {versionOptions.map(option => (
                 <option key={option} value={option}>

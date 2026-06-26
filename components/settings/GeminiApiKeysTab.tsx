@@ -227,7 +227,7 @@ export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChang
         <div className={settingsNeuConfiguredPanelClass}>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0 space-y-1">
-              <p className="font-sans text-sm font-medium text-[#fdf6e3]">Chave API configurada</p>
+              <p className="font-sans text-sm font-medium text-[var(--leve-header-text)]">Chave API configurada</p>
               <p className="break-all font-mono text-xs text-[rgba(245,241,230,0.72)]">
                 {apiKey && apiKey.length > 12
                   ? `${apiKey.substring(0, 8)}...${apiKey.substring(apiKey.length - 4)}`

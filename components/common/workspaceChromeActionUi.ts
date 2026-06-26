@@ -18,35 +18,38 @@ export const appNeuActionTrackWrapClass = cn(
 
 export const appNeuActionDividerClass = cn(
   'app-neu-action-divider my-1.5 w-px shrink-0 self-stretch',
-  'bg-[color-mix(in_srgb,#3a342f_65%,transparent)]'
+  'bg-[color-mix(in_srgb,var(--workspace-panel-border)_80%,transparent)]'
 );
 
-/** Botão elevado no trilho. */
+/**
+ * Botão elevado no trilho. A cor do texto segue o token da superfície
+ * (`--workspace-panel-text*` via `.workspace-chrome-pill`), garantindo contraste
+ * tanto em telas claras quanto escuras.
+ */
 export const appNeuActionBtnClass = cn(
   'workspace-chrome-pill app-neu-action-btn',
   'inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5',
-  'font-sans text-sm font-semibold text-[#fdf6e3]',
+  'font-sans text-sm font-semibold',
   'transition-[box-shadow,color,border-color] duration-200',
-  'hover:text-[#fdf6e3]',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,#e65100_35%,transparent)]',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--workspace-panel-accent)_35%,transparent)]',
   'disabled:cursor-not-allowed disabled:opacity-50'
 );
 
-/** Botão ativo / primário (laranja). */
+/** Botão ativo / primário (laranja) — texto de contraste via `--workspace-panel-badge-text`. */
 export const appNeuActionBtnActiveClass = cn(
   'workspace-chrome-pill-active app-neu-action-btn--active',
   'inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5',
-  'font-sans text-sm font-bold text-[#fdf6e3]',
+  'font-sans text-sm font-bold',
   'transition-[filter,transform,box-shadow] duration-150',
   'hover:brightness-110',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,#e65100_45%,transparent)]',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--workspace-panel-accent)_45%,transparent)]',
   'disabled:cursor-not-allowed disabled:opacity-50'
 );
 
 /** Círculo do ícone com borda e glow laranja. */
 export const appNeuActionIconWrapClass = cn(
   'app-neu-action-icon-wrap dashboard-neu-filter-icon-wrap',
-  'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#e65100]'
+  'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[var(--workspace-panel-accent)]'
 );
 
 export const appNeuActionIconClass = 'h-3.5 w-3.5 shrink-0';

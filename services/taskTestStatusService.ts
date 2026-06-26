@@ -457,7 +457,6 @@ const getSubtasksByParentId = (allTasks: JiraTask[]): Map<string, JiraTask[]> =>
 export const hasLinkedSubtasks = (task: JiraTask, allTasks: readonly JiraTask[]): boolean => {
   const taskKey = task.id?.trim();
   if (!taskKey) return false;
-  if ((task.children?.length ?? 0) > 0) return true;
   return allTasks.some(t => t.parentId?.trim() === taskKey);
 };
 

@@ -1,7 +1,7 @@
 import type { JiraConfig } from './types';
 import { logger } from '../../utils/logger';
 
-type JiraApiRoot = 'api/3' | 'agile/1.0';
+type JiraApiRoot = 'api/3' | 'agile/1.0' | 'servicedeskapi';
 
 async function jiraRequest<T>(
   config: JiraConfig,
@@ -88,3 +88,9 @@ export const jiraAgileApiCall = async <T>(
   endpoint: string,
   options: { method?: string; body?: unknown; timeout?: number } = {}
 ): Promise<T> => jiraRequest<T>(config, endpoint, { ...options, apiRoot: 'agile/1.0' });
+
+export const jiraServiceDeskApiCall = async <T>(
+  config: JiraConfig,
+  endpoint: string,
+  options: { method?: string; body?: unknown; timeout?: number } = {}
+): Promise<T> => jiraRequest<T>(config, endpoint, { ...options, apiRoot: 'servicedeskapi' });

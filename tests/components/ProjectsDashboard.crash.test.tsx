@@ -1,17 +1,28 @@
 import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { ProjectsDashboard } from '../../components/ProjectsDashboard';
 import type { JiraTask, Project } from '../../types';
 
 const baseProject: Project = {
   id: 'p1',
   name: 'Projeto Teste',
+  description: '',
+  businessRules: [],
   createdAt: '2024-01-01',
   updatedAt: '2024-01-02',
   tasks: [],
   documents: [],
   phases: [],
 };
+
+function renderDashboard(projects: Project[]) {
+  return render(
+    <MemoryRouter>
+      <ProjectsDashboard projects={projects} onCreateProject={async () => {}} />
+    </MemoryRouter>
+  );
+}
 
 function task(overrides: Partial<JiraTask>): JiraTask {
   return {
@@ -32,15 +43,7 @@ describe('ProjectsDashboard — dados corrompidos', () => {
       },
     ];
 
-    expect(() =>
-      render(
-        <ProjectsDashboard
-          projects={projects}
-          onSelectProject={() => {}}
-          onCreateProject={async () => {}}
-        />
-      )
-    ).not.toThrow();
+    expect(() => renderDashboard(projects)).not.toThrow();
   });
 
   it('não quebra com categoria de regra numérica', () => {
@@ -58,15 +61,7 @@ describe('ProjectsDashboard — dados corrompidos', () => {
       },
     ];
 
-    expect(() =>
-      render(
-        <ProjectsDashboard
-          projects={projects}
-          onSelectProject={() => {}}
-          onCreateProject={async () => {}}
-        />
-      )
-    ).not.toThrow();
+    expect(() => renderDashboard(projects)).not.toThrow();
   });
 
   it('não quebra com environment numérico em caso de teste', () => {
@@ -91,14 +86,6 @@ describe('ProjectsDashboard — dados corrompidos', () => {
       },
     ];
 
-    expect(() =>
-      render(
-        <ProjectsDashboard
-          projects={projects}
-          onSelectProject={() => {}}
-          onCreateProject={async () => {}}
-        />
-      )
-    ).not.toThrow();
+    expect(() => renderDashboard(projects)).not.toThrow();
   });
 });

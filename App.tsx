@@ -1,39 +1,40 @@
-import React, { useState, useCallback, useMemo, useEffect, useRef, Suspense } from 'react';
+import React, { useCallback, useEffect, useRef, Suspense } from 'react';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useNavigate,
+  useLocation,
+} from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { Project } from './types';
 import { Header } from './components/common/Header';
 import { OfflineBanner } from './components/common/OfflineBanner';
-import { Spinner } from './components/common/Spinner';
-import { ErrorBoundary } from './components/common/ErrorBoundary';
-import { SearchBar } from './components/common/SearchBar';
 import { useProjectsStore } from './store/projectsStore';
 import { useErrorHandler } from './hooks/useErrorHandler';
-import { useSearch, SearchResult } from './hooks/useSearch';
+import { useSearch } from './hooks/useSearch';
 import { useKeyboardShortcuts, SHORTCUTS } from './hooks/useKeyboardShortcuts';
 import { KeyboardShortcutsHelp } from './components/common/KeyboardShortcutsHelp';
-import { LoadingSkeleton } from './components/common/LoadingSkeleton';
 import { getExportPreferences } from './utils/preferencesService';
 import { startExportScheduler } from './utils/exportScheduler';
 import { useIsMobile } from './hooks/useIsMobile';
 import { useTheme } from './hooks/useTheme';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 import { logger } from './utils/logger';
-import { useRouterSync } from './hooks/useRouterSync';
+import { LandingPage } from './pages/LandingPage';
+import { ProjectViewPage } from './pages/ProjectViewPage';
+import { JiraSolusView } from './components/jiraSolus/JiraSolusView';
+import { LANDING_SECTIONS } from './components/landing/landingSections';
 import { isSupabaseAvailable } from './services/supabaseService';
 import { ProjectsDashboardSkeleton } from './components/projectsDashboard/ProjectsDashboardSkeleton';
 import { useAriaLive } from './hooks/useAriaLive';
-import { appDarkNeuRootClass, appDarkPageSurfaceClass } from './components/common/appPageNeuUi';
 import { cn } from './utils/cn';
+import { GlobalSearchDialog } from './components/common/GlobalSearchDialog';
+import { LoadingSkeleton } from './components/common/LoadingSkeleton';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 
-// Code splitting - Lazy loading de componentes pesados
-const ProjectView = lazyWithRetry(() =>
-  import('./components/ProjectView').then(m => ({ default: m.ProjectView }))
-);
 const ProjectsDashboard = lazyWithRetry(() =>
   import('./components/ProjectsDashboard').then(m => ({ default: m.ProjectsDashboard }))
-);
-const AdvancedSearch = lazyWithRetry(() =>
-  import('./components/common/AdvancedSearch').then(m => ({ default: m.AdvancedSearch }))
 );
 const SettingsView = lazyWithRetry(() =>
   import('./components/settings/SettingsView').then(m => ({ default: m.SettingsView }))
@@ -41,11 +42,9 @@ const SettingsView = lazyWithRetry(() =>
 
 let bootstrapSupabaseWarningLogged = false;
 
-const App: React.FC = () => {
-  // Tema global (fase atual: DaisyUI light fixo; outras opções permanecem no toggle para futuro)
+const AppContent: React.FC = () => {
   useTheme();
 
-  // Aviso único no bootstrap quando Supabase não está configurado (apenas IndexedDB será usado)
   useEffect(() => {
     if (bootstrapSupabaseWarningLogged) return;
     if (!isSupabaseAvailable()) {
@@ -57,15 +56,6 @@ const App: React.FC = () => {
     }
   }, []);
 
-  /** Portais (modais, menus) ficam em `body` — classe global para neumorfismo escuro. */
-  useEffect(() => {
-    document.body.classList.add(appDarkNeuRootClass);
-    return () => {
-      document.body.classList.remove(appDarkNeuRootClass);
-    };
-  }, []);
-
-  /** Remove entradas expiradas do cache de geração de testes (IndexedDB), em idle ou após breve atraso. */
   useEffect(() => {
     const run = () => {
       void import('./services/ai/testCaseGenerationCachePersistence').then(m =>
@@ -93,7 +83,6 @@ const App: React.FC = () => {
     };
   }, []);
 
-  // Estado global do store
   const {
     projects,
     selectedProjectId,
@@ -106,52 +95,44 @@ const App: React.FC = () => {
     selectProject,
   } = useProjectsStore();
 
-  // Estado local de UI
-  const [showSearch, setShowSearch] = useState(false);
-  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
+  const [showSearch, setShowSearch] = React.useState(false);
   const { handleError, handleSuccess } = useErrorHandler();
   const { searchQuery, setSearchQuery, debouncedSearchQuery, searchResults } = useSearch(projects);
   const { announce } = useAriaLive();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  /** Evita anúncio duplicado na primeira renderização após o loading. */
   const ariaNavReady = useRef(false);
   const prevSelectedProjectId = useRef<string | null | undefined>(undefined);
-  const prevShowSettings = useRef<boolean | undefined>(undefined);
+  const isSettings = location.pathname === '/settings';
 
   useEffect(() => {
     if (isLoading) return;
     if (!ariaNavReady.current) {
       ariaNavReady.current = true;
       prevSelectedProjectId.current = selectedProjectId;
-      prevShowSettings.current = showSettings;
       return;
     }
-    if (prevShowSettings.current !== showSettings) {
-      prevShowSettings.current = showSettings;
-      if (showSettings) {
-        announce('Configurações abertas.', 'polite');
-      } else {
-        announce('Saindo das configurações.', 'polite');
-      }
+    if (isSettings) {
+      announce('Configurações abertas.', 'polite');
     }
-  }, [isLoading, showSettings, announce]);
+  }, [isLoading, isSettings, announce]);
 
   useEffect(() => {
-    if (isLoading || showSettings) return;
+    if (isLoading || isSettings) return;
     if (!ariaNavReady.current) return;
     if (prevSelectedProjectId.current === selectedProjectId) return;
     prevSelectedProjectId.current = selectedProjectId;
     if (selectedProjectId) {
       const p = projects.find(x => x.id === selectedProjectId);
       announce(p ? `Projeto aberto: ${p.name}.` : 'Projeto selecionado.', 'polite');
-    } else {
+    } else if (location.pathname === '/projects') {
       announce('Lista de projetos.', 'polite');
     }
-  }, [isLoading, showSettings, selectedProjectId, projects, announce]);
+  }, [isLoading, isSettings, selectedProjectId, projects, announce, location.pathname]);
 
   const searchAnnounceReady = useRef(false);
-  const prevDebouncedSearch = useRef<string>('');
+  const prevDebouncedSearch = useRef('');
   useEffect(() => {
     if (isLoading) return;
     if (!showSearch) {
@@ -180,20 +161,24 @@ const App: React.FC = () => {
     );
   }, [isLoading, showSearch, debouncedSearchQuery, searchResults.length, announce]);
 
-  useRouterSync({
-    selectedProjectId,
-    projects,
-    showSettings,
-    setShowSettings,
-    selectProject,
-    isLoading,
-  });
+  useEffect(() => {
+    if (isLoading) return;
+    const pathParts = location.pathname.split('/').filter(Boolean);
+    const currentView = pathParts[0];
+    const currentId = pathParts[1];
 
-  // Carregar projetos ao montar
+    if (currentView === 'projects' && currentId) {
+      if (selectedProjectId !== currentId) {
+        selectProject(currentId);
+      }
+    } else if (currentView !== 'settings' && selectedProjectId) {
+      selectProject(null);
+    }
+  }, [location.pathname, selectedProjectId, selectProject, isLoading]);
+
   useEffect(() => {
     loadProjects().catch(error => {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      // Não mostrar erro se for apenas "nenhum projeto encontrado" - isso é normal
       if (
         !errorMessage.toLowerCase().includes('nenhum projeto') &&
         !errorMessage.toLowerCase().includes('no projects')
@@ -206,11 +191,9 @@ const App: React.FC = () => {
     });
   }, [loadProjects, handleError]);
 
-  // Tratar erros do store
   useEffect(() => {
     if (storeError) {
       const errorMessage = storeError instanceof Error ? storeError.message : String(storeError);
-      // Log detalhado do erro do store
       logger.error('Erro no store de projetos', 'App', {
         error: storeError,
         errorMessage,
@@ -223,14 +206,12 @@ const App: React.FC = () => {
 
   const isMobile = useIsMobile();
 
-  // Initialize export scheduler on app load
   useEffect(() => {
     const exportPrefs = getExportPreferences();
     if (exportPrefs.schedule?.enabled) {
       startExportScheduler(exportPrefs.schedule);
     }
 
-    // Listen for preference updates
     const handlePreferencesUpdate = () => {
       const updatedPrefs = getExportPreferences();
       if (updatedPrefs.schedule?.enabled) {
@@ -253,9 +234,8 @@ const App: React.FC = () => {
     [createProject, handleError, handleSuccess]
   );
 
-  // Ref para rastrear último projeto atualizado e evitar toasts repetidos
   const lastUpdatedProjectRef = React.useRef<{ id: string; timestamp: number } | null>(null);
-  const updateDebounceMs = 5000; // 5 segundos: só mostra um toast por janela
+  const updateDebounceMs = 5000;
 
   const handleUpdateProject = useCallback(
     async (updatedProject: Project) => {
@@ -284,7 +264,6 @@ const App: React.FC = () => {
           }
         }
       } catch (error) {
-        // Verificar se é erro de rede - não mostrar toast de erro se for
         const errorMessage =
           error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
         const isNetworkErr =
@@ -299,7 +278,6 @@ const App: React.FC = () => {
         if (!isNetworkErr) {
           handleError(error, 'Atualizar projeto');
         }
-        // Erros de rede são silenciosos - projeto já está salvo localmente
       }
     },
     [updateProject, handleError, handleSuccess]
@@ -310,11 +288,12 @@ const App: React.FC = () => {
       try {
         await deleteProject(projectId);
         handleSuccess('Projeto deletado com sucesso!');
+        navigate('/projects');
       } catch (error) {
         handleError(error, 'Deletar projeto');
       }
     },
-    [deleteProject, handleError, handleSuccess]
+    [deleteProject, handleError, handleSuccess, navigate]
   );
 
   const handleImportJiraProject = useCallback(
@@ -324,28 +303,26 @@ const App: React.FC = () => {
         await importProject(project);
         selectProject(project.id);
         handleSuccess(`Projeto "${project.name}" importado do Jira com sucesso!`);
+        navigate(`/projects/${project.id}`);
       } catch (error) {
         handleError(error, 'Importar projeto do Jira');
       }
     },
-    [selectProject, handleError, handleSuccess]
-  );
-
-  const handleSearchSelect = useCallback(
-    (result: SearchResult) => {
-      if (result.type === 'project' || result.projectId) {
-        selectProject(result.projectId || result.id);
-        setShowSearch(false);
-        setSearchQuery('');
-      }
-    },
-    [selectProject]
+    [selectProject, handleError, handleSuccess, navigate]
   );
 
   const closeGlobalSearch = useCallback(() => {
     setShowSearch(false);
     setSearchQuery('');
-  }, []);
+  }, [setSearchQuery]);
+
+  const handleSearchSelect = useCallback(
+    (result: { projectId?: string; id: string }) => {
+      navigate(`/projects/${result.projectId || result.id}`);
+      closeGlobalSearch();
+    },
+    [navigate, closeGlobalSearch]
+  );
 
   useKeyboardShortcuts([
     {
@@ -364,178 +341,160 @@ const App: React.FC = () => {
     return () => window.removeEventListener('open-global-search', handler);
   }, []);
 
-  const selectedProject = useMemo(() => {
-    if (!selectedProjectId) return undefined;
-    return projects.find(p => p.id === selectedProjectId);
-  }, [projects, selectedProjectId]);
+  const isLanding = location.pathname === '/';
+  const isDashboard = location.pathname === '/projects';
+  const isJiraSolus = location.pathname === '/jira-solus';
+  const shouldShowHeader = !isLanding;
 
-  const isDashboard = !selectedProject && !showSettings;
+  const headerBrandTitle = isDashboard
+    ? LANDING_SECTIONS.projects.title
+    : isJiraSolus
+      ? LANDING_SECTIONS.jiraSolus.title
+      : undefined;
 
-  const handleGoToDashboard = useCallback(() => {
-    selectProject(null);
-    setShowSettings(false);
-  }, [selectProject]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-base-100 text-base-content">
-        <ProjectsDashboardSkeleton />
-      </div>
-    );
-  }
+  const headerBrandSubtitle = isDashboard
+    ? LANDING_SECTIONS.projects.description
+    : isJiraSolus
+      ? LANDING_SECTIONS.jiraSolus.description
+      : undefined;
 
   return (
-    <ErrorBoundary>
-      <div className="min-h-screen bg-base-100 font-body text-base-content">
-        <div id="aria-live-region" className="sr-only" aria-live="polite" aria-atomic="true" />
-        <Toaster
-          position={isMobile ? 'top-center' : 'top-right'}
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: 'var(--leve-neu-bg)',
-              color: 'var(--leve-header-text)',
-              border: '1px solid color-mix(in srgb, var(--leve-neu-light) 45%, transparent)',
-              boxShadow: 'var(--leve-neu-hover)',
+    <div className="min-h-screen bg-base-100 font-body text-base-content">
+      <div id="aria-live-region" className="sr-only" aria-live="polite" aria-atomic="true" />
+      <Toaster
+        position={isMobile ? 'top-center' : 'top-right'}
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: 'var(--app-neu-bg)',
+            color: 'var(--brand-text)',
+            border: '1px solid color-mix(in srgb, var(--project-card-border) 80%, transparent)',
+            boxShadow: 'var(--project-card-neu-hover)',
+          },
+          success: {
+            iconTheme: {
+              primary: 'oklch(var(--su))',
+              secondary: 'oklch(100% 0 0)',
             },
-            success: {
-              iconTheme: {
-                primary: 'oklch(var(--su))',
-                secondary: 'oklch(100% 0 0)',
-              },
+          },
+          error: {
+            iconTheme: {
+              primary: 'oklch(var(--er))',
+              secondary: 'oklch(100% 0 0)',
             },
-            error: {
-              iconTheme: {
-                primary: 'oklch(var(--er))',
-                secondary: 'oklch(100% 0 0)',
-              },
-            },
-          }}
-        />
+          },
+        }}
+      />
+      {shouldShowHeader ? (
         <Header
           onProjectImported={handleImportJiraProject}
-          onOpenSettings={() => setShowSettings(true)}
           onOpenCreateModal={() =>
             window.dispatchEvent(new CustomEvent('open-create-project-modal'))
           }
           showDashboardActions={isDashboard}
-          onLogoClick={handleGoToDashboard}
+          onLogoClick={() => navigate('/')}
+          brandTitle={headerBrandTitle}
+          brandSubtitle={headerBrandSubtitle}
         />
-        <OfflineBanner />
-        {showSearch && (
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Busca global"
-            className="neu-overlay fixed inset-0 z-50 flex items-start justify-center pt-20 p-4"
-            onClick={e => {
-              if (e.target === e.currentTarget) closeGlobalSearch();
-            }}
-          >
-            <div className="w-full max-w-2xl">
-              <SearchBar
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                searchResults={searchResults}
-                onSelectResult={handleSearchSelect}
-              />
+      ) : null}
+      <OfflineBanner />
+      <GlobalSearchDialog
+        isOpen={showSearch}
+        onClose={closeGlobalSearch}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchResults={searchResults}
+        onSelectResult={handleSearchSelect}
+      />
+
+      <main
+        id="main-content"
+        className={cn(
+          'app-page',
+          shouldShowHeader
+            ? 'min-h-[calc(100vh-var(--app-header-sticky-offset,4.5rem))]'
+            : 'min-h-screen'
+        )}
+      >
+        {storeError ? (
+          <div className="container mx-auto px-4 py-3">
+            <div
+              className="flex flex-col gap-2 rounded-lg border border-error/30 bg-error/10 p-3 text-error-content sm:flex-row sm:items-center sm:justify-between"
+              role="alert"
+            >
+              <span className="text-sm">
+                Não foi possível carregar os projetos.{' '}
+                {storeError instanceof Error ? storeError.message : String(storeError)}
+              </span>
+              <button
+                type="button"
+                onClick={() => loadProjects()}
+                disabled={isLoading}
+                className="btn btn-sm btn-error btn-outline shrink-0"
+              >
+                {isLoading ? 'Carregando…' : 'Tentar novamente'}
+              </button>
             </div>
           </div>
-        )}
+        ) : null}
 
-        {showAdvancedSearch && (
-          <Suspense
-            fallback={
-              <div className="neu-overlay fixed inset-0 z-50 flex items-center justify-center">
-                <Spinner />
-              </div>
-            }
-          >
-            <AdvancedSearch
-              projects={projects}
-              onResultSelect={result => {
-                if (result.type === 'project' || result.projectId) {
-                  selectProject(result.projectId || result.id);
-                }
-                setShowAdvancedSearch(false);
-              }}
-              onClose={() => setShowAdvancedSearch(false)}
+        {isLoading && !isLanding ? (
+          <ProjectsDashboardSkeleton />
+        ) : (
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route
+              path="/projects"
+              element={
+                <Suspense fallback={<ProjectsDashboardSkeleton />}>
+                  <ProjectsDashboard
+                    projects={projects}
+                    onCreateProject={handleCreateProject}
+                  />
+                </Suspense>
+              }
             />
-          </Suspense>
-        )}
-
-        <main
-          id="main-content"
-          className={cn(
-            'app-page min-h-[calc(100vh-var(--app-header-sticky-offset,4.5rem))]',
-            appDarkPageSurfaceClass
-          )}
-        >
-          {storeError && (
-            <div className="container mx-auto px-4 py-3">
-              <div
-                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded-lg bg-error/10 border border-error/30 text-error-content"
-                role="alert"
-              >
-                <span className="text-sm">
-                  Não foi possível carregar os projetos.{' '}
-                  {storeError instanceof Error ? storeError.message : String(storeError)}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => loadProjects()}
-                  disabled={isLoading}
-                  className="btn btn-sm btn-error btn-outline shrink-0"
+            <Route
+              path="/projects/:id"
+              element={
+                <ProjectViewPage
+                  onUpdateProject={handleUpdateProject}
+                  onDeleteProject={handleDeleteProject}
+                />
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <Suspense
+                  fallback={
+                    <div className="container mx-auto p-4 sm:p-6">
+                      <LoadingSkeleton variant="card" count={3} />
+                    </div>
+                  }
                 >
-                  {isLoading ? 'Carregando…' : 'Tentar novamente'}
-                </button>
-              </div>
-            </div>
-          )}
-          {showSettings ? (
-            <Suspense
-              fallback={
-                <div className="container mx-auto p-4 sm:p-6">
-                  <LoadingSkeleton variant="card" count={3} />
-                </div>
+                  <SettingsView
+                    onProjectImported={handleImportJiraProject}
+                    onLocalBackupRestored={() => loadProjects()}
+                  />
+                </Suspense>
               }
-            >
-              <SettingsView
-                onClose={() => setShowSettings(false)}
-                onProjectImported={handleImportJiraProject}
-                onLocalBackupRestored={() => loadProjects()}
-              />
-            </Suspense>
-          ) : selectedProject ? (
-            <Suspense
-              fallback={
-                <div className="container mx-auto p-4 sm:p-6">
-                  <LoadingSkeleton variant="card" count={3} />
-                </div>
-              }
-            >
-              <ProjectView
-                project={selectedProject}
-                onUpdateProject={handleUpdateProject}
-                onBack={() => selectProject(null)}
-                onDeleteProject={handleDeleteProject}
-              />
-            </Suspense>
-          ) : (
-            <Suspense fallback={<ProjectsDashboardSkeleton />}>
-              <ProjectsDashboard
-                projects={projects}
-                onSelectProject={selectProject}
-                onCreateProject={handleCreateProject}
-                onOpenSettings={() => setShowSettings(true)}
-              />
-            </Suspense>
-          )}
-        </main>
-        <KeyboardShortcutsHelp />
-      </div>
-    </ErrorBoundary>
+            />
+            <Route path="/jira-solus" element={<JiraSolusView />} />
+          </Routes>
+        )}
+      </main>
+      <KeyboardShortcutsHelp />
+    </div>
   );
 };
+
+const App: React.FC = () => (
+  <ErrorBoundary>
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
+  </ErrorBoundary>
+);
 
 export default App;

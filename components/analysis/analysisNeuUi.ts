@@ -13,6 +13,7 @@ export {
 } from '../common/neuUi';
 
 import { cn } from '../../utils/cn';
+import { neuSurfaceClass } from '../common/neuUi';
 
 /** Card de análise (tarefa/teste) — expandido ou compacto. */
 export const analysisCardShellClass = (expanded: boolean, stale?: boolean) =>

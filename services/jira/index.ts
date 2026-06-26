@@ -1,6 +1,7 @@
 export type {
   JiraConfig,
   JiraProject,
+  JiraQueue,
   JiraIssue,
   JiraFieldInfo,
   GetJiraFieldsOptions,
@@ -25,7 +26,9 @@ export {
   getJiraPriorities,
 } from './metadata';
 
-export { getJiraIssues, getJiraIssueByKey } from './issues';
+export { getJiraQueuesForProject } from './queues';
+
+export { getJiraIssues, getJiraIssuesByJql, getJiraIssueByKey } from './issues';
 
 export {
   updateJiraIssue,
@@ -37,3 +40,5 @@ export {
 
 export { importJiraProject, addNewJiraTasks } from './importSync';
 export { syncJiraProject } from './syncJiraProject';
+export { jiraIssueToTask } from './issueToTask';
+export type { JiraIssueToTaskOptions } from './issueToTask';

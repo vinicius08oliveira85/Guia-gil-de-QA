@@ -29,7 +29,7 @@ import { Trash2, CheckCircle2, AlertTriangle, CloudOff, Layers } from 'lucide-re
 import { logger } from '../utils/logger';
 import { Button } from './common/Button';
 import { cn } from '../utils/cn';
-import { appDarkPageSurfaceClass } from './common/appPageNeuUi';
+import { workspaceSurfaceLightClass } from './common/appPageNeuUi';
 import { appContentPaddingX } from './common/viewUi';
 import {
   projectChromeBacklogBtnClass,
@@ -79,9 +79,8 @@ function readTasksListModeFromUrl(): TasksListMode {
 export const ProjectView: React.FC<{
   project: Project;
   onUpdateProject: (project: Project) => void | Promise<void>;
-  onBack: () => void;
   onDeleteProject?: (projectId: string) => void | Promise<void>;
-}> = ({ project, onUpdateProject, onBack: _onBack, onDeleteProject }) => {
+}> = ({ project, onUpdateProject, onDeleteProject }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [tasksListMode, setTasksListMode] = useState<TasksListMode>('all');
   const [initialTaskId, setInitialTaskId] = useState<string | undefined>(undefined);
@@ -466,7 +465,7 @@ export const ProjectView: React.FC<{
     <>
       <div
         className={cn(
-          appDarkPageSurfaceClass,
+          workspaceSurfaceLightClass,
           'animate-fade-in w-full min-w-0 max-w-none py-3 sm:py-4 max-md:py-2 non-printable',
           appContentPaddingX
         )}

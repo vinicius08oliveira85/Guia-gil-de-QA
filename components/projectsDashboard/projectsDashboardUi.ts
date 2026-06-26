@@ -1,10 +1,20 @@
 import { cn } from '../../utils/cn';
-import { appDarkPageSurfaceClass, appDarkSidebarPanelClass } from '../common/appPageNeuUi';
+import { appDarkSidebarPanelClass, workspaceSurfaceLightClass } from '../common/appPageNeuUi';
+import {
+  viewHeroToolbarBtnActiveClass,
+  viewHeroToolbarBtnClass,
+  viewHeroToolbarClass,
+  viewHeroToolbarDividerClass,
+} from '../common/viewHeroChromeUi';
 
-/** Fundo e escopo da página Meus Projetos — superfície #4B433D neumórfica (ver index.css). */
+/**
+ * Fundo e escopo da página Meus Projetos — tema CLARO (identidade LandingPage /
+ * Jira x Solus). `workspaceSurfaceLightClass` ativa as variáveis e overrides
+ * claros em index.css, isolando a mudança das demais telas autenticadas.
+ */
 export const projectsDashboardPageClass = cn(
   'app-page projects-dash-page',
-  appDarkPageSurfaceClass,
+  workspaceSurfaceLightClass,
   'animate-fade-in min-h-[calc(100vh-4rem)] font-body'
 );
 
@@ -25,31 +35,26 @@ export const projectsDashboardSelectClass = cn(
   'max-md:min-h-8 max-md:h-8 sm:min-h-8 sm:h-8'
 );
 
-/** Pílulas de filtro rápido (Todos / Com bugs / Atenção) */
+/** Pílulas de filtro rápido (Todos / Com bugs / Atenção) — modelo Filtrar/Exportar */
 export function projectsDashboardFilterPillClass(active: boolean): string {
-  return cn('projects-dash-filter-pill', active && 'projects-dash-filter-pill-active');
+  return active ? viewHeroToolbarBtnActiveClass : viewHeroToolbarBtnClass;
 }
 
-/** Grupo segmentado neumórfico escuro (#4a423e) — Meus Projetos */
+/** Grupo de filtros rápidos — trilho inset + pills elevados individuais */
 export const projectsDashboardQuickFiltersToolbarClass = cn(
-  'projects-dash-quick-filters-toolbar mb-4 w-full sm:w-auto',
+  viewHeroToolbarClass,
+  'mb-4 w-full sm:w-auto',
   'max-md:mb-2'
 );
 
-export function projectsDashboardQuickFiltersPillClass(
-  active: boolean,
-  segmentRound: string
-): string {
+export function projectsDashboardQuickFiltersPillClass(active: boolean): string {
   return cn(
-    'projects-dash-quick-filters-pill',
-    active && 'projects-dash-quick-filters-pill--active',
-    'min-h-[44px] max-md:min-h-8 max-md:py-1 sm:min-h-0',
-    segmentRound
+    active ? viewHeroToolbarBtnActiveClass : viewHeroToolbarBtnClass,
+    'min-h-[44px] max-md:min-h-8 max-md:py-1 sm:min-h-0'
   );
 }
 
-export const projectsDashboardQuickFiltersDividerClass =
-  'projects-dash-quick-filters-divider';
+export const projectsDashboardQuickFiltersDividerClass = viewHeroToolbarDividerClass;
 
 /** Painéis vazios / mensagens na grade — relevo elevado (evitar bg-surface plano). */
 export const projectsDashboardMessagePanelClass = cn(
@@ -99,7 +104,7 @@ export const projectsDashboardProjectGridClass = cn(
 );
 
 /**
- * Painel lateral (métricas + status) — fundo #4B433D e neumorfismo do modelo Leve.
+ * Painel lateral (métricas + status) — usa o escopo de superfície da página.
  * Classe dedicada + CSS fora de @layer em index.css (prioridade sobre DaisyUI/Tailwind).
  */
 export const projectsDashboardSidebarPanelClass = cn(

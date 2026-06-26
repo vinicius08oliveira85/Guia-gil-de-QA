@@ -80,7 +80,7 @@ export async function waitForCondition(
 }
 
 /**
- * Simula navegação entre telas
+ * Simula navegação entre telas (URL + store).
  */
 export function simulateNavigation(
   target: 'landing' | 'dashboard' | 'project',
@@ -90,17 +90,28 @@ export function simulateNavigation(
 
   switch (target) {
     case 'landing':
+      window.history.pushState({}, '', '/');
+      window.dispatchEvent(new PopStateEvent('popstate'));
       store.selectProject(null);
       break;
     case 'dashboard':
+      window.history.pushState({}, '', '/projects');
+      window.dispatchEvent(new PopStateEvent('popstate'));
       store.selectProject(null);
       break;
     case 'project':
       if (projectId) {
+        window.history.pushState({}, '', `/projects/${projectId}`);
+        window.dispatchEvent(new PopStateEvent('popstate'));
         store.selectProject(projectId);
       }
       break;
   }
+}
+
+/** Renderiza o App já na rota indicada (BrowserRouter lê `window.location`). */
+export function setInitialRoute(path: string) {
+  window.history.pushState({}, '', path);
 }
 
 /**

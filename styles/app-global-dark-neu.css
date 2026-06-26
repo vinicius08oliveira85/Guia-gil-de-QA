@@ -1,418 +1,7 @@
 /**
- * Neumorfismo escuro Leve — escopo global do app autenticado.
- * Ativado via `body.app-dark-neu-root` (App.tsx) + `.app-dark-page-surface`.
- * Exceções: Documentos, Regras de negócio, modais claros (task-details / documents).
- */
-
-body.app-dark-neu-root {
-  --app-menu-bg: #4b433d;
-  --app-menu-surface: color-mix(in srgb, #5c524b 12%, #4b433d);
-  --app-menu-border: color-mix(in srgb, #5c524b 42%, transparent);
-  --app-menu-text: #f5f1e6;
-  --app-menu-accent: #e65100;
-  --app-menu-raised:
-    4px 4px 10px color-mix(in srgb, #3a342f 58%, transparent),
-    -3px -3px 8px color-mix(in srgb, #5c524b 30%, #4b433d);
-  --app-menu-inset: inset 4px 4px 10px #3a342f, inset -3px -3px 8px #5c524b;
-  --app-menu-hover:
-    5px 5px 12px color-mix(in srgb, #3a342f 62%, transparent),
-    -4px -4px 10px color-mix(in srgb, #fdf6e3 10%, #4b433d);
-}
-
-/**
- * Modelo Filtrar/Exportar — trilho inset + pills elevados + ícone laranja (#E65100 / #FDF6E3).
- * Tarefas, ProjectView, Documentos, Dashboard hero.
- */
-body.app-dark-neu-root .app-dark-page-surface :is(
-    .workspace-chrome-inset,
-    .app-neu-action-track,
-    .documents-neu-filter-track,
-    .tasks-panel-toolbar-compact.workspace-chrome-inset
-  ):not(.projects-dash-quick-filters-toolbar) {
-  gap: 0.35rem !important;
-  border: 1px solid color-mix(in srgb, #3a342f 55%, transparent) !important;
-  border-radius: 9999px !important;
-  background-color: color-mix(in srgb, #3a342f 32%, #4b433d) !important;
-  box-shadow:
-    inset 6px 6px 14px #3a342f,
-    inset -5px -5px 11px #5c524b !important;
-}
-
-body.app-dark-neu-root .app-dark-page-surface :is(.workspace-chrome-inset, .app-neu-action-track)
-  :is(
-    .workspace-chrome-pill,
-    .app-neu-action-btn,
-    .dashboard-neu-filter-btn,
-    .workspace-chrome-tab-idle,
-    button.workspace-chrome-pill
-  ):not(
-    :is(.workspace-chrome-pill-active, .app-neu-action-btn--active, .dashboard-neu-filter-btn--active, .workspace-chrome-tab-active)
-  ) {
-  border: 1px solid color-mix(in srgb, #5c524b 45%, transparent) !important;
-  background-color: color-mix(in srgb, #5c524b 12%, #4b433d) !important;
-  color: #fdf6e3 !important;
-  box-shadow:
-    4px 4px 10px color-mix(in srgb, #3a342f 58%, transparent),
-    -3px -3px 8px color-mix(in srgb, #5c524b 32%, #4b433d) !important;
-}
-
-body.app-dark-neu-root .app-dark-page-surface :is(.workspace-chrome-inset, .app-neu-action-track)
-  :is(
-    .workspace-chrome-pill-active,
-    .app-neu-action-btn--active,
-    .dashboard-neu-filter-btn--active,
-    .workspace-chrome-tab-active,
-    .dashboard-neu-filter-btn.workspace-chrome-pill-active
-  ) {
-  background-color: #e65100 !important;
-  color: #fdf6e3 !important;
-  border-color: color-mix(in srgb, #e65100 50%, #3a342f) !important;
-  box-shadow:
-    3px 3px 9px color-mix(in srgb, #3a342f 60%, transparent),
-    -2px -2px 7px color-mix(in srgb, #fdf6e3 28%, #4b433d),
-    0 0 0 1px color-mix(in srgb, #e65100 22%, transparent) !important;
-}
-
-body.app-dark-neu-root .app-dark-page-surface :is(.workspace-chrome-inset, .app-neu-action-track)
-  :is(.workspace-chrome-pill, .app-neu-action-btn, .dashboard-neu-filter-btn):hover:not(:disabled) {
-  border-color: color-mix(in srgb, #e65100 28%, #5c524b) !important;
-  box-shadow:
-    5px 5px 12px color-mix(in srgb, #3a342f 62%, transparent),
-    -4px -4px 10px color-mix(in srgb, #fdf6e3 10%, #4b433d) !important;
-}
-
-body.app-dark-neu-root .app-dark-page-surface .documents-neu-filter-track .leve-neu-pill:not(.leve-neu-pill-active) {
-  border: 1px solid color-mix(in srgb, #5c524b 45%, transparent) !important;
-  background-color: color-mix(in srgb, #5c524b 12%, #4b433d) !important;
-  color: #fdf6e3 !important;
-  box-shadow:
-    4px 4px 10px color-mix(in srgb, #3a342f 58%, transparent),
-    -3px -3px 8px color-mix(in srgb, #5c524b 32%, #4b433d) !important;
-}
-
-body.app-dark-neu-root .app-dark-page-surface .documents-neu-filter-track .leve-neu-pill-active {
-  background-color: #e65100 !important;
-  color: #fdf6e3 !important;
-  border-color: color-mix(in srgb, #e65100 50%, #3a342f) !important;
-  box-shadow:
-    3px 3px 9px color-mix(in srgb, #3a342f 60%, transparent),
-    -2px -2px 7px color-mix(in srgb, #fdf6e3 28%, #4b433d) !important;
-}
-
-body.app-dark-neu-root .app-dark-page-surface :is(.app-neu-action-icon-wrap, .dashboard-neu-filter-icon-wrap) {
-  border: 1px solid color-mix(in srgb, #e65100 38%, #5c524b) !important;
-  background-color: color-mix(in srgb, #3a342f 18%, #4b433d) !important;
-  color: #e65100 !important;
-  box-shadow:
-    3px 3px 8px color-mix(in srgb, #3a342f 55%, transparent),
-    -2px -2px 6px color-mix(in srgb, #fdf6e3 22%, #4b433d),
-    0 0 12px color-mix(in srgb, #e65100 22%, transparent) !important;
-}
-
-body.app-dark-neu-root .app-dark-page-surface :is(.workspace-chrome-inset, .app-neu-action-track)
-  :is(.workspace-chrome-pill, .app-neu-action-btn):hover:not(:disabled)
-  :is(.app-neu-action-icon-wrap, .dashboard-neu-filter-icon-wrap) {
-  box-shadow:
-    4px 4px 10px color-mix(in srgb, #3a342f 58%, transparent),
-    -3px -3px 8px color-mix(in srgb, #fdf6e3 28%, #4b433d),
-    0 0 14px color-mix(in srgb, #e65100 28%, transparent) !important;
-}
-
-body.app-dark-neu-root .app-dark-page-surface .app-neu-action-divider,
-body.app-dark-neu-root .app-dark-page-surface :is(.workspace-chrome-inset, .app-neu-action-track) > div[aria-hidden] {
-  background-color: color-mix(in srgb, #3a342f 65%, transparent) !important;
-}
-
-/* Pills fora do trilho (ex.: Carregar) — elevado / ativo laranja */
-body.app-dark-neu-root .app-dark-page-surface .workspace-chrome-pill:not(.workspace-chrome-pill-active) {
-  border: 1px solid color-mix(in srgb, #5c524b 45%, transparent) !important;
-  background-color: color-mix(in srgb, #5c524b 12%, #4b433d) !important;
-  color: #fdf6e3 !important;
-  box-shadow:
-    4px 4px 10px color-mix(in srgb, #3a342f 58%, transparent),
-    -3px -3px 8px color-mix(in srgb, #5c524b 32%, #4b433d) !important;
-}
-
-body.app-dark-neu-root .app-dark-page-surface .workspace-chrome-pill-active {
-  background-color: #e65100 !important;
-  color: #fdf6e3 !important;
-  border: 1px solid color-mix(in srgb, #e65100 50%, #3a342f) !important;
-  box-shadow:
-    3px 3px 9px color-mix(in srgb, #3a342f 60%, transparent),
-    -2px -2px 7px color-mix(in srgb, #fdf6e3 28%, #4b433d),
-    0 0 0 1px color-mix(in srgb, #e65100 22%, transparent) !important;
-}
-
-body.app-dark-neu-root .app-dark-page-surface article.documents-card .documents-card-actions.app-neu-action-track {
-  border-radius: var(--leve-header-radius) !important;
-}
-
-body.app-dark-neu-root .app-dark-page-surface article.documents-card .documents-card-actions .documents-card-action-btn.text-error {
-  color: oklch(var(--er)) !important;
-}
-
-/* Regras de negócio — Editar / Excluir no trilho */
-body.app-dark-neu-root .business-rules-view-scope .business-rules-card-actions.app-neu-action-track {
-  display: flex !important;
-  flex-direction: row !important;
-  flex-wrap: nowrap !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
-  gap: 0.35rem !important;
-  border-radius: var(--leve-header-radius) !important;
-}
-
-body.app-dark-neu-root .business-rules-view-scope .business-rules-card-actions .business-rules-card-action-btn {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  align-self: center !important;
-  min-height: 2.25rem !important;
-  height: 2.25rem !important;
-  margin: 0 !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  line-height: 1 !important;
-  vertical-align: middle !important;
-}
-
-body.app-dark-neu-root .business-rules-view-scope .business-rules-card-action-edit {
-  color: #fdf6e3 !important;
-}
-
-body.app-dark-neu-root .business-rules-view-scope .business-rules-card-action-edit:hover:not(:disabled) {
-  color: #e65100 !important;
-}
-
-body.app-dark-neu-root .business-rules-view-scope .app-neu-action-btn--danger,
-body.app-dark-neu-root .business-rules-view-scope .business-rules-card-action-delete {
-  color: oklch(var(--er)) !important;
-  border-color: color-mix(in srgb, oklch(var(--er)) 32%, #5c524b) !important;
-  box-shadow:
-    4px 4px 10px color-mix(in srgb, #3a342f 58%, transparent),
-    -3px -3px 8px color-mix(in srgb, #5c524b 32%, #4b433d),
-    0 0 12px color-mix(in srgb, oklch(var(--er)) 16%, transparent) !important;
-}
-
-/* Configurações — painel da chave + atalhos (Editar / Remover / kbd) */
-body.app-dark-neu-root .settings-view-scope .settings-neu-configured-panel {
-  border: 1px solid color-mix(in srgb, #3a342f 48%, transparent) !important;
-  background: color-mix(in srgb, #3a342f 24%, #4b433d) !important;
-  box-shadow:
-    inset 6px 6px 12px #3a342f,
-    inset -5px -5px 10px #5c524b !important;
-}
-
-body.app-dark-neu-root .settings-view-scope .settings-neu-kbd {
-  border: 1px solid color-mix(in srgb, #3a342f 42%, transparent) !important;
-  background: color-mix(in srgb, #3a342f 28%, #4b433d) !important;
-  box-shadow:
-    inset 5px 5px 10px #3a342f,
-    inset -4px -4px 8px #5c524b !important;
-  color: #fdf6e3 !important;
-}
-
-body.app-dark-neu-root .settings-view-scope .settings-neu-action-btn {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
-  background: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
-  color: #fdf6e3 !important;
-  box-shadow:
-    4px 4px 10px color-mix(in srgb, #3a342f 58%, transparent),
-    -3px -3px 8px color-mix(in srgb, #5c524b 32%, #4b433d) !important;
-}
-
-body.app-dark-neu-root .settings-view-scope .settings-neu-edit-btn:hover:not(:disabled) {
-  color: #e65100 !important;
-  border-color: color-mix(in srgb, #e65100 32%, #5c524b) !important;
-}
-
-body.app-dark-neu-root .settings-view-scope .settings-neu-remove-btn {
-  color: oklch(var(--er)) !important;
-  border-color: color-mix(in srgb, oklch(var(--er)) 32%, #5c524b) !important;
-  box-shadow:
-    4px 4px 10px color-mix(in srgb, #3a342f 58%, transparent),
-    -3px -3px 8px color-mix(in srgb, #5c524b 32%, #4b433d),
-    0 0 12px color-mix(in srgb, oklch(var(--er)) 16%, transparent) !important;
-}
-
-body.app-dark-neu-root .business-rules-view-scope .business-rules-card-action-delete:hover:not(:disabled) {
-  color: oklch(var(--er)) !important;
-  border-color: color-mix(in srgb, oklch(var(--er)) 45%, #5c524b) !important;
-  box-shadow:
-    5px 5px 12px color-mix(in srgb, #3a342f 62%, transparent),
-    -4px -4px 10px color-mix(in srgb, #fdf6e3 8%, #4b433d),
-    0 0 14px color-mix(in srgb, oklch(var(--er)) 22%, transparent) !important;
-}
-
-/* —— Modais genéricos em portal (exceto claros) —— */
-body.app-dark-neu-root
-  .leve-modal-neu-shell:not(.documents-neu-modal):not(.tasks-panel-neu-modal):not(.settings-neu-modal):not(
-    .task-details-neu-modal
-  ):not(.test-report-neu-modal) {
-  --leve-header-text: #f5f1e6;
-  --leve-header-text-muted: rgba(245, 241, 230, 0.72);
-  --leve-header-accent: #e65100;
-  --leve-header-bg: #4b433d;
-  --leve-header-cream: #fdf6e3;
-  --leve-header-border: color-mix(in srgb, #5c524b 42%, transparent);
-  --leve-neu-bg: #4b433d;
-  --leve-neu-surface: color-mix(in srgb, #5c524b 11%, #4b433d);
-  --leve-neu-light: #5c524b;
-  --leve-neu-dark: #3a342f;
-  border-color: color-mix(in srgb, #5c524b 42%, transparent) !important;
-  background-color: #4b433d !important;
-  color: #f5f1e6 !important;
-  box-shadow:
-    10px 10px 28px color-mix(in srgb, #3a342f 55%, transparent),
-    -6px -6px 16px color-mix(in srgb, #5c524b 28%, #4b433d),
-    0 24px 48px color-mix(in srgb, #3a342f 35%, transparent) !important;
-}
-
-body.app-dark-neu-root
-  .leve-modal-neu-shell:not(.task-details-neu-modal):not(.test-report-neu-modal):not(.documents-neu-modal):not(
-    .tasks-panel-neu-modal
-  ):not(.settings-neu-modal)
-  .leve-modal-neu-header {
-  border-color: color-mix(in srgb, #5c524b 38%, transparent) !important;
-  background-color: color-mix(in srgb, #3a342f 18%, #4b433d) !important;
-  color: #fdf6e3 !important;
-}
-
-body.app-dark-neu-root
-  .leve-modal-neu-shell:not(.task-details-neu-modal):not(.test-report-neu-modal):not(.documents-neu-modal):not(
-    .tasks-panel-neu-modal
-  ):not(.settings-neu-modal)
-  .leve-modal-neu-close {
-  border: 1px solid color-mix(in srgb, #5c524b 40%, transparent) !important;
-  background-color: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
-  color: rgba(245, 241, 230, 0.78) !important;
-  box-shadow:
-    3px 3px 8px color-mix(in srgb, #3a342f 55%, transparent),
-    -2px -2px 6px color-mix(in srgb, #5c524b 30%, #4b433d) !important;
-}
-
-body.app-dark-neu-root
-  .leve-modal-neu-shell:not(.task-details-neu-modal):not(.test-report-neu-modal):not(.documents-neu-modal):not(
-    .tasks-panel-neu-modal
-  ):not(.settings-neu-modal)
-  .leve-modal-neu-close:hover {
-  color: #e65100 !important;
-}
-
-/* Menus / dropdowns portaled */
-body.app-dark-neu-root .app-menu-panel {
-  border-color: var(--app-menu-border) !important;
-  background: var(--app-menu-bg) !important;
-  box-shadow: var(--app-menu-hover) !important;
-  color: var(--app-menu-text) !important;
-}
-
-body.app-dark-neu-root .app-menu-item {
-  border-color: var(--app-menu-border) !important;
-  background: var(--app-menu-surface) !important;
-  color: var(--app-menu-text) !important;
-  box-shadow: var(--app-menu-raised) !important;
-}
-
-body.app-dark-neu-root .app-menu-item:hover:not(:disabled) {
-  color: var(--app-menu-accent) !important;
-  box-shadow: var(--app-menu-hover) !important;
-}
-
-body.app-dark-neu-root .dropdown-content.menu {
-  border-color: var(--app-menu-border) !important;
-  background: var(--app-menu-bg) !important;
-  box-shadow: var(--app-menu-hover) !important;
-  color: var(--app-menu-text) !important;
-}
-
-/* Overlay de busca avançada / modais */
-body.app-dark-neu-root .neu-overlay {
-  background-color: color-mix(in srgb, #3a342f 62%, transparent) !important;
-}
-
-/* —— Tokens legados bg-surface / text-text-* (telas escuras) —— */
-body.app-dark-neu-root .app-dark-page-surface :is(.bg-surface, [class*='bg-surface/']),
-body.app-dark-neu-root .app-dark-page-surface :is(.border-surface-border, [class*='border-surface-border']) {
-  border-color: color-mix(in srgb, #5c524b 42%, transparent) !important;
-}
-
-body.app-dark-neu-root .app-dark-page-surface :is(.bg-surface) {
-  background-color: color-mix(in srgb, #5c524b 12%, #4b433d) !important;
-  color: #f5f1e6 !important;
-  box-shadow:
-    5px 5px 14px color-mix(in srgb, #3a342f 52%, transparent),
-    -4px -4px 10px color-mix(in srgb, #5c524b 26%, #4b433d) !important;
-}
-
-body.app-dark-neu-root .app-dark-page-surface :is([class*='bg-surface/']) {
-  background-color: color-mix(in srgb, #5c524b 14%, #4b433d) !important;
-}
-
-body.app-dark-neu-root .app-dark-page-surface :is(.bg-surface-hover, [class*='bg-surface-hover']) {
-  background-color: color-mix(in srgb, #3a342f 22%, #4b433d) !important;
-}
-
-body.app-dark-neu-root .app-dark-page-surface :is(.hover\:bg-surface-hover:hover) {
-  background-color: color-mix(in srgb, #3a342f 28%, #4b433d) !important;
-  color: #fdf6e3 !important;
-}
-
-body.app-dark-neu-root .app-dark-page-surface :is(.text-text-primary) {
-  color: #fdf6e3 !important;
-}
-
-body.app-dark-neu-root .app-dark-page-surface :is(.text-text-secondary) {
-  color: rgba(245, 241, 230, 0.72) !important;
-}
-
-body.app-dark-neu-root .app-dark-page-surface :is(.hover\:text-text-primary:hover) {
-  color: #fdf6e3 !important;
-}
-
-/* Modais escuros já estilizados — reforço para conteúdo legado interno */
-body.app-dark-neu-root :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal, .create-project-neu-modal)
-  :is(.bg-surface, [class*='bg-surface']) {
-  border-color: color-mix(in srgb, #fdf6e3 10%, transparent) !important;
-  background-color: #423b37 !important;
-  color: #dcdcdc !important;
-  box-shadow:
-    inset 4px 4px 10px color-mix(in srgb, #423b37 70%, transparent),
-    inset -3px -3px 8px color-mix(in srgb, #fdf6e3 10%, #4a423e) !important;
-}
-
-body.app-dark-neu-root :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal, .create-project-neu-modal)
-  :is(.text-text-primary) {
-  color: #fdf6e3 !important;
-}
-
-body.app-dark-neu-root :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal, .create-project-neu-modal)
-  :is(.text-text-secondary) {
-  color: #dcdcdc !important;
-}
-
-/* Superfícies neu dentro do app (fora do dashboard-neu-scope) */
-body.app-dark-neu-root .app-dark-page-surface .leve-neu-surface {
-  border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
-  background-color: color-mix(in srgb, #5c524b 11%, #4b433d) !important;
-  box-shadow:
-    6px 6px 16px color-mix(in srgb, #3a342f 52%, transparent),
-    -4px -4px 10px color-mix(in srgb, #5c524b 26%, #4b433d) !important;
-}
-
-body.app-dark-neu-root .app-dark-page-surface .leve-neu-surface-inset {
-  border: 1px solid color-mix(in srgb, #3a342f 40%, transparent) !important;
-  background-color: color-mix(in srgb, #3a342f 20%, #4b433d) !important;
-  box-shadow:
-    inset 5px 5px 10px #3a342f,
-    inset -4px -4px 8px #5c524b !important;
-}
-
-/**
- * Documentos — lista (trilho inset) + cards elevados (#4B433D / #E65100 / #FDF6E3).
+ * Documentos — lista (trilho inset) + cards elevados claros (LandingPage / Jira x Solus).
+ * Este arquivo preserva apenas overrides vivos. O antigo escopo `body.app-dark-neu-root`
+ * foi removido porque a classe não é aplicada pela aplicação.
  */
 .documents-view-scope section.app-panel:has(.documents-neu-list-track) {
   border: none !important;
@@ -421,72 +10,57 @@ body.app-dark-neu-root .app-dark-page-surface .leve-neu-surface-inset {
 }
 
 .documents-view-scope .documents-card-list-panel.documents-neu-list-track {
-  border: 1px solid color-mix(in srgb, #3a342f 55%, transparent) !important;
-  background-color: color-mix(in srgb, #3a342f 22%, #4b433d) !important;
-  box-shadow:
-    inset 6px 6px 14px #3a342f,
-    inset -5px -5px 11px #5c524b !important;
+  border: 1px solid color-mix(in srgb, var(--doc-neu-dark) 60%, transparent) !important;
+  background-color: color-mix(in srgb, var(--doc-neu-dark) 18%, var(--doc-neu-bg)) !important;
+  box-shadow: var(--doc-neu-inset-deep) !important;
 }
 
 .documents-view-scope article.documents-card.documents-neu-card,
 .documents-view-scope article.documents-card.documents-card-neu-raised {
-  border: 1px solid color-mix(in srgb, #5c524b 48%, transparent) !important;
-  background-color: color-mix(in srgb, #5c524b 14%, #4b433d) !important;
+  border: 1px solid color-mix(in srgb, var(--doc-neu-dark) 70%, transparent) !important;
+  background-color: color-mix(in srgb, var(--doc-neu-light) 60%, var(--doc-neu-bg)) !important;
   background-image: none !important;
-  color: rgba(245, 241, 230, 0.72) !important;
-  box-shadow:
-    6px 6px 16px color-mix(in srgb, #3a342f 52%, transparent),
-    -4px -4px 10px color-mix(in srgb, #5c524b 28%, #4b433d) !important;
+  color: var(--doc-neu-text-muted) !important;
+  box-shadow: var(--doc-neu-raised) !important;
 }
 
 .documents-view-scope article.documents-card.documents-neu-card:hover {
-  border-color: color-mix(in srgb, #e65100 28%, #5c524b) !important;
+  border-color: color-mix(in srgb, var(--doc-neu-accent) 28%, var(--doc-neu-dark)) !important;
   box-shadow:
-    7px 7px 18px color-mix(in srgb, #3a342f 55%, transparent),
-    -5px -5px 12px color-mix(in srgb, #5c524b 30%, #4b433d),
-    0 0 0 1px color-mix(in srgb, #e65100 14%, transparent) !important;
+    7px 7px 18px color-mix(in srgb, var(--doc-neu-dark) 60%, transparent),
+    -5px -5px 12px var(--doc-neu-light),
+    0 0 0 1px color-mix(in srgb, var(--doc-neu-accent) 14%, transparent) !important;
 }
 
 .documents-view-scope article.documents-card .documents-card-title {
-  color: #fdf6e3 !important;
+  color: var(--doc-neu-text) !important;
 }
 
 .documents-view-scope article.documents-card .documents-card-meta {
-  color: rgba(245, 241, 230, 0.72) !important;
+  color: var(--doc-neu-text-muted) !important;
 }
 
 .documents-view-scope .documents-category-badge--requisitos {
-  color: #e65100 !important;
+  color: var(--doc-neu-category-requisitos-text) !important;
   font-weight: 800;
 }
 
 .documents-view-scope article.documents-card .documents-neu-chip:not(.documents-card-action-btn) {
-  box-shadow:
-    3px 3px 8px color-mix(in srgb, #3a342f 55%, transparent),
-    -2px -2px 6px color-mix(in srgb, #5c524b 30%, #4b433d) !important;
+  box-shadow: var(--doc-neu-raised) !important;
 }
 
 .documents-view-scope article.documents-card .documents-card-action-primary {
-  background-color: #e65100 !important;
-  color: #fdf6e3 !important;
-  border-color: color-mix(in srgb, #fdf6e3 22%, transparent) !important;
+  background-color: var(--doc-neu-accent) !important;
+  color: var(--doc-neu-accent-contrast) !important;
+  border-color: color-mix(in srgb, var(--doc-neu-accent) 55%, transparent) !important;
 }
 
 .documents-view-scope article.documents-card .documents-card-action-outline {
-  border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
-  background-color: color-mix(in srgb, #5c524b 10%, #4b433d) !important;
-  color: #fdf6e3 !important;
+  border: 1px solid color-mix(in srgb, var(--doc-neu-dark) 70%, transparent) !important;
+  background-color: color-mix(in srgb, var(--doc-neu-light) 55%, var(--doc-neu-bg)) !important;
+  color: var(--doc-neu-text) !important;
 }
 
 .documents-view-scope article.documents-card .documents-card-action-outline:hover:not(:disabled) {
-  color: #e65100 !important;
-}
-
-/* Configurações — painéis app-surface legados */
-body.app-dark-neu-root .app-dark-page-surface .app-surface {
-  border: 1px solid color-mix(in srgb, #5c524b 42%, transparent) !important;
-  background-color: color-mix(in srgb, #5c524b 11%, #4b433d) !important;
-  box-shadow:
-    6px 6px 16px color-mix(in srgb, #3a342f 52%, transparent),
-    -4px -4px 10px color-mix(in srgb, #5c524b 26%, #4b433d) !important;
+  color: var(--doc-neu-accent) !important;
 }

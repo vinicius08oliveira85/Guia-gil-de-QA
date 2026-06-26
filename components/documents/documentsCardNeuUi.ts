@@ -6,24 +6,23 @@ import {
 } from '../common/workspaceChromeActionUi';
 
 /**
- * Cards da lista de documentos — paleta escura (#4B433D / #E65100 / #FDF6E3).
- * Relevo via `.documents-view-scope` em index.css.
+ * Cards da lista de documentos — paleta CLARA via tokens do escopo `.documents-view-scope`
+ * (LandingPage / Jira x Solus). Relevo/cores resolvidos pelos `--leve-neu-*` / `--leve-header-*`.
  */
 export const documentsCardListPanelClass = cn(
   'documents-card-list-panel documents-neu-list-track',
   'rounded-[var(--leve-header-radius)] p-1 sm:p-1.5'
 );
 
-const documentsCardRaisedShadow =
-  'shadow-[6px_6px_16px_color-mix(in_srgb,#3a342f_52%,transparent),-4px_-4px_10px_color-mix(in_srgb,#5c524b_28%,#4b433d)]';
+const documentsCardRaisedShadow = 'shadow-[var(--leve-neu-raised)]';
 
 export const documentsCardClass = cn(
   'documents-card documents-neu-card documents-card-neu-raised leve-neu-surface',
-  'rounded-[var(--leve-header-radius)] border border-[color-mix(in_srgb,#5c524b_48%,transparent)]',
-  'bg-[color-mix(in_srgb,#5c524b_14%,#4b433d)] p-3 transition-[box-shadow,border-color] duration-200 sm:p-3.5',
+  'rounded-[var(--leve-header-radius)] border border-[color-mix(in_srgb,var(--leve-neu-dark)_70%,transparent)]',
+  'bg-[color-mix(in_srgb,var(--leve-neu-light)_60%,var(--leve-neu-bg))] p-3 transition-[box-shadow,border-color] duration-200 sm:p-3.5',
   documentsCardRaisedShadow,
-  'hover:shadow-[7px_7px_18px_color-mix(in_srgb,#3a342f_55%,transparent),-5px_-5px_12px_color-mix(in_srgb,#5c524b_30%,#4b433d),0_0_0_1px_color-mix(in_srgb,#e65100_14%,transparent)]',
-  'hover:border-[color-mix(in_srgb,#e65100_28%,#5c524b)]'
+  'hover:shadow-[var(--leve-neu-hover)]',
+  'hover:border-[color-mix(in_srgb,var(--leve-header-accent)_28%,var(--leve-neu-dark))]'
 );
 
 export const documentsCardTitleClass = cn(
@@ -73,7 +72,7 @@ export type DocumentCategoryId = 'requisitos' | 'testes' | 'arquitetura' | 'outr
 
 const documentsCategoryBadgeMap: Record<DocumentCategoryId, string> = {
   requisitos:
-    'documents-category-badge--requisitos border-[color-mix(in_srgb,#e65100_35%,transparent)] bg-[color-mix(in_srgb,#e65100_12%,#4b433d)] text-[#e65100]',
+    'documents-category-badge--requisitos border-[color-mix(in_srgb,#e65100_35%,transparent)] bg-[color-mix(in_srgb,#e65100_12%,var(--leve-neu-bg))] text-[#b3450b]',
   testes:
     'border-[color-mix(in_srgb,#10b981_35%,transparent)] bg-[color-mix(in_srgb,#10b981_12%,var(--leve-neu-bg))] text-[var(--leve-header-text)]',
   arquitetura:

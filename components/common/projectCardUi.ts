@@ -1,5 +1,5 @@
 import { cn } from '../../utils/cn';
-import { appDarkPageSurfaceClass, settingsViewScopeClass } from './appPageNeuUi';
+import { settingsViewScopeClass, workspaceSurfaceLightClass } from './appPageNeuUi';
 import {
   appNeuActionBtnActiveClass,
   appNeuActionBtnClass,
@@ -60,11 +60,10 @@ export const projectCardIconWrapClass = cn(
 
 export const projectCardChipClass = 'project-card-neu-chip';
 
-/** Painéis laterais — fundo #4B433D + neumorfismo (modelo métricas globais). */
+/** Painéis laterais — neumorfismo via `--workspace-panel-*` (claro ou escuro conforme o escopo). */
 export const workspacePanelShellClass = cn(
   'workspace-panel-neu-shell relative flex flex-col overflow-hidden font-sans',
-  'rounded-[var(--workspace-panel-radius)]',
-  '!bg-[#4B433D]'
+  'rounded-[var(--workspace-panel-radius)]'
 );
 
 /** Faixa rebaixada das métricas no painel lateral. */
@@ -112,8 +111,8 @@ export const workspacePanelLinkClass = cn(
   'border-b border-[var(--workspace-panel-accent)] pb-0.5 transition-opacity hover:opacity-80 sm:text-xs'
 );
 
-/** Seção RecentActivity (rodapé Leve: marrom + creme + laranja). */
-export const recentActivityShellClass = cn(workspacePanelShellClass, 'p-4 sm:p-5');
+/** Seção RecentActivity — shell claro + cards elevados (LandingPage / Jira x Solus). */
+export const recentActivityShellClass = cn(workspacePanelShellClass, 'recent-activity-shell', 'p-4 sm:p-5');
 
 export const recentActivityEyebrowClass = cn(
   'font-sans text-[10px] font-bold uppercase tracking-widest text-[var(--workspace-panel-text-muted)]'
@@ -139,7 +138,7 @@ export const recentActivityStatusBadgeNeutralClass = cn(
 
 export const recentActivityItemClass = cn(
   workspaceMetricTileClass,
-  'flex gap-3 transition-[box-shadow] duration-200',
+  'recent-activity-item flex gap-3 transition-[box-shadow] duration-200',
   'hover:shadow-[var(--workspace-panel-neu-raised)]'
 );
 
@@ -397,16 +396,16 @@ export const leveViewInlineCodeClass = cn(
   'rounded bg-[var(--leve-header-cream)] px-1.5 py-0.5 font-mono text-xs text-[var(--leve-header-text)]'
 );
 
-/** Tela Configurações — neumorfismo escuro Leve (#4B433D / #E65100 / #FDF6E3). */
+/** Tela Configurações — neumorfismo claro (LandingPage / modais). */
 export const leveSettingsPageClass = cn(
   settingsViewScopeClass,
-  'app-page flex min-h-screen flex-col font-sans',
-  appDarkPageSurfaceClass
+  workspaceSurfaceLightClass,
+  'app-page flex min-h-screen flex-col font-sans'
 );
 
 export const leveSettingsHeaderStickyClass = cn(
   'leve-settings-header-sticky sticky top-0 z-20',
-  'border-b border-[color-mix(in_srgb,#5c524b_38%,transparent)] bg-[#4b433d]'
+  'border-b border-[var(--leve-header-border)] bg-[var(--leve-header-bg)]'
 );
 
 export const leveSettingsTabsNavClass = cn(
@@ -438,7 +437,7 @@ export const leveSettingsSectionMainClass = 'flex min-w-0 flex-1 items-start gap
 
 export const leveSettingsSectionIconWrapClass = cn(
   'leve-settings-section-icon-wrap app-neu-action-icon-wrap',
-  'flex h-12 w-12 shrink-0 items-center justify-center rounded-[var(--leve-header-radius)] text-[#e65100]',
+  'flex h-12 w-12 shrink-0 items-center justify-center rounded-[var(--leve-header-radius)] text-[var(--leve-header-accent)]',
   '[&_svg]:h-5 [&_svg]:w-5'
 );
 

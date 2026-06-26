@@ -71,19 +71,14 @@ export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
             onClick={onAddTask}
             disabled={isRunningGeneralAnalysis}
             title={isRunningGeneralAnalysis ? 'Conclua a análise em andamento' : undefined}
-            className={cn(tasksViewHeaderPrimaryBtnClass, tasksViewHeaderPrimaryCtaClass)}
+            className={cn(tasksViewHeaderPrimaryBtnClass, tasksViewHeaderPrimaryCtaClass, 'shrink-0')}
           >
             <Plus className="h-4 w-4 shrink-0" aria-hidden />
             <span className="hidden sm:inline">Adicionar Tarefa</span>
             <span className="sm:hidden">Tarefa</span>
           </button>
 
-          <div
-            className={cn(tasksViewHeaderSecondaryToolbarDividerClass, 'hidden md:block')}
-            aria-hidden
-          />
-
-          {/* Desktop: IA + Filtros no mesmo trilho (modelo Filtrar/Exportar) */}
+          {/* Desktop: IA + Filtros no trilho inset (modelo Filtrar/Exportar) */}
           <div
             className={cn(tasksViewHeaderSecondaryToolbarClass, 'hidden md:inline-flex')}
             role="group"

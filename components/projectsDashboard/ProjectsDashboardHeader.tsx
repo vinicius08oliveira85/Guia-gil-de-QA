@@ -7,6 +7,7 @@ import {
   projectsDashboardSearchBtnClass,
   projectsDashboardSelectClass,
 } from './projectsDashboardUi';
+import { LANDING_SECTIONS } from '../landing/landingSections';
 
 export type ProjectsDashboardSortBy = 'name' | 'updatedAt';
 
@@ -33,9 +34,9 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
           <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-2.5">
             <h1
               id={headingId}
-              className="font-heading text-2xl font-bold tracking-tight text-[var(--workspace-panel-text)] max-md:text-xl sm:text-[1.75rem]"
+              className="app-brand-title font-sans text-2xl font-bold tracking-tight max-md:text-xl sm:text-[1.75rem]"
             >
-              Meus Projetos
+              {LANDING_SECTIONS.projects.title}
             </h1>
             <span className={viewHeroJiraBadgeClass}>Workspace</span>
             <button
@@ -80,7 +81,7 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
         </div>
 
         <p className="max-w-2xl text-sm leading-relaxed text-[var(--workspace-panel-text-muted)]">
-          Crie, organize e acompanhe o QA por projeto.
+          {LANDING_SECTIONS.projects.description}
         </p>
       </div>
     </section>

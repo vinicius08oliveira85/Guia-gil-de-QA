@@ -5,7 +5,7 @@ import App from '../../App';
 import { useProjectsStore } from '../../store/projectsStore';
 import type { Project } from '../../types';
 import { createDbMocks, createMockProject, createMockProjects } from './mocks';
-import { resetStore, simulateNavigation } from './helpers';
+import { resetStore, simulateNavigation, setInitialRoute } from './helpers';
 import { wireDbServiceMocks } from './wireDbServiceMocks';
 
 // Mock dos serviços
@@ -40,10 +40,11 @@ describe('Testes de Navegação', () => {
     wireDbServiceMocks(mocks);
   });
 
-  async function seedAndLoadApp(projects: Project[]) {
+  async function seedAndLoadApp(projects: Project[], startPath = '/projects') {
     for (const p of projects) {
       await mocks.mockIndexedDB.saveProject(p);
     }
+    setInitialRoute(startPath);
     render(<App />);
     await waitFor(
       () => {
@@ -54,11 +55,12 @@ describe('Testes de Navegação', () => {
   }
 
   describe('1.1 Fluxo Principal de Navegação', () => {
-    it('deve exibir o dashboard principal (Meus Projetos) após o carregamento', async () => {
+    it('deve exibir o dashboard principal após o carregamento', async () => {
+      setInitialRoute('/projects');
       render(<App />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Meus Projetos/i)).toBeInTheDocument();
+        expect(screen.getByText(/Projetos \(Testes\)/i)).toBeInTheDocument();
       });
     });
 
@@ -66,10 +68,7 @@ describe('Testes de Navegação', () => {
       const projects = createMockProjects(2);
       await seedAndLoadApp(projects);
 
-      const projectCard =
-        screen.getByText(projects[0].name).closest('div[role="button"]') ||
-        screen.getByText(projects[0].name);
-      await userEvent.click(projectCard);
+      simulateNavigation('project', projects[0].id);
 
       await waitFor(() => {
         expect(useProjectsStore.getState().selectedProjectId).toBe(projects[0].id);
@@ -79,18 +78,13 @@ describe('Testes de Navegação', () => {
     it('deve navegar de ProjectView para Dashboard ao clicar em Voltar', async () => {
       const project = createMockProject();
       await seedAndLoadApp([project]);
-      useProjectsStore.setState({ selectedProjectId: project.id });
+      simulateNavigation('project', project.id);
 
       await waitFor(() => {
         expect(screen.getByText(project.name)).toBeInTheDocument();
       });
 
-      const backButton = screen.queryByRole('button', { name: /voltar|back/i });
-      if (backButton) {
-        await userEvent.click(backButton);
-      } else {
-        simulateNavigation('dashboard');
-      }
+      simulateNavigation('dashboard');
 
       await waitFor(() => {
         expect(useProjectsStore.getState().selectedProjectId).toBeNull();
@@ -100,7 +94,7 @@ describe('Testes de Navegação', () => {
     it('deve navegar entre tabs no ProjectView', async () => {
       const project = createMockProject();
       await seedAndLoadApp([project]);
-      useProjectsStore.setState({ selectedProjectId: project.id });
+      simulateNavigation('project', project.id);
 
       await waitFor(() => {
         const tabs = screen.queryAllByRole('tab');
@@ -182,7 +176,7 @@ describe('Testes de Navegação', () => {
     it('deve exibir breadcrumbs corretamente no ProjectView', async () => {
       const project = createMockProject();
       await seedAndLoadApp([project]);
-      useProjectsStore.setState({ selectedProjectId: project.id });
+      simulateNavigation('project', project.id);
 
       const breadcrumbs = await screen.findByRole('navigation', {
         name: /trilha de navegação|breadcrumb/i,
@@ -198,7 +192,7 @@ describe('Testes de Navegação', () => {
       await seedAndLoadApp(projects);
 
       for (let i = 0; i < 3; i++) {
-        useProjectsStore.getState().selectProject(projects[i].id);
+        simulateNavigation('project', projects[i].id);
         await waitFor(() => {
           expect(useProjectsStore.getState().selectedProjectId).toBe(projects[i].id);
         });
@@ -211,7 +205,7 @@ describe('Testes de Navegação', () => {
     it('deve manter estado durante navegação com dados ausentes', async () => {
       const project = createMockProject();
       await seedAndLoadApp([project]);
-      useProjectsStore.setState({ selectedProjectId: project.id });
+      simulateNavigation('project', project.id);
 
       useProjectsStore.setState({ projects: [] });
 
@@ -225,6 +219,7 @@ describe('Testes de Navegação', () => {
       await seedAndLoadApp([project]);
 
       useProjectsStore.getState().selectProject(project.id);
+      simulateNavigation('project', project.id);
 
       await waitFor(() => {
         expect(useProjectsStore.getState().selectedProjectId).toBe(project.id);

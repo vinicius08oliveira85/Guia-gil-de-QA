@@ -7,20 +7,13 @@ import React, {
   useMemo,
   useId,
 } from 'react';
-import { ExpandableTabs } from './ExpandableTabs';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ExpansibleButton } from './ExpansibleButton';
-import { useTheme } from '../../hooks/useTheme';
 import {
-  Moon,
-  Sun,
-  Heart,
-  Monitor,
-  Sliders,
   Plus,
   Loader2,
   ChevronLeft,
   LayoutGrid,
-  MoreVertical,
 } from 'lucide-react';
 import { Project } from '../../types';
 import { Modal } from './Modal';
@@ -42,34 +35,35 @@ import {
   headerNeuToolbarPillPrimaryClass,
   headerNeuToolbarPillSecondaryClass,
 } from './headerNeuUi';
-import { appMenuItemClass, appMenuPanelClass } from './viewUi';
+import { APP_BRAND } from '../landing/landingSections';
+import { resolveHeaderBackNavigation } from '../../utils/headerBackNavigation';
 
 interface HeaderProps {
   onProjectImported?: (project: Project) => void;
-  onOpenSettings?: () => void;
   onNavigate?: (view: string) => void;
   onOpenCreateModal?: () => void;
   showDashboardActions?: boolean;
   onLogoClick?: () => void;
+  /** Título exibido ao lado da logo (padrão: QA Agile Guide). */
+  brandTitle?: string;
+  /** Subtítulo exibido abaixo do título (padrão: tagline do app). */
+  brandSubtitle?: string;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   onProjectImported: _onProjectImported,
-  onOpenSettings,
   onNavigate: _onNavigate,
   onOpenCreateModal,
   showDashboardActions,
   onLogoClick,
+  brandTitle,
+  brandSubtitle,
 }) => {
-  const { theme, toggleTheme } = useTheme();
   const [isSaving, setIsSaving] = useState(false);
   const [isSyncingSupabase, setIsSyncingSupabase] = useState(false);
-  const [expandedButton, setExpandedButton] = useState<'jira' | 'salvar' | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [utilityMenuOpen, setUtilityMenuOpen] = useState(false);
   const mobileMenuPanelRef = useRef<HTMLDivElement>(null);
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
-  const utilityMenuRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
   const mobileMenuDomId = useId().replace(/:/g, '');
 
@@ -80,6 +74,8 @@ export const Header: React.FC<HeaderProps> = ({
   const selectProject = useProjectsStore(s => s.selectProject);
   const selectedProjectId = useProjectsStore(s => s.selectedProjectId);
   const selectedProject = getSelectedProject();
+  const location = useLocation();
+  const navigate = useNavigate();
   const {
     handleSyncJira,
     isSyncingJira,
@@ -98,28 +94,6 @@ export const Header: React.FC<HeaderProps> = ({
     selectProject(null);
     onLogoClick?.();
   }, [selectProject, onLogoClick]);
-
-  const closeUtilityMenu = useCallback(() => {
-    setUtilityMenuOpen(false);
-  }, []);
-
-  useEffect(() => {
-    if (!utilityMenuOpen) return;
-    const close = (event: MouseEvent | TouchEvent) => {
-      if (
-        utilityMenuRef.current &&
-        !utilityMenuRef.current.contains(event.target as Node)
-      ) {
-        setUtilityMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', close);
-    document.addEventListener('touchstart', close);
-    return () => {
-      document.removeEventListener('mousedown', close);
-      document.removeEventListener('touchstart', close);
-    };
-  }, [utilityMenuOpen]);
 
   useEffect(() => {
     if (!mobileMenuOpen) return;
@@ -176,57 +150,6 @@ export const Header: React.FC<HeaderProps> = ({
     }
     return 'Análise geral com IA desatualizada em relação ao estado atual do projeto';
   }, [selectedProject, generalAnalysisOutdated]);
-
-  const getThemeIcon = () => {
-    switch (theme) {
-      case 'dark':
-        return Moon;
-      case 'light':
-        return Sun;
-      case 'leve-saude':
-        return Heart;
-      default:
-        return Monitor;
-    }
-  };
-
-  const getThemeTitle = () => {
-    switch (theme) {
-      case 'dark':
-        return 'Tema Escuro';
-      case 'light':
-        return 'Tema Claro';
-      case 'leve-saude':
-        return 'Leve Saúde';
-      default:
-        return 'Tema Automático';
-    }
-  };
-
-  const handleTabChange = (id: string | null) => {
-    if (id === null) {
-      return;
-    }
-
-    switch (id) {
-      case 'settings':
-        onOpenSettings?.();
-        closeMobileMenu();
-        closeUtilityMenu();
-        break;
-      case 'theme':
-        toggleTheme();
-        closeUtilityMenu();
-        break;
-    }
-  };
-
-  const tabs = [
-    { id: 'settings', title: 'Configurações', icon: Sliders },
-    { id: 'theme', title: getThemeTitle(), icon: getThemeIcon() },
-  ];
-
-  const activeColor = 'text-[var(--project-card-accent)]';
 
   const handleSave = async () => {
     const proj = getSelectedProject();
@@ -320,17 +243,31 @@ export const Header: React.FC<HeaderProps> = ({
     handleSyncSupabase,
   ]);
 
-  const mainNavRailItems = useMemo((): NavigationMenuItem[] => {
-    if (!onLogoClick) return [];
-    return [
-      {
-        id: 'projects',
-        label: 'Projetos',
-        icon: <LayoutGrid className="h-4 w-4" aria-hidden />,
-        onClick: goToProjectsList,
-      },
-    ];
-  }, [onLogoClick, goToProjectsList]);
+  /** Volta para a tela anterior conforme a rota atual (Menu ou Projetos). */
+  const handleHeaderBack = useCallback(() => {
+    const back = resolveHeaderBackNavigation(location.pathname);
+    if (!back) return;
+    if (back.targetPath === '/projects') {
+      selectProject(null);
+    }
+    navigate(back.targetPath);
+  }, [location.pathname, navigate, selectProject]);
+
+  const headerBackNavItem = useMemo((): NavigationMenuItem | null => {
+    if (!onLogoClick) return null;
+    const back = resolveHeaderBackNavigation(location.pathname);
+    if (!back) return null;
+    return {
+      id: 'header-back',
+      label: back.label,
+      ariaLabel: back.ariaLabel,
+      icon: <ChevronLeft className="h-4 w-4" aria-hidden />,
+      onClick: handleHeaderBack,
+    };
+  }, [onLogoClick, location.pathname, handleHeaderBack]);
+
+  const resolvedBrandTitle = brandTitle ?? APP_BRAND.title;
+  const resolvedBrandSubtitle = brandSubtitle ?? APP_BRAND.subtitle;
 
   const logoContent = (
     <>
@@ -350,7 +287,7 @@ export const Header: React.FC<HeaderProps> = ({
             'app-brand-title app-element-typography'
           )}
         >
-          <span>QA Agile Guide</span>
+          <span>{resolvedBrandTitle}</span>
           {generalAnalysisOutdated && (
             <span
               className="app-header-analysis-dot"
@@ -367,7 +304,7 @@ export const Header: React.FC<HeaderProps> = ({
             'text-[var(--leve-header-text-muted)]'
           )}
         >
-          Gestão de QA ágil, métricas e automação
+          {resolvedBrandSubtitle}
         </p>
       </div>
     </>
@@ -424,8 +361,7 @@ export const Header: React.FC<HeaderProps> = ({
         onClick={handleSyncJira}
         disabled={isSyncingJira}
         ariaLabel="Sincronizar com Jira"
-        isExpanded={expandedButton === 'jira'}
-        onExpandedChange={expanded => setExpandedButton(expanded ? 'jira' : null)}
+        isExpanded={false}
       />
       <ExpansibleButton
         neuVariant="header"
@@ -443,8 +379,7 @@ export const Header: React.FC<HeaderProps> = ({
         onClick={handleSave}
         disabled={isSaving}
         ariaLabel="Salvar"
-        isExpanded={expandedButton === 'salvar'}
-        onExpandedChange={expanded => setExpandedButton(expanded ? 'salvar' : null)}
+        isExpanded={false}
       />
     </>
   ) : undefined;
@@ -486,7 +421,13 @@ export const Header: React.FC<HeaderProps> = ({
                 'hover:bg-[color-mix(in_srgb,var(--leve-neu-bg)_88%,var(--leve-neu-light))]',
                 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[oklch(var(--p))]'
               )}
-              aria-label="Voltar para Meus Projetos"
+              aria-label={
+                selectedProject
+                  ? 'Voltar para Meus Projetos'
+                  : showDashboardActions
+                    ? 'Voltar para a página inicial'
+                    : 'Voltar'
+              }
             >
               <span
                 className={cn(
@@ -507,12 +448,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           )}
 
-          <div
-            className={cn(
-              'app-header-actions relative flex min-w-0 max-w-[min(100%,52%)] shrink-0 items-center justify-end gap-1.5 overflow-hidden max-md:max-w-[min(100%,72%)] sm:max-w-[min(100%,58%)] md:gap-2',
-              utilityMenuOpen && 'max-md:overflow-visible'
-            )}
-          >
+          <div className="app-header-actions relative flex min-w-0 max-w-[min(100%,52%)] shrink-0 items-center justify-end gap-1.5 overflow-hidden max-md:max-w-[min(100%,72%)] sm:max-w-[min(100%,58%)] md:gap-2">
             {showDashboardActions && (
               <div className="hidden shrink-0 items-center gap-1.5 md:flex">
                 {onOpenCreateModal && (
@@ -547,85 +483,23 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               </div>
             )}
-            {mainNavRailItems.length > 0 && (
+            {headerBackNavItem ? (
               <NavigationMenuRail
-                items={mainNavRailItems}
-                currentId={selectedProjectId == null ? 'projects' : undefined}
+                items={[headerBackNavItem]}
                 neuVariant="header"
                 className="shrink-0 border-l border-[color-mix(in_srgb,var(--project-card-neu-light)_22%,transparent)] pl-2"
               />
-            )}
-            <div className="relative hidden min-w-0 overflow-hidden md:block">
-              <ExpandableTabs
-                neuVariant="header"
-                className="flex max-w-full flex-nowrap items-center gap-1.5"
-                tabs={tabs}
-                activeColor={activeColor}
-                onChange={handleTabChange}
-                onOutsideClick={() => setExpandedButton(null)}
-                leadingContent={
-                  leadingContent ? (
-                    <div className="flex flex-nowrap items-center gap-1.5">{leadingContent}</div>
-                  ) : undefined
-                }
-              />
-            </div>
+            ) : null}
+            {leadingContent ? (
+              <div className="relative hidden min-w-0 shrink-0 items-center gap-1.5 overflow-hidden md:flex">
+                {leadingContent}
+              </div>
+            ) : null}
 
             <div className="relative z-[110] flex shrink-0 items-center gap-1 md:hidden">
-              <div
-                ref={utilityMenuRef}
-                className={cn(
-                  'app-header-mobile-utility-menu dropdown dropdown-end relative z-[120]',
-                  utilityMenuOpen && 'dropdown-open'
-                )}
-              >
-                <button
-                  type="button"
-                  className="win-icon-button app-header-mobile-utility-trigger !size-9 !min-h-9 !min-w-9 !rounded-full !p-0"
-                  aria-label="Mais opções: configurações e tema"
-                  aria-haspopup="menu"
-                  aria-expanded={utilityMenuOpen}
-                  onClick={() => setUtilityMenuOpen(open => !open)}
-                >
-                  <MoreVertical className="h-5 w-5" aria-hidden />
-                </button>
-                {utilityMenuOpen ? (
-                  <ul
-                    role="menu"
-                    className={cn(
-                      appMenuPanelClass,
-                      'dropdown-content menu menu-sm fixed right-3 z-[200] mt-1 w-56 p-2'
-                    )}
-                    style={{ top: 'calc(var(--app-header-sticky-offset, 4.5rem) + 0.25rem)' }}
-                  >
-                    {tabs.map(tab => {
-                      const Icon = tab.icon;
-                      return (
-                        <li key={tab.id} role="none">
-                          <button
-                            type="button"
-                            role="menuitem"
-                            className={cn(
-                              appMenuItemClass,
-                              'max-md:min-h-9 max-md:py-1.5 max-md:text-sm'
-                            )}
-                            onClick={() => handleTabChange(tab.id)}
-                          >
-                            <Icon className="h-5 w-5 shrink-0" aria-hidden />
-                            {tab.title}
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                ) : null}
-              </div>
               <NavigationMenuHamburger
                 open={mobileMenuOpen}
-                onOpenChange={open => {
-                  setMobileMenuOpen(open);
-                  if (open) setUtilityMenuOpen(false);
-                }}
+                onOpenChange={setMobileMenuOpen}
                 triggerRef={mobileMenuButtonRef}
                 controlsId={mobileMenuDomId}
               />

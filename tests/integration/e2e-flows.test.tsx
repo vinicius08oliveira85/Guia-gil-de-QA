@@ -5,7 +5,7 @@ import App from '../../App';
 import { useProjectsStore } from '../../store/projectsStore';
 import { JiraTask, Project } from '../../types';
 import { createDbMocks, createMockProject } from './mocks';
-import { resetStore, waitForStoreState } from './helpers';
+import { resetStore, waitForStoreState, setInitialRoute, simulateNavigation } from './helpers';
 import { wireDbServiceMocks, wireSupabaseLoadMock } from './wireDbServiceMocks';
 
 // Mock dos serviços
@@ -78,10 +78,11 @@ describe('Testes de Integração End-to-End', () => {
 
   describe('3.1 Fluxo Completo: Criar → Editar → Navegar → Persistir', () => {
     it('deve completar fluxo completo de criação e edição de projeto', async () => {
+      setInitialRoute('/projects');
       render(<App />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Meus Projetos/i)).toBeInTheDocument();
+        expect(screen.getByText(/Projetos \(Testes\)/i)).toBeInTheDocument();
       });
 
       await useProjectsStore.getState().createProject('Projeto E2E', 'Descrição do projeto E2E');
@@ -93,7 +94,7 @@ describe('Testes de Integração End-to-End', () => {
       expect(createdProject).toBeDefined();
       if (!createdProject) return;
 
-      useProjectsStore.getState().selectProject(createdProject.id);
+      simulateNavigation('project', createdProject.id);
       await waitFor(() => {
         expect(useProjectsStore.getState().selectedProjectId).toBe(createdProject.id);
       });

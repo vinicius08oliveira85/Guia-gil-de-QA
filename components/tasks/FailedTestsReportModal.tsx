@@ -658,7 +658,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                 </p>
                 <AppSelect
                   value={selectedTaskId || ''}
-                  onChange={e => setSelectedTaskId(e.target.value || undefined)}
+                  onChange={value => setSelectedTaskId(value || undefined)}
                   className="select select-bordered select-sm w-full"
                 >
                   <option value="">Selecione uma tarefa</option>

@@ -379,7 +379,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
                 id="bulk-tag-input"
                 type="text"
                 value={tagValue}
-                onChange={v => setTagValue(v)}
+                onChange={e => setTagValue(e.target.value)}
                 placeholder="Ex: crítico, regressão..."
                 className={cn('input input-bordered w-full', neuSurfaceClass)}
               />
@@ -509,7 +509,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
               id="bulk-new-project-name"
               type="text"
               value={projectName}
-              onChange={v => setProjectName(v)}
+              onChange={e => setProjectName(e.target.value)}
               placeholder="Ex: Projeto de Testes - Sprint 1"
               className={cn('input input-bordered w-full', neuSurfaceClass)}
               autoFocus
@@ -522,7 +522,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
             <textarea
               id="bulk-new-project-desc"
               value={projectDescription}
-              onChange={v => setProjectDescription(v)}
+              onChange={e => setProjectDescription(e.target.value)}
               placeholder="Descreva o objetivo deste projeto..."
               rows={4}
               className={cn('textarea textarea-bordered w-full resize-none', neuSurfaceClass)}

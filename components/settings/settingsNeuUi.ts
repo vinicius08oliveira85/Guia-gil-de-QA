@@ -42,7 +42,7 @@ export const settingsNeuRemoveBtnClass = cn(
 export const settingsNeuKbdClass = cn(
   'settings-neu-kbd',
   'inline-flex min-h-9 min-w-[3.5rem] items-center justify-center rounded-full px-3 py-1.5',
-  'font-mono text-xs font-semibold tracking-wide text-[#fdf6e3]'
+  'font-mono text-xs font-semibold tracking-wide text-[var(--leve-header-text)]'
 );
 
 export const settingsNeuShortcutActionsClass = cn(

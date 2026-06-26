@@ -123,6 +123,14 @@ export interface JiraProject {
   description?: string;
 }
 
+/** Fila do Jira Service Management vinculada a um projeto. */
+export interface JiraQueue {
+  id: string;
+  name: string;
+  jql: string;
+  serviceDeskId: string;
+}
+
 export const JIRA_CONFIG_KEY = 'jira_config';
 export const JIRA_LAST_URL_KEY = 'jira_last_url';
 

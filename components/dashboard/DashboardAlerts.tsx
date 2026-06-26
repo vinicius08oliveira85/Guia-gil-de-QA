@@ -112,11 +112,13 @@ export const DashboardAlerts: React.FC<DashboardAlertsProps> = React.memo(
                 aria-label={alert.message}
               >
                 <motion.div
-                  className={cn('flex shrink-0 h-8 w-8 items-center justify-center rounded-md', alert.textColor, {
-                    'bg-error/15 ring-1 ring-error/30': alert.type === 'error',
-                    'bg-warning/15 ring-1 ring-warning/30': alert.type === 'warning',
-                    'bg-success/15 ring-1 ring-success/30': alert.type === 'success',
-                  })}
+                  className={cn(
+                    'flex shrink-0 h-8 w-8 items-center justify-center rounded-md',
+                    alert.textColor,
+                    alert.type === 'error' && 'bg-error/15 ring-1 ring-error/30',
+                    alert.type === 'warning' && 'bg-warning/15 ring-1 ring-warning/30',
+                    alert.type === 'success' && 'bg-success/15 ring-1 ring-success/30'
+                  )}
                   initial={{ scale: 0, rotate: -180 }}
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{ delay: index * 0.1 + 0.2, type: 'spring', stiffness: 100 }}

@@ -56,7 +56,7 @@ const buildProjectFingerprint = (project: Project): string =>
     })),
     businessRules: (project.businessRules || []).map(rule => ({
       id: rule.id,
-      name: rule.name,
+      title: rule.title,
       descriptionLength: rule.description?.length ?? 0,
     })),
     settingsFingerprint: JSON.stringify(project.settings ?? {}),

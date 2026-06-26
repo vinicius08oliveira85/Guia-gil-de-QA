@@ -19,6 +19,7 @@ export interface NeuSelectProps {
   className?: string;
   'aria-label'?: string;
   placeholder?: string;
+  title?: string;
 }
 
 export const NeuSelect: React.FC<NeuSelectProps> = ({
@@ -30,6 +31,7 @@ export const NeuSelect: React.FC<NeuSelectProps> = ({
   className,
   'aria-label': ariaLabel,
   placeholder = 'Selecionar…',
+  title,
 }) => {
   const generatedId = useId();
   const selectId = id ?? generatedId;
@@ -161,6 +163,7 @@ export const NeuSelect: React.FC<NeuSelectProps> = ({
           aria-expanded={isOpen}
           aria-controls={isOpen ? listboxId : undefined}
           aria-label={ariaLabel}
+          title={title}
           onClick={() => {
             if (disabled) return;
             setIsOpen(open => !open);

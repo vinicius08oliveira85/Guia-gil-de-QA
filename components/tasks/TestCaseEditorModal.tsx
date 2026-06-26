@@ -199,7 +199,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
               <input
                 type="text"
                 value={environment}
-                onChange={v => setEnvironment(v)}
+                onChange={e => setEnvironment(e.target.value)}
                 className={cn(searchInputClass, 'h-9 pl-3')}
                 placeholder="Ex.: Homologação"
               />
@@ -209,7 +209,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
               <input
                 type="text"
                 value={suite}
-                onChange={v => setSuite(v)}
+                onChange={e => setSuite(e.target.value)}
                 className={cn(searchInputClass, 'h-9 pl-3')}
                 placeholder="Ex.: Smoke API"
               />

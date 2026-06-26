@@ -5,25 +5,22 @@ import {
   appNeuActionDividerClass,
   appNeuActionIconWrapClass,
   appNeuActionTrackClass,
-  appNeuActionTrackWrapClass,
 } from '../common/workspaceChromeActionUi';
 
 /**
- * Paleta escura neumórfica — painel de Tarefas (header, abas, busca, toolbar, seções).
- * #4a423e card · #423b37 rebaixado · #d85414 laranja · #fdf6e3 círculo
- * #dcdcdc labels · #ffffff badge · #777777 trilha
+ * Painel de Tarefas (header, abas, busca, toolbar, seções) — dirigido pelos tokens
+ * `--workspace-panel-*`, que assumem paleta CLARA sob `workspace-surface-light`
+ * (identidade LandingPage / Jira x Solus) e escura sob `workspace-surface-dark`.
+ * Fonte única de verdade: nenhuma cor hardcoded aqui.
  */
-const neuRaised =
-  'shadow-[6px_6px_14px_color-mix(in_srgb,#423b37_55%,transparent),-4px_-4px_10px_color-mix(in_srgb,#fdf6e3_12%,#4a423e)]';
+const neuRaised = 'shadow-[var(--workspace-panel-neu-raised)]';
 
-const neuInset =
-  'shadow-[inset_4px_4px_10px_color-mix(in_srgb,#423b37_70%,transparent),inset_-3px_-3px_8px_color-mix(in_srgb,#fdf6e3_10%,#4a423e)]';
+const neuInset = 'shadow-[var(--workspace-panel-neu-inset)]';
 
-const neuInsetDeep =
-  'shadow-[inset_5px_5px_12px_color-mix(in_srgb,#423b37_75%,transparent),inset_-4px_-4px_10px_color-mix(in_srgb,#fdf6e3_8%,#4a423e)]';
+const neuInsetDeep = 'shadow-[var(--workspace-panel-neu-inset-deep)]';
 
 const badgeRaised =
-  'shadow-[2px_2px_6px_color-mix(in_srgb,#423b37_55%,transparent),-1px_-1px_4px_color-mix(in_srgb,#fdf6e3_14%,#4a423e)]';
+  'shadow-[2px_2px_6px_color-mix(in_srgb,var(--workspace-panel-neu-dark)_45%,transparent),-1px_-1px_4px_var(--workspace-panel-neu-highlight-raised)]';
 
 /* ── Painel / card ───────────────────────────────────────────── */
 
@@ -38,7 +35,7 @@ export const tasksPanelSectionDividerClass = cn(
   'max-md:mt-2 max-md:pt-2'
 );
 
-/** Envelope da lista (toolbar + Favoritos / Outras) — card #4a423e. */
+/** Envelope da lista (toolbar + Favoritos / Outras) — card claro via --workspace-panel-bg. */
 export const tasksPanelListShellClass = cn(
   tasksPanelCardClass,
   'tasks-panel-dark-surface p-2.5 sm:p-3.5 max-md:p-1.5'
@@ -53,6 +50,7 @@ export const tasksViewHeaderPrimaryBtnClass = cn(
 );
 
 export const tasksViewHeaderSecondaryToolbarClass = cn(
+  appNeuActionTrackClass,
   'inline-flex items-stretch gap-0.5',
   'max-md:w-full max-md:flex-wrap max-md:justify-stretch'
 );
@@ -145,73 +143,73 @@ export const tasksPanelSearchHintClass =
 
 export const tasksPanelActiveFiltersBarClass = cn(
   'tasks-panel-dark-surface flex flex-wrap items-center gap-2 rounded-[var(--leve-header-radius)] px-2.5 py-2.5 sm:px-3 sm:py-3',
-  'border border-[color-mix(in_srgb,#fdf6e3_10%,transparent)]',
-  'bg-[#423b37]',
+  'border border-[var(--workspace-panel-border)]',
+  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))]',
   neuInset
 );
 
 export const tasksPanelActiveFilterChipClass = cn(
   'inline-flex items-center gap-1 rounded-full px-2.5 py-1',
-  'border border-[color-mix(in_srgb,#fdf6e3_12%,transparent)]',
-  'bg-[#4a423e] font-sans text-xs font-medium text-[#dcdcdc]',
+  'border border-[var(--workspace-panel-border)]',
+  'bg-[var(--workspace-panel-bg)] font-sans text-xs font-medium text-[var(--workspace-panel-text-muted)]',
   neuRaised
 );
 
 export const tasksPanelActiveFilterChipBtnClass = cn(
-  'flex h-5 w-5 items-center justify-center rounded-full text-[#777777]',
-  'transition-colors hover:text-[#d85414]'
+  'flex h-5 w-5 items-center justify-center rounded-full text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]',
+  'transition-colors hover:text-[var(--workspace-panel-accent)]'
 );
 
 export const tasksPanelActiveFiltersClearClass = cn(
   'ml-1 inline-flex items-center gap-1 rounded-full px-2.5 py-1',
-  'font-sans text-xs font-semibold text-[#d85414]',
-  'transition-colors hover:text-[#fdf6e3] hover:underline'
+  'font-sans text-xs font-semibold text-[var(--workspace-panel-accent)]',
+  'transition-colors hover:text-[var(--workspace-panel-text)] hover:underline'
 );
 
-export const tasksPanelListCountClass = 'font-sans text-sm text-[#dcdcdc]';
+export const tasksPanelListCountClass = 'font-sans text-sm text-[var(--workspace-panel-text-muted)]';
 
 /* ── Modais neumórficos escuros (compartilhado) ───────────────── */
 
 export const tasksPanelNeuModalPanelClass = cn(
   'tasks-panel-neu-modal tasks-panel-dark-surface',
-  'border border-[color-mix(in_srgb,#fdf6e3_14%,transparent)] bg-[#4a423e]',
+  'border border-[var(--workspace-panel-border)] bg-[var(--workspace-panel-bg)]',
   neuRaised,
-  'shadow-[6px_6px_14px_color-mix(in_srgb,#423b37_55%,transparent),-4px_-4px_10px_color-mix(in_srgb,#fdf6e3_12%,#4a423e),0_20px_50px_color-mix(in_srgb,#000_35%,transparent)]',
-  '[&_.leve-modal-neu-header]:border-[color-mix(in_srgb,#fdf6e3_12%,transparent)]',
-  '[&_.leve-modal-neu-header]:bg-[#423b37]',
-  '[&>div.custom-scrollbar]:bg-[#4a423e] [&>div.custom-scrollbar]:text-[#dcdcdc]',
-  '[&_.leve-modal-neu-close]:border [&_.leve-modal-neu-close]:border-[color-mix(in_srgb,#fdf6e3_12%,transparent)]',
-  '[&_.leve-modal-neu-close]:bg-[#423b37] [&_.leve-modal-neu-close]:text-[#dcdcdc]',
-  '[&_.leve-modal-neu-close:hover]:text-[#d85414]',
-  '[&_.leve-modal-neu-header>div_span]:bg-[color-mix(in_srgb,#fdf6e3_22%,transparent)]'
+  'shadow-[var(--workspace-panel-neu-raised),0_20px_50px_color-mix(in_srgb,#000_18%,transparent)]',
+  '[&_.leve-modal-neu-header]:border-[var(--workspace-panel-border)]',
+  '[&_.leve-modal-neu-header]:bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))]',
+  '[&>div.custom-scrollbar]:bg-[var(--workspace-panel-bg)] [&>div.custom-scrollbar]:text-[var(--workspace-panel-text-muted)]',
+  '[&_.leve-modal-neu-close]:border [&_.leve-modal-neu-close]:border-[var(--workspace-panel-border)]',
+  '[&_.leve-modal-neu-close]:bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))] [&_.leve-modal-neu-close]:text-[var(--workspace-panel-text-muted)]',
+  '[&_.leve-modal-neu-close:hover]:text-[var(--workspace-panel-accent)]',
+  '[&_.leve-modal-neu-header>div_span]:bg-[var(--workspace-panel-border)]'
 );
 
 /** @deprecated Use `tasksPanelNeuModalPanelClass` */
 export const tasksPanelFiltersModalPanelClass = tasksPanelNeuModalPanelClass;
 
 export const tasksPanelNeuModalTitleClass =
-  '!text-[#fdf6e3] font-sans font-bold [font-family:var(--font-sans)]';
+  '!text-[var(--workspace-panel-text)] font-sans font-bold [font-family:var(--font-sans)]';
 
 /** @deprecated Use `tasksPanelNeuModalTitleClass` */
 export const tasksPanelFiltersModalTitleClass = tasksPanelNeuModalTitleClass;
 
 export const tasksPanelFiltersModalSectionLabelClass = cn(
-  'mb-2 flex items-center gap-1.5 font-sans text-[10px] font-extrabold uppercase tracking-wider text-[#d85414]',
-  'border-b border-[color-mix(in_srgb,#d85414_35%,transparent)] pb-1'
+  'mb-2 flex items-center gap-1.5 font-sans text-[10px] font-extrabold uppercase tracking-wider text-[var(--workspace-panel-accent)]',
+  'border-b border-[color-mix(in_srgb,var(--workspace-panel-accent)_35%,transparent)] pb-1'
 );
 
-export const tasksPanelFiltersModalHintClass = 'mb-2 font-sans text-[11px] text-[#777777]';
+export const tasksPanelFiltersModalHintClass = 'mb-2 font-sans text-[11px] text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]';
 
 export const tasksPanelFiltersModalDividerClass =
-  'mb-5 border-b border-[color-mix(in_srgb,#fdf6e3_12%,transparent)] pb-5';
+  'mb-5 border-b border-[var(--workspace-panel-border)] pb-5';
 
 export const tasksPanelFiltersModalSaveLinkClass = cn(
-  'inline-flex items-center gap-1 font-sans text-xs font-semibold text-[#d85414]',
-  'transition-colors hover:text-[#fdf6e3]'
+  'inline-flex items-center gap-1 font-sans text-xs font-semibold text-[var(--workspace-panel-accent)]',
+  'transition-colors hover:text-[var(--workspace-panel-text)]'
 );
 
 export const tasksPanelFiltersModalEmptyClass =
-  'font-sans text-xs italic text-[#777777]';
+  'font-sans text-xs italic text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]';
 
 export const tasksPanelFiltersModalChipClass = (active: boolean) =>
   cn(
@@ -219,14 +217,14 @@ export const tasksPanelFiltersModalChipClass = (active: boolean) =>
     active
       ? cn(
           'border border-[color-mix(in_srgb,#ffffff_35%,transparent)]',
-          'bg-[#d85414] font-semibold text-[#ffffff]',
+          'bg-[var(--workspace-panel-accent)] font-semibold text-[#ffffff]',
           badgeRaised
         )
       : cn(
-          'border border-[color-mix(in_srgb,#fdf6e3_12%,transparent)]',
-          'bg-[#423b37] font-medium text-[#dcdcdc]',
+          'border border-[var(--workspace-panel-border)]',
+          'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))] font-medium text-[var(--workspace-panel-text-muted)]',
           neuInset,
-          'hover:text-[#fdf6e3]'
+          'hover:text-[var(--workspace-panel-text)]'
         )
   );
 
@@ -234,8 +232,8 @@ export const tasksPanelFiltersModalChipCountClass = (active: boolean) =>
   cn(
     'rounded-full px-1.5 py-0.5 font-sans text-[10px] font-bold tabular-nums leading-none',
     active
-      ? 'bg-[#ffffff] text-[#d85414]'
-      : 'border border-[color-mix(in_srgb,#fdf6e3_10%,transparent)] bg-[#d85414] text-[#ffffff]'
+      ? 'bg-[#ffffff] text-[var(--workspace-panel-accent)]'
+      : 'border border-[var(--workspace-panel-border)] bg-[var(--workspace-panel-accent)] text-[#ffffff]'
   );
 
 export const tasksPanelFiltersModalPresetClass = cn(
@@ -244,17 +242,17 @@ export const tasksPanelFiltersModalPresetClass = cn(
 );
 
 export const tasksPanelFiltersModalPresetNameClass =
-  'text-[#dcdcdc] transition-colors hover:text-[#fdf6e3]';
+  'text-[var(--workspace-panel-text-muted)] transition-colors hover:text-[var(--workspace-panel-text)]';
 
 export const tasksPanelFiltersModalPresetDeleteClass =
-  'text-[#777777] opacity-0 transition-[color,opacity] group-hover:opacity-100 hover:text-error';
+  'text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)] opacity-0 transition-[color,opacity] group-hover:opacity-100 hover:text-error';
 
 export const tasksPanelFiltersModalInputClass = cn(
   'h-9 flex-1 rounded-full border pl-3 font-sans text-xs',
-  'border-[color-mix(in_srgb,#fdf6e3_10%,transparent)]',
-  'bg-[#423b37] text-[#fdf6e3] placeholder:text-[#777777]',
+  'border-[var(--workspace-panel-border)]',
+  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))] text-[var(--workspace-panel-text)] placeholder:text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]',
   neuInset,
-  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,#d85414_40%,transparent)]'
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--workspace-panel-accent)_40%,transparent)]'
 );
 
 export const tasksPanelFiltersModalSaveBtnClass = cn(
@@ -271,15 +269,15 @@ export const tasksPanelFiltersModalCancelIconBtnClass = cn(
 
 export const tasksPanelExportModalContentClass = 'space-y-4 p-1 font-sans';
 
-export const tasksPanelExportModalInfoClass = 'font-sans text-sm text-[#dcdcdc]';
+export const tasksPanelExportModalInfoClass = 'font-sans text-sm text-[var(--workspace-panel-text-muted)]';
 
-export const tasksPanelExportModalInfoStrongClass = 'font-semibold text-[#fdf6e3]';
+export const tasksPanelExportModalInfoStrongClass = 'font-semibold text-[var(--workspace-panel-text)]';
 
 export const tasksPanelExportModalFieldLabelClass = tasksPanelFiltersModalSectionLabelClass;
 
 export const tasksPanelExportFormatStripClass = cn(
   'grid grid-cols-2 gap-1 rounded-[var(--leve-header-radius)] p-1.5 sm:grid-cols-3',
-  'border border-[color-mix(in_srgb,#fdf6e3_10%,transparent)] bg-[#423b37]',
+  'border border-[var(--workspace-panel-border)] bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))]',
   neuInset
 );
 
@@ -289,13 +287,13 @@ export const tasksPanelExportFormatOptionClass = (active: boolean) =>
     active
       ? cn(
           'border border-[color-mix(in_srgb,#ffffff_35%,transparent)]',
-          'bg-[#d85414] text-[#ffffff]',
+          'bg-[var(--workspace-panel-accent)] text-[#ffffff]',
           badgeRaised
         )
-      : 'text-[#dcdcdc] hover:text-[#fdf6e3]'
+      : 'text-[var(--workspace-panel-text-muted)] hover:text-[var(--workspace-panel-text)]'
   );
 
-export const tasksPanelExportModalHintClass = 'font-sans text-xs text-[#777777]';
+export const tasksPanelExportModalHintClass = 'font-sans text-xs text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]';
 
 export const tasksPanelExportModalSubmitClass = cn(
   tasksViewHeaderPrimaryBtnClass,
@@ -305,19 +303,19 @@ export const tasksPanelExportModalSubmitClass = cn(
 /* ── Formulários em modais (tarefa, regras) ──────────────────── */
 
 export const tasksPanelFormFieldLabelClass =
-  'mb-2 block font-sans text-[10px] font-bold uppercase tracking-widest text-[#dcdcdc]';
+  'mb-2 block font-sans text-[10px] font-bold uppercase tracking-widest text-[var(--workspace-panel-text-muted)]';
 
 export const tasksPanelFormFieldLabelAccentClass = cn(
   tasksPanelFormFieldLabelClass,
-  'flex items-center gap-2 !text-[#d85414]'
+  'flex items-center gap-2 !text-[var(--workspace-panel-accent)]'
 );
 
 export const tasksPanelFormInputClass = cn(
   'w-full min-h-[44px] rounded-[var(--leve-header-radius)] border px-3 font-sans text-sm',
-  'border-[color-mix(in_srgb,#fdf6e3_10%,transparent)]',
-  'bg-[#423b37] text-[#fdf6e3] placeholder:text-[#777777]',
+  'border-[var(--workspace-panel-border)]',
+  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))] text-[var(--workspace-panel-text)] placeholder:text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]',
   neuInset,
-  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,#d85414_40%,transparent)]'
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--workspace-panel-accent)_40%,transparent)]'
 );
 
 export const tasksPanelFormTextareaClass = cn(
@@ -326,27 +324,27 @@ export const tasksPanelFormTextareaClass = cn(
 );
 
 export const tasksPanelFormSelectClass = cn(
-  'tasks-panel-neu-select w-full min-h-[44px] font-sans text-sm text-[#fdf6e3]',
-  'border-[color-mix(in_srgb,#fdf6e3_10%,transparent)]'
+  'tasks-panel-neu-select w-full min-h-[44px] font-sans text-sm text-[var(--workspace-panel-text)]',
+  'border-[var(--workspace-panel-border)]'
 );
 
-export const tasksPanelFormMutedClass = 'font-sans text-xs text-[#777777]';
+export const tasksPanelFormMutedClass = 'font-sans text-xs text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]';
 
-export const tasksPanelFormLinkAccentClass = 'text-[#d85414]';
+export const tasksPanelFormLinkAccentClass = 'text-[var(--workspace-panel-accent)]';
 
 export const tasksPanelFormDividerClass =
-  'border-t border-[color-mix(in_srgb,#fdf6e3_12%,transparent)]';
+  'border-t border-[var(--workspace-panel-border)]';
 
 export const tasksPanelFormListShellClass = cn(
   'max-h-48 overflow-y-auto divide-y rounded-[var(--leve-header-radius)]',
-  'border border-[color-mix(in_srgb,#fdf6e3_10%,transparent)] bg-[#423b37]',
+  'border border-[var(--workspace-panel-border)] bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))]',
   neuInset,
-  'divide-[color-mix(in_srgb,#fdf6e3_10%,transparent)]'
+  'divide-[var(--workspace-panel-border)]'
 );
 
-export const tasksPanelFormListItemTitleClass = 'font-medium text-[#fdf6e3]';
+export const tasksPanelFormListItemTitleClass = 'font-medium text-[var(--workspace-panel-text)]';
 
-export const tasksPanelFormListItemMetaClass = 'block text-xs text-[#777777]';
+export const tasksPanelFormListItemMetaClass = 'block text-xs text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]';
 
 export const tasksPanelFormFooterClass = cn(
   tasksPanelFormDividerClass,
@@ -390,22 +388,22 @@ export const tasksPanelToolbarSelectClass = cn(
 export const tasksPanelSectionToggleClass = cn(
   'app-element-typography flex w-full min-w-0 items-center justify-between gap-2',
   'rounded-[var(--leve-header-radius)] px-3 py-2.5 max-md:px-2 max-md:py-1.5',
-  'border border-[color-mix(in_srgb,#fdf6e3_10%,transparent)]',
-  'bg-[#423b37] text-[#dcdcdc]',
+  'border border-[var(--workspace-panel-border)]',
+  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))] text-[var(--workspace-panel-text-muted)]',
   neuInset,
   'transition-[box-shadow,color] duration-200',
-  'hover:text-[#fdf6e3]',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,#d85414_35%,transparent)]',
-  'active:shadow-[inset_5px_5px_12px_color-mix(in_srgb,#423b37_80%,transparent),inset_-4px_-4px_10px_color-mix(in_srgb,#fdf6e3_6%,#4a423e)]'
+  'hover:text-[var(--workspace-panel-text)]',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--workspace-panel-accent)_35%,transparent)]',
+  'active:shadow-[var(--workspace-panel-neu-inset)]'
 );
 
-export const tasksPanelSectionTitleClass = 'text-[#d85414]';
+export const tasksPanelSectionTitleClass = 'text-[var(--workspace-panel-accent)]';
 
 export const tasksPanelSectionCountClass =
-  'shrink-0 font-medium normal-case tracking-normal text-[#dcdcdc]';
+  'shrink-0 font-medium normal-case tracking-normal text-[var(--workspace-panel-text-muted)]';
 
 export const tasksPanelSectionChevronClass =
-  'h-4 w-4 shrink-0 text-[#777777] transition-transform duration-200';
+  'h-4 w-4 shrink-0 text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)] transition-transform duration-200';
 
 /* ── Chrome do ProjectView (breadcrumbs, abas, backlog) ──────── */
 
@@ -512,8 +510,7 @@ export const tasksViewPageHeaderShellClass = cn(
 );
 
 export const tasksViewHeaderActionsClass = cn(
-  'tasks-view-header-actions-row flex w-full lg:w-auto lg:justify-end',
-  appNeuActionTrackWrapClass
+  'tasks-view-header-actions-row flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end'
 );
 
 /** CTA principal do cabeçalho de Tarefas (largura total no mobile via CSS). */
@@ -536,14 +533,14 @@ export const tasksViewPageSubtitleClass =
 
 export const backlogToolbarPanelClass = cn(
   'app-element-typography w-full min-w-0 rounded-[var(--leve-header-radius)] px-2 py-1.5 sm:px-2.5',
-  'border border-[color-mix(in_srgb,#fdf6e3_10%,transparent)]',
-  'bg-[#423b37]',
+  'border border-[var(--workspace-panel-border)]',
+  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))]',
   neuInset
 );
 
 export const backlogToolbarHelpClass = cn(
-  'text-[10px] leading-snug text-[#dcdcdc] sm:text-[11px]',
-  '[&_strong]:font-semibold [&_strong]:text-[#fdf6e3]'
+  'text-[10px] leading-snug text-[var(--workspace-panel-text-muted)] sm:text-[11px]',
+  '[&_strong]:font-semibold [&_strong]:text-[var(--workspace-panel-text)]'
 );
 
 export const backlogToolbarGridClass = cn(
@@ -552,56 +549,56 @@ export const backlogToolbarGridClass = cn(
 
 export const backlogToolbarSelectClass = cn(
   'tasks-panel-neu-select backlog-toolbar-select app-element-typography h-7 w-full min-w-0',
-  'text-[11px] font-semibold leading-tight text-[#fdf6e3]',
-  'border-[color-mix(in_srgb,#fdf6e3_10%,transparent)]'
+  'text-[11px] font-semibold leading-tight text-[var(--workspace-panel-text)]',
+  'border-[var(--workspace-panel-border)]'
 );
 
-export const backlogToolbarLabelClass = 'text-[10px] font-medium leading-none text-[#dcdcdc]';
+export const backlogToolbarLabelClass = 'text-[10px] font-medium leading-none text-[var(--workspace-panel-text-muted)]';
 
 export const backlogToolbarFieldClass = 'flex min-w-0 w-full flex-col gap-0.5';
 
 export const backlogToolbarFieldHeaderClass = 'flex min-w-0 items-center justify-between gap-1';
 
 export const backlogToolbarClearLinkClass = cn(
-  'shrink-0 text-[10px] font-medium leading-none text-[#777777]',
-  'underline-offset-2 hover:text-[#d85414] hover:underline disabled:opacity-50'
+  'shrink-0 text-[10px] font-medium leading-none text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]',
+  'underline-offset-2 hover:text-[var(--workspace-panel-accent)] hover:underline disabled:opacity-50'
 );
 
 export const backlogListSurfaceClass = cn(
   'backlog-list-surface tasks-panel-dark-surface app-element-typography overflow-hidden',
   'rounded-[var(--leve-header-radius)]',
-  'border border-[color-mix(in_srgb,#fdf6e3_14%,transparent)]',
-  'bg-[#4a423e]',
+  'border border-[var(--workspace-panel-border)]',
+  'bg-[var(--workspace-panel-bg)]',
   neuRaised
 );
 
 export const backlogListSurfaceHeaderClass = cn(
   'flex flex-wrap items-center justify-between gap-2 border-0 px-3 py-2 sm:px-4',
-  'border-b border-[color-mix(in_srgb,#fdf6e3_10%,transparent)]',
-  'bg-[#423b37]',
+  'border-b border-[var(--workspace-panel-border)]',
+  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))]',
   neuInset
 );
 
 export const backlogListSurfaceTitleClass =
-  'text-xs font-semibold uppercase tracking-wider text-[#dcdcdc]';
+  'text-xs font-semibold uppercase tracking-wider text-[var(--workspace-panel-text-muted)]';
 
-export const backlogListSurfaceMetaClass = 'text-xs font-medium text-[#fdf6e3]';
+export const backlogListSurfaceMetaClass = 'text-xs font-medium text-[var(--workspace-panel-text)]';
 
-export const backlogListSurfaceMetaMutedClass = 'text-[#777777]';
+export const backlogListSurfaceMetaMutedClass = 'text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]';
 
 export const backlogListSurfaceBodyClass = cn(
-  'min-w-0 bg-[color-mix(in_srgb,#423b37_35%,#4a423e)] p-2 sm:p-4'
+  'min-w-0 bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_14%,var(--workspace-panel-bg))] p-2 sm:p-4'
 );
 
 export const backlogActiveChipClass = cn(
-  'inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium text-[#dcdcdc]',
-  'border border-[color-mix(in_srgb,#fdf6e3_12%,transparent)]',
-  'bg-[#4a423e]',
+  'inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium text-[var(--workspace-panel-text-muted)]',
+  'border border-[var(--workspace-panel-border)]',
+  'bg-[var(--workspace-panel-bg)]',
   neuRaised
 );
 
 export const backlogToolbarChipsRowClass = cn(
-  'mt-1 flex flex-wrap items-center gap-1 border-t border-[color-mix(in_srgb,#fdf6e3_14%,transparent)] pt-1'
+  'mt-1 flex flex-wrap items-center gap-1 border-t border-[var(--workspace-panel-border)] pt-1'
 );
 
 export const backlogClearFiltersLinkClass =
@@ -609,21 +606,21 @@ export const backlogClearFiltersLinkClass =
 
 export const backlogChipRemoveBtnClass = cn(
   'flex h-4 w-4 items-center justify-center rounded-full',
-  'hover:bg-[color-mix(in_srgb,#fdf6e3_12%,#423b37)]'
+  'hover:bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_30%,var(--workspace-panel-bg))]'
 );
 
 export const tasksPanelBacklogSprintHeadingClass = (active: boolean) =>
   cn(
     'mb-3 flex flex-wrap items-center gap-2 font-heading text-xs font-bold uppercase tracking-wider',
-    active ? 'text-[#d85414]' : 'text-[#dcdcdc]'
+    active ? 'text-[var(--workspace-panel-accent)]' : 'text-[var(--workspace-panel-text-muted)]'
   );
 
 export const tasksPanelBacklogSprintCountClass =
-  'font-medium normal-case tracking-normal text-[#777777]';
+  'font-medium normal-case tracking-normal text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]';
 
 export const tasksPanelBacklogSprintActiveBadgeClass = cn(
   'rounded-full border border-[color-mix(in_srgb,#ffffff_30%,transparent)]',
-  'bg-[#d85414] px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-[#ffffff]',
+  'bg-[var(--workspace-panel-accent)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-[#ffffff]',
   badgeRaised
 );
 
@@ -631,23 +628,23 @@ export const tasksPanelBacklogSprintActiveBadgeClass = cn(
 
 export const tasksPanelFiltersBarClass = cn(
   'tasks-panel-filters-bar tasks-panel-dark-surface flex flex-col gap-3 rounded-[var(--leve-header-radius)] p-3 font-sans sm:flex-row sm:flex-wrap sm:items-end lg:gap-4',
-  'border border-[color-mix(in_srgb,#fdf6e3_10%,transparent)]',
-  'bg-[#423b37]',
+  'border border-[var(--workspace-panel-border)]',
+  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))]',
   'max-md:gap-2 max-md:p-2',
   neuInset
 );
 
 export const tasksPanelFilterLabelClass =
-  'mb-1.5 block font-sans text-xs font-medium text-[#dcdcdc]';
+  'mb-1.5 block font-sans text-xs font-medium text-[var(--workspace-panel-text-muted)]';
 
 export const tasksPanelFilterSelectClass = cn(
-  'tasks-panel-neu-select app-element-typography h-10 min-h-0 w-full font-sans text-sm text-[#fdf6e3]',
-  'border-[color-mix(in_srgb,#fdf6e3_10%,transparent)]',
+  'tasks-panel-neu-select app-element-typography h-10 min-h-0 w-full font-sans text-sm text-[var(--workspace-panel-text)]',
+  'border-[var(--workspace-panel-border)]',
   'max-md:h-9 max-md:text-xs'
 );
 
 export const tasksPanelFilterManageLinkClass = cn(
-  'shrink-0 font-sans text-xs font-semibold text-[#d85414] hover:underline'
+  'shrink-0 font-sans text-xs font-semibold text-[var(--workspace-panel-accent)] hover:underline'
 );
 
 export const tasksPanelFilterPillClass = (active: boolean) =>
@@ -656,12 +653,12 @@ export const tasksPanelFilterPillClass = (active: boolean) =>
     active
       ? cn(
           'border border-[color-mix(in_srgb,#ffffff_35%,transparent)]',
-          'bg-[#d85414] font-semibold text-[#ffffff]',
+          'bg-[var(--workspace-panel-accent)] font-semibold text-[#ffffff]',
           badgeRaised
         )
       : cn(
-          'border border-transparent font-medium text-[#dcdcdc]',
-          'hover:text-[#fdf6e3]'
+          'border border-transparent font-medium text-[var(--workspace-panel-text-muted)]',
+          'hover:text-[var(--workspace-panel-text)]'
         )
   );
 
@@ -675,84 +672,84 @@ export const documentsJiraBadgeClass = tasksViewPageJiraBadgeClass;
 
 export const documentsPageSubtitleClass = tasksViewPageSubtitleClass;
 
-export const documentsPageMutedClass = 'font-sans text-[#777777]';
+export const documentsPageMutedClass = 'font-sans text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]';
 
 export const documentsFiltersPanelClass = tasksPanelCardClass;
 
 export const documentsEyebrowClass = cn(
-  'inline-block border-b border-[#d85414] pb-1',
-  'font-sans text-[10px] font-extrabold uppercase tracking-wider text-[#d85414] sm:text-[11px]'
+  'inline-block border-b border-[var(--workspace-panel-accent)] pb-1',
+  'font-sans text-[10px] font-extrabold uppercase tracking-wider text-[var(--workspace-panel-accent)] sm:text-[11px]'
 );
 
 export const documentsSectionShellClass = cn(
   'tasks-panel-dark-surface rounded-[var(--leve-header-radius)] font-sans p-3 sm:p-3.5',
-  'border border-[color-mix(in_srgb,#fdf6e3_14%,transparent)]',
-  'bg-[#4a423e]',
+  'border border-[var(--workspace-panel-border)]',
+  'bg-[var(--workspace-panel-bg)]',
   neuRaised
 );
 
 export const documentsSectionHeaderDividerClass =
-  'border-b border-[color-mix(in_srgb,#fdf6e3_14%,transparent)]';
+  'border-b border-[var(--workspace-panel-border)]';
 
 export const documentsSectionHeaderClass = cn(documentsSectionHeaderDividerClass, 'pb-2');
 
 export const documentsSectionTitleClass =
-  'mt-1 font-sans text-base font-bold text-[#fdf6e3] sm:text-lg';
+  'mt-1 font-sans text-base font-bold text-[var(--workspace-panel-text)] sm:text-lg';
 
 export const documentsSummaryStripClass = cn(
   'mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[var(--leve-header-radius)] px-3 py-2.5 sm:px-3.5',
-  'border border-[color-mix(in_srgb,#fdf6e3_10%,transparent)]',
-  'bg-[#423b37]',
+  'border border-[var(--workspace-panel-border)]',
+  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))]',
   neuInset
 );
 
 export const documentsSummaryStatsClass =
-  'flex flex-wrap items-center gap-x-4 gap-y-1 font-sans text-sm text-[#dcdcdc]';
+  'flex flex-wrap items-center gap-x-4 gap-y-1 font-sans text-sm text-[var(--workspace-panel-text-muted)]';
 
-export const documentsSummaryStatStrongClass = 'text-[#fdf6e3]';
+export const documentsSummaryStatStrongClass = 'text-[var(--workspace-panel-text)]';
 
-export const documentsSummaryStatIconAccentClass = 'h-4 w-4 text-[#d85414]';
+export const documentsSummaryStatIconAccentClass = 'h-4 w-4 text-[var(--workspace-panel-accent)]';
 
 export const documentsSummaryStatIconSuccessClass = 'h-4 w-4 text-success';
 
 export const documentsAlertSuccessClass = cn(
   'flex items-start gap-2 rounded-[var(--leve-header-radius)] px-3 py-2',
   'border border-[color-mix(in_srgb,#10b981_35%,transparent)]',
-  'bg-[color-mix(in_srgb,#10b981_12%,#423b37)]',
+  'bg-[color-mix(in_srgb,#10b981_12%,var(--workspace-panel-bg))]',
   neuInset
 );
 
 export const documentsAlertInfoClass = cn(
   'flex items-start gap-2 rounded-[var(--leve-header-radius)] px-3 py-2',
-  'border border-[color-mix(in_srgb,#d85414_35%,transparent)]',
-  'bg-[color-mix(in_srgb,#d85414_10%,#423b37)]',
+  'border border-[color-mix(in_srgb,var(--workspace-panel-accent)_35%,transparent)]',
+  'bg-[color-mix(in_srgb,var(--workspace-panel-accent)_10%,var(--workspace-panel-bg))]',
   neuInset
 );
 
-export const documentsBodyTextClass = 'font-sans text-sm font-medium leading-snug text-[#fdf6e3]';
+export const documentsBodyTextClass = 'font-sans text-sm font-medium leading-snug text-[var(--workspace-panel-text)]';
 
-export const documentsMutedTextClass = 'font-sans text-xs text-[#777777]';
+export const documentsMutedTextClass = 'font-sans text-xs text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]';
 
-export const documentsStrongTextClass = 'font-semibold text-[#fdf6e3]';
+export const documentsStrongTextClass = 'font-semibold text-[var(--workspace-panel-text)]';
 
 export const documentsProgressTrackClass = cn(
-  'relative h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-[#777777]',
+  'relative h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_45%,var(--workspace-panel-bg))]',
   neuInset
 );
 
 export const documentsProgressFillClass = 'h-full w-full rounded-full bg-success';
 
 export const documentsProgressPercentClass =
-  'shrink-0 font-sans text-xs font-bold tabular-nums text-[#dcdcdc]';
+  'shrink-0 font-sans text-xs font-bold tabular-nums text-[var(--workspace-panel-text-muted)]';
 
 export const documentsPrimaryBtnClass = tasksViewHeaderPrimaryBtnClass;
 
 export const documentsOutlineBtnClass = cn(
   'inline-flex min-h-9 items-center gap-1.5 rounded-full px-4 py-2 font-sans text-sm font-semibold',
-  'border border-[color-mix(in_srgb,#fdf6e3_12%,transparent)]',
-  'bg-[#423b37] text-[#dcdcdc]',
+  'border border-[var(--workspace-panel-border)]',
+  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))] text-[var(--workspace-panel-text-muted)]',
   neuInset,
-  'hover:text-[#fdf6e3]'
+  'hover:text-[var(--workspace-panel-text)]'
 );
 
 export const documentsSpecRemoveBtnClass = cn(
@@ -771,8 +768,8 @@ export const documentsFilterRowClass =
 
 export const documentsFilterPillsStripClass = cn(
   'inline-flex max-w-full flex-wrap items-center gap-1.5 rounded-full p-1.5',
-  'border border-[color-mix(in_srgb,#fdf6e3_10%,transparent)]',
-  'bg-[#423b37]',
+  'border border-[var(--workspace-panel-border)]',
+  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))]',
   neuInsetDeep
 );
 
@@ -780,21 +777,21 @@ export const documentsFilterPillsGroupClass = cn(documentsFilterPillsStripClass,
 
 export const documentsCardClass = cn(
   'tasks-panel-dark-surface rounded-[var(--leve-header-radius)] p-3 sm:p-3.5',
-  'border border-[color-mix(in_srgb,#fdf6e3_12%,transparent)]',
-  'bg-[#4a423e]',
+  'border border-[var(--workspace-panel-border)]',
+  'bg-[var(--workspace-panel-bg)]',
   neuRaised,
   'transition-[box-shadow] duration-200 hover:brightness-[1.02]'
 );
 
 export const documentsCardTitleClass = cn(
-  'line-clamp-2 border-b border-[color-mix(in_srgb,#fdf6e3_14%,transparent)] pb-2',
-  'font-heading text-sm font-bold leading-snug text-[#fdf6e3] sm:text-base'
+  'line-clamp-2 border-b border-[var(--workspace-panel-border)] pb-2',
+  'font-heading text-sm font-bold leading-snug text-[var(--workspace-panel-text)] sm:text-base'
 );
 
-export const documentsCardMetaClass = 'mt-1.5 text-[11px] leading-relaxed text-[#777777]';
+export const documentsCardMetaClass = 'mt-1.5 text-[11px] leading-relaxed text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]';
 
 export const documentsCardActionsClass = cn(
-  'mt-2.5 flex flex-wrap gap-1.5 border-t border-[color-mix(in_srgb,#fdf6e3_12%,transparent)] pt-2.5'
+  'mt-2.5 flex flex-wrap gap-1.5 border-t border-[var(--workspace-panel-border)] pt-2.5'
 );
 
 export const documentsActionOutlineClass = cn(
@@ -816,13 +813,13 @@ export type DocumentCategoryId = 'requisitos' | 'testes' | 'arquitetura' | 'outr
 
 const documentsCategoryBadgeMap: Record<DocumentCategoryId, string> = {
   requisitos:
-    'border-[color-mix(in_srgb,#fdf6e3_22%,transparent)] bg-[color-mix(in_srgb,#fdf6e3_8%,#423b37)] text-[#fdf6e3]',
+    'border-[var(--workspace-panel-border)] bg-[color-mix(in_srgb,var(--workspace-panel-text)_6%,var(--workspace-panel-bg))] text-[var(--workspace-panel-text)]',
   testes:
-    'border-[color-mix(in_srgb,#10b981_35%,transparent)] bg-[color-mix(in_srgb,#10b981_15%,#423b37)] text-success',
+    'border-[color-mix(in_srgb,#10b981_35%,transparent)] bg-[color-mix(in_srgb,#10b981_15%,var(--workspace-panel-bg))] text-success',
   arquitetura:
-    'border-[color-mix(in_srgb,#d85414_35%,transparent)] bg-[color-mix(in_srgb,#d85414_12%,#423b37)] text-[#d85414]',
+    'border-[color-mix(in_srgb,var(--workspace-panel-accent)_35%,transparent)] bg-[color-mix(in_srgb,var(--workspace-panel-accent)_12%,var(--workspace-panel-bg))] text-[var(--workspace-panel-accent)]',
   outros:
-    'border-[color-mix(in_srgb,#fdf6e3_12%,transparent)] bg-[#423b37] text-[#dcdcdc]',
+    'border-[var(--workspace-panel-border)] bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))] text-[var(--workspace-panel-text-muted)]',
 };
 
 export const documentsCategoryBadgeClass = (category: DocumentCategoryId) =>
@@ -833,39 +830,39 @@ export const documentsCategoryBadgeClass = (category: DocumentCategoryId) =>
 
 export const documentsAnalysisBadgeClass = cn(
   'inline-flex rounded-full border border-[color-mix(in_srgb,#10b981_35%,transparent)]',
-  'bg-[color-mix(in_srgb,#10b981_12%,#423b37)] px-2 py-0.5 text-[10px] font-semibold text-success'
+  'bg-[color-mix(in_srgb,#10b981_12%,var(--workspace-panel-bg))] px-2 py-0.5 text-[10px] font-semibold text-success'
 );
 
 export const documentsModalSectionLabelClass = documentsEyebrowClass;
 
-export const documentsModalMetaClass = 'text-sm text-[#777777]';
+export const documentsModalMetaClass = 'text-sm text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]';
 
-export const documentsModalPreClass = 'whitespace-pre-wrap font-mono text-sm text-[#fdf6e3]';
+export const documentsModalPreClass = 'whitespace-pre-wrap font-mono text-sm text-[var(--workspace-panel-text)]';
 
 export const documentsModalPreviewInsetClass = cn(
   'max-h-96 overflow-y-auto rounded-[var(--leve-header-radius)] p-4',
-  'border border-[color-mix(in_srgb,#fdf6e3_10%,transparent)]',
-  'bg-[#423b37] text-[#fdf6e3]',
+  'border border-[var(--workspace-panel-border)]',
+  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))] text-[var(--workspace-panel-text)]',
   neuInset
 );
 
 export const documentsModalMediaClass = cn(
   'h-auto max-w-full rounded-[var(--leve-header-radius)]',
-  'border border-[color-mix(in_srgb,#fdf6e3_14%,transparent)]'
+  'border border-[var(--workspace-panel-border)]'
 );
 
 export const documentsModalIframeClass = cn(
   'h-96 w-full rounded-[var(--leve-header-radius)]',
-  'border border-[color-mix(in_srgb,#fdf6e3_14%,transparent)]'
+  'border border-[var(--workspace-panel-border)]'
 );
 
 export const documentsModalFieldLabelClass =
-  'mb-2 block font-sans text-sm font-semibold text-[#dcdcdc]';
+  'mb-2 block font-sans text-sm font-semibold text-[var(--workspace-panel-text-muted)]';
 
 export const documentsModalInputClass = cn(
   'app-input w-full rounded-[var(--leve-header-radius)] border',
-  'border-[color-mix(in_srgb,#fdf6e3_10%,transparent)]',
-  'bg-[#423b37] text-[#fdf6e3] placeholder:text-[#777777]',
+  'border-[var(--workspace-panel-border)]',
+  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))] text-[var(--workspace-panel-text)] placeholder:text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]',
   neuInset
 );
 
@@ -875,7 +872,7 @@ export const documentsModalTextareaClass = cn(
 );
 
 export const documentsModalFooterClass = cn(
-  'flex justify-end gap-2 border-t border-[color-mix(in_srgb,#fdf6e3_12%,transparent)] pt-4'
+  'flex justify-end gap-2 border-t border-[var(--workspace-panel-border)] pt-4'
 );
 
 export const documentsModalFooterCancelClass = cn(documentsOutlineBtnClass, 'min-h-10 px-5');
@@ -885,11 +882,11 @@ export const documentsModalFooterSaveClass = cn(documentsPrimaryBtnClass, 'min-h
 export const documentsAnalysisBodyClass = cn(
   'document-analysis-body jira-rich-content prose prose-sm max-w-none break-words',
   'rounded-[var(--leve-header-radius)] px-4 py-5 sm:px-6 sm:py-6',
-  'border border-[color-mix(in_srgb,#fdf6e3_10%,transparent)]',
-  'bg-[#423b37] text-[#fdf6e3]',
+  'border border-[var(--workspace-panel-border)]',
+  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))] text-[var(--workspace-panel-text)]',
   neuInset,
-  'prose-headings:font-heading prose-headings:text-[#fdf6e3]',
-  'prose-p:mb-3 prose-p:leading-relaxed prose-p:text-[#dcdcdc]',
-  'prose-strong:font-bold prose-strong:text-[#fdf6e3]',
-  '[&_a]:text-[#d85414] [&_a]:underline-offset-2'
+  'prose-headings:font-heading prose-headings:text-[var(--workspace-panel-text)]',
+  'prose-p:mb-3 prose-p:leading-relaxed prose-p:text-[var(--workspace-panel-text-muted)]',
+  'prose-strong:font-bold prose-strong:text-[var(--workspace-panel-text)]',
+  '[&_a]:text-[var(--workspace-panel-accent)] [&_a]:underline-offset-2'
 );

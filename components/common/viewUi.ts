@@ -1,19 +1,27 @@
 /** Classes compartilhadas entre abas do projeto (Dashboard, Tarefas, Documentos, etc.). */
 
 import { cn } from '../../utils/cn';
-import { appDarkPageSurfaceClass } from './appPageNeuUi';
+import { workspaceSurfaceLightClass } from './appPageNeuUi';
 
 /** Padding horizontal alinhado ao header — conteúdo em largura total da viewport. */
 export const appContentPaddingX = 'px-3 sm:px-4 max-md:px-2';
 
+/**
+ * Wrapper das abas do projeto (Tarefas, Documentos, Regras, etc.) — tema CLARO
+ * unificado com LandingPage / Jira x Solus. `workspace-surface-light` ativa a
+ * paleta clara dos tokens `--workspace-panel-*`.
+ */
 export const projectViewShell = cn(
-  appDarkPageSurfaceClass,
+  workspaceSurfaceLightClass,
   'tasks-panel-scope w-full min-w-0 max-w-none space-y-3 sm:space-y-4 max-md:space-y-2'
 );
 
-/** Lista de projetos (dashboard inicial). */
+/**
+ * Lista de projetos / telas claras (Meus Projetos, Jira x Solus).
+ * Tema claro alinhado à LandingPage — sem a superfície escura `app-dark-page-surface`.
+ */
 export const projectsListShell = cn(
-  appDarkPageSurfaceClass,
+  workspaceSurfaceLightClass,
   'tasks-panel-scope w-full min-w-0 max-w-none py-4 sm:py-5 max-md:py-2',
   appContentPaddingX
 );
@@ -101,7 +109,7 @@ export const pageSubtitleClass =
 
 /** Container de telas globais (ex.: Configurações). */
 export const settingsContentShell = cn(
-  appDarkPageSurfaceClass,
+  workspaceSurfaceLightClass,
   'w-full min-w-0 max-w-none',
   appContentPaddingX
 );
