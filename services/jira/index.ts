@@ -31,6 +31,9 @@ export { getJiraQueuesForProject } from './queues';
 export { getJiraIssueSlas, enrichTasksWithJiraSlas, normalizeJiraSlaApiItem } from './sla';
 export type { EnrichTasksWithJiraSlasOptions } from './sla';
 
+export { importFilasRelatedIssues } from './filasRelatedIssues';
+export type { ImportFilasRelatedIssuesOptions } from './filasRelatedIssues';
+
 export { getJiraIssues, getJiraIssuesByJql, getJiraIssueByKey } from './issues';
 
 export {

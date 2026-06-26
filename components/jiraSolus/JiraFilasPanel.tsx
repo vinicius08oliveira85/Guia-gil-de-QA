@@ -13,6 +13,7 @@ import {
 } from '../../services/jiraService';
 import { enrichTasksWithJiraSlas } from '../../services/jira/sla';
 import { enrichTasksWithJsmSummary } from '../../services/jira/jsmRequest';
+import { importFilasRelatedIssues } from '../../services/jira/filasRelatedIssues';
 import { jiraIssueToTask } from '../../services/jira/issueToTask';
 import { buildJiraSprintSyncContext } from '../../services/jira/sprintSync';
 import { mapJiraStatusToTaskStatus } from '../../services/jira/mappers';
@@ -359,7 +360,16 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
         )
       );
 
-      return enrichFilasTasks(config, converted, onIssueProgress);
+      const primaryIds = new Set(converted.map(task => task.id));
+      const withRelated = await importFilasRelatedIssues(config, converted, {
+        jiraProjectKey: selectedProjectKey,
+        sprintCtx,
+        existingTasks: tasks,
+        primaryTaskIds: primaryIds,
+        onProgress: (done, total) => onIssueProgress?.(done, total),
+      });
+
+      return enrichFilasTasks(config, withRelated, onIssueProgress);
     },
     [selectedProjectKey, selectedQueue, tasks, enrichFilasTasks]
   );
@@ -457,14 +467,18 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
         }
       }
 
-      const withSlas = await enrichFilasTasks(config, updated, (current, total) =>
+      const withRelated = await importFilasRelatedIssues(config, updated, {
+        jiraProjectKey: selectedProjectKey || undefined,
+        sprintCtx: sprintCtxRef.current ?? undefined,
+        existingTasks: tasks,
+        primaryTaskIds: new Set(importedTasks.map(task => task.id)),
+      });
+
+      const enriched = await enrichFilasTasks(config, withRelated, (current, total) =>
         setImportProgress({ current, total })
       );
 
-      const updatedById = new Map(withSlas.map(t => [t.id, t]));
-      setTasks(prev =>
-        normalizeTasksParentIdsAcyclic(prev.map(t => updatedById.get(t.id) ?? t))
-      );
+      mergeImportedTasks(enriched);
 
       const successCount = importedTasks.length - failures.length;
       if (failures.length > 0) {
@@ -488,7 +502,8 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
   }, [
     selectedProjectKey,
     tasks,
-    setTasks,
+    mergeImportedTasks,
+    enrichFilasTasks,
     handleError,
     handleSuccess,
     handleWarning,
@@ -525,8 +540,15 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
         sprintCtx: sprintCtxRef.current ?? undefined,
       });
 
-      const [withSla] = await enrichFilasTasks(config, [task]);
-      mergeImportedTasks([withSla]);
+      const withRelated = await importFilasRelatedIssues(config, [task], {
+        jiraProjectKey: selectedProjectKey || key.split('-')[0],
+        sprintCtx: sprintCtxRef.current ?? undefined,
+        existingTasks: tasks,
+        primaryTaskIds: new Set([key]),
+      });
+
+      const enriched = await enrichFilasTasks(config, withRelated);
+      mergeImportedTasks(enriched);
       setIssueKeyInput('');
       handleSuccess(`Tarefa ${key} importada do Jira.`);
     } catch (err) {
@@ -564,8 +586,14 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
           existingTask: existing,
           sprintCtx: sprintCtxRef.current ?? undefined,
         });
-        const [withSla] = await enrichFilasTasks(config, [updated]);
-        mergeImportedTasks([withSla]);
+        const withRelated = await importFilasRelatedIssues(config, [updated], {
+          jiraProjectKey: selectedProjectKey || taskId.split('-')[0],
+          sprintCtx: sprintCtxRef.current ?? undefined,
+          existingTasks: tasks,
+          primaryTaskIds: new Set([taskId]),
+        });
+        const enriched = await enrichFilasTasks(config, withRelated);
+        mergeImportedTasks(enriched);
         handleSuccess('Tarefa atualizada do Jira.');
       } catch (err) {
         handleError(err, 'Atualizar do Jira');
