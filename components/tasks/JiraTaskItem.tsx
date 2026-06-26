@@ -153,6 +153,7 @@ import {
   getTaskQaCoverageAlerts,
 } from '../../utils/taskCardQa';
 import { JiraQueueMetaChips } from './JiraQueueMetaChips';
+import { JiraTaskSlaSummary } from './JiraTaskSlaSummary';
 
 /** Destaque da ação IA principal — halo via tokens Daisy (oklch) + animação existente. */
 const gerarTudoDestaqueClass =
@@ -705,6 +706,10 @@ export const JiraTaskItem: React.FC<{
     }, [task.testCases, task.testStrategy, task.executedStrategies]);
 
     const sectionTabs = useMemo(() => {
+      if (hideTestFeatures) {
+        return [{ id: 'overview' as const, label: 'Resumo' }];
+      }
+
       const tabs: { id: DetailSection; label: string; badge?: number }[] = [
         { id: 'overview', label: 'Resumo' },
       ];
@@ -734,6 +739,7 @@ export const JiraTaskItem: React.FC<{
 
       return tabs;
     }, [
+      hideTestFeatures,
       task.type,
       task.bddScenarios,
       task.testCases,
@@ -839,15 +845,51 @@ export const JiraTaskItem: React.FC<{
 
     const renderOverviewSection = () => (
       <div className="space-y-3">
-        {project && onUpdateProject && (
-          <div>
-            <QuickActions task={task} project={project} onUpdateProject={onUpdateProject} />
-          </div>
+        {hideTestFeatures ? (
+          <>
+            <JiraTaskSlaSummary task={task} />
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {task.reporter?.displayName ? (
+                <div className={cn(taskModalSectionClass, 'p-2.5')}>
+                  <p className="text-[11px] uppercase tracking-wide text-base-content/60">Relator</p>
+                  <p className="text-sm font-semibold text-base-content">{task.reporter.displayName}</p>
+                </div>
+              ) : null}
+              {(task.jiraAssignee?.displayName ?? task.assignee) ? (
+                <div className={cn(taskModalSectionClass, 'p-2.5')}>
+                  <p className="text-[11px] uppercase tracking-wide text-base-content/60">
+                    Responsável
+                  </p>
+                  <p className="text-sm font-semibold text-base-content">
+                    {task.jiraAssignee?.displayName ?? task.assignee}
+                  </p>
+                </div>
+              ) : null}
+              {task.createdAt ? (
+                <div className={cn(taskModalSectionClass, 'p-2.5')}>
+                  <p className="text-[11px] uppercase tracking-wide text-base-content/60">
+                    Data de criação
+                  </p>
+                  <p className="text-sm font-semibold text-base-content">
+                    {new Date(task.createdAt).toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+              ) : null}
+            </div>
+          </>
+        ) : (
+          project &&
+          onUpdateProject && (
+            <div>
+              <QuickActions task={task} project={project} onUpdateProject={onUpdateProject} />
+            </div>
+          )
         )}
 
         {/* Botão para Gerar Registro de Testes - para tipos "Tarefa" e "Bug" */}
-        {(task.type === 'Tarefa' || task.type === 'Bug') &&
-          (task.testCases?.length > 0 || (task.testStrategy?.length ?? 0) > 0) && (
+        {!hideTestFeatures &&
+        (task.type === 'Tarefa' || task.type === 'Bug') &&
+          (task.testCases?.length > 0 || (task.testStrategy?.length ?? 0) > 0) ? (
             <div className="flex justify-end">
               <button
                 type="button"
@@ -872,7 +914,7 @@ export const JiraTaskItem: React.FC<{
                 <span>Gerar Registro de Testes</span>
               </button>
             </div>
-          )}
+          ) : null}
         <div className="text-base-content/80">
           {task.description ? (
             <DescriptionRenderer
@@ -885,7 +927,7 @@ export const JiraTaskItem: React.FC<{
         </div>
 
         {/* Ações de Teste */}
-        {taskTestStatus && (taskTestStatus === 'testar' || taskTestStatus === 'testando') && (
+        {!hideTestFeatures && taskTestStatus && (taskTestStatus === 'testar' || taskTestStatus === 'testando') && (
           <div className={taskTestActionsBarClass}>
             <p className="text-sm font-medium flex-1">Ações de Teste:</p>
             {taskTestStatus === 'testar' && (
@@ -998,7 +1040,7 @@ export const JiraTaskItem: React.FC<{
           );
         })()}
 
-        {(task.type === 'Tarefa' || task.type === 'Bug') && testTypeBadges.length > 0 && (
+        {(task.type === 'Tarefa' || task.type === 'Bug') && !hideTestFeatures && testTypeBadges.length > 0 && (
           <div>
             <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">
               Estratégias de Teste
@@ -1028,9 +1070,10 @@ export const JiraTaskItem: React.FC<{
             task.reporter ||
             task.watchers ||
             task.issueLinks ||
-            task.jiraAttachments;
+            task.jiraAttachments ||
+            (task.jiraSlas && task.jiraSlas.length > 0);
 
-          if (!hasJiraFields) {
+          if (!hasJiraFields || hideTestFeatures) {
             return null;
           }
 
@@ -2204,7 +2247,7 @@ export const JiraTaskItem: React.FC<{
                     )}
                   >
                     {/* Ação primária */}
-                    {(task.type === 'Tarefa' || task.type === 'Bug') && onGenerateAll && (
+                    {!hideTestFeatures && (task.type === 'Tarefa' || task.type === 'Bug') && onGenerateAll && (
                       <button
                         type="button"
                         className={cn(
@@ -2443,38 +2486,40 @@ export const JiraTaskItem: React.FC<{
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-1.5 md:flex-row md:items-center md:justify-between">
-                    <div className={taskTabListClass} role="tablist" aria-label="Seções da tarefa">
-                      {sectionTabs.map(tab => {
-                        const isActive = tab.id === activeSection;
-                        const tabId = `task-${safeDomId}-tab-${tab.id}`;
-                        const panelId = `task-${safeDomId}-panel-${tab.id}`;
-                        return (
-                          <button
-                            key={tab.id}
-                            type="button"
-                            id={tabId}
-                            role="tab"
-                            aria-selected={isActive}
-                            aria-controls={panelId}
-                            className={taskTabClass(isActive)}
-                            onClick={() => setActiveSection(tab.id)}
-                          >
-                            <span>{tab.label}</span>
-                            {typeof tab.badge === 'number' && tab.badge > 0 ? (
-                              <span
-                                className={
-                                  isActive ? taskTabBadgeActiveClass : taskTabBadgeInactiveClass
-                                }
-                              >
-                                {tab.badge}
-                              </span>
-                            ) : null}
-                          </button>
-                        );
-                      })}
+                  {sectionTabs.length > 1 ? (
+                    <div className="flex flex-col gap-1.5 md:flex-row md:items-center md:justify-between">
+                      <div className={taskTabListClass} role="tablist" aria-label="Seções da tarefa">
+                        {sectionTabs.map(tab => {
+                          const isActive = tab.id === activeSection;
+                          const tabId = `task-${safeDomId}-tab-${tab.id}`;
+                          const panelId = `task-${safeDomId}-panel-${tab.id}`;
+                          return (
+                            <button
+                              key={tab.id}
+                              type="button"
+                              id={tabId}
+                              role="tab"
+                              aria-selected={isActive}
+                              aria-controls={panelId}
+                              className={taskTabClass(isActive)}
+                              onClick={() => setActiveSection(tab.id)}
+                            >
+                              <span>{tab.label}</span>
+                              {typeof tab.badge === 'number' && tab.badge > 0 ? (
+                                <span
+                                  className={
+                                    isActive ? taskTabBadgeActiveClass : taskTabBadgeInactiveClass
+                                  }
+                                >
+                                  {tab.badge}
+                                </span>
+                              ) : null}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
+                  ) : null}
 
                   <div
                     id={`task-${safeDomId}-panel-${activeSection}`}
@@ -2498,7 +2543,7 @@ export const JiraTaskItem: React.FC<{
                         }}
                       >
                         {renderSectionContent()}
-                        {renderNavigationFooter()}
+                        {sectionTabs.length > 1 ? renderNavigationFooter() : null}
                       </motion.div>
                     </AnimatePresence>
                   </div>

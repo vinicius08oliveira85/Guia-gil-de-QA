@@ -28,6 +28,9 @@ export {
 
 export { getJiraQueuesForProject } from './queues';
 
+export { getJiraIssueSlas, enrichTasksWithJiraSlas, normalizeJiraSlaApiItem } from './sla';
+export type { EnrichTasksWithJiraSlasOptions } from './sla';
+
 export { getJiraIssues, getJiraIssuesByJql, getJiraIssueByKey } from './issues';
 
 export {

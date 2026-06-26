@@ -248,6 +248,24 @@ export interface JiraTask {
    * Calculado por `services/ai/testCaseGenerationService.ts`.
    */
   testCasesSnapshotHash?: string;
+  /** SLAs do Jira Service Management (Time to resolution, Time to first response, etc.). */
+  jiraSlas?: JiraTaskSla[];
+}
+
+/** SLA de uma issue no Jira Service Management. */
+export interface JiraTaskSla {
+  /** Nome do SLA no Jira (ex.: "Time to resolution"). */
+  name: string;
+  /** Ciclo em andamento ou último ciclo concluído. */
+  phase: 'ongoing' | 'completed' | 'none';
+  /** Se o ciclo atual/último estourou o objetivo. */
+  breached: boolean;
+  /** Prazo limite do SLA (ISO), quando disponível. */
+  deadlineAt?: string;
+  /** Conclusão do ciclo (ISO), para SLAs já atendidos. */
+  completedAt?: string;
+  /** Meta legível (ex.: "4h", "48h"). */
+  goalFriendly?: string;
 }
 
 // Ferramentas sugeridas para testes

@@ -1,4 +1,5 @@
 import type { JiraTask } from '../types';
+import { classifyTaskSlaFromJiraSlas, taskHasJiraSlas } from './jiraSla';
 
 /** Janela (horas) para considerar uma tarefa "em risco" de estourar o SLA. */
 export const DEFAULT_SLA_RISK_WINDOW_HOURS = 48;
@@ -37,7 +38,8 @@ export interface JiraFilasMetrics {
 }
 
 /**
- * Classifica uma tarefa em um balde de SLA com base no `dueDate`.
+ * Classifica uma tarefa em um balde de SLA.
+ * Usa SLAs do Jira Service Management quando disponíveis; caso contrário, `dueDate`.
  * Tarefas concluídas não entram em risco/atraso (consideradas no prazo).
  */
 export function classifyTaskSla(
@@ -46,6 +48,12 @@ export function classifyTaskSla(
   riskWindowHours: number = DEFAULT_SLA_RISK_WINDOW_HOURS
 ): SlaBucket {
   if (task.status === 'Done') return 'onTrack';
+
+  if (taskHasJiraSlas(task)) {
+    const fromJira = classifyTaskSlaFromJiraSlas(task.jiraSlas!, now, riskWindowHours);
+    if (fromJira) return fromJira;
+  }
+
   if (!task.dueDate) return 'noDueDate';
 
   const due = new Date(task.dueDate).getTime();

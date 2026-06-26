@@ -11,6 +11,7 @@ import {
   type JiraProject,
   type JiraQueue,
 } from '../../services/jiraService';
+import { enrichTasksWithJiraSlas } from '../../services/jira/sla';
 import { jiraIssueToTask } from '../../services/jira/issueToTask';
 import { buildJiraSprintSyncContext } from '../../services/jira/sprintSync';
 import { mapJiraStatusToTaskStatus } from '../../services/jira/mappers';
@@ -264,11 +265,16 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
         )
       );
 
-      mergeImportedTasks(converted);
+      setImportProgress({ current: 0, total: converted.length });
+      const withSlas = await enrichTasksWithJiraSlas(config, converted, {
+        onProgress: (done, total) => setImportProgress({ current: done, total }),
+      });
+
+      mergeImportedTasks(withSlas);
       handleSuccess(
-        converted.length === 1
+        withSlas.length === 1
           ? `1 tarefa importada da fila "${selectedQueue.name}".`
-          : `${converted.length} tarefas importadas da fila "${selectedQueue.name}".`
+          : `${withSlas.length} tarefas importadas da fila "${selectedQueue.name}".`
       );
     } catch (err) {
       handleError(err, 'Importar fila do Jira');
@@ -317,7 +323,8 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
         sprintCtx: sprintCtxRef.current ?? undefined,
       });
 
-      mergeImportedTasks([task]);
+      const [withSla] = await enrichTasksWithJiraSlas(config, [task]);
+      mergeImportedTasks([withSla]);
       setIssueKeyInput('');
       handleSuccess(`Tarefa ${key} importada do Jira.`);
     } catch (err) {
@@ -355,7 +362,8 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
           existingTask: existing,
           sprintCtx: sprintCtxRef.current ?? undefined,
         });
-        mergeImportedTasks([updated]);
+        const [withSla] = await enrichTasksWithJiraSlas(config, [updated]);
+        mergeImportedTasks([withSla]);
         handleSuccess('Tarefa atualizada do Jira.');
       } catch (err) {
         handleError(err, 'Atualizar do Jira');

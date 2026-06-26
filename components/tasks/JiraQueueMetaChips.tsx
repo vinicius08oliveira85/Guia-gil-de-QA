@@ -1,8 +1,16 @@
 import React, { useMemo } from 'react';
-import { User, UserCheck, Clock, CalendarPlus } from 'lucide-react';
+import { User, UserCheck, Clock, CalendarPlus, CheckCircle2, AlertTriangle } from 'lucide-react';
 import type { JiraTask } from '../../types';
 import { cn } from '../../utils/cn';
 import { classifyTaskSla, type SlaBucket } from '../../utils/jiraFilasMetrics';
+import {
+  classifyJiraSlaDisplay,
+  formatJiraSlaChipLabel,
+  formatJiraSlaTooltip,
+  getJiraSlaToneClass,
+  sortJiraSlasForDisplay,
+  taskHasJiraSlas,
+} from '../../utils/jiraSla';
 import { tasksListMetadataBadgeClass } from './tasksListNeuUi';
 
 const SLA_BUCKET_LABELS: Record<SlaBucket, string> = {
@@ -18,12 +26,14 @@ function formatDate(value?: string): string | null {
   return Number.isNaN(date.getTime()) ? null : date.toLocaleDateString('pt-BR');
 }
 
-function resolveSlaToneClass(bucket: SlaBucket): string {
+function resolveDueDateToneClass(bucket: SlaBucket): string {
   switch (bucket) {
     case 'overdue':
       return 'text-error';
     case 'atRisk':
       return 'text-warning';
+    case 'onTrack':
+      return 'text-success';
     default:
       return '';
   }
@@ -31,12 +41,22 @@ function resolveSlaToneClass(bucket: SlaBucket): string {
 
 const chipClass = cn(tasksListMetadataBadgeClass, 'inline-flex min-w-0 items-center gap-1');
 
+function SlaStatusIcon({ status }: { status: ReturnType<typeof classifyJiraSlaDisplay> }) {
+  if (status === 'met' || status === 'onTrack') {
+    return <CheckCircle2 className="h-3 w-3 shrink-0" aria-hidden />;
+  }
+  if (status === 'breached' || status === 'atRisk') {
+    return <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden />;
+  }
+  return <Clock className="h-3 w-3 shrink-0" aria-hidden />;
+}
+
 export interface JiraQueueMetaChipsProps {
   task: JiraTask;
 }
 
 /**
- * Chips de acompanhamento das Filas (Jira): Relator, Responsável, SLA e Data de
+ * Chips de acompanhamento das Filas (Jira): Relator, Responsável, SLAs e Data de
  * Criação. Alinhados à direita do card via slot `titleTrailing` do `TaskCardHeader`.
  */
 export const JiraQueueMetaChips: React.FC<JiraQueueMetaChipsProps> = ({ task }) => {
@@ -47,12 +67,15 @@ export const JiraQueueMetaChips: React.FC<JiraQueueMetaChipsProps> = ({ task }) 
       reporter: task.reporter?.displayName?.trim() || '—',
       assignee: (task.jiraAssignee?.displayName ?? task.assignee)?.trim() || '—',
       slaBucket,
-      slaLabel: dueLabel ? `${SLA_BUCKET_LABELS[slaBucket]} · ${dueLabel}` : SLA_BUCKET_LABELS[slaBucket],
+      dueDateFallbackLabel: dueLabel
+        ? `${SLA_BUCKET_LABELS[slaBucket]} · ${dueLabel}`
+        : SLA_BUCKET_LABELS[slaBucket],
       createdAt: formatDate(task.createdAt) ?? '—',
+      jiraSlas: taskHasJiraSlas(task) ? sortJiraSlasForDisplay(task.jiraSlas!) : [],
     };
   }, [task]);
 
-  const slaToneClass = resolveSlaToneClass(meta.slaBucket);
+  const dueDateToneClass = resolveDueDateToneClass(meta.slaBucket);
 
   return (
     <div className="flex min-w-0 flex-nowrap items-center gap-1.5 sm:gap-2">
@@ -64,13 +87,41 @@ export const JiraQueueMetaChips: React.FC<JiraQueueMetaChipsProps> = ({ task }) 
         <UserCheck className="h-3 w-3 shrink-0" aria-hidden />
         <span className="max-w-[8rem] truncate">{meta.assignee}</span>
       </span>
-      <span
-        className={cn(tasksListMetadataBadgeClass, 'inline-flex shrink-0 items-center gap-1', slaToneClass)}
-        title={`SLA: ${meta.slaLabel}`}
-      >
-        <Clock className="h-3 w-3 shrink-0" aria-hidden />
-        {meta.slaLabel}
-      </span>
+
+      {meta.jiraSlas.length > 0 ? (
+        meta.jiraSlas.map(sla => {
+          const displayStatus = classifyJiraSlaDisplay(sla);
+          const toneClass = getJiraSlaToneClass(displayStatus);
+          const label = formatJiraSlaChipLabel(sla, displayStatus);
+          return (
+            <span
+              key={sla.name}
+              className={cn(
+                tasksListMetadataBadgeClass,
+                'inline-flex shrink-0 items-center gap-1',
+                toneClass
+              )}
+              title={formatJiraSlaTooltip(sla, displayStatus)}
+            >
+              <SlaStatusIcon status={displayStatus} />
+              <span className="max-w-[9rem] truncate">{label}</span>
+            </span>
+          );
+        })
+      ) : (
+        <span
+          className={cn(
+            tasksListMetadataBadgeClass,
+            'inline-flex shrink-0 items-center gap-1',
+            dueDateToneClass
+          )}
+          title={`SLA: ${meta.dueDateFallbackLabel}`}
+        >
+          <Clock className="h-3 w-3 shrink-0" aria-hidden />
+          {meta.dueDateFallbackLabel}
+        </span>
+      )}
+
       <span
         className={cn(tasksListMetadataBadgeClass, 'inline-flex shrink-0 items-center gap-1')}
         title={`Data de criação: ${meta.createdAt}`}
