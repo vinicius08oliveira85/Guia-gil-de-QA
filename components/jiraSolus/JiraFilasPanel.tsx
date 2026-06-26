@@ -26,6 +26,7 @@ import {
   type JiraFilasFilter,
 } from '../../utils/jiraFilasMetrics';
 import { normalizeTasksParentIdsAcyclic } from '../../utils/taskParentCycle';
+import { logger } from '../../utils/logger';
 import { cn } from '../../utils/cn';
 import { AppSelect } from '../common/AppSelect';
 import { EmptyState } from '../common/EmptyState';
@@ -316,46 +317,84 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
     handleWarning,
   ]);
 
-  /** Atualiza a fila já exportada — mesmo fluxo do botão Jira em Projetos. */
+  /**
+   * Atualiza apenas as tarefas já importadas (re-busca cada uma pelo ID no Jira),
+   * preservando dados locais e atualizando status, campos e SLAs.
+   */
   const handleUpdateQueueFromJira = useCallback(async () => {
-    if (!selectedQueue?.jql || !selectedProjectKey) {
-      handleWarning('Selecione o projeto e a fila exportada para atualizar.');
+    const config = getJiraConfig();
+    if (!config) {
+      handleWarning('Configure o Jira em Configurações antes de atualizar.');
       return;
     }
     if (tasks.length === 0) {
-      handleWarning('Importe a fila antes de atualizar do Jira.');
+      handleWarning('Importe tarefas antes de atualizar do Jira.');
       return;
     }
 
+    const importedTasks = [...tasks];
     setIsUpdatingQueue(true);
-    setImportProgress({ current: 0 });
+    setImportProgress({ current: 0, total: importedTasks.length });
     try {
-      const withSlas = await fetchQueueTasksFromJira((current, total) =>
-        setImportProgress({ current, total })
+      if (!sprintCtxRef.current && selectedProjectKey) {
+        sprintCtxRef.current = await buildJiraSprintSyncContext(config, selectedProjectKey);
+      }
+
+      let processed = 0;
+      const updated: JiraTask[] = [];
+      const failures: string[] = [];
+
+      for (const existing of importedTasks) {
+        try {
+          const issue = await getJiraIssueByKey(config, existing.id);
+          const task = await jiraIssueToTask(config, issue, {
+            jiraProjectKey: selectedProjectKey || existing.id.split('-')[0],
+            existingTask: existing,
+            sprintCtx: sprintCtxRef.current ?? undefined,
+          });
+          updated.push(task);
+        } catch (err) {
+          logger.warn('Falha ao atualizar tarefa do Jira; mantendo versão local.', 'JiraFilasPanel', {
+            taskId: existing.id,
+            error: err instanceof Error ? err.message : String(err),
+          });
+          failures.push(existing.id);
+          updated.push(existing);
+        } finally {
+          processed += 1;
+          setImportProgress({ current: processed, total: importedTasks.length });
+        }
+      }
+
+      const withSlas = await enrichTasksWithJiraSlas(config, updated);
+
+      const updatedById = new Map(withSlas.map(t => [t.id, t]));
+      setTasks(prev =>
+        normalizeTasksParentIdsAcyclic(prev.map(t => updatedById.get(t.id) ?? t))
       );
 
-      const projectPrefix = `${selectedProjectKey}-`;
-      setTasks(prev => {
-        const others = prev.filter(task => !task.id.startsWith(projectPrefix));
-        return normalizeTasksParentIdsAcyclic([...others, ...withSlas]);
-      });
-
-      handleSuccess(
-        withSlas.length === 1
-          ? `Fila "${selectedQueue.name}" atualizada com 1 tarefa do Jira.`
-          : `Fila "${selectedQueue.name}" atualizada com ${withSlas.length} tarefas do Jira.`
-      );
+      const successCount = importedTasks.length - failures.length;
+      if (failures.length > 0) {
+        handleWarning(
+          `${successCount} de ${importedTasks.length} tarefas atualizadas do Jira. ` +
+            `Não foi possível atualizar: ${failures.join(', ')}.`
+        );
+      } else {
+        handleSuccess(
+          successCount === 1
+            ? '1 tarefa importada atualizada do Jira.'
+            : `${successCount} tarefas importadas atualizadas do Jira.`
+        );
+      }
     } catch (err) {
-      handleError(err, 'Atualizar fila do Jira');
+      handleError(err, 'Atualizar tarefas do Jira');
     } finally {
       setIsUpdatingQueue(false);
       setImportProgress(null);
     }
   }, [
     selectedProjectKey,
-    selectedQueue,
-    tasks.length,
-    fetchQueueTasksFromJira,
+    tasks,
     setTasks,
     handleError,
     handleSuccess,
@@ -492,8 +531,7 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
   const hasActiveFilter = isJiraFilasFilterActive(activeFilter);
   const activeFilterLabel = getJiraFilasFilterLabel(activeFilter);
   const canImportQueue = hasJiraConfig && !!selectedProjectKey && !!selectedQueue?.jql && !isBusy;
-  const canUpdateQueue =
-    canImportQueue && tasks.length > 0 && !isImportingProject && !isImportingIssue;
+  const canUpdateQueue = hasJiraConfig && tasks.length > 0 && !isBusy;
 
   const setHeaderJiraAction = useTaskTrackingHeaderStore(s => s.setJiraAction);
   useEffect(() => {
@@ -501,7 +539,7 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
       onSync: () => void handleUpdateQueueFromJira(),
       isSyncing: isUpdatingQueue,
       disabled: !canUpdateQueue,
-      title: 'Busca novamente as tarefas da fila selecionada no Jira (status, SLA e campos)',
+      title: 'Atualiza as tarefas já importadas buscando status, campos e SLAs no Jira',
     });
     return () => setHeaderJiraAction(null);
   }, [setHeaderJiraAction, handleUpdateQueueFromJira, isUpdatingQueue, canUpdateQueue]);
@@ -523,9 +561,9 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
         </div>
         <p className={cn(jiraSolusSubtitleClass, 'mt-0')}>
           Selecione o projeto e a fila do Jira Service Management para importar apenas as tarefas
-          relevantes. Use o botão <strong>Jira</strong> no topo da tela para atualizar a fila
-          exportada (status, SLA e campos), como em Tarefas &amp; Testes dos Projetos. Também é
-          possível importar uma issue pelo ID.
+          relevantes. Use o botão <strong>Jira</strong> no topo da tela para atualizar apenas as
+          tarefas já importadas (status, SLA e campos), como em Tarefas &amp; Testes dos Projetos.
+          Também é possível importar uma issue pelo ID.
         </p>
       </header>
 

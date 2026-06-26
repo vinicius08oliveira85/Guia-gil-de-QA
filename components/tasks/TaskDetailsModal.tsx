@@ -28,6 +28,7 @@ import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
 import { getJiraConfig } from '../../services/jiraService';
 import { fetchJiraAttachmentAsDataUrl } from '../../utils/jiraAttachmentFetch';
 import { TaskWithChildren } from './JiraTaskItem';
+import { JiraTaskSlaSummary } from './JiraTaskSlaSummary';
 import { TaskLinksView } from './TaskLinksView';
 import { getTaskDependents } from '../../utils/dependencyService';
 import { cn } from '../../utils/cn';
@@ -182,6 +183,11 @@ interface TaskDetailsModalProps {
   onOpenTask?: (task: JiraTask) => void;
   onUpdateFromJira?: (taskId: string) => Promise<void>;
   isUpdatingFromJira?: boolean;
+  /**
+   * Modo Filas (Jira): apenas aba Resumo com SLAs e metadados de acompanhamento,
+   * sem testes, BDD ou colaboração.
+   */
+  hideTestFeatures?: boolean;
 }
 
 export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
@@ -215,6 +221,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   onOpenTask,
   onUpdateFromJira,
   isUpdatingFromJira,
+  hideTestFeatures = false,
 }) => {
   const reduceMotion = useReducedMotion();
   const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
@@ -246,6 +253,10 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   }, [task.jiraAttachments]);
 
   const sectionTabs = useMemo(() => {
+    if (hideTestFeatures) {
+      return [{ id: 'overview' as const, label: 'Resumo' }];
+    }
+
     const tabs: { id: DetailSection; label: string; badge?: number }[] = [
       { id: 'overview', label: 'Resumo' },
     ];
@@ -292,6 +303,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
 
     return tabs;
   }, [
+    hideTestFeatures,
     task.type,
     task.bddScenarios,
     task.testCases,
@@ -385,8 +397,41 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
       {/* Coluna principal */}
       <div className="lg:col-span-2 space-y-3">
+        {hideTestFeatures ? (
+          <>
+            <JiraTaskSlaSummary task={task} />
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {task.reporter?.displayName ? (
+                <div className={cn(taskDetailsModalSectionClass, 'p-2.5')}>
+                  <p className={cn(leveTaskModalFieldLabelClass, 'mb-1 block')}>Relator</p>
+                  <p className={cn('text-sm font-semibold', leveTaskModalStrongClass)}>
+                    {task.reporter.displayName}
+                  </p>
+                </div>
+              ) : null}
+              {(task.jiraAssignee?.displayName ?? task.assignee) ? (
+                <div className={cn(taskDetailsModalSectionClass, 'p-2.5')}>
+                  <p className={cn(leveTaskModalFieldLabelClass, 'mb-1 block')}>Responsável</p>
+                  <p className={cn('text-sm font-semibold', leveTaskModalStrongClass)}>
+                    {task.jiraAssignee?.displayName ?? task.assignee}
+                  </p>
+                </div>
+              ) : null}
+              {task.createdAt ? (
+                <div className={cn(taskDetailsModalSectionClass, 'p-2.5')}>
+                  <p className={cn(leveTaskModalFieldLabelClass, 'mb-1 block')}>Data de criação</p>
+                  <p className={cn('text-sm font-semibold', leveTaskModalStrongClass)}>
+                    {new Date(task.createdAt).toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+              ) : null}
+            </div>
+          </>
+        ) : null}
+
         {/* Cartões de resumo no topo */}
-        {(task.priority ||
+        {!hideTestFeatures &&
+        (task.priority ||
           task.severity ||
           task.owner ||
           task.assignee ||
@@ -432,7 +477,8 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           </div>
         )}
 
-        {(task.type === 'Tarefa' || task.type === 'Bug') &&
+        {!hideTestFeatures &&
+        (task.type === 'Tarefa' || task.type === 'Bug') &&
           (task.testCases?.length > 0 || (task.testStrategy?.length ?? 0) > 0) && (
             <div className="flex justify-end">
               <button
@@ -1125,7 +1171,8 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           />
           <div className={taskDetailsModalTabsScrollWrapClass}>
             <div className={taskDetailsModalTabsTrackClass} role="tablist" aria-label="Seções da tarefa">
-            {sectionTabs.map(tab => {
+            {sectionTabs.length > 1
+              ? sectionTabs.map(tab => {
               const isActive = tab.id === activeSection;
               const tabId = `task-${safeDomId}-tab-${tab.id}`;
               const panelId = `task-${safeDomId}-panel-${tab.id}`;
@@ -1156,7 +1203,8 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                   ) : null}
                 </button>
               );
-            })}
+            })
+              : null}
             </div>
           </div>
 
@@ -1178,7 +1226,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 }}
               >
                 {renderSectionContent()}
-                {renderNavigationFooter()}
+                {sectionTabs.length > 1 ? renderNavigationFooter() : null}
               </motion.div>
             </AnimatePresence>
           </div>

@@ -5,9 +5,8 @@ import { cn } from '../../utils/cn';
 import { classifyTaskSla, type SlaBucket } from '../../utils/jiraFilasMetrics';
 import {
   classifyJiraSlaDisplay,
-  formatJiraSlaChipLabel,
+  classifyTaskSlaFromJiraSlas,
   formatJiraSlaTooltip,
-  getJiraSlaToneClass,
   sortJiraSlasForDisplay,
   taskHasJiraSlas,
 } from '../../utils/jiraSla';
@@ -26,7 +25,7 @@ function formatDate(value?: string): string | null {
   return Number.isNaN(date.getTime()) ? null : date.toLocaleDateString('pt-BR');
 }
 
-function resolveDueDateToneClass(bucket: SlaBucket): string {
+function resolveSlaToneClass(bucket: SlaBucket): string {
   switch (bucket) {
     case 'overdue':
       return 'text-error';
@@ -39,13 +38,13 @@ function resolveDueDateToneClass(bucket: SlaBucket): string {
   }
 }
 
-const chipClass = cn(tasksListMetadataBadgeClass, 'inline-flex min-w-0 items-center gap-1');
+const chipClass = cn(tasksListMetadataBadgeClass, 'flex w-full min-w-0 items-center gap-1');
 
-function SlaStatusIcon({ status }: { status: ReturnType<typeof classifyJiraSlaDisplay> }) {
-  if (status === 'met' || status === 'onTrack') {
+function SlaStatusIcon({ bucket }: { bucket: SlaBucket }) {
+  if (bucket === 'onTrack') {
     return <CheckCircle2 className="h-3 w-3 shrink-0" aria-hidden />;
   }
-  if (status === 'breached' || status === 'atRisk') {
+  if (bucket === 'overdue' || bucket === 'atRisk') {
     return <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden />;
   }
   return <Clock className="h-3 w-3 shrink-0" aria-hidden />;
@@ -56,78 +55,67 @@ export interface JiraQueueMetaChipsProps {
 }
 
 /**
- * Chips de acompanhamento das Filas (Jira): Relator, Responsável, SLAs e Data de
- * Criação. Alinhados à direita do card via slot `titleTrailing` do `TaskCardHeader`.
+ * Chips de acompanhamento das Filas (Jira), na ordem:
+ * Relator · Responsável · Status SLA · Data de Criação.
+ *
+ * O Status SLA é consolidado (pior caso entre os SLAs do Jira); o detalhamento
+ * por SLA fica no tooltip e no resumo expandido (`JiraTaskSlaSummary`).
+ * Alinhados à direita do card via slot `titleTrailing` do `TaskCardHeader`.
  */
 export const JiraQueueMetaChips: React.FC<JiraQueueMetaChipsProps> = ({ task }) => {
   const meta = useMemo(() => {
-    const slaBucket = classifyTaskSla(task);
-    const dueLabel = formatDate(task.dueDate);
+    const jiraSlas = taskHasJiraSlas(task) ? sortJiraSlasForDisplay(task.jiraSlas!) : [];
+    const slaBucket = classifyTaskSlaFromJiraSlas(jiraSlas) ?? classifyTaskSla(task);
+
+    const slaTooltip =
+      jiraSlas.length > 0
+        ? jiraSlas
+            .map(sla => formatJiraSlaTooltip(sla, classifyJiraSlaDisplay(sla)))
+            .join('\n')
+        : SLA_BUCKET_LABELS[slaBucket];
+
     return {
       reporter: task.reporter?.displayName?.trim() || '—',
       assignee: (task.jiraAssignee?.displayName ?? task.assignee)?.trim() || '—',
       slaBucket,
-      dueDateFallbackLabel: dueLabel
-        ? `${SLA_BUCKET_LABELS[slaBucket]} · ${dueLabel}`
-        : SLA_BUCKET_LABELS[slaBucket],
+      slaLabel: SLA_BUCKET_LABELS[slaBucket],
+      slaTooltip,
       createdAt: formatDate(task.createdAt) ?? '—',
-      jiraSlas: taskHasJiraSlas(task) ? sortJiraSlasForDisplay(task.jiraSlas!) : [],
     };
   }, [task]);
 
-  const dueDateToneClass = resolveDueDateToneClass(meta.slaBucket);
+  const slaToneClass = resolveSlaToneClass(meta.slaBucket);
 
   return (
-    <div className="flex min-w-0 flex-nowrap items-center gap-1.5 sm:gap-2">
+    <div
+      className={cn(
+        'grid shrink-0 items-center gap-1.5 sm:gap-2',
+        'grid-cols-[minmax(0,9.5rem)_minmax(0,9.5rem)_minmax(0,7rem)_minmax(0,6rem)]'
+      )}
+      role="group"
+      aria-label="Relator, Responsável, Status SLA e Data de Criação"
+    >
       <span className={chipClass} title={`Relator: ${meta.reporter}`}>
         <User className="h-3 w-3 shrink-0" aria-hidden />
-        <span className="max-w-[8rem] truncate">{meta.reporter}</span>
+        <span className="min-w-0 flex-1 truncate">{meta.reporter}</span>
       </span>
+
       <span className={chipClass} title={`Responsável: ${meta.assignee}`}>
         <UserCheck className="h-3 w-3 shrink-0" aria-hidden />
-        <span className="max-w-[8rem] truncate">{meta.assignee}</span>
+        <span className="min-w-0 flex-1 truncate">{meta.assignee}</span>
       </span>
 
-      {meta.jiraSlas.length > 0 ? (
-        meta.jiraSlas.map(sla => {
-          const displayStatus = classifyJiraSlaDisplay(sla);
-          const toneClass = getJiraSlaToneClass(displayStatus);
-          const label = formatJiraSlaChipLabel(sla, displayStatus);
-          return (
-            <span
-              key={sla.name}
-              className={cn(
-                tasksListMetadataBadgeClass,
-                'inline-flex shrink-0 items-center gap-1',
-                toneClass
-              )}
-              title={formatJiraSlaTooltip(sla, displayStatus)}
-            >
-              <SlaStatusIcon status={displayStatus} />
-              <span className="max-w-[9rem] truncate">{label}</span>
-            </span>
-          );
-        })
-      ) : (
-        <span
-          className={cn(
-            tasksListMetadataBadgeClass,
-            'inline-flex shrink-0 items-center gap-1',
-            dueDateToneClass
-          )}
-          title={`SLA: ${meta.dueDateFallbackLabel}`}
-        >
-          <Clock className="h-3 w-3 shrink-0" aria-hidden />
-          {meta.dueDateFallbackLabel}
-        </span>
-      )}
-
       <span
-        className={cn(tasksListMetadataBadgeClass, 'inline-flex shrink-0 items-center gap-1')}
-        title={`Data de criação: ${meta.createdAt}`}
+        className={cn(chipClass, slaToneClass)}
+        title={`Status SLA: ${meta.slaTooltip}`}
       >
+        <SlaStatusIcon bucket={meta.slaBucket} />
+        <span className="min-w-0 flex-1 truncate">{meta.slaLabel}</span>
+      </span>
+
+      <span className={chipClass} title={`Data de criação: ${meta.createdAt}`}>
         <CalendarPlus className="h-3 w-3 shrink-0" aria-hidden />
-        {meta.createdAt}
+        <span className="min-w-0 flex-1 truncate">{meta.createdAt}</span>
       </span>
     </div>
   );
