@@ -204,7 +204,6 @@ export const JiraSolusView = React.memo(() => {
             tasks={tasks}
             selectedProjectKey={selectedProjectKey}
             slaRiskWindowHours={slaRiskWindowHours}
-            onSlaRiskWindowHoursChange={setSlaRiskWindowHours}
             activeFilter={activeFilter}
             onApplyFilter={handleApplyFilter}
           />

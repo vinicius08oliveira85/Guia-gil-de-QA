@@ -32,10 +32,8 @@ import {
   tasksViewPageTitleClass,
 } from '../tasks/tasksPanelNeuStyles';
 import {
-  jiraSolusFieldLabelClass,
   jiraSolusInnerPanelClass,
   jiraSolusSectionTitleClass,
-  jiraSolusSelectClass,
 } from './jiraSolusNeuUi';
 import {
   JiraFilasDistributionBar,
@@ -46,7 +44,6 @@ export interface JiraFilasDashboardPanelProps {
   tasks: JiraTask[];
   selectedProjectKey?: string;
   slaRiskWindowHours: number;
-  onSlaRiskWindowHoursChange: (hours: number) => void;
   activeFilter: JiraFilasFilter;
   onApplyFilter: (filter: JiraFilasFilter) => void;
 }
@@ -112,7 +109,6 @@ export const JiraFilasDashboardPanel: React.FC<JiraFilasDashboardPanelProps> = (
   tasks,
   selectedProjectKey,
   slaRiskWindowHours,
-  onSlaRiskWindowHoursChange,
   activeFilter,
   onApplyFilter,
 }) => {
@@ -206,7 +202,7 @@ export const JiraFilasDashboardPanel: React.FC<JiraFilasDashboardPanelProps> = (
     {
       key: 'at-risk',
       icon: <CalendarClock className={iconClass} strokeWidth={1.75} aria-hidden />,
-      label: `Em risco (${slaRiskWindowHours}h)`,
+      label: 'Em risco',
       value: formatWorkspaceStatCount(metrics.slaCounts.atRisk),
       filter: { kind: 'sla', bucket: 'atRisk' },
     },
@@ -354,20 +350,9 @@ export const JiraFilasDashboardPanel: React.FC<JiraFilasDashboardPanelProps> = (
               ) : null}
             </p>
           </div>
-          <label className="flex min-w-[12rem] flex-col gap-1">
-            <span className={jiraSolusFieldLabelClass}>Janela de risco</span>
-            <select
-              value={slaRiskWindowHours}
-              onChange={e => onSlaRiskWindowHoursChange(Number(e.target.value))}
-              className={jiraSolusSelectClass}
-              aria-label="Janela de risco de SLA"
-            >
-              <option value={24}>24 horas</option>
-              <option value={48}>48 horas</option>
-              <option value={72}>72 horas</option>
-              <option value={120}>5 dias</option>
-            </select>
-          </label>
+          <p className="font-sans text-[11px] text-[var(--brand-text-muted)]">
+            SLA conforme o prazo definido no Jira.
+          </p>
         </div>
         <IndicatorGrid items={slaItems} activeFilter={activeFilter} onApplyFilter={onApplyFilter} />
         <JiraFilasDistributionBar

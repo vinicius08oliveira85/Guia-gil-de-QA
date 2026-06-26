@@ -79,10 +79,15 @@ export const getJiraStatusColor = (
     keywordMatches(normalized, [
       'done',
       'concluido',
+      'concluida',
       'finalizado',
       'finalizada',
       'closed',
+      'fechado',
+      'fechada',
       'resolved',
+      'resolvido',
+      'resolvida',
       'confirmado',
       'confirmada',
       'aprovado',
@@ -91,9 +96,46 @@ export const getJiraStatusColor = (
       'homologada',
       'ok',
       'complete',
+      'atendido',
+      'atendida',
+      'entregue',
     ])
   ) {
     return '#00875a';
+  }
+
+  if (
+    keywordMatches(normalized, [
+      'cancelado',
+      'cancelada',
+      'rejeitado',
+      'rejeitada',
+      'recusado',
+      'recusada',
+      'declined',
+      'descartado',
+      'descartada',
+    ])
+  ) {
+    return '#ae2a19';
+  }
+
+  if (
+    keywordMatches(normalized, [
+      'aguardando',
+      'aguardo',
+      'em espera',
+      'espera',
+      'waiting',
+      'on hold',
+      'em pausa',
+      'pausado',
+      'pausada',
+      'suspenso',
+      'suspensa',
+    ])
+  ) {
+    return '#f5cd47';
   }
 
   if (
@@ -109,6 +151,10 @@ export const getJiraStatusColor = (
       'implementando',
       'em teste',
       'homologando',
+      'escalated',
+      'escalado',
+      'escalada',
+      'atendimento',
     ])
   ) {
     return '#0052cc';
@@ -176,7 +222,8 @@ export const getJiraStatusLozengeStyles = (
   const indicator = statusColor ? normalizeHexColor(statusColor) : FALLBACK_COLOR;
   return {
     indicatorColor: indicator,
-    backgroundColor: `color-mix(in srgb, ${indicator} 18%, oklch(var(--b2)))`,
-    color: '#44546f',
+    backgroundColor: `color-mix(in srgb, ${indicator} 16%, oklch(var(--b2)))`,
+    // Texto na cor da categoria do Jira (escurecida p/ contraste), em vez de um tom fixo.
+    color: `color-mix(in srgb, ${indicator} 78%, #1c1c1c)`,
   };
 };
