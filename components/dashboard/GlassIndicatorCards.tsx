@@ -2,6 +2,7 @@ import React from 'react';
 import { ListChecks, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { RadialProgress } from '../common/RadialProgress';
 import {
   formatWorkspaceStatCount,
   glassIndicatorBadgeClass,
@@ -47,61 +48,21 @@ function isInactiveValue(value: number | string): boolean {
   return value === '—' || value === '-';
 }
 
-/** Mini ring progress — laranja Leve */
-function MiniRingProgress({
-  value,
-  size = 36,
-}: {
-  value: number;
-  colorClass?: string;
-  size?: number;
-}) {
-  const strokeWidth = 3;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const progress = Math.min(100, Math.max(0, value));
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
+/** Variáveis de cor do anel adaptadas ao tema escuro do dashboard. */
+const DASHBOARD_RING_STYLE = {
+  '--radial-accent': 'var(--workspace-stat-accent)',
+  '--radial-track': 'color-mix(in srgb, var(--workspace-stat-text) 18%, transparent)',
+} as React.CSSProperties;
 
+/** Mini anel de progresso — usa o RadialProgress compartilhado com cores do tema escuro. */
+function MiniRingProgress({ value }: { value: number }) {
   return (
-    <div
-      className="dashboard-neu-insight-inset relative flex items-center justify-center rounded-full"
-      style={{ width: size + 6, height: size + 6 }}
-    >
-      <svg
-        width={size}
-        height={size}
-        className="-rotate-90"
-        viewBox={`0 0 ${size} ${size}`}
-        aria-hidden
-      >
-        <circle
-          className="text-[color-mix(in_srgb,var(--workspace-stat-text)_18%,transparent)]"
-          cx={size / 2}
-          cy={size / 2}
-          fill="transparent"
-          r={radius}
-          stroke="currentColor"
-          strokeWidth={strokeWidth}
-        />
-        <circle
-          className="text-[var(--workspace-stat-accent)] transition-all duration-700 ease-out"
-          cx={size / 2}
-          cy={size / 2}
-          fill="transparent"
-          r={radius}
-          stroke="currentColor"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-        />
-      </svg>
-      <span
-        className="absolute inset-0 flex items-center justify-center text-[9px] font-bold tabular-nums text-[var(--workspace-stat-accent)]"
-        aria-label={`${value}%`}
-      >
-        {value}%
-      </span>
+    <div className="dashboard-neu-insight-inset flex items-center justify-center rounded-full p-[3px]">
+      <RadialProgress value={value} size={36} strokeWidth={3} ariaLabel="Progresso" style={DASHBOARD_RING_STYLE}>
+        <span className="font-sans text-[9px] font-bold tabular-nums text-[var(--workspace-stat-accent)]">
+          {value}%
+        </span>
+      </RadialProgress>
     </div>
   );
 }

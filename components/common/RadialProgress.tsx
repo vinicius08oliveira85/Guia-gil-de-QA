@@ -13,14 +13,25 @@ export interface RadialProgressProps {
   /** Conteúdo central (ex.: "68%"). Quando ausente, exibe o valor arredondado. */
   children?: React.ReactNode;
   className?: string;
+  /**
+   * Estilos extras no contêiner. Use para sobrescrever as cores via variáveis CSS:
+   * `--radial-accent` (cor do progresso) e `--radial-track` (cor do trilho).
+   */
+  style?: React.CSSProperties;
 }
+
+const DEFAULT_ACCENT = 'var(--radial-accent, var(--project-card-accent))';
+const DEFAULT_TRACK =
+  'var(--radial-track, color-mix(in srgb, var(--project-card-neu-dark) 30%, var(--project-card-bg)))';
 
 /**
  * Anel de progresso circular (SVG) com gradiente da marca e trilho neumórfico.
  * Componente moderno e reutilizável para destacar um KPI principal.
+ * As cores podem ser ajustadas por contexto via variáveis CSS `--radial-accent`
+ * e `--radial-track` (passadas em `style`).
  */
 export const RadialProgress = React.memo<RadialProgressProps>(
-  ({ value, size = 56, strokeWidth = 6, ariaLabel, children, className }) => {
+  ({ value, size = 56, strokeWidth = 6, ariaLabel, children, className, style }) => {
     const gradientId = useId();
     const progress = Math.min(100, Math.max(0, Math.round(value)));
 
@@ -38,7 +49,7 @@ export const RadialProgress = React.memo<RadialProgressProps>(
     return (
       <div
         className={cn('relative inline-flex shrink-0 items-center justify-center', className)}
-        style={{ width: size, height: size }}
+        style={{ width: size, height: size, ...style }}
         role="img"
         aria-label={`${ariaLabel}: ${progress}%`}
       >
@@ -51,11 +62,8 @@ export const RadialProgress = React.memo<RadialProgressProps>(
         >
           <defs>
             <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop
-                offset="0%"
-                stopColor="color-mix(in srgb, var(--project-card-accent) 70%, white)"
-              />
-              <stop offset="100%" stopColor="var(--project-card-accent)" />
+              <stop offset="0%" stopColor={`color-mix(in srgb, ${DEFAULT_ACCENT} 70%, white)`} />
+              <stop offset="100%" stopColor={DEFAULT_ACCENT} />
             </linearGradient>
           </defs>
           <circle
@@ -64,7 +72,7 @@ export const RadialProgress = React.memo<RadialProgressProps>(
             r={radius}
             fill="none"
             strokeWidth={strokeWidth}
-            stroke="color-mix(in srgb, var(--project-card-neu-dark) 30%, var(--project-card-bg))"
+            stroke={DEFAULT_TRACK}
           />
           <circle
             cx={center}
@@ -81,7 +89,10 @@ export const RadialProgress = React.memo<RadialProgressProps>(
         </svg>
         <span className="absolute inset-0 flex items-center justify-center">
           {children ?? (
-            <span className="font-sans text-sm font-extrabold tabular-nums text-[var(--project-card-accent)]">
+            <span
+              className="font-sans text-sm font-extrabold tabular-nums"
+              style={{ color: DEFAULT_ACCENT }}
+            >
               {progress}%
             </span>
           )}

@@ -111,11 +111,11 @@ export const WorkspaceDaisyStats: React.FC<WorkspaceDaisyStatsProps> = ({
           {'progress' in item ? (
             <RadialProgress
               value={item.progress}
-              size={46}
-              strokeWidth={5}
+              size={64}
+              strokeWidth={6}
               ariaLabel={item.label}
             >
-              <span className={cn(item.valueClass, 'text-base sm:text-lg')}>{item.value}</span>
+              <span className={cn(item.valueClass, 'text-sm sm:text-base')}>{item.value}</span>
             </RadialProgress>
           ) : (
             <span className={cn(item.valueClass)}>{item.value}</span>

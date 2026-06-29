@@ -39,8 +39,8 @@ export const GlobalEfficiencyMetric: React.FC<GlobalEfficiencyMetricProps> = ({
         />
         <span className={workspaceDaisyStatLabelClass}>Eficiência global</span>
       </div>
-      <RadialProgress value={clamped} size={52} strokeWidth={5} ariaLabel="Eficiência global">
-        <strong className={cn(workspaceDaisyStatValueClass, 'text-base sm:text-lg')}>
+      <RadialProgress value={clamped} size={64} strokeWidth={6} ariaLabel="Eficiência global">
+        <strong className={cn(workspaceDaisyStatValueClass, 'text-sm sm:text-base')}>
           {formatWorkspaceStatPercent(clamped)}
         </strong>
       </RadialProgress>
