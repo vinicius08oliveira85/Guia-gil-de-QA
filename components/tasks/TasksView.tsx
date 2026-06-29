@@ -2540,6 +2540,7 @@ export const TasksView: React.FC<{
                           <option value="status">Status</option>
                           <option value="priority">Prioridade</option>
                           <option value="createdAt">Data de criação</option>
+                          <option value="updatedAt">Data de atualização</option>
                           <option value="title">Título</option>
                         </AppSelect>
                       </div>

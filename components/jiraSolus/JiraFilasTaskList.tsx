@@ -22,14 +22,16 @@ export interface JiraFilasTaskListProps {
   ) => void | Promise<void>;
   isTransitioningJiraStatus?: string | null;
   onUnavailableAction?: (label: string) => void;
+  listAriaLabel?: string;
 }
 
 function buildTaskTree(tasks: JiraTask[]): TaskWithChildren[] {
-  const sorted = [...tasks].sort((a, b) => a.id.localeCompare(b.id));
-  const taskMap = new Map(sorted.map(t => [t.id, { ...t, children: [] as TaskWithChildren[] }]));
+  const taskMap = new Map(tasks.map(t => [t.id, { ...t, children: [] as TaskWithChildren[] }]));
   const tree: TaskWithChildren[] = [];
 
-  for (const task of taskMap.values()) {
+  for (const task of tasks) {
+    const node = taskMap.get(task.id);
+    if (!node) continue;
     const pid = task.parentId?.trim();
     if (pid && taskMap.has(pid)) {
       if (parentLinkCreatesCycle(taskMap, task.id, pid)) {
@@ -37,12 +39,12 @@ function buildTaskTree(tasks: JiraTask[]): TaskWithChildren[] {
           taskId: task.id,
           parentId: pid,
         });
-        tree.push(task);
+        tree.push(node);
       } else {
-        taskMap.get(pid)!.children.push(task);
+        taskMap.get(pid)!.children.push(node);
       }
     } else {
-      tree.push(task);
+      tree.push(node);
     }
   }
 
@@ -96,6 +98,7 @@ export const JiraFilasTaskList: React.FC<JiraFilasTaskListProps> = ({
   onJiraStatusChange,
   isTransitioningJiraStatus = null,
   onUnavailableAction,
+  listAriaLabel = 'Filas do Jira',
 }) => {
   const [modalTask, setModalTask] = useState<JiraTask | null>(null);
   const noopAsync = useCallback(async () => undefined, []);
@@ -183,7 +186,7 @@ export const JiraFilasTaskList: React.FC<JiraFilasTaskListProps> = ({
 
   return (
     <>
-      <div className={cn(tasksListPanelClass, 'space-y-1')} role="list" aria-label="Filas do Jira">
+      <div className={cn(tasksListPanelClass, 'space-y-1')} role="list" aria-label={listAriaLabel}>
         {taskTree.map(task => renderNode(task, 0))}
       </div>
 

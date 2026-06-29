@@ -142,7 +142,7 @@ export const compareTasksById = (a: JiraTask, b: JiraTask) => {
   return a.title.localeCompare(b.title);
 };
 
-export type TaskSortBy = 'id' | 'status' | 'priority' | 'createdAt' | 'title';
+export type TaskSortBy = 'id' | 'status' | 'priority' | 'createdAt' | 'updatedAt' | 'title';
 export type TaskGroupBy = 'none' | 'status' | 'priority' | 'type';
 
 export {
@@ -215,6 +215,12 @@ export function getTaskComparator(sortBy: TaskSortBy): (a: JiraTask, b: JiraTask
       case 'createdAt': {
         const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
         const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        if (dateB !== dateA) return dateB - dateA;
+        return compareTasksById(a, b);
+      }
+      case 'updatedAt': {
+        const dateA = new Date(a.updatedAt ?? a.createdAt ?? 0).getTime();
+        const dateB = new Date(b.updatedAt ?? b.createdAt ?? 0).getTime();
         if (dateB !== dateA) return dateB - dateA;
         return compareTasksById(a, b);
       }

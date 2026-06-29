@@ -93,6 +93,7 @@ export async function jiraIssueToTask(
     priority: mapJiraPriorityToTaskPriority(issue.fields?.priority?.name),
     jiraPriority: issue.fields?.priority?.name,
     createdAt: existingTask?.createdAt || issue.fields?.created || new Date().toISOString(),
+    updatedAt: issue.fields?.updated || existingTask?.updatedAt,
     completedAt: issue.fields?.resolutiondate,
     tags: issue.fields?.labels || [],
     testCases: existingTask?.testCases ?? [],

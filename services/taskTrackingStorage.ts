@@ -113,11 +113,29 @@ function readStoredQueueSelection(): TaskTrackingQueueSelection | null {
   try {
     const parsed = JSON.parse(raw) as Partial<TaskTrackingQueueSelection>;
     const projectKey = typeof parsed.projectKey === 'string' ? parsed.projectKey.trim() : '';
+    const projectKeys =
+      Array.isArray(parsed.projectKeys) && parsed.projectKeys.length > 0
+        ? parsed.projectKeys.map(k => k.trim()).filter(Boolean)
+        : projectKey
+          ? [projectKey]
+          : [];
+    const queueCategories = Array.isArray(parsed.queueCategories)
+      ? parsed.queueCategories.map(c => c.trim()).filter(Boolean)
+      : [];
+    const queueStatuses = Array.isArray(parsed.queueStatuses)
+      ? parsed.queueStatuses.map(s => s.trim()).filter(Boolean)
+      : [];
     const queueIds = normalizeQueueIds(parsed);
-    if (projectKey && queueIds.length > 0) {
-      return { projectKey, queueIds, queueId: queueIds[0] };
-    }
-    return null;
+
+    if (projectKeys.length === 0) return null;
+
+    return {
+      projectKey: projectKeys[0],
+      projectKeys,
+      queueCategories,
+      queueStatuses,
+      ...(queueIds.length > 0 ? { queueIds, queueId: queueIds[0] } : {}),
+    };
   } catch {
     return null;
   }
@@ -143,19 +161,15 @@ export function writeTaskTrackingSnapshot(snapshot: TaskTrackingSnapshot): void 
   writeSessionItem(FILAS_PROJECT_STORAGE_KEY, projectKey || null);
 
   if (snapshot.queueSelection?.projectKey) {
-    const queueIds = normalizeQueueIds(snapshot.queueSelection);
-    if (queueIds.length > 0) {
-      writeSessionItem(
-        FILAS_QUEUE_STORAGE_KEY,
-        JSON.stringify({
-          projectKey: snapshot.queueSelection.projectKey.trim(),
-          queueIds,
-          queueId: queueIds[0],
-        })
-      );
-    } else {
-      writeSessionItem(FILAS_QUEUE_STORAGE_KEY, null);
-    }
+    writeFilasImportSelection({
+      projectKeys:
+        snapshot.queueSelection.projectKeys?.length
+          ? snapshot.queueSelection.projectKeys
+          : [snapshot.queueSelection.projectKey.trim()],
+      queueCategories: snapshot.queueSelection.queueCategories ?? [],
+      queueStatuses: snapshot.queueSelection.queueStatuses ?? [],
+      queueIds: normalizeQueueIds(snapshot.queueSelection),
+    });
   } else {
     writeSessionItem(FILAS_QUEUE_STORAGE_KEY, null);
   }
@@ -165,37 +179,35 @@ export function writeTaskTrackingSnapshot(snapshot: TaskTrackingSnapshot): void 
 }
 
 /** Lê a seleção persistida do assistente de importação das filas. */
-export function readFilasImportSelection(): Pick<
-  TaskTrackingQueueSelection,
-  'projectKeys' | 'queueCategories' | 'queueStatuses'
-> | null {
+export function readFilasImportSelection(): FilasImportSelection | null {
   const selection = readStoredQueueSelection();
   if (!selection) return null;
-  const projectKeys =
-    Array.isArray(selection.projectKeys) && selection.projectKeys.length > 0
-      ? selection.projectKeys.map(k => k.trim()).filter(Boolean)
-      : selection.projectKey
-        ? [selection.projectKey.trim()]
-        : [];
-  const queueCategories = Array.isArray(selection.queueCategories)
-    ? selection.queueCategories.map(c => c.trim()).filter(Boolean)
-    : [];
-  const queueStatuses = Array.isArray(selection.queueStatuses)
-    ? selection.queueStatuses.map(s => s.trim()).filter(Boolean)
-    : [];
-  if (projectKeys.length === 0 && queueCategories.length === 0 && queueStatuses.length === 0) {
+  const projectKeys = selection.projectKeys ?? (selection.projectKey ? [selection.projectKey] : []);
+  const queueCategories = selection.queueCategories ?? [];
+  const queueStatuses = selection.queueStatuses ?? [];
+  const queueIds = normalizeQueueIds(selection);
+  if (
+    projectKeys.length === 0 &&
+    queueCategories.length === 0 &&
+    queueStatuses.length === 0 &&
+    queueIds.length === 0
+  ) {
     return null;
   }
-  return { projectKeys, queueCategories, queueStatuses };
+  return { projectKeys, queueCategories, queueStatuses, queueIds };
 }
 
+export type FilasImportSelection = Pick<
+  TaskTrackingQueueSelection,
+  'projectKeys' | 'queueCategories' | 'queueStatuses' | 'queueIds'
+>;
+
 /** Persiste a seleção do assistente de importação das filas. */
-export function writeFilasImportSelection(
-  selection: Pick<TaskTrackingQueueSelection, 'projectKeys' | 'queueCategories' | 'queueStatuses'>
-): void {
+export function writeFilasImportSelection(selection: FilasImportSelection): void {
   const projectKeys = (selection.projectKeys ?? []).map(k => k.trim()).filter(Boolean);
   const queueCategories = (selection.queueCategories ?? []).map(c => c.trim()).filter(Boolean);
   const queueStatuses = (selection.queueStatuses ?? []).map(s => s.trim()).filter(Boolean);
+  const queueIds = normalizeQueueIds(selection);
 
   if (projectKeys.length === 0) {
     writeSessionItem(FILAS_QUEUE_STORAGE_KEY, null);
@@ -209,6 +221,7 @@ export function writeFilasImportSelection(
       projectKeys,
       queueCategories,
       queueStatuses,
+      ...(queueIds.length > 0 ? { queueIds, queueId: queueIds[0] } : {}),
     })
   );
 }

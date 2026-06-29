@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Download, Filter, Loader2, RefreshCw, Search, X } from 'lucide-react';
+import { Download, Filter, List, Loader2, RefreshCw, Search, X } from 'lucide-react';
 import {
   getJiraConfig,
   getJiraProjects,
@@ -19,6 +19,7 @@ import { buildJiraSprintSyncContext } from '../../services/jira/sprintSync';
 import { mapJiraStatusToTaskStatus } from '../../services/jira/mappers';
 import type { JiraTask, Project } from '../../types';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { useTaskTrackingHeaderStore } from '../../store/taskTrackingHeaderStore';
 import { isValidJiraKey } from '../../utils/jiraFieldMapper';
 import {
@@ -33,6 +34,8 @@ import { logger } from '../../utils/logger';
 import { cn } from '../../utils/cn';
 import { EmptyState } from '../common/EmptyState';
 import { Spinner } from '../common/Spinner';
+import { AppSelect } from '../common/AppSelect';
+import { FileExportModal } from '../common/FileExportModal';
 import { JiraFilasTaskList } from './JiraFilasTaskList';
 import { JiraFilasImportSelector } from './JiraFilasImportSelector';
 import { Modal } from '../common/Modal';
@@ -40,11 +43,21 @@ import { resolveQueueIdsFromFilasSelection, getJiraQueueStatusLabels } from '../
 import {
   tasksPanelNeuModalPanelClass,
   tasksPanelNeuModalTitleClass,
+  tasksPanelToolbarExportBtnClass,
+  tasksPanelToolbarFieldClass,
+  tasksPanelToolbarLabelClass,
+  tasksPanelToolbarSelectClass,
+  tasksPanelToolbarShellClass,
   tasksViewPageHeaderShellClass,
   tasksViewPageJiraBadgeClass,
   tasksViewPageSubtitleClass,
   tasksViewPageTitleClass,
 } from '../tasks/tasksPanelNeuStyles';
+import {
+  getTaskComparator,
+  type TaskGroupBy,
+  type TaskSortBy,
+} from '../tasks/tasksViewHelpers';
 import {
   JiraFilasFiltersModalContent,
   SLA_FILTER_OPTIONS,
@@ -125,6 +138,9 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
   const [issueKeyInput, setIssueKeyInput] = useState('');
   const [localFilters, setLocalFilters] = useState<JiraFilasLocalFilters>(EMPTY_JIRA_FILAS_FILTERS);
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
+  const [showExportTasksModal, setShowExportTasksModal] = useState(false);
+  const [sortBy, setSortBy] = useLocalStorage<TaskSortBy>('jira-filas-sort-by', 'id');
+  const [groupBy, setGroupBy] = useLocalStorage<TaskGroupBy>('jira-filas-group-by', 'none');
 
   const [isLoadingProjects, setIsLoadingProjects] = useState(false);
   const [isLoadingQueues, setIsLoadingQueues] = useState(false);
@@ -184,14 +200,6 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
   useEffect(() => {
     setSelectedProjectKey(selectedProjectKeys[0] ?? '');
   }, [selectedProjectKeys, setSelectedProjectKey]);
-
-  useEffect(() => {
-    writeFilasImportSelection({
-      projectKeys: selectedProjectKeys,
-      queueCategories: selectedQueueCategories,
-      queueStatuses: selectedQueueStatuses,
-    });
-  }, [selectedProjectKeys, selectedQueueCategories, selectedQueueStatuses]);
 
   useEffect(() => {
     const config = getJiraConfig();
@@ -260,6 +268,15 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
     return jiraQueues.filter(queue => idSet.has(queue.id));
   }, [jiraQueues, resolvedQueueIds]);
 
+  useEffect(() => {
+    writeFilasImportSelection({
+      projectKeys: selectedProjectKeys,
+      queueCategories: selectedQueueCategories,
+      queueStatuses: selectedQueueStatuses,
+      queueIds: resolvedQueueIds,
+    });
+  }, [selectedProjectKeys, selectedQueueCategories, selectedQueueStatuses, resolvedQueueIds]);
+
   const filasProject = useMemo(
     (): Project => ({
       id: 'jira-filas',
@@ -321,6 +338,47 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
       );
     });
   }, [tasks, searchQuery, activeFilter, slaRiskWindowHours, matchesLocalFilters]);
+
+  const taskComparator = useMemo(() => getTaskComparator(sortBy), [sortBy]);
+
+  const sortedTasks = useMemo(
+    () => [...filteredTasks].sort(taskComparator),
+    [filteredTasks, taskComparator]
+  );
+
+  const groupedTasksEntries = useMemo((): [string, JiraTask[]][] => {
+    if (groupBy === 'none') return [];
+    const map = new Map<string, JiraTask[]>();
+    for (const task of sortedTasks) {
+      const key =
+        groupBy === 'status'
+          ? getTaskStatusLabel(task)
+          : groupBy === 'priority'
+            ? (task.priority ?? 'Sem prioridade')
+            : task.type;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(task);
+    }
+    const entries = Array.from(map.entries());
+    if (groupBy === 'status') {
+      const order = jiraStatuses.map(status => status.name);
+      entries.sort(
+        (a, b) =>
+          (order.indexOf(a[0]) === -1 ? 999 : order.indexOf(a[0])) -
+          (order.indexOf(b[0]) === -1 ? 999 : order.indexOf(b[0]))
+      );
+    } else if (groupBy === 'priority') {
+      const order = ['Urgente', 'Alta', 'Média', 'Baixa', 'Sem prioridade'];
+      entries.sort(
+        (a, b) =>
+          (order.indexOf(a[0]) === -1 ? 999 : order.indexOf(a[0])) -
+          (order.indexOf(b[0]) === -1 ? 999 : order.indexOf(b[0]))
+      );
+    } else {
+      entries.sort((a, b) => a[0].localeCompare(b[0], 'pt-BR'));
+    }
+    return entries;
+  }, [sortedTasks, groupBy, jiraStatuses]);
 
   const filterOptions = useMemo(() => {
     const statuses = new Set<string>();
@@ -484,8 +542,8 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
   ]);
 
   /**
-   * Atualiza apenas as tarefas já importadas (re-busca cada uma pelo ID no Jira),
-   * preservando dados locais e atualizando status, campos e SLAs.
+   * Atualiza as tarefas conforme a seleção atual (projeto, fila e status) reimportando
+   * do Jira. Se a seleção estiver incompleta, atualiza individualmente as já importadas.
    */
   const handleUpdateQueueFromJira = useCallback(async () => {
     const config = getJiraConfig();
@@ -493,8 +551,42 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
       handleWarning('Configure o Jira em Configurações antes de atualizar.');
       return;
     }
+
+    const canSyncFromSelection =
+      selectedProjectKeys.length > 0 &&
+      selectedQueueCategories.length > 0 &&
+      selectedQueueStatuses.length > 0 &&
+      selectedQueues.length > 0;
+
+    if (canSyncFromSelection) {
+      setIsUpdatingQueue(true);
+      setImportProgress({ current: 0 });
+      try {
+        const withSlas = await fetchQueueTasksFromJira((current, total) =>
+          setImportProgress({ current, total })
+        );
+
+        mergeImportedTasks(withSlas);
+        const queueLabel =
+          selectedQueues.length === 1
+            ? `"${selectedQueues[0].name}"`
+            : `${selectedQueues.length} filas`;
+        handleSuccess(
+          withSlas.length === 1
+            ? `1 tarefa atualizada da fila ${queueLabel}.`
+            : `${withSlas.length} tarefas atualizadas de ${queueLabel}.`
+        );
+      } catch (err) {
+        handleError(err, 'Atualizar filas do Jira');
+      } finally {
+        setIsUpdatingQueue(false);
+        setImportProgress(null);
+      }
+      return;
+    }
+
     if (tasks.length === 0) {
-      handleWarning('Importe tarefas antes de atualizar do Jira.');
+      handleWarning('Selecione projeto, fila e status antes de atualizar do Jira.');
       return;
     }
 
@@ -564,9 +656,14 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
       setImportProgress(null);
     }
   }, [
+    selectedProjectKeys,
+    selectedQueueCategories,
+    selectedQueueStatuses,
+    selectedQueues,
+    fetchQueueTasksFromJira,
+    mergeImportedTasks,
     selectedProjectKey,
     tasks,
-    mergeImportedTasks,
     enrichFilasTasks,
     handleError,
     handleSuccess,
@@ -711,6 +808,29 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
     setTasks(prev => prev.filter(t => t.id !== taskId));
   }, []);
 
+  const taskListCommonProps = useMemo(
+    () => ({
+      project: filasProject,
+      onUpdateTasks: setTasks,
+      onDeleteTask: handleDeleteTask,
+      onUpdateFromJira: handleUpdateFromJira,
+      isUpdatingFromJira: updatingFromJiraId,
+      onJiraStatusChange: handleJiraStatusChange,
+      isTransitioningJiraStatus: transitioningStatusId,
+      onUnavailableAction: (label: string) =>
+        handleWarning(`${label} não está disponível na visualização de filas.`),
+    }),
+    [
+      filasProject,
+      handleDeleteTask,
+      handleUpdateFromJira,
+      updatingFromJiraId,
+      handleJiraStatusChange,
+      transitioningStatusId,
+      handleWarning,
+    ]
+  );
+
   const hasJiraConfig = !!getJiraConfig();
   const isBusy = isImportingProject || isUpdatingQueue || isImportingIssue;
   const hasActiveFilter = isJiraFilasFilterActive(activeFilter);
@@ -722,7 +842,14 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
     selectedQueueStatuses.length > 0 &&
     selectedQueues.length > 0 &&
     !isBusy;
-  const canUpdateQueue = hasJiraConfig && tasks.length > 0 && !isBusy;
+  const canUpdateFromSelection =
+    hasJiraConfig &&
+    selectedProjectKeys.length > 0 &&
+    selectedQueueCategories.length > 0 &&
+    selectedQueueStatuses.length > 0 &&
+    selectedQueues.length > 0 &&
+    !isBusy;
+  const canUpdateQueue = canUpdateFromSelection || (hasJiraConfig && tasks.length > 0 && !isBusy);
 
   const setHeaderJiraAction = useTaskTrackingHeaderStore(s => s.setJiraAction);
   useEffect(() => {
@@ -730,10 +857,18 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
       onSync: () => void handleUpdateQueueFromJira(),
       isSyncing: isUpdatingQueue,
       disabled: !canUpdateQueue,
-      title: 'Atualiza as tarefas já importadas buscando status, campos e SLAs no Jira',
+      title: canUpdateFromSelection
+        ? 'Atualiza as tarefas do projeto, fila e status selecionados buscando no Jira'
+        : 'Atualiza as tarefas já importadas buscando status, campos e SLAs no Jira',
     });
     return () => setHeaderJiraAction(null);
-  }, [setHeaderJiraAction, handleUpdateQueueFromJira, isUpdatingQueue, canUpdateQueue]);
+  }, [
+    setHeaderJiraAction,
+    handleUpdateQueueFromJira,
+    isUpdatingQueue,
+    canUpdateQueue,
+    canUpdateFromSelection,
+  ]);
 
   return (
     <div className="space-y-5" role="region" aria-label="Filas do Jira">
@@ -760,9 +895,9 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
           </div>
           <p className={cn(tasksViewPageSubtitleClass, 'max-w-2xl')}>
             Selecione projeto(s), fila e status do Jira Service Management para importar apenas as
-            tarefas relevantes. Use o botão <strong>Jira</strong> no topo da tela para atualizar
-            apenas as tarefas já importadas (status, SLA e campos). Também é possível importar uma
-            issue pelo ID.
+            tarefas relevantes. Use <strong>Atualizar filas</strong> ou o botão <strong>Jira</strong>{' '}
+            no topo para sincronizar novamente com a seleção atual (projeto, fila e status). Também é
+            possível importar uma issue pelo ID.
           </p>
         </div>
       </header>
@@ -833,6 +968,24 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
               ? `Importar (${selectedQueues.length} fila${selectedQueues.length === 1 ? '' : 's'})`
               : 'Importar filas'}
           </button>
+
+          <button
+            type="button"
+            onClick={() => void handleUpdateQueueFromJira()}
+            disabled={!canUpdateFromSelection}
+            className={jiraSolusSecondaryBtnClass}
+            aria-label="Atualizar tarefas das filas Jira selecionadas"
+            title="Re-sincroniza com o projeto, fila e status selecionados"
+          >
+            {isUpdatingQueue ? (
+              <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden />
+            ) : (
+              <RefreshCw className="h-4 w-4 shrink-0" aria-hidden />
+            )}
+            {selectedQueues.length > 0
+              ? `Atualizar (${selectedQueues.length} fila${selectedQueues.length === 1 ? '' : 's'})`
+              : 'Atualizar filas'}
+          </button>
         </div>
 
         {!hasJiraConfig ? (
@@ -844,7 +997,9 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
         {importProgress ? (
           <div className={jiraIntegrationImportProgressPanelClass} role="status">
             <div className="flex items-center justify-between gap-2 text-xs">
-              <span>Importando tarefas…</span>
+              <span>
+                {isUpdatingQueue ? 'Atualizando filas…' : 'Importando tarefas…'}
+              </span>
               <span className="tabular-nums">
                 {importProgress.current}
                 {importProgress.total != null ? ` / ${importProgress.total}` : ''}
@@ -927,19 +1082,83 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
             <Spinner />
           </div>
         ) : filteredTasks.length > 0 ? (
-          <JiraFilasTaskList
-            tasks={filteredTasks}
-            project={filasProject}
-            onUpdateTasks={setTasks}
-            onDeleteTask={handleDeleteTask}
-            onUpdateFromJira={handleUpdateFromJira}
-            isUpdatingFromJira={updatingFromJiraId}
-            onJiraStatusChange={handleJiraStatusChange}
-            isTransitioningJiraStatus={transitioningStatusId}
-            onUnavailableAction={label =>
-              handleWarning(`${label} não está disponível na visualização de filas.`)
-            }
-          />
+          <div className="space-y-4">
+            <div className={tasksPanelToolbarShellClass}>
+              <button
+                type="button"
+                onClick={() => setShowExportTasksModal(true)}
+                className={tasksPanelToolbarExportBtnClass}
+                aria-label={`Exportar lista visível (${sortedTasks.length} tarefas)`}
+              >
+                <Download className="h-4 w-4 shrink-0" aria-hidden />
+                Exportar lista
+                {sortedTasks.length !== tasks.length ? ` (${sortedTasks.length})` : ''}
+              </button>
+              <div className={tasksPanelToolbarFieldClass}>
+                <label htmlFor="jira-filas-sort-by" className={tasksPanelToolbarLabelClass}>
+                  Ordenar
+                </label>
+                <AppSelect
+                  id="jira-filas-sort-by"
+                  value={sortBy}
+                  onChange={v => setSortBy(v as TaskSortBy)}
+                  className={tasksPanelToolbarSelectClass}
+                  aria-label="Ordenação da lista de tarefas da fila Jira"
+                >
+                  <option value="id">ID</option>
+                  <option value="createdAt">Data de criação</option>
+                  <option value="updatedAt">Data de atualização</option>
+                  <option value="status">Status</option>
+                  <option value="priority">Prioridade</option>
+                  <option value="title">Título</option>
+                </AppSelect>
+              </div>
+              <div className={tasksPanelToolbarFieldClass}>
+                <label htmlFor="jira-filas-group-by" className={tasksPanelToolbarLabelClass}>
+                  Agrupar
+                </label>
+                <AppSelect
+                  id="jira-filas-group-by"
+                  value={groupBy}
+                  onChange={v => setGroupBy(v as TaskGroupBy)}
+                  className={tasksPanelToolbarSelectClass}
+                  aria-label="Agrupar lista de tarefas da fila Jira por"
+                >
+                  <option value="none">Nenhum</option>
+                  <option value="status">Status</option>
+                  <option value="priority">Prioridade</option>
+                  <option value="type">Tipo</option>
+                </AppSelect>
+              </div>
+            </div>
+
+            {groupBy !== 'none' && groupedTasksEntries.length > 0 ? (
+              <div className="space-y-6">
+                {groupedTasksEntries.map(([groupLabel, tasksInGroup]) => (
+                  <section key={groupLabel} aria-label={`Grupo: ${groupLabel}`}>
+                    <h3 className="mb-3 flex items-center gap-2 font-heading text-xs font-bold uppercase tracking-wider text-[var(--leve-header-text-muted)]">
+                      <List className="h-4 w-4" aria-hidden />
+                      {groupLabel}
+                      <span className="font-medium normal-case tracking-normal text-[var(--brand-text-muted)]">
+                        ({tasksInGroup.length})
+                      </span>
+                    </h3>
+                    <JiraFilasTaskList
+                      {...taskListCommonProps}
+                      tasks={tasksInGroup}
+                      listAriaLabel={`Filas do Jira — ${groupLabel}`}
+                    />
+                  </section>
+                ))}
+              </div>
+            ) : (
+              <JiraFilasTaskList
+                {...taskListCommonProps}
+                tasks={sortedTasks}
+                listAriaLabel="Filas do Jira"
+              />
+            )}
+          </div>
         ) : tasks.length > 0 ? (
           <EmptyState
             title="Nenhuma tarefa corresponde aos filtros"
@@ -997,6 +1216,14 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
           onClearAll={() => setLocalFilters(EMPTY_JIRA_FILAS_FILTERS)}
         />
       </Modal>
+
+      <FileExportModal
+        isOpen={showExportTasksModal}
+        onClose={() => setShowExportTasksModal(false)}
+        exportType="tasks"
+        project={filasProject}
+        tasks={sortedTasks}
+      />
     </div>
   );
 };
