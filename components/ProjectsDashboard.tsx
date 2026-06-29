@@ -11,13 +11,14 @@ import { useProjectsStore } from '../store/projectsStore';
 import { EmptyState } from './common/EmptyState';
 import { isSupabaseAvailable } from '../services/supabaseService';
 import { CreateProjectModal } from './CreateProjectModal';
-import { calculateProjectMetrics } from '../hooks/useProjectMetrics';
 import { cn } from '../utils/cn';
 import {
   computeWorkspaceTestMetrics,
   computeTaskWorkflowBuckets,
   computeTaskDonePercent,
   computeProjectsWithTestExecutionAlerts,
+  projectNeedsAttention,
+  computeProjectHealth,
 } from '../utils/workspaceAnalytics';
 import {
   applyManualProjectOrder,
@@ -55,15 +56,9 @@ import {
 
 type QuickFilter = 'all' | 'withBugs' | 'needsAttention';
 
-/** Projeto precisa de atenção: 2+ bugs abertos ou taxa de sucesso < 70% (com testes executados). */
-function projectNeedsAttention(project: Project): boolean {
-  const m = calculateProjectMetrics(project);
-  return m.openVsClosedBugs.open >= 2 || (m.executedTestCases > 0 && m.testPassRate < 70);
-}
-
 /** Projeto tem pelo menos 1 bug aberto. */
 function projectHasOpenBugs(project: Project): boolean {
-  return calculateProjectMetrics(project).openVsClosedBugs.open > 0;
+  return computeProjectHealth(project).openBugs > 0;
 }
 
 export const ProjectsDashboard: React.FC<{

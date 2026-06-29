@@ -2,26 +2,52 @@ import React, { useMemo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Project } from '../../types';
-import { Bug, Clock, Users, TrendingUp, CheckCircle2, Zap, Activity } from 'lucide-react';
+import {
+  Bug,
+  Clock,
+  Users,
+  TrendingUp,
+  CheckCircle2,
+  Zap,
+  Activity,
+  ShieldCheck,
+  ShieldAlert,
+  AlertTriangle,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { calculateProjectMetrics } from '../../hooks/useProjectMetrics';
 import { getTaskStatusCategory } from '../../utils/jiraStatusCategorizer';
-import { computePhaseCompletionPercent } from '../../utils/workspaceAnalytics';
+import {
+  computePhaseCompletionPercent,
+  computeProjectHealth,
+  type ProjectHealthTone,
+} from '../../utils/workspaceAnalytics';
 import { getProjectIconMeta } from '../../utils/projectIcon';
+import { RadialProgress } from './RadialProgress';
 import {
   projectCardAccentBarClass,
   projectCardChipClass,
+  projectCardHealthDotClass,
+  projectCardHealthPillClass,
   projectCardIconWrapClass,
   projectCardMetricFillClass,
   projectCardMetricKnobClass,
   projectCardMetricRowClass,
   projectCardMetricTrackClass,
-  projectCardMetricsPanelClass,
   projectCardOrbCtaClass,
   projectCardOrbHighlightClass,
   projectCardShellClass,
+  projectCardStatTileClass,
+  projectCardStatTileFillClass,
+  projectCardStatTileTrackClass,
 } from './projectCardUi';
+
+const HEALTH_META: Record<ProjectHealthTone, { label: string; icon: LucideIcon }> = {
+  healthy: { label: 'Saudável', icon: ShieldCheck },
+  attention: { label: 'Atenção', icon: AlertTriangle },
+  critical: { label: 'Crítico', icon: ShieldAlert },
+};
 
 export interface ProjectCardProps {
   project: Project;
@@ -65,7 +91,7 @@ function NeumorphicProgressBar({
   );
 }
 
-function MetricRow({
+function StatTile({
   label,
   value,
   icon: Icon,
@@ -74,20 +100,33 @@ function MetricRow({
   value: number;
   icon: LucideIcon;
 }) {
+  const progress = Math.min(100, Math.max(0, value));
   return (
-    <div className={projectCardMetricRowClass}>
+    <div className={projectCardStatTileClass}>
       <div className="flex items-center justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-1.5">
-          <Icon className="h-3 w-3 shrink-0 text-[var(--project-card-text-muted)] opacity-80" aria-hidden />
-          <span className="text-[10px] font-semibold text-[var(--project-card-text-muted)] sm:text-[11px]">
+        <div className="flex min-w-0 items-center gap-1">
+          <Icon
+            className="h-3 w-3 shrink-0 text-[var(--project-card-text-muted)] opacity-80"
+            aria-hidden
+          />
+          <span className="truncate text-[10px] font-semibold text-[var(--project-card-text-muted)]">
             {label}
           </span>
         </div>
-        <span className="text-[11px] font-bold tabular-nums text-[var(--project-card-accent)] sm:text-xs">
+        <span className="text-[11px] font-extrabold tabular-nums text-[var(--project-card-accent)]">
           {value}%
         </span>
       </div>
-      <NeumorphicProgressBar value={value} label={label} ariaLabel={`${label}: ${value}%`} />
+      <div
+        className={projectCardStatTileTrackClass}
+        role="progressbar"
+        aria-valuenow={progress}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={`${label}: ${progress}%`}
+      >
+        <div className={projectCardStatTileFillClass} style={{ width: `${progress}%` }} />
+      </div>
     </div>
   );
 }
@@ -96,7 +135,8 @@ export const ProjectCard = React.memo<ProjectCardProps>(
   ({ project, onSelect, onTaskClick, icon: iconOverride, className }) => {
     const metrics = useMemo(() => calculateProjectMetrics(project), [project]);
     const tasks = project.tasks || [];
-    const openBugsCount = metrics.openVsClosedBugs?.open ?? 0;
+    const health = useMemo(() => computeProjectHealth(project), [project]);
+    const openBugsCount = health.openBugs;
 
     const iconMeta = useMemo(() => {
       const meta = getProjectIconMeta(project);
@@ -128,6 +168,10 @@ export const ProjectCard = React.memo<ProjectCardProps>(
     }, [tasks]);
 
     const phaseCompletionPercent = useMemo(() => computePhaseCompletionPercent(project), [project]);
+
+    const healthTone = health.tone;
+    const healthMeta = HEALTH_META[healthTone];
+    const HealthIcon = healthMeta.icon;
 
     const jiraKey = project.settings?.jiraProjectKey;
 
@@ -172,7 +216,7 @@ export const ProjectCard = React.memo<ProjectCardProps>(
         <div className={projectCardOrbCtaClass} aria-hidden />
         <div className={projectCardOrbHighlightClass} aria-hidden />
 
-        <div className="relative flex items-start justify-between gap-3">
+        <div className="relative flex items-start gap-3">
           <div
             className={projectCardIconWrapClass}
             aria-label={iconMeta.label}
@@ -183,8 +227,56 @@ export const ProjectCard = React.memo<ProjectCardProps>(
               aria-hidden
             />
           </div>
+
+          <div className="min-w-0 flex-1 space-y-1">
+            <h3 className="line-clamp-2 font-sans text-[0.9375rem] font-extrabold leading-snug text-[var(--project-card-text)] transition-colors duration-200 group-hover:text-[var(--project-card-accent)] sm:text-base">
+              {project.name}
+            </h3>
+            {jiraKey ? (
+              <span
+                className={cn(
+                  projectCardChipClass,
+                  'inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium',
+                  'text-[color-mix(in_srgb,var(--project-card-text)_90%,transparent)]'
+                )}
+              >
+                <span
+                  className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--project-card-accent)]"
+                  aria-hidden
+                />
+                Jira: {jiraKey}
+              </span>
+            ) : (
+              <p className="text-[11px] italic text-[var(--project-card-text-subtle)]">
+                Sem chave Jira
+              </p>
+            )}
+          </div>
+
+          <RadialProgress
+            value={tasksDonePercent}
+            ariaLabel="Conclusão de tarefas"
+            className="mt-0.5"
+          >
+            <span className="flex flex-col items-center leading-none">
+              <span className="font-sans text-sm font-extrabold tabular-nums text-[var(--project-card-accent)]">
+                {tasksDonePercent}%
+              </span>
+              <span className="mt-0.5 text-[8px] font-bold uppercase tracking-wide text-[var(--project-card-text-muted)]">
+                Tasks
+              </span>
+            </span>
+          </RadialProgress>
+        </div>
+
+        <div className="relative mt-3 flex flex-wrap items-center gap-2">
+          <span className={projectCardHealthPillClass(healthTone)}>
+            <HealthIcon className="h-3 w-3 shrink-0" aria-hidden />
+            <span className={projectCardHealthDotClass(healthTone)} aria-hidden />
+            {healthMeta.label}
+          </span>
           {openBugsCount > 0 ? (
-            <div
+            <span
               className={cn(
                 projectCardChipClass,
                 'inline-flex items-center gap-1 px-2.5 py-1'
@@ -195,36 +287,15 @@ export const ProjectCard = React.memo<ProjectCardProps>(
                 aria-hidden
               />
               <span className="text-[11px] font-bold tabular-nums text-[color-mix(in_srgb,#b91c1c_82%,var(--project-card-text))]">
-                {openBugsCount}
+                {openBugsCount} {openBugsCount === 1 ? 'bug' : 'bugs'}
               </span>
-            </div>
+            </span>
           ) : null}
         </div>
 
-        <div className="relative mt-3 min-w-0 flex-1 space-y-1">
-          <h3 className="line-clamp-2 font-sans text-[0.9375rem] font-extrabold leading-snug text-[var(--project-card-text)] transition-colors duration-200 group-hover:text-[var(--project-card-accent)] sm:text-base">
-            {project.name}
-          </h3>
-          {jiraKey ? (
-            <span
-              className={cn(
-                projectCardChipClass,
-                'inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium',
-                'text-[color-mix(in_srgb,var(--project-card-text)_90%,transparent)]'
-              )}
-            >
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--project-card-accent)]" aria-hidden />
-              Jira: {jiraKey}
-            </span>
-          ) : (
-            <p className="text-[11px] italic text-[var(--project-card-text-subtle)]">Sem chave Jira</p>
-          )}
-        </div>
-
-        <div className={cn(projectCardMetricsPanelClass, 'mt-3 sm:mt-3.5')}>
-          <MetricRow value={testsPercent} label="Exec." icon={Zap} />
-          <MetricRow value={tasksDonePercent} label="Tasks" icon={CheckCircle2} />
-          <MetricRow value={metrics.testPassRate} label="Suc." icon={TrendingUp} />
+        <div className="mt-3 flex gap-2 sm:mt-3.5">
+          <StatTile value={testsPercent} label="Exec." icon={Zap} />
+          <StatTile value={metrics.testPassRate} label="Sucesso" icon={TrendingUp} />
         </div>
 
         {(project.phases?.length ?? 0) > 0 && (

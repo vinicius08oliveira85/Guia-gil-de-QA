@@ -60,6 +60,42 @@ export const projectCardIconWrapClass = cn(
 
 export const projectCardChipClass = 'project-card-neu-chip';
 
+/** Tile compacto de métrica secundária (Exec. / Sucesso) — relevo rebaixado. */
+export const projectCardStatTileClass = cn(
+  'project-card-neu-chip flex min-w-0 flex-1 flex-col gap-1 px-2.5 py-2'
+);
+
+/** Mini-barra de progresso dentro do tile. */
+export const projectCardStatTileTrackClass = cn(
+  'project-card-neu-track relative h-1.5 w-full overflow-hidden'
+);
+
+export const projectCardStatTileFillClass = cn(
+  'project-card-neu-fill absolute inset-y-0 left-0 transition-[width] duration-500 ease-out'
+);
+
+type HealthTone = 'healthy' | 'attention' | 'critical';
+
+/** Pill de saúde do projeto — verde/âmbar/vermelho sobre o creme neumórfico. */
+export const projectCardHealthPillClass = (tone: HealthTone) =>
+  cn(
+    'project-card-neu-chip inline-flex items-center gap-1.5 px-2.5 py-1',
+    'font-sans text-[10px] font-bold uppercase tracking-wide sm:text-[11px]',
+    tone === 'healthy' &&
+      'text-[color-mix(in_srgb,#16a34a_82%,var(--project-card-text))]',
+    tone === 'attention' &&
+      'text-[color-mix(in_srgb,#d97706_82%,var(--project-card-text))]',
+    tone === 'critical' && 'text-[color-mix(in_srgb,#dc2626_82%,var(--project-card-text))]'
+  );
+
+export const projectCardHealthDotClass = (tone: HealthTone) =>
+  cn(
+    'h-1.5 w-1.5 shrink-0 rounded-full',
+    tone === 'healthy' && 'bg-[#16a34a]',
+    tone === 'attention' && 'bg-[#d97706]',
+    tone === 'critical' && 'bg-[#dc2626]'
+  );
+
 /** Painéis laterais — neumorfismo via `--workspace-panel-*` (claro ou escuro conforme o escopo). */
 export const workspacePanelShellClass = cn(
   'workspace-panel-neu-shell relative flex flex-col overflow-hidden font-sans',

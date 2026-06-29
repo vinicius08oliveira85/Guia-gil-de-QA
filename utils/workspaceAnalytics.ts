@@ -1,4 +1,54 @@
 import type { Project } from '../types';
+import { calculateProjectMetrics } from '../hooks/useProjectMetrics';
+
+export type ProjectHealthTone = 'healthy' | 'attention' | 'critical';
+
+export interface ProjectHealth {
+  tone: ProjectHealthTone;
+  openBugs: number;
+  testPassRate: number;
+  hasExecutedTests: boolean;
+}
+
+/**
+ * Critério único de saúde do projeto para cards, filtros e alertas do workspace.
+ * Crítico: 3+ bugs abertos ou sucesso de testes < 50% com testes executados.
+ * Atenção: 1+ bug aberto ou sucesso de testes < 70% com testes executados.
+ */
+export function computeProjectHealth(project: Project): ProjectHealth {
+  const metrics = calculateProjectMetrics(project);
+  const openBugs = metrics.openVsClosedBugs.open;
+  const hasExecutedTests = metrics.executedTestCases > 0;
+
+  if (openBugs >= 3 || (hasExecutedTests && metrics.testPassRate < 50)) {
+    return {
+      tone: 'critical',
+      openBugs,
+      testPassRate: metrics.testPassRate,
+      hasExecutedTests,
+    };
+  }
+
+  if (openBugs >= 1 || (hasExecutedTests && metrics.testPassRate < 70)) {
+    return {
+      tone: 'attention',
+      openBugs,
+      testPassRate: metrics.testPassRate,
+      hasExecutedTests,
+    };
+  }
+
+  return {
+    tone: 'healthy',
+    openBugs,
+    testPassRate: metrics.testPassRate,
+    hasExecutedTests,
+  };
+}
+
+export function projectNeedsAttention(project: Project): boolean {
+  return computeProjectHealth(project).tone !== 'healthy';
+}
 
 /** Métricas agregadas de casos de teste em todos os projetos. */
 export interface WorkspaceTestMetrics {

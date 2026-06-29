@@ -8,6 +8,7 @@ import {
   workspaceDaisyStatLabelClass,
   workspaceDaisyStatValueClass,
 } from '../common/projectCardUi';
+import { RadialProgress } from '../common/RadialProgress';
 
 export interface GlobalEfficiencyMetricProps {
   percent: number;
@@ -23,7 +24,6 @@ export const GlobalEfficiencyMetric: React.FC<GlobalEfficiencyMetricProps> = ({
   className,
 }) => {
   const clamped = Math.min(100, Math.max(0, percent));
-  const knobLeft = `clamp(0px, calc(${clamped}% - 6px), calc(100% - 12px))`;
 
   return (
     <div
@@ -39,19 +39,11 @@ export const GlobalEfficiencyMetric: React.FC<GlobalEfficiencyMetricProps> = ({
         />
         <span className={workspaceDaisyStatLabelClass}>Eficiência global</span>
       </div>
-      <strong className={workspaceDaisyStatValueClass}>{formatWorkspaceStatPercent(clamped)}</strong>
-      <div className="workspace-stat-neu-track relative h-2 w-full" aria-hidden>
-        <div
-          className="workspace-stat-neu-fill absolute inset-y-0 left-0 transition-[width] duration-500 ease-out"
-          style={{ width: `${clamped}%` }}
-        />
-        {clamped > 0 ? (
-          <span
-            className="workspace-stat-neu-knob pointer-events-none absolute top-1/2 z-[1] h-3 w-3 -translate-y-1/2 rounded-full"
-            style={{ left: knobLeft }}
-          />
-        ) : null}
-      </div>
+      <RadialProgress value={clamped} size={52} strokeWidth={5} ariaLabel="Eficiência global">
+        <strong className={cn(workspaceDaisyStatValueClass, 'text-base sm:text-lg')}>
+          {formatWorkspaceStatPercent(clamped)}
+        </strong>
+      </RadialProgress>
       {totalCount != null && totalCount > 0 && executedCount != null && (
         <p className="font-sans text-[10px] leading-tight text-[var(--workspace-stat-text)] opacity-80 sm:text-[11px]">
           {formatWorkspaceStatCount(executedCount)}/{formatWorkspaceStatCount(totalCount)} casos executados

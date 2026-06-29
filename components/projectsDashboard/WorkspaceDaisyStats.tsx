@@ -8,6 +8,7 @@ import {
   workspaceDaisyStatLabelClass,
   workspaceDaisyStatValueClass,
 } from '../common/projectCardUi';
+import { RadialProgress } from '../common/RadialProgress';
 
 export interface WorkspaceDaisyStatsProps {
   projectCount: number;
@@ -74,6 +75,7 @@ export const WorkspaceDaisyStats: React.FC<WorkspaceDaisyStatsProps> = ({
       label: 'Sucesso testes',
       value: formatWorkspaceStatPercent(testSuccessPercent),
       valueClass: workspaceDaisyStatValueClass,
+      progress: testSuccessPercent,
     },
     {
       key: 'progress',
@@ -81,6 +83,7 @@ export const WorkspaceDaisyStats: React.FC<WorkspaceDaisyStatsProps> = ({
       label: 'Progresso',
       value: formatWorkspaceStatPercent(taskDonePercent),
       valueClass: workspaceDaisyStatValueClass,
+      progress: taskDonePercent,
     },
     {
       key: 'cloud',
@@ -105,7 +108,18 @@ export const WorkspaceDaisyStats: React.FC<WorkspaceDaisyStatsProps> = ({
             {item.icon}
             <span className={workspaceDaisyStatLabelClass}>{item.label}</span>
           </div>
-          <span className={cn(item.valueClass)}>{item.value}</span>
+          {'progress' in item ? (
+            <RadialProgress
+              value={item.progress}
+              size={46}
+              strokeWidth={5}
+              ariaLabel={item.label}
+            >
+              <span className={cn(item.valueClass, 'text-base sm:text-lg')}>{item.value}</span>
+            </RadialProgress>
+          ) : (
+            <span className={cn(item.valueClass)}>{item.value}</span>
+          )}
         </div>
       ))}
     </div>
