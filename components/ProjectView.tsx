@@ -38,21 +38,26 @@ import {
   projectChromeDangerBtnClass,
   projectChromeHeaderInnerClass,
   projectChromeHeaderShellClass,
-  projectChromeScrollFadeFromClass,
-  projectChromeScrollFadeToClass,
-  projectChromeScrollHintClass,
   projectChromeSyncBtnClass,
-  projectChromeTabActiveClass,
-  projectChromeTabIdleClass,
-  projectChromeTabsDividerClass,
-  projectChromeTabsNavClass,
-  projectChromeTabsRowClass,
   projectChromeToolbarClass,
   projectChromeToolbarDividerClass,
   projectChromeToolbarStatusClass,
   projectChromeToolbarStatusWrapClass,
 } from './tasks/tasksPanelNeuStyles';
 import { countBacklogTasks, type TasksListMode } from '../utils/backlogTasks';
+import {
+  closeTaskTabState,
+  isProjectFixedTabId,
+  isTaskTabId,
+  openTaskTabState,
+  resolveTaskTabLabels,
+  taskIdFromTabId,
+  type ProjectFixedTabId,
+  type WorkspaceTabId,
+} from '../utils/workspaceTabs';
+import { ProjectWorkspaceTabBar } from './project/ProjectWorkspaceTabBar';
+import { TaskWorkspacePanel } from './tasks/TaskWorkspacePanel';
+import type { JiraTask } from '../types';
 
 const TAB_LABELS: Record<string, string> = {
   dashboard: 'Dashboard',
@@ -81,7 +86,8 @@ export const ProjectView: React.FC<{
   onUpdateProject: (project: Project) => void | Promise<void>;
   onDeleteProject?: (projectId: string) => void | Promise<void>;
 }> = ({ project, onUpdateProject, onDeleteProject }) => {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState<WorkspaceTabId>('dashboard');
+  const [openTaskTabIds, setOpenTaskTabIds] = useState<string[]>([]);
   const [tasksListMode, setTasksListMode] = useState<TasksListMode>('all');
   const [initialTaskId, setInitialTaskId] = useState<string | undefined>(undefined);
   /** Deep link do Dashboard: filtrar tarefas com casos em certos status (ex.: falhas). */
@@ -114,32 +120,6 @@ export const ProjectView: React.FC<{
   const projectRef = useRef(currentProject);
   const onUpdateProjectRef = useRef(onUpdateProject);
 
-  // Estado e Refs para indicadores de scroll nas abas
-  const tabsRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-
-  const checkScroll = useCallback(() => {
-    if (!tabsRef.current) return;
-    const { scrollLeft, scrollWidth, clientWidth } = tabsRef.current;
-    setCanScrollLeft(scrollLeft > 0);
-    // Pequena margem de erro para precisão de float
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
-  }, []);
-
-  // Monitorar scroll e resize para atualizar indicadores
-  useEffect(() => {
-    checkScroll();
-    const tabsElement = tabsRef.current;
-    if (!tabsElement) return;
-
-    tabsElement.addEventListener('scroll', checkScroll);
-    window.addEventListener('resize', checkScroll);
-    return () => {
-      tabsElement.removeEventListener('scroll', checkScroll);
-      window.removeEventListener('resize', checkScroll);
-    };
-  }, [checkScroll, activeTab]);
 
   // Auto-save: IndexedDB automático; Supabase apenas pelo botão Salvar (ou sync manual)
   useAutoSave({
@@ -278,11 +258,11 @@ export const ProjectView: React.FC<{
   useEffect(() => {
     const taskIdToFocus = sessionStorage.getItem('taskIdToFocus');
     if (taskIdToFocus) {
-      // Limpar o sessionStorage
       sessionStorage.removeItem('taskIdToFocus');
-      // Navegar para a aba de tarefas
-      setActiveTab('tasks');
-      // Passar o taskId para o TasksView
+      const next = openTaskTabState(openTaskTabIds, activeTab, taskIdToFocus);
+      setOpenTaskTabIds(next.openTaskTabIds);
+      setActiveTab(next.activeTab);
+      setBreadcrumbTaskId(taskIdToFocus);
       setInitialTaskId(taskIdToFocus);
       return;
     }
@@ -296,7 +276,7 @@ export const ProjectView: React.FC<{
   /** Sincroniza subvisão backlog: ?project=&subview=backlog (dentro de Tarefas & Testes). */
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (activeTab !== 'tasks') return;
+    if (!isProjectFixedTabId(activeTab) || activeTab !== 'tasks') return;
     const params = new URLSearchParams();
     params.set('project', currentProject.id);
     if (tasksListMode === 'backlog') {
@@ -314,23 +294,65 @@ export const ProjectView: React.FC<{
     }
   }, [currentProject.id, activeTab, tasksListMode]);
 
-  const tabs: Array<{ id: string; label: string }> = [
+  const tabs: Array<{ id: ProjectFixedTabId; label: string }> = [
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'tasks', label: 'Tarefas & Testes' },
     { id: 'documents', label: 'Documentos' },
     { id: 'businessRules', label: 'Regras de negócio' },
   ];
 
-  const handleTabClick = useCallback((tabId: string) => {
+  const taskTabLabels = useMemo(
+    () => resolveTaskTabLabels(openTaskTabIds, currentProject.tasks),
+    [openTaskTabIds, currentProject.tasks]
+  );
+
+  const activeTaskId = useMemo(
+    () => (isTaskTabId(activeTab) ? taskIdFromTabId(activeTab) : null),
+    [activeTab]
+  );
+
+  const handleSelectWorkspaceTab = useCallback((tabId: WorkspaceTabId) => {
     setActiveTab(tabId);
-    if (tabId !== 'tasks') {
+    if (isProjectFixedTabId(tabId) && tabId !== 'tasks') {
       setTasksListMode('all');
+      setBreadcrumbTaskId(null);
+    }
+    if (isTaskTabId(tabId)) {
+      const id = taskIdFromTabId(tabId);
+      if (id) setBreadcrumbTaskId(id);
     }
   }, []);
 
+  const handleTabClick = useCallback(
+    (tabId: string) => {
+      handleSelectWorkspaceTab(tabId as WorkspaceTabId);
+    },
+    [handleSelectWorkspaceTab]
+  );
+
+  const handleOpenTaskTab = useCallback(
+    (task: JiraTask) => {
+      const next = openTaskTabState(openTaskTabIds, activeTab, task.id);
+      setOpenTaskTabIds(next.openTaskTabIds);
+      setActiveTab(next.activeTab);
+      setBreadcrumbTaskId(task.id);
+    },
+    [openTaskTabIds, activeTab]
+  );
+
+  const handleCloseTaskTab = useCallback(
+    (taskId: string) => {
+      const next = closeTaskTabState(openTaskTabIds, activeTab, taskId);
+      setOpenTaskTabIds(next.openTaskTabIds);
+      setActiveTab(next.activeTab);
+      setBreadcrumbTaskId(prev => (prev === taskId ? null : prev));
+    },
+    [openTaskTabIds, activeTab]
+  );
+
   const handleTasksListModeChange = useCallback((mode: TasksListMode) => {
     setTasksListMode(mode);
-    if (activeTab !== 'tasks') {
+    if (!isProjectFixedTabId(activeTab) || activeTab !== 'tasks') {
       setActiveTab('tasks');
     }
   }, [activeTab]);
@@ -373,7 +395,9 @@ export const ProjectView: React.FC<{
   }, []);
 
   useEffect(() => {
-    if (activeTab !== 'tasks') setBreadcrumbTaskId(null);
+    if (isProjectFixedTabId(activeTab) && activeTab !== 'tasks' && !isTaskTabId(activeTab)) {
+      setBreadcrumbTaskId(null);
+    }
   }, [activeTab]);
 
   const scrollToTaskInList = useCallback((taskId: string) => {
@@ -394,34 +418,39 @@ export const ProjectView: React.FC<{
 
   const handleTabKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      const index = tabs.findIndex(t => t.id === activeTab);
+      const allTabIds: WorkspaceTabId[] = [
+        ...tabs.map(t => t.id),
+        ...openTaskTabIds.map(id => `task:${id}` as const),
+      ];
+      const index = allTabIds.findIndex(t => t === activeTab);
       if (index < 0) return;
       let nextIndex = index;
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault();
-        nextIndex = (index + 1) % tabs.length;
+        nextIndex = (index + 1) % allTabIds.length;
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         e.preventDefault();
-        nextIndex = (index - 1 + tabs.length) % tabs.length;
+        nextIndex = (index - 1 + allTabIds.length) % allTabIds.length;
       } else if (e.key === 'Home') {
         e.preventDefault();
         nextIndex = 0;
       } else if (e.key === 'End') {
         e.preventDefault();
-        nextIndex = tabs.length - 1;
-      } else if (e.key >= '1' && e.key <= '9' && Number(e.key) <= tabs.length) {
+        nextIndex = allTabIds.length - 1;
+      } else if (e.key >= '1' && e.key <= '9' && Number(e.key) <= allTabIds.length) {
         e.preventDefault();
         nextIndex = Number(e.key) - 1;
       } else return;
-      if (nextIndex !== index) setActiveTab(tabs[nextIndex].id);
+      if (nextIndex !== index) handleSelectWorkspaceTab(allTabIds[nextIndex]);
     },
-    [activeTab, tabs]
+    [activeTab, tabs, openTaskTabIds, handleSelectWorkspaceTab]
   );
 
   const breadcrumbItems = useMemo((): BreadcrumbItem[] => {
     const items: BreadcrumbItem[] = [{ label: 'Projetos', onClick: () => selectProject(null) }];
 
-    const onlyProjectHome = activeTab === 'dashboard' && !breadcrumbTaskId;
+    const onlyProjectHome =
+      isProjectFixedTabId(activeTab) && activeTab === 'dashboard' && !breadcrumbTaskId;
     if (onlyProjectHome) {
       items.push({ label: currentProject.name });
       return items;
@@ -429,7 +458,15 @@ export const ProjectView: React.FC<{
 
     items.push({ label: currentProject.name, onClick: () => handleTabClick('dashboard') });
 
-    if (activeTab === 'tasks') {
+    if (isTaskTabId(activeTab) && breadcrumbTaskId) {
+      const task = currentProject.tasks.find(t => t.id === breadcrumbTaskId);
+      const raw = task?.title?.trim() || 'Tarefa';
+      const label = raw.length > 56 ? `${raw.slice(0, 53)}…` : raw;
+      items.push({ label });
+      return items;
+    }
+
+    if (isProjectFixedTabId(activeTab) && activeTab === 'tasks') {
       if (breadcrumbTaskId) {
         const task = currentProject.tasks.find(t => t.id === breadcrumbTaskId);
         const raw = task?.title?.trim() || 'Tarefa';
@@ -444,9 +481,9 @@ export const ProjectView: React.FC<{
           label: tasksListMode === 'backlog' ? `${TAB_LABELS.tasks} · Backlog` : TAB_LABELS.tasks,
         });
       }
-    } else if (activeTab === 'documents') {
+    } else if (isProjectFixedTabId(activeTab) && activeTab === 'documents') {
       items.push({ label: TAB_LABELS.documents });
-    } else if (activeTab === 'businessRules') {
+    } else if (isProjectFixedTabId(activeTab) && activeTab === 'businessRules') {
       items.push({ label: TAB_LABELS.businessRules });
     }
 
@@ -589,7 +626,8 @@ export const ProjectView: React.FC<{
               </div>
             </div>
 
-            {activeTab !== 'dashboard' &&
+            {isProjectFixedTabId(activeTab) &&
+              activeTab !== 'dashboard' &&
               activeTab !== 'tasks' &&
               activeTab !== 'documents' &&
               activeTab !== 'businessRules' && (
@@ -623,46 +661,21 @@ export const ProjectView: React.FC<{
             </div>
             )}
           </div>
-          <div className={projectChromeTabsDividerClass}>
-            {canScrollLeft && (
-              <div className={projectChromeScrollFadeFromClass} aria-hidden />
-            )}
-            {canScrollRight && (
-              <div className={projectChromeScrollFadeToClass} aria-hidden />
-            )}
-
-            <div className={projectChromeTabsRowClass}>
-              <nav
-                ref={tabsRef}
-                className={projectChromeTabsNavClass}
-                aria-label="Seções do projeto"
-                role="tablist"
-                aria-orientation="horizontal"
-                onKeyDown={handleTabKeyDown}
-              >
-                {tabs.map(tab => (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => handleTabClick(tab.id)}
-                    className={
-                      activeTab === tab.id ? projectChromeTabActiveClass : projectChromeTabIdleClass
-                    }
-                    id={`tab-${tab.id}`}
-                    role="tab"
-                    tabIndex={activeTab === tab.id ? 0 : -1}
-                    aria-selected={activeTab === tab.id}
-                    aria-controls={`tab-panel-${tab.id}`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </nav>
+          <ProjectWorkspaceTabBar
+            fixedTabs={tabs}
+            activeTab={activeTab}
+            taskTabs={taskTabLabels}
+            onSelectTab={handleSelectWorkspaceTab}
+            onCloseTaskTab={handleCloseTaskTab}
+            onTabKeyDown={handleTabKeyDown}
+            backlogSlot={
               <button
                 type="button"
                 onClick={handleNavigateToBacklog}
                 className={projectChromeBacklogBtnClass(
-                  activeTab === 'tasks' && tasksListMode === 'backlog'
+                  isProjectFixedTabId(activeTab) &&
+                    activeTab === 'tasks' &&
+                    tasksListMode === 'backlog'
                 )}
                 aria-label={`Abrir backlog (${backlogCount} itens)`}
                 title="Ver backlog em Tarefas & Testes"
@@ -671,25 +684,33 @@ export const ProjectView: React.FC<{
                 <span className="hidden sm:inline">Backlog</span>
                 <span
                   className={projectChromeBacklogCountClass(
-                    activeTab === 'tasks' && tasksListMode === 'backlog'
+                    isProjectFixedTabId(activeTab) &&
+                      activeTab === 'tasks' &&
+                      tasksListMode === 'backlog'
                   )}
                   aria-hidden
                 >
                   {backlogCount}
                 </span>
               </button>
-            </div>
-            {canScrollRight && (
-              <p className={projectChromeScrollHintClass} aria-live="polite">
-                Deslize as abas para ver mais seções
-              </p>
-            )}
-          </div>
+            }
+          />
         </div>
 
         <div className="mt-4 sm:mt-5 max-md:mt-2">
           <PageTransition transitionKey={activeTab}>
-            {activeTab === 'dashboard' && (
+            {activeTaskId ? (
+              <TaskWorkspacePanel
+                key={activeTaskId}
+                taskId={activeTaskId}
+                project={currentProject}
+                onUpdateProject={onUpdateProject}
+                onNavigateToTab={handleTabClick}
+                onOpenTaskTab={handleOpenTaskTab}
+                onClose={() => handleCloseTaskTab(activeTaskId)}
+              />
+            ) : null}
+            {isProjectFixedTabId(activeTab) && activeTab === 'dashboard' && (
               <section id="tab-panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
                 <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
                   <QADashboard
@@ -704,13 +725,14 @@ export const ProjectView: React.FC<{
                 </Suspense>
               </section>
             )}
-            {activeTab === 'tasks' && (
+            {isProjectFixedTabId(activeTab) && activeTab === 'tasks' && (
               <section id="tab-panel-tasks" role="tabpanel" aria-labelledby="tab-tasks">
                 <Suspense fallback={<LoadingSkeleton variant="task" count={5} />}>
                   <TasksView
                     project={currentProject}
                     onUpdateProject={onUpdateProject}
                     onNavigateToTab={tabId => handleTabClick(tabId)}
+                    onOpenTaskTab={handleOpenTaskTab}
                     initialTaskId={initialTaskId}
                     onTaskDetailsOpenChange={handleTaskDetailsOpenChange}
                     tasksExecutionNavKey={tasksExecutionNavKey}
@@ -721,7 +743,7 @@ export const ProjectView: React.FC<{
                 </Suspense>
               </section>
             )}
-            {activeTab === 'documents' && (
+            {isProjectFixedTabId(activeTab) && activeTab === 'documents' && (
               <section id="tab-panel-documents" role="tabpanel" aria-labelledby="tab-documents">
                 <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
                   <DocumentsView
@@ -732,7 +754,7 @@ export const ProjectView: React.FC<{
                 </Suspense>
               </section>
             )}
-            {activeTab === 'businessRules' && (
+            {isProjectFixedTabId(activeTab) && activeTab === 'businessRules' && (
               <section
                 id="tab-panel-businessRules"
                 role="tabpanel"

@@ -144,6 +144,8 @@ export const TasksView: React.FC<{
   /** Subvisão dentro da aba Tarefas & Testes (controlada pelo ProjectView / URL). */
   listMode?: TasksListMode;
   onListModeChange?: (mode: TasksListMode) => void;
+  /** Abre tarefa em aba do workspace (ProjectView); se omitido, usa modal local. */
+  onOpenTaskTab?: (task: JiraTask) => void;
 }> = ({
   project,
   onUpdateProject,
@@ -154,6 +156,7 @@ export const TasksView: React.FC<{
   tasksExecutionNavStatuses = [],
   listMode: listModeProp = 'all',
   onListModeChange,
+  onOpenTaskTab,
 }) => {
   const backlogOnly = listModeProp === 'backlog';
   const backlogTaskCount = useMemo(
@@ -418,6 +421,18 @@ export const TasksView: React.FC<{
   } | null>(null);
   const [showFailedTestsReport, setShowFailedTestsReport] = useState(false);
   const [modalTask, setModalTask] = useState<JiraTask | null>(null);
+
+  const handleOpenTaskDetails = useCallback(
+    (task: JiraTask) => {
+      if (onOpenTaskTab) {
+        onOpenTaskTab(task);
+      } else {
+        setModalTask(task);
+      }
+    },
+    [onOpenTaskTab]
+  );
+
   const metrics = useProjectMetrics(project);
   const { projects: allProjects, updateProject: updateGlobalProject } = useProjectsStore();
 
@@ -2122,7 +2137,7 @@ export const TasksView: React.FC<{
               onDuplicateTestCase={handleDuplicateTestCase}
               project={project}
               onUpdateProject={onUpdateProject}
-              onOpenModal={setModalTask}
+              onOpenModal={handleOpenTaskDetails}
               onToggleFavorite={() => handleToggleFavorite(task.id)}
               onDetailsOpenChange={onTaskDetailsOpenChange}
             >
@@ -2791,7 +2806,7 @@ export const TasksView: React.FC<{
       />
 
       {/* Modal de Detalhes da Tarefa */}
-      {modalTask && taskForModal && (
+      {modalTask && taskForModal && !onOpenTaskTab && (
         <TaskDetailsModal
           task={taskForModal}
           isOpen={!!modalTask}
@@ -2831,7 +2846,7 @@ export const TasksView: React.FC<{
           project={project}
           onUpdateProject={onUpdateProject}
           onNavigateToTab={onNavigateToTab}
-          onOpenTask={setModalTask}
+          onOpenTask={handleOpenTaskDetails}
           onUpdateFromJira={handleUpdateTaskFromJira}
           isUpdatingFromJira={modalTask ? updatingFromJiraTaskId === modalTask.id : false}
         />

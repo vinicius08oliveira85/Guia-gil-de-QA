@@ -457,6 +457,26 @@ export const projectChromeTabIdleClass = cn(
   'font-sans text-sm font-medium'
 );
 
+/** Aba dinâmica de tarefa no workspace (estilo console). */
+export const projectChromeTaskTabActiveClass = cn(
+  projectChromeTabActiveClass,
+  'max-w-[min(14rem,42vw)] gap-1.5 pr-1'
+);
+
+export const projectChromeTaskTabIdleClass = cn(
+  projectChromeTabIdleClass,
+  'max-w-[min(14rem,42vw)] gap-1.5 pr-1'
+);
+
+export const projectChromeTaskTabDividerClass =
+  'mx-1 h-6 w-px shrink-0 self-center bg-[var(--workspace-panel-divider)] max-md:mx-0.5';
+
+export const projectChromeTaskTabCloseBtnClass = cn(
+  'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full',
+  'text-[var(--workspace-panel-text-muted)] hover:bg-[color-mix(in_srgb,var(--workspace-panel-text)_8%,transparent)]',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--leve-header-accent)]'
+);
+
 export const projectChromeScrollFadeFromClass =
   'pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-8 rounded-l-full bg-gradient-to-r from-[var(--workspace-panel-bg)] to-transparent max-md:hidden';
 
