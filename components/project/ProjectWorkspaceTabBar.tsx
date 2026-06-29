@@ -1,7 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '../../utils/cn';
-import type { ProjectFixedTabId, TaskTabLabel, WorkspaceTabId } from '../../utils/workspaceTabs';
+import type {
+  JiraSolusFixedTabId,
+  ProjectFixedTabId,
+  TaskTabLabel,
+  WorkspaceTabId,
+} from '../../utils/workspaceTabs';
+
+export type WorkspaceFixedTabId = ProjectFixedTabId | JiraSolusFixedTabId;
 import { isTaskTabId } from '../../utils/workspaceTabs';
 import {
   projectChromeScrollFadeFromClass,
@@ -19,7 +26,7 @@ import {
 } from '../tasks/tasksPanelNeuStyles';
 
 export interface ProjectWorkspaceTabBarProps {
-  fixedTabs: Array<{ id: ProjectFixedTabId; label: string }>;
+  fixedTabs: Array<{ id: WorkspaceFixedTabId; label: string }>;
   activeTab: WorkspaceTabId;
   taskTabs: TaskTabLabel[];
   onSelectTab: (tabId: WorkspaceTabId) => void;

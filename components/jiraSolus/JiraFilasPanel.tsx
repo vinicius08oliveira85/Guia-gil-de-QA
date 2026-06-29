@@ -91,6 +91,13 @@ import {
   writeFilasImportSelection,
 } from '../../services/taskTrackingStorage';
 
+export interface JiraFilasWorkspaceBridge {
+  filasProject: Project;
+  onUpdateProject: (project: Project) => void;
+  onUpdateFromJira?: (taskId: string) => Promise<void>;
+  isUpdatingFromJira: string | null;
+}
+
 export interface JiraFilasPanelProps {
   tasks: JiraTask[];
   setTasks: React.Dispatch<React.SetStateAction<JiraTask[]>>;
@@ -101,6 +108,8 @@ export interface JiraFilasPanelProps {
   activeFilter: JiraFilasFilter;
   onClearFilter: () => void;
   slaRiskWindowHours: number;
+  onOpenTaskTab?: (task: JiraTask) => void;
+  onWorkspaceBridgeChange?: (bridge: JiraFilasWorkspaceBridge | null) => void;
 }
 
 /**
@@ -117,6 +126,8 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
   activeFilter,
   onClearFilter,
   slaRiskWindowHours,
+  onOpenTaskTab,
+  onWorkspaceBridgeChange,
 }) => {
   const { handleError, handleSuccess, handleWarning } = useErrorHandler();
 
@@ -771,6 +782,7 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
       isTransitioningJiraStatus: transitioningStatusId,
       onUnavailableAction: (label: string) =>
         handleWarning(`${label} não está disponível na visualização de filas.`),
+      onOpenTaskTab,
     }),
     [
       filasProject,
@@ -780,8 +792,26 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
       handleJiraStatusChange,
       transitioningStatusId,
       handleWarning,
+      onOpenTaskTab,
     ]
   );
+
+  useEffect(() => {
+    if (!onWorkspaceBridgeChange) return;
+    onWorkspaceBridgeChange({
+      filasProject,
+      onUpdateProject: updated => setTasks(updated.tasks),
+      onUpdateFromJira: handleUpdateFromJira,
+      isUpdatingFromJira: updatingFromJiraId,
+    });
+    return () => onWorkspaceBridgeChange(null);
+  }, [
+    filasProject,
+    handleUpdateFromJira,
+    updatingFromJiraId,
+    onWorkspaceBridgeChange,
+    setTasks,
+  ]);
 
   const hasJiraConfig = !!getJiraConfig();
   const isBusy = isImportingProject || isUpdatingQueue || isImportingIssue;

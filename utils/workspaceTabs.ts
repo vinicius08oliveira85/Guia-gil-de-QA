@@ -3,8 +3,11 @@ import type { JiraTask } from '../types';
 /** Abas fixas do projeto. */
 export type ProjectFixedTabId = 'dashboard' | 'tasks' | 'documents' | 'businessRules';
 
+/** Abas fixas da tela Acompanhamento de Tarefas (Jira Solus). */
+export type JiraSolusFixedTabId = 'dashboard' | 'filas';
+
 /** Identificador de aba do workspace (fixa ou tarefa). */
-export type WorkspaceTabId = ProjectFixedTabId | `task:${string}`;
+export type WorkspaceTabId = ProjectFixedTabId | JiraSolusFixedTabId | `task:${string}`;
 
 export const PROJECT_FIXED_TAB_IDS: ProjectFixedTabId[] = [
   'dashboard',
@@ -13,12 +16,18 @@ export const PROJECT_FIXED_TAB_IDS: ProjectFixedTabId[] = [
   'businessRules',
 ];
 
+export const JIRA_SOLUS_FIXED_TAB_IDS: JiraSolusFixedTabId[] = ['dashboard', 'filas'];
+
 export const MAX_OPEN_TASK_TABS = 10;
 
 export const TASK_TAB_PREFIX = 'task:' as const;
 
 export function isProjectFixedTabId(id: WorkspaceTabId): id is ProjectFixedTabId {
   return (PROJECT_FIXED_TAB_IDS as string[]).includes(id);
+}
+
+export function isJiraSolusFixedTabId(id: WorkspaceTabId): id is JiraSolusFixedTabId {
+  return (JIRA_SOLUS_FIXED_TAB_IDS as string[]).includes(id);
 }
 
 export function isTaskTabId(id: WorkspaceTabId): id is `task:${string}` {
@@ -96,7 +105,8 @@ export function openTaskTabState(
 export function closeTaskTabState(
   openTaskTabIds: string[],
   activeTab: WorkspaceTabId,
-  taskIdToClose: string
+  taskIdToClose: string,
+  fallbackFixedTab: ProjectFixedTabId | JiraSolusFixedTabId = 'tasks'
 ): { openTaskTabIds: string[]; activeTab: WorkspaceTabId } {
   const closingTabId = taskTabId(taskIdToClose);
   const nextIds = openTaskTabIds.filter(id => id !== taskIdToClose);
@@ -111,7 +121,7 @@ export function closeTaskTabState(
 
   const nextActive: WorkspaceTabId = fallbackTaskId
     ? taskTabId(fallbackTaskId)
-    : 'tasks';
+    : fallbackFixedTab;
 
   return { openTaskTabIds: nextIds, activeTab: nextActive };
 }

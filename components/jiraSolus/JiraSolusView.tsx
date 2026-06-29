@@ -12,25 +12,35 @@ import {
 } from '../../services/taskTrackingStorage';
 import { projectsListShell } from '../common/viewUi';
 import { Breadcrumbs, type BreadcrumbItem } from '../common/Breadcrumbs';
-import { JiraFilasPanel } from './JiraFilasPanel';
+import { JiraFilasPanel, type JiraFilasWorkspaceBridge } from './JiraFilasPanel';
 import { JiraFilasDashboardPanel } from './JiraFilasDashboardPanel';
+import { ProjectWorkspaceTabBar } from '../project/ProjectWorkspaceTabBar';
+import { TaskWorkspacePanel } from '../tasks/TaskWorkspacePanel';
 import {
   projectChromeBreadcrumbsClass,
   projectChromeHeaderInnerClass,
   projectChromeHeaderShellClass,
-  projectChromeTabActiveClass,
-  projectChromeTabIdleClass,
-  projectChromeTabsDividerClass,
-  projectChromeTabsNavClass,
-  projectChromeTabsRowClass,
 } from '../tasks/tasksPanelNeuStyles';
+import {
+  closeTaskTabState,
+  isJiraSolusFixedTabId,
+  isTaskTabId,
+  openTaskTabState,
+  resolveTaskTabLabels,
+  taskIdFromTabId,
+  type JiraSolusFixedTabId,
+  type WorkspaceTabId,
+} from '../../utils/workspaceTabs';
 
-type JiraSolusTab = 'dashboard' | 'filas';
-
-const TABS: { id: JiraSolusTab; label: string }[] = [
+const FIXED_TABS: Array<{ id: JiraSolusFixedTabId; label: string }> = [
   { id: 'dashboard', label: 'Dashboard' },
   { id: 'filas', label: 'Filas (Jira)' },
 ];
+
+const FIXED_TAB_LABELS: Record<JiraSolusFixedTabId, string> = {
+  dashboard: 'Dashboard',
+  filas: 'Filas (Jira)',
+};
 
 function applySnapshotToState(
   snapshot: ReturnType<typeof readTaskTrackingSnapshot>,
@@ -47,10 +57,12 @@ function applySnapshotToState(
 
 /**
  * Tela Acompanhamento de Tarefas — abas Dashboard (indicadores de SLA/Status) e
- * Filas (Jira). O estado das tarefas é compartilhado entre as abas.
+ * Filas (Jira), com abas dinâmicas de tarefa no estilo console.
  */
 export const JiraSolusView = React.memo(() => {
-  const [activeTab, setActiveTab] = useState<JiraSolusTab>('dashboard');
+  const [activeTab, setActiveTab] = useState<WorkspaceTabId>('dashboard');
+  const [openTaskTabIds, setOpenTaskTabIds] = useState<string[]>([]);
+  const [filasBridge, setFilasBridge] = useState<JiraFilasWorkspaceBridge | null>(null);
 
   const initialSnapshot = useMemo(() => readTaskTrackingSnapshot(), []);
   const [tasks, setTasks] = useState<JiraTask[]>(() => initialSnapshot.tasks);
@@ -103,47 +115,105 @@ export const JiraSolusView = React.memo(() => {
     }
   }, [slaRiskWindowHours]);
 
+  const taskTabLabels = useMemo(
+    () => resolveTaskTabLabels(openTaskTabIds, tasks),
+    [openTaskTabIds, tasks]
+  );
+
+  const activeTaskId = useMemo(
+    () => (isTaskTabId(activeTab) ? taskIdFromTabId(activeTab) : null),
+    [activeTab]
+  );
+
+  const showFilasPanel = isJiraSolusFixedTabId(activeTab) && activeTab === 'filas';
+  const keepFilasMounted = showFilasPanel || openTaskTabIds.length > 0;
+
   const handleApplyFilter = useCallback((filter: JiraFilasFilter) => {
     setActiveFilter(filter);
     setActiveTab('filas');
   }, []);
 
+  const handleSelectWorkspaceTab = useCallback((tabId: WorkspaceTabId) => {
+    setActiveTab(tabId);
+  }, []);
+
+  const handleOpenTaskTab = useCallback(
+    (task: JiraTask) => {
+      const next = openTaskTabState(openTaskTabIds, activeTab, task.id);
+      setOpenTaskTabIds(next.openTaskTabIds);
+      setActiveTab(next.activeTab);
+    },
+    [openTaskTabIds, activeTab]
+  );
+
+  const handleCloseTaskTab = useCallback(
+    (taskId: string) => {
+      const next = closeTaskTabState(openTaskTabIds, activeTab, taskId, 'filas');
+      setOpenTaskTabIds(next.openTaskTabIds);
+      setActiveTab(next.activeTab);
+    },
+    [openTaskTabIds, activeTab]
+  );
+
   const handleTabKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      const index = TABS.findIndex(t => t.id === activeTab);
+      const allTabIds: WorkspaceTabId[] = [
+        ...FIXED_TABS.map(t => t.id),
+        ...openTaskTabIds.map(id => `task:${id}` as const),
+      ];
+      const index = allTabIds.findIndex(t => t === activeTab);
       if (index < 0) return;
       let nextIndex = index;
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault();
-        nextIndex = (index + 1) % TABS.length;
+        nextIndex = (index + 1) % allTabIds.length;
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         e.preventDefault();
-        nextIndex = (index - 1 + TABS.length) % TABS.length;
+        nextIndex = (index - 1 + allTabIds.length) % allTabIds.length;
       } else if (e.key === 'Home') {
         e.preventDefault();
         nextIndex = 0;
       } else if (e.key === 'End') {
         e.preventDefault();
-        nextIndex = TABS.length - 1;
+        nextIndex = allTabIds.length - 1;
       } else return;
-      if (nextIndex !== index) setActiveTab(TABS[nextIndex].id);
+      if (nextIndex !== index) setActiveTab(allTabIds[nextIndex]);
     },
-    [activeTab]
+    [activeTab, openTaskTabIds]
   );
+
+  const breadcrumbTaskId = activeTaskId;
+  const breadcrumbTaskTitle = useMemo(() => {
+    if (!breadcrumbTaskId) return null;
+    return tasks.find(t => t.id === breadcrumbTaskId)?.title ?? breadcrumbTaskId;
+  }, [breadcrumbTaskId, tasks]);
 
   const breadcrumbItems = useMemo((): BreadcrumbItem[] => {
     const items: BreadcrumbItem[] = [
       {
         label: LANDING_SECTIONS.jiraSolus.title,
-        onClick: activeTab !== 'dashboard' ? () => setActiveTab('dashboard') : undefined,
+        onClick:
+          !isJiraSolusFixedTabId(activeTab) || activeTab !== 'dashboard'
+            ? () => setActiveTab('dashboard')
+            : undefined,
       },
     ];
-    const activeLabel = TABS.find(t => t.id === activeTab)?.label;
-    if (activeLabel && activeTab !== 'dashboard') {
-      items.push({ label: activeLabel });
+
+    if (isTaskTabId(activeTab) && breadcrumbTaskTitle) {
+      items.push({
+        label: FIXED_TAB_LABELS.filas,
+        onClick: () => setActiveTab('filas'),
+      });
+      items.push({ label: breadcrumbTaskTitle });
+      return items;
     }
+
+    if (isJiraSolusFixedTabId(activeTab) && activeTab === 'filas') {
+      items.push({ label: FIXED_TAB_LABELS.filas });
+    }
+
     return items;
-  }, [activeTab]);
+  }, [activeTab, breadcrumbTaskTitle]);
 
   return (
     <div className={projectsListShell}>
@@ -161,73 +231,73 @@ export const JiraSolusView = React.memo(() => {
             </div>
           </div>
         </div>
-        <div className={projectChromeTabsDividerClass}>
-          <div className={projectChromeTabsRowClass}>
-            <nav
-              className={projectChromeTabsNavClass}
-              aria-label="Seções de Acompanhamento de Tarefas"
-              role="tablist"
-              aria-orientation="horizontal"
-              onKeyDown={handleTabKeyDown}
-            >
-              {TABS.map(tab => {
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setActiveTab(tab.id)}
-                    className={isActive ? projectChromeTabActiveClass : projectChromeTabIdleClass}
-                    id={`jira-solus-tab-${tab.id}`}
-                    role="tab"
-                    tabIndex={isActive ? 0 : -1}
-                    aria-selected={isActive}
-                    aria-controls={`jira-solus-panel-${tab.id}`}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-        </div>
+        <ProjectWorkspaceTabBar
+          fixedTabs={FIXED_TABS}
+          activeTab={activeTab}
+          taskTabs={taskTabLabels}
+          onSelectTab={handleSelectWorkspaceTab}
+          onCloseTaskTab={handleCloseTaskTab}
+          onTabKeyDown={handleTabKeyDown}
+        />
       </div>
 
-      <div
-        id="jira-solus-panel-dashboard"
-        role="tabpanel"
-        aria-labelledby="jira-solus-tab-dashboard"
-        hidden={activeTab !== 'dashboard'}
-      >
-        {activeTab === 'dashboard' && (
-          <JiraFilasDashboardPanel
-            tasks={tasks}
-            selectedProjectKey={selectedProjectKey}
-            slaRiskWindowHours={slaRiskWindowHours}
-            activeFilter={activeFilter}
-            onApplyFilter={handleApplyFilter}
+      <div className="mt-4 sm:mt-5 max-md:mt-2">
+        {activeTaskId && filasBridge ? (
+          <TaskWorkspacePanel
+            key={activeTaskId}
+            taskId={activeTaskId}
+            project={filasBridge.filasProject}
+            onUpdateProject={filasBridge.onUpdateProject}
+            onOpenTaskTab={handleOpenTaskTab}
+            onClose={() => handleCloseTaskTab(activeTaskId)}
+            hideTestFeatures
+            onUpdateFromJira={filasBridge.onUpdateFromJira}
+            isUpdatingFromJira={filasBridge.isUpdatingFromJira === activeTaskId}
           />
+        ) : activeTaskId ? (
+          <div className="rounded-lg border border-base-300/60 bg-base-100 p-4 text-sm text-base-content/80">
+            Carregando detalhes da tarefa…
+          </div>
+        ) : null}
+
+        {isJiraSolusFixedTabId(activeTab) && activeTab === 'dashboard' && (
+          <section
+            id="jira-solus-panel-dashboard"
+            role="tabpanel"
+            aria-labelledby="tab-dashboard"
+          >
+            <JiraFilasDashboardPanel
+              tasks={tasks}
+              selectedProjectKey={selectedProjectKey}
+              slaRiskWindowHours={slaRiskWindowHours}
+              activeFilter={activeFilter}
+              onApplyFilter={handleApplyFilter}
+            />
+          </section>
         )}
-      </div>
-      <div
-        id="jira-solus-panel-filas"
-        role="tabpanel"
-        aria-labelledby="jira-solus-tab-filas"
-        hidden={activeTab !== 'filas'}
-      >
-        {activeTab === 'filas' && (
-          <JiraFilasPanel
-            tasks={tasks}
-            setTasks={setTasks}
-            selectedProjectKey={selectedProjectKey}
-            setSelectedProjectKey={setSelectedProjectKey}
-            jiraStatuses={jiraStatuses}
-            setJiraStatuses={setJiraStatuses}
-            activeFilter={activeFilter}
-            onClearFilter={() => setActiveFilter({ kind: 'all' })}
-            slaRiskWindowHours={slaRiskWindowHours}
-          />
-        )}
+
+        {keepFilasMounted ? (
+          <section
+            id="jira-solus-panel-filas"
+            role="tabpanel"
+            aria-labelledby="tab-filas"
+            hidden={!showFilasPanel}
+          >
+            <JiraFilasPanel
+              tasks={tasks}
+              setTasks={setTasks}
+              selectedProjectKey={selectedProjectKey}
+              setSelectedProjectKey={setSelectedProjectKey}
+              jiraStatuses={jiraStatuses}
+              setJiraStatuses={setJiraStatuses}
+              activeFilter={activeFilter}
+              onClearFilter={() => setActiveFilter({ kind: 'all' })}
+              slaRiskWindowHours={slaRiskWindowHours}
+              onOpenTaskTab={handleOpenTaskTab}
+              onWorkspaceBridgeChange={setFilasBridge}
+            />
+          </section>
+        ) : null}
       </div>
     </div>
   );

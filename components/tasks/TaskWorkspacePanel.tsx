@@ -19,6 +19,11 @@ export interface TaskWorkspacePanelProps {
   onNavigateToTab?: (tabId: string) => void;
   onOpenTaskTab?: (task: JiraTask) => void;
   onClose: () => void;
+  /** Oculta BDD, testes e planejamento (contexto Filas Jira). */
+  hideTestFeatures?: boolean;
+  /** Substitui a sincronização padrão do projeto (ex.: importação de filas). */
+  onUpdateFromJira?: (taskId: string) => Promise<void>;
+  isUpdatingFromJira?: boolean;
 }
 
 /**
@@ -31,6 +36,9 @@ export const TaskWorkspacePanel: React.FC<TaskWorkspacePanelProps> = ({
   onNavigateToTab,
   onOpenTaskTab,
   onClose,
+  hideTestFeatures = false,
+  onUpdateFromJira,
+  isUpdatingFromJira,
 }) => {
   const actions = useTaskDetailActions(project, onUpdateProject);
 
@@ -104,8 +112,11 @@ export const TaskWorkspacePanel: React.FC<TaskWorkspacePanelProps> = ({
         onUpdateProject={onUpdateProject}
         onNavigateToTab={onNavigateToTab}
         onOpenTask={onOpenTaskTab}
-        onUpdateFromJira={actions.handleUpdateTaskFromJira}
-        isUpdatingFromJira={actions.updatingFromJiraTaskId === taskId}
+        onUpdateFromJira={onUpdateFromJira ?? actions.handleUpdateTaskFromJira}
+        isUpdatingFromJira={
+          isUpdatingFromJira ?? actions.updatingFromJiraTaskId === taskId
+        }
+        hideTestFeatures={hideTestFeatures}
       />
 
       {actions.testCaseEditorRef ? (

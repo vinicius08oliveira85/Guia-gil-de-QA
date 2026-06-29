@@ -23,6 +23,8 @@ export interface JiraFilasTaskListProps {
   isTransitioningJiraStatus?: string | null;
   onUnavailableAction?: (label: string) => void;
   listAriaLabel?: string;
+  /** Abre tarefa em aba do workspace; se omitido, usa modal local. */
+  onOpenTaskTab?: (task: JiraTask) => void;
 }
 
 function buildTaskTree(tasks: JiraTask[]): TaskWithChildren[] {
@@ -99,6 +101,7 @@ export const JiraFilasTaskList: React.FC<JiraFilasTaskListProps> = ({
   isTransitioningJiraStatus = null,
   onUnavailableAction,
   listAriaLabel = 'Filas do Jira',
+  onOpenTaskTab,
 }) => {
   const [modalTask, setModalTask] = useState<JiraTask | null>(null);
   const noopAsync = useCallback(async () => undefined, []);
@@ -125,6 +128,17 @@ export const JiraFilasTaskList: React.FC<JiraFilasTaskListProps> = ({
       onUpdateTasks(tasks.map(t => (t.id === taskId ? { ...t, status } : t)));
     },
     [tasks, onUpdateTasks]
+  );
+
+  const handleOpenTaskDetails = useCallback(
+    (task: JiraTask) => {
+      if (onOpenTaskTab) {
+        onOpenTaskTab(task);
+      } else {
+        setModalTask(task);
+      }
+    },
+    [onOpenTaskTab]
   );
 
   const renderNode = useCallback(
@@ -161,7 +175,7 @@ export const JiraFilasTaskList: React.FC<JiraFilasTaskListProps> = ({
             isTransitioningJiraStatus={isTransitioningJiraStatus === task.id}
             onUpdateFromJira={onUpdateFromJira}
             isUpdatingFromJira={isUpdatingFromJira === task.id}
-            onOpenModal={setModalTask}
+            onOpenModal={handleOpenTaskDetails}
             hideTestFeatures
           >
             {task.children.map(child => renderNode(child, level + 1))}
@@ -181,6 +195,7 @@ export const JiraFilasTaskList: React.FC<JiraFilasTaskListProps> = ({
       isTransitioningJiraStatus,
       onUpdateFromJira,
       isUpdatingFromJira,
+      handleOpenTaskDetails,
     ]
   );
 
@@ -190,7 +205,7 @@ export const JiraFilasTaskList: React.FC<JiraFilasTaskListProps> = ({
         {taskTree.map(task => renderNode(task, 0))}
       </div>
 
-      {modalTask && taskForModal ? (
+      {modalTask && taskForModal && !onOpenTaskTab ? (
         <TaskDetailsModal
           task={taskForModal}
           isOpen={!!modalTask}
@@ -204,7 +219,7 @@ export const JiraFilasTaskList: React.FC<JiraFilasTaskListProps> = ({
           onDeleteBddScenario={() => warn('Excluir cenário BDD')}
           project={project}
           onUpdateProject={handleUpdateProject}
-          onOpenTask={setModalTask}
+          onOpenTask={handleOpenTaskDetails}
           onUpdateFromJira={onUpdateFromJira}
           isUpdatingFromJira={isUpdatingFromJira === modalTask.id}
           hideTestFeatures

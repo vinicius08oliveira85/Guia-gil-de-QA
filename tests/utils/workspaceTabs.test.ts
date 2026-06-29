@@ -30,6 +30,12 @@ describe('workspaceTabs', () => {
     expect(result.activeTab).toBe('tasks');
   });
 
+  it('closeTaskTabState cai em filas quando fecha a última (Jira Solus)', () => {
+    const result = closeTaskTabState(['A'], taskTabId('A'), 'A', 'filas');
+    expect(result.openTaskTabIds).toEqual([]);
+    expect(result.activeTab).toBe('filas');
+  });
+
   it('truncateTaskTabTitle encurta títulos longos', () => {
     const long = 'A'.repeat(50);
     expect(truncateTaskTabTitle(long).length).toBeLessThanOrEqual(36);
