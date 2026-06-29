@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildJiraQueueTree, parseJiraQueueName } from '../../utils/jiraQueueTree';
+import { buildJiraQueueTree, parseJiraQueueName, resolveQueueIdsFromFilasSelection } from '../../utils/jiraQueueTree';
 import type { JiraQueue } from '../../services/jira/types';
 
 function makeQueue(id: string, name: string): JiraQueue {
@@ -53,5 +53,21 @@ describe('buildJiraQueueTree', () => {
         makeQueue('2', 'Minhas'),
       ])
     ).toEqual([]);
+  });
+});
+
+describe('resolveQueueIdsFromFilasSelection', () => {
+  it('resolve filas pela combinação categoria + status', () => {
+    const queues = [
+      makeQueue('1', 'Abertos [Solus]'),
+      makeQueue('2', 'Concluídos [Solus]'),
+      makeQueue('3', 'Abertos [Tasy]'),
+    ];
+    expect(
+      resolveQueueIdsFromFilasSelection(queues, ['Solus'], ['Abertos'])
+    ).toEqual(['1']);
+    expect(
+      resolveQueueIdsFromFilasSelection(queues, ['Solus', 'Tasy'], ['Abertos'])
+    ).toEqual(['1', '3']);
   });
 });

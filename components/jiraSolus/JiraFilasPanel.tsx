@@ -31,13 +31,12 @@ import {
 import { normalizeTasksParentIdsAcyclic } from '../../utils/taskParentCycle';
 import { logger } from '../../utils/logger';
 import { cn } from '../../utils/cn';
-import { AppSelect } from '../common/AppSelect';
 import { EmptyState } from '../common/EmptyState';
 import { Spinner } from '../common/Spinner';
 import { JiraFilasTaskList } from './JiraFilasTaskList';
-import { JiraFilasQueueTree } from './JiraFilasQueueTree';
+import { JiraFilasImportSelector } from './JiraFilasImportSelector';
 import { Modal } from '../common/Modal';
-import { getQueueIdsFromSelection, buildJiraQueueTree } from '../../utils/jiraQueueTree';
+import { resolveQueueIdsFromFilasSelection, getJiraQueueStatusLabels } from '../../utils/jiraQueueTree';
 import {
   tasksPanelNeuModalPanelClass,
   tasksPanelNeuModalTitleClass,
@@ -65,7 +64,6 @@ import {
   jiraSolusSearchInputClass,
   jiraSolusSearchWrapClass,
   jiraSolusSecondaryBtnClass,
-  jiraSolusSelectClass,
   jiraSolusToolbarClass,
 } from './jiraSolusNeuUi';
 import {
@@ -75,8 +73,8 @@ import {
 } from '../jira/jiraIntegrationUi';
 
 import {
-  readStoredQueueIdsForProject,
-  writeStoredQueueIdsForProject,
+  readFilasImportSelection,
+  writeFilasImportSelection,
 } from '../../services/taskTrackingStorage';
 
 export interface JiraFilasPanelProps {
@@ -110,7 +108,19 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
 
   const [jiraProjects, setJiraProjects] = useState<JiraProject[]>([]);
   const [jiraQueues, setJiraQueues] = useState<JiraQueue[]>([]);
-  const [selectedQueueIds, setSelectedQueueIds] = useState<string[]>([]);
+  const storedImportSelection = useMemo(() => readFilasImportSelection(), []);
+  const [selectedProjectKeys, setSelectedProjectKeys] = useState<string[]>(() => {
+    if (storedImportSelection?.projectKeys?.length) {
+      return storedImportSelection.projectKeys;
+    }
+    return selectedProjectKey ? [selectedProjectKey] : [];
+  });
+  const [selectedQueueCategories, setSelectedQueueCategories] = useState<string[]>(
+    () => storedImportSelection?.queueCategories ?? []
+  );
+  const [selectedQueueStatuses, setSelectedQueueStatuses] = useState<string[]>(
+    () => storedImportSelection?.queueStatuses ?? []
+  );
   const [searchQuery, setSearchQuery] = useState('');
   const [issueKeyInput, setIssueKeyInput] = useState('');
   const [localFilters, setLocalFilters] = useState<JiraFilasLocalFilters>(EMPTY_JIRA_FILAS_FILTERS);
@@ -151,13 +161,14 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
 
   useEffect(() => {
     const config = getJiraConfig();
-    if (!config || !selectedProjectKey) {
+    if (!config || selectedProjectKeys.length === 0) {
       setJiraStatuses([]);
       return;
     }
 
     let cancelled = false;
-    getJiraStatuses(config, selectedProjectKey)
+    const primaryKey = selectedProjectKeys[0];
+    getJiraStatuses(config, primaryKey)
       .then(statuses => {
         if (!cancelled) setJiraStatuses(statuses);
       })
@@ -168,34 +179,47 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [selectedProjectKey, setJiraStatuses]);
+  }, [selectedProjectKeys, setJiraStatuses]);
+
+  useEffect(() => {
+    setSelectedProjectKey(selectedProjectKeys[0] ?? '');
+  }, [selectedProjectKeys, setSelectedProjectKey]);
+
+  useEffect(() => {
+    writeFilasImportSelection({
+      projectKeys: selectedProjectKeys,
+      queueCategories: selectedQueueCategories,
+      queueStatuses: selectedQueueStatuses,
+    });
+  }, [selectedProjectKeys, selectedQueueCategories, selectedQueueStatuses]);
 
   useEffect(() => {
     const config = getJiraConfig();
-    if (!config || !selectedProjectKey) {
+    if (!config || selectedProjectKeys.length === 0) {
       setJiraQueues([]);
-      setSelectedQueueIds([]);
       return;
     }
 
     let cancelled = false;
     setIsLoadingQueues(true);
-    getJiraQueuesForProject(config, selectedProjectKey)
-      .then(queues => {
+
+    Promise.all(
+      selectedProjectKeys.map(projectKey =>
+        getJiraQueuesForProject(config, projectKey).then(queues => ({ projectKey, queues }))
+      )
+    )
+      .then(results => {
         if (cancelled) return;
-        setJiraQueues(queues);
-        const storedQueueIds = readStoredQueueIdsForProject(selectedProjectKey);
-        const availableIds = new Set(
-          buildJiraQueueTree(queues).flatMap(group => group.items.map(item => item.queue.id))
-        );
-        const nextQueueIds = storedQueueIds.filter(id => availableIds.has(id));
-        setSelectedQueueIds(nextQueueIds);
-        writeStoredQueueIdsForProject(selectedProjectKey, nextQueueIds);
+        const merged = results.flatMap(({ queues }) => queues);
+        const uniqueById = new Map<string, JiraQueue>();
+        for (const queue of merged) {
+          uniqueById.set(queue.id, queue);
+        }
+        setJiraQueues(Array.from(uniqueById.values()));
       })
       .catch(err => {
         if (!cancelled) {
           setJiraQueues([]);
-          setSelectedQueueIds([]);
           handleError(err, 'Carregar filas do Jira');
         }
       })
@@ -206,16 +230,35 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [selectedProjectKey, handleError]);
+  }, [selectedProjectKeys, handleError]);
 
-  useEffect(() => {
-    writeStoredQueueIdsForProject(selectedProjectKey, selectedQueueIds);
-  }, [selectedProjectKey, selectedQueueIds]);
+  const handleProjectKeysChange = useCallback((keys: string[]) => {
+    setSelectedProjectKeys(keys);
+    setSelectedQueueCategories([]);
+    setSelectedQueueStatuses([]);
+  }, []);
+
+  const handleQueueCategoriesChange = useCallback(
+    (categories: string[]) => {
+      setSelectedQueueCategories(categories);
+      setSelectedQueueStatuses(prev => {
+        if (categories.length === 0) return [];
+        const allowed = new Set(getJiraQueueStatusLabels(jiraQueues, categories));
+        return prev.filter(status => allowed.has(status));
+      });
+    },
+    [jiraQueues]
+  );
+
+  const resolvedQueueIds = useMemo(
+    () => resolveQueueIdsFromFilasSelection(jiraQueues, selectedQueueCategories, selectedQueueStatuses),
+    [jiraQueues, selectedQueueCategories, selectedQueueStatuses]
+  );
 
   const selectedQueues = useMemo(() => {
-    const validIds = new Set(getQueueIdsFromSelection(selectedQueueIds, jiraQueues));
-    return jiraQueues.filter(queue => validIds.has(queue.id));
-  }, [jiraQueues, selectedQueueIds]);
+    const idSet = new Set(resolvedQueueIds);
+    return jiraQueues.filter(queue => idSet.has(queue.id));
+  }, [jiraQueues, resolvedQueueIds]);
 
   const filasProject = useMemo(
     (): Project => ({
@@ -337,15 +380,21 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
       if (!config) {
         throw new Error('Configure o Jira em Configurações antes de sincronizar.');
       }
-      if (!selectedProjectKey) {
-        throw new Error('Selecione um projeto Jira.');
+      if (selectedProjectKeys.length === 0) {
+        throw new Error('Selecione ao menos um projeto Jira.');
       }
       if (selectedQueues.length === 0) {
-        throw new Error('Selecione ao menos uma fila do projeto antes de sincronizar.');
+        throw new Error('Selecione fila e status antes de sincronizar.');
       }
 
-      const sprintCtx = await buildJiraSprintSyncContext(config, selectedProjectKey);
-      sprintCtxRef.current = sprintCtx;
+      const sprintCtxByProject = new Map<
+        string,
+        Awaited<ReturnType<typeof buildJiraSprintSyncContext>>
+      >();
+      for (const projectKey of selectedProjectKeys) {
+        sprintCtxByProject.set(projectKey, await buildJiraSprintSyncContext(config, projectKey));
+      }
+      sprintCtxRef.current = sprintCtxByProject.get(selectedProjectKeys[0]) ?? null;
 
       const issueByKey = new Map<string, Awaited<ReturnType<typeof getJiraIssuesByJql>>[number]>();
       let processedQueues = 0;
@@ -364,25 +413,26 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
 
       const issues = Array.from(issueByKey.values());
       const converted = await Promise.all(
-        issues.map(issue =>
-          jiraIssueToTask(config, issue, {
-            jiraProjectKey: selectedProjectKey,
+        issues.map(issue => {
+          const issueProjectKey = issue.key?.split('-')[0] ?? selectedProjectKeys[0];
+          return jiraIssueToTask(config, issue, {
+            jiraProjectKey: issueProjectKey,
             existingTask: tasks.find(t => t.id === issue.key),
-            sprintCtx,
-          })
-        )
+            sprintCtx: sprintCtxByProject.get(issueProjectKey),
+          });
+        })
       );
 
       const withRelated = await importFilasRelatedIssues(config, converted, {
-        jiraProjectKey: selectedProjectKey,
-        sprintCtx,
+        jiraProjectKey: selectedProjectKeys[0],
+        sprintCtx: sprintCtxRef.current ?? undefined,
         existingTasks: tasks,
         onProgress: (done, total) => onIssueProgress?.(done, total),
       });
 
       return enrichFilasTasks(config, withRelated, onIssueProgress);
     },
-    [selectedProjectKey, selectedQueues, tasks, enrichFilasTasks]
+    [selectedProjectKeys, selectedQueues, tasks, enrichFilasTasks]
   );
 
   const handleImportQueue = useCallback(async () => {
@@ -391,12 +441,12 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
       handleWarning('Configure o Jira em Configurações antes de importar.');
       return;
     }
-    if (!selectedProjectKey) {
-      handleWarning('Selecione um projeto Jira.');
+    if (selectedProjectKeys.length === 0) {
+      handleWarning('Selecione ao menos um projeto Jira.');
       return;
     }
     if (selectedQueues.length === 0) {
-      handleWarning('Selecione ao menos uma fila do projeto antes de importar.');
+      handleWarning('Selecione fila e status antes de importar.');
       return;
     }
 
@@ -424,7 +474,7 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
       setImportProgress(null);
     }
   }, [
-    selectedProjectKey,
+    selectedProjectKeys,
     selectedQueues,
     fetchQueueTasksFromJira,
     mergeImportedTasks,
@@ -666,7 +716,12 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
   const hasActiveFilter = isJiraFilasFilterActive(activeFilter);
   const activeFilterLabel = getJiraFilasFilterLabel(activeFilter);
   const canImportQueue =
-    hasJiraConfig && !!selectedProjectKey && selectedQueues.length > 0 && !isBusy;
+    hasJiraConfig &&
+    selectedProjectKeys.length > 0 &&
+    selectedQueueCategories.length > 0 &&
+    selectedQueueStatuses.length > 0 &&
+    selectedQueues.length > 0 &&
+    !isBusy;
   const canUpdateQueue = hasJiraConfig && tasks.length > 0 && !isBusy;
 
   const setHeaderJiraAction = useTaskTrackingHeaderStore(s => s.setJiraAction);
@@ -686,14 +741,17 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
         <div className="min-w-0">
           <div className="mb-1.5 flex flex-wrap items-center gap-2">
             <h1 className={tasksViewPageTitleClass}>Filas do Jira</h1>
-            {selectedProjectKey ? (
-              <span className={tasksViewPageJiraBadgeClass}>Jira: {selectedProjectKey}</span>
+            {selectedProjectKeys.length > 0 ? (
+              <span className={tasksViewPageJiraBadgeClass}>
+                {selectedProjectKeys.length === 1
+                  ? `Jira: ${selectedProjectKeys[0]}`
+                  : `Jira: ${selectedProjectKeys.length} projetos`}
+              </span>
             ) : null}
             {selectedQueues.length > 0 ? (
               <span className={tasksViewPageJiraBadgeClass}>
-                {selectedQueues.length === 1
-                  ? `Fila: ${selectedQueues[0].name}`
-                  : `Filas: ${selectedQueues.length} selecionadas`}
+                {selectedQueueCategories.length} fila(s) · {selectedQueueStatuses.length} status ·{' '}
+                {selectedQueues.length} fila(s) JSM
               </span>
             ) : null}
             {hasActiveFilter ? (
@@ -701,42 +759,30 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
             ) : null}
           </div>
           <p className={cn(tasksViewPageSubtitleClass, 'max-w-2xl')}>
-            Selecione o projeto e as filas do Jira Service Management para importar apenas as
+            Selecione projeto(s), fila e status do Jira Service Management para importar apenas as
             tarefas relevantes. Use o botão <strong>Jira</strong> no topo da tela para atualizar
-            apenas as tarefas já importadas (status, SLA e campos), como em Tarefas &amp; Testes dos
-            Projetos. Também é possível importar uma issue pelo ID.
+            apenas as tarefas já importadas (status, SLA e campos). Também é possível importar uma
+            issue pelo ID.
           </p>
         </div>
       </header>
 
       <section className={cn(jiraSolusInnerPanelClass, 'space-y-4')} aria-label="Importação do Jira">
-        <div className={jiraSolusToolbarClass}>
-          <div className={jiraSolusFieldClass}>
-            <label htmlFor="jira-filas-project" className={jiraSolusFieldLabelClass}>
-              Projeto Jira
-            </label>
-            <AppSelect
-              id="jira-filas-project"
-              value={selectedProjectKey}
-              onChange={value => {
-                setSelectedProjectKey(value);
-                setSelectedQueueIds([]);
-              }}
-              className={jiraSolusSelectClass}
-              disabled={!hasJiraConfig || isLoadingProjects || isBusy}
-              aria-label="Selecionar projeto Jira"
-            >
-              <option value="">
-                {isLoadingProjects ? 'Carregando…' : 'Selecione o projeto'}
-              </option>
-              {jiraProjects.map(p => (
-                <option key={p.key} value={p.key}>
-                  {p.name} ({p.key})
-                </option>
-              ))}
-            </AppSelect>
-          </div>
+        <JiraFilasImportSelector
+          projects={jiraProjects}
+          queues={jiraQueues}
+          selectedProjectKeys={selectedProjectKeys}
+          onProjectKeysChange={handleProjectKeysChange}
+          selectedQueueCategories={selectedQueueCategories}
+          onQueueCategoriesChange={handleQueueCategoriesChange}
+          selectedQueueStatuses={selectedQueueStatuses}
+          onQueueStatusesChange={setSelectedQueueStatuses}
+          isLoadingProjects={isLoadingProjects}
+          isLoadingQueues={isLoadingQueues}
+          disabled={!hasJiraConfig || isBusy}
+        />
 
+        <div className={jiraSolusToolbarClass}>
           <div className={jiraSolusFieldClass}>
             <label htmlFor="jira-filas-issue-key" className={jiraSolusFieldLabelClass}>
               ID da tarefa
@@ -770,42 +816,24 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
             )}
             Importar por ID
           </button>
+
+          <button
+            type="button"
+            onClick={() => void handleImportQueue()}
+            disabled={!canImportQueue}
+            className={jiraSolusPrimaryBtnClass}
+            aria-label="Importar tarefas das filas Jira selecionadas"
+          >
+            {isImportingProject ? (
+              <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden />
+            ) : (
+              <Download className="h-4 w-4 shrink-0" aria-hidden />
+            )}
+            {selectedQueues.length > 0
+              ? `Importar (${selectedQueues.length} fila${selectedQueues.length === 1 ? '' : 's'})`
+              : 'Importar filas'}
+          </button>
         </div>
-
-        {selectedProjectKey ? (
-          <div className="space-y-3">
-            <div className={jiraSolusToolbarClass}>
-              <button
-                type="button"
-                onClick={() => void handleImportQueue()}
-                disabled={!canImportQueue}
-                className={jiraSolusPrimaryBtnClass}
-                aria-label="Importar tarefas das filas Jira selecionadas"
-              >
-                {isImportingProject ? (
-                  <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden />
-                ) : (
-                  <Download className="h-4 w-4 shrink-0" aria-hidden />
-                )}
-                {selectedQueues.length > 0
-                  ? `Importar filas (${selectedQueues.length})`
-                  : 'Importar filas'}
-              </button>
-            </div>
-
-            <JiraFilasQueueTree
-              queues={jiraQueues}
-              selectedQueueIds={getQueueIdsFromSelection(selectedQueueIds, jiraQueues)}
-              onChange={setSelectedQueueIds}
-              disabled={!hasJiraConfig || isBusy}
-              isLoading={isLoadingQueues}
-            />
-          </div>
-        ) : (
-          <p className="font-sans text-sm text-[var(--brand-text-muted)]">
-            Selecione um projeto Jira para visualizar e escolher as filas de importação.
-          </p>
-        )}
 
         {!hasJiraConfig ? (
           <p className="font-sans text-xs text-[var(--brand-text-muted)]">

@@ -143,7 +143,9 @@ export const NeuSelect: React.FC<NeuSelectProps> = ({
                 opt.disabled && 'cursor-not-allowed opacity-50'
               )}
             >
-              {opt.label}
+              <span className="block min-w-0 truncate text-left" title={opt.label}>
+                {opt.label}
+              </span>
             </button>
           );
         })}

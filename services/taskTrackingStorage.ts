@@ -16,6 +16,12 @@ export interface TaskTrackingQueueSelection {
   /** @deprecated Use queueIds para seleção múltipla. */
   queueId?: string;
   queueIds?: string[];
+  /** Projetos selecionados no assistente de importação. */
+  projectKeys?: string[];
+  /** Categorias de fila JSM (ex.: Solus, Tasy). */
+  queueCategories?: string[];
+  /** Rótulos de status de fila (ex.: Abertos, Concluídos). */
+  queueStatuses?: string[];
 }
 
 /** Snapshot exportável do Acompanhamento de Tarefas. */
@@ -156,6 +162,55 @@ export function writeTaskTrackingSnapshot(snapshot: TaskTrackingSnapshot): void 
 
   writeLocalItem(FILAS_TASKS_STORAGE_KEY, JSON.stringify(snapshot.tasks));
   writeLocalItem(FILAS_SLA_RISK_WINDOW_STORAGE_KEY, String(snapshot.slaRiskWindowHours));
+}
+
+/** Lê a seleção persistida do assistente de importação das filas. */
+export function readFilasImportSelection(): Pick<
+  TaskTrackingQueueSelection,
+  'projectKeys' | 'queueCategories' | 'queueStatuses'
+> | null {
+  const selection = readStoredQueueSelection();
+  if (!selection) return null;
+  const projectKeys =
+    Array.isArray(selection.projectKeys) && selection.projectKeys.length > 0
+      ? selection.projectKeys.map(k => k.trim()).filter(Boolean)
+      : selection.projectKey
+        ? [selection.projectKey.trim()]
+        : [];
+  const queueCategories = Array.isArray(selection.queueCategories)
+    ? selection.queueCategories.map(c => c.trim()).filter(Boolean)
+    : [];
+  const queueStatuses = Array.isArray(selection.queueStatuses)
+    ? selection.queueStatuses.map(s => s.trim()).filter(Boolean)
+    : [];
+  if (projectKeys.length === 0 && queueCategories.length === 0 && queueStatuses.length === 0) {
+    return null;
+  }
+  return { projectKeys, queueCategories, queueStatuses };
+}
+
+/** Persiste a seleção do assistente de importação das filas. */
+export function writeFilasImportSelection(
+  selection: Pick<TaskTrackingQueueSelection, 'projectKeys' | 'queueCategories' | 'queueStatuses'>
+): void {
+  const projectKeys = (selection.projectKeys ?? []).map(k => k.trim()).filter(Boolean);
+  const queueCategories = (selection.queueCategories ?? []).map(c => c.trim()).filter(Boolean);
+  const queueStatuses = (selection.queueStatuses ?? []).map(s => s.trim()).filter(Boolean);
+
+  if (projectKeys.length === 0) {
+    writeSessionItem(FILAS_QUEUE_STORAGE_KEY, null);
+    return;
+  }
+
+  writeSessionItem(
+    FILAS_QUEUE_STORAGE_KEY,
+    JSON.stringify({
+      projectKey: projectKeys[0],
+      projectKeys,
+      queueCategories,
+      queueStatuses,
+    })
+  );
 }
 
 /** Lê os IDs das filas salvas para um projeto Jira. */

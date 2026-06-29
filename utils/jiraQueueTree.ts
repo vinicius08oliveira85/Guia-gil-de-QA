@@ -92,3 +92,60 @@ export function getQueueIdsFromSelection(
   const available = getSelectableQueueIds(queues);
   return Array.from(selectedQueueIds).filter(id => available.has(id));
 }
+
+/** Dimensões extraídas do nome da fila JSM para o assistente de importação. */
+export interface JiraQueueDimensions {
+  category: string;
+  statusLabel: string;
+}
+
+/**
+ * Lista categorias de fila (ex.: Solus, Tasy) presentes nas filas categorizadas.
+ */
+export function getJiraQueueCategories(queues: JiraQueue[]): string[] {
+  const categories = new Set<string>();
+  for (const queue of queues) {
+    const { category } = parseJiraQueueName(queue.name);
+    if (category) categories.add(category);
+  }
+  return Array.from(categories).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+}
+
+/**
+ * Lista rótulos de status de fila (ex.: Abertos, Concluídos).
+ * Quando `categories` é informado, restringe aos status disponíveis nessas filas.
+ */
+export function getJiraQueueStatusLabels(queues: JiraQueue[], categories?: string[]): string[] {
+  const categoryFilter = categories?.length ? new Set(categories) : null;
+  const labels = new Set<string>();
+
+  for (const queue of queues) {
+    const { category, label } = parseJiraQueueName(queue.name);
+    if (!category) continue;
+    if (categoryFilter && !categoryFilter.has(category)) continue;
+    labels.add(label);
+  }
+
+  return Array.from(labels).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+}
+
+/**
+ * Resolve IDs de fila a partir da seleção de categoria (fila) + status.
+ */
+export function resolveQueueIdsFromFilasSelection(
+  queues: JiraQueue[],
+  selectedCategories: string[],
+  selectedStatuses: string[]
+): string[] {
+  if (selectedCategories.length === 0 || selectedStatuses.length === 0) return [];
+
+  const categorySet = new Set(selectedCategories);
+  const statusSet = new Set(selectedStatuses);
+
+  return queues
+    .filter(queue => {
+      const { category, label } = parseJiraQueueName(queue.name);
+      return !!category && categorySet.has(category) && statusSet.has(label);
+    })
+    .map(queue => queue.id);
+}
