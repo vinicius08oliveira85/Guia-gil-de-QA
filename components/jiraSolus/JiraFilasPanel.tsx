@@ -3,7 +3,6 @@ import { Download, Filter, List, Loader2, RefreshCw, Search, X } from 'lucide-re
 import {
   getJiraConfig,
   getJiraProjects,
-  getJiraIssuesByJql,
   getJiraIssueByKey,
   getJiraStatuses,
   getJiraQueuesForProject,
@@ -14,6 +13,8 @@ import {
 import { enrichTasksWithJiraSlas } from '../../services/jira/sla';
 import { enrichTasksWithJsmSummary } from '../../services/jira/jsmRequest';
 import { importFilasRelatedIssues } from '../../services/jira/filasRelatedIssues';
+import { syncFilasQueuesFromJira } from '../../services/jira/filasQueueSync';
+import { isJiraAutoSyncRunning } from '../../services/jira/jiraAutoSync';
 import { jiraIssueToTask } from '../../services/jira/issueToTask';
 import { buildJiraSprintSyncContext } from '../../services/jira/sprintSync';
 import { mapJiraStatusToTaskStatus } from '../../services/jira/mappers';
@@ -432,67 +433,6 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
     []
   );
 
-  const fetchQueueTasksFromJira = useCallback(
-    async (onIssueProgress?: (current: number, total?: number) => void) => {
-      const config = getJiraConfig();
-      if (!config) {
-        throw new Error('Configure o Jira em Configurações antes de sincronizar.');
-      }
-      if (selectedProjectKeys.length === 0) {
-        throw new Error('Selecione ao menos um projeto Jira.');
-      }
-      if (selectedQueues.length === 0) {
-        throw new Error('Selecione fila e status antes de sincronizar.');
-      }
-
-      const sprintCtxByProject = new Map<
-        string,
-        Awaited<ReturnType<typeof buildJiraSprintSyncContext>>
-      >();
-      for (const projectKey of selectedProjectKeys) {
-        sprintCtxByProject.set(projectKey, await buildJiraSprintSyncContext(config, projectKey));
-      }
-      sprintCtxRef.current = sprintCtxByProject.get(selectedProjectKeys[0]) ?? null;
-
-      const issueByKey = new Map<string, Awaited<ReturnType<typeof getJiraIssuesByJql>>[number]>();
-      let processedQueues = 0;
-
-      for (const queue of selectedQueues) {
-        const issues = await getJiraIssuesByJql(config, queue.jql, undefined, (current, total) => {
-          const base = processedQueues;
-          onIssueProgress?.(base + current, selectedQueues.length * (total ?? (current || 1)));
-        });
-        for (const issue of issues) {
-          if (issue.key) issueByKey.set(issue.key, issue);
-        }
-        processedQueues += 1;
-        onIssueProgress?.(processedQueues, selectedQueues.length);
-      }
-
-      const issues = Array.from(issueByKey.values());
-      const converted = await Promise.all(
-        issues.map(issue => {
-          const issueProjectKey = issue.key?.split('-')[0] ?? selectedProjectKeys[0];
-          return jiraIssueToTask(config, issue, {
-            jiraProjectKey: issueProjectKey,
-            existingTask: tasks.find(t => t.id === issue.key),
-            sprintCtx: sprintCtxByProject.get(issueProjectKey),
-          });
-        })
-      );
-
-      const withRelated = await importFilasRelatedIssues(config, converted, {
-        jiraProjectKey: selectedProjectKeys[0],
-        sprintCtx: sprintCtxRef.current ?? undefined,
-        existingTasks: tasks,
-        onProgress: (done, total) => onIssueProgress?.(done, total),
-      });
-
-      return enrichFilasTasks(config, withRelated, onIssueProgress);
-    },
-    [selectedProjectKeys, selectedQueues, tasks, enrichFilasTasks]
-  );
-
   const handleImportQueue = useCallback(async () => {
     const config = getJiraConfig();
     if (!config) {
@@ -507,23 +447,30 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
       handleWarning('Selecione fila e status antes de importar.');
       return;
     }
+    if (isJiraAutoSyncRunning()) {
+      handleWarning('Aguarde a sincronização automática em andamento.');
+      return;
+    }
 
     setIsImportingProject(true);
     setImportProgress({ current: 0 });
     try {
-      const withSlas = await fetchQueueTasksFromJira((current, total) =>
+      const result = await syncFilasQueuesFromJira((current, total) =>
         setImportProgress({ current, total })
       );
+      if (!result) {
+        handleWarning('Não foi possível importar com a seleção atual de projeto, fila e status.');
+        return;
+      }
 
-      mergeImportedTasks(withSlas);
       const queueLabel =
-        selectedQueues.length === 1
+        result.queueCount === 1
           ? `"${selectedQueues[0].name}"`
-          : `${selectedQueues.length} filas`;
+          : `${result.queueCount} filas`;
       handleSuccess(
-        withSlas.length === 1
+        result.tasks.length === 1
           ? `1 tarefa importada da fila ${queueLabel}.`
-          : `${withSlas.length} tarefas importadas de ${queueLabel}.`
+          : `${result.tasks.length} tarefas importadas de ${queueLabel}.`
       );
     } catch (err) {
       handleError(err, 'Importar filas do Jira');
@@ -534,8 +481,6 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
   }, [
     selectedProjectKeys,
     selectedQueues,
-    fetchQueueTasksFromJira,
-    mergeImportedTasks,
     handleError,
     handleSuccess,
     handleWarning,
@@ -559,22 +504,30 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
       selectedQueues.length > 0;
 
     if (canSyncFromSelection) {
+      if (isJiraAutoSyncRunning()) {
+        handleWarning('Aguarde a sincronização automática em andamento.');
+        return;
+      }
+
       setIsUpdatingQueue(true);
       setImportProgress({ current: 0 });
       try {
-        const withSlas = await fetchQueueTasksFromJira((current, total) =>
+        const result = await syncFilasQueuesFromJira((current, total) =>
           setImportProgress({ current, total })
         );
+        if (!result) {
+          handleWarning('Não foi possível atualizar com a seleção atual de projeto, fila e status.');
+          return;
+        }
 
-        mergeImportedTasks(withSlas);
         const queueLabel =
-          selectedQueues.length === 1
+          result.queueCount === 1
             ? `"${selectedQueues[0].name}"`
-            : `${selectedQueues.length} filas`;
+            : `${result.queueCount} filas`;
         handleSuccess(
-          withSlas.length === 1
+          result.tasks.length === 1
             ? `1 tarefa atualizada da fila ${queueLabel}.`
-            : `${withSlas.length} tarefas atualizadas de ${queueLabel}.`
+            : `${result.tasks.length} tarefas atualizadas de ${queueLabel}.`
         );
       } catch (err) {
         handleError(err, 'Atualizar filas do Jira');
@@ -660,10 +613,9 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
     selectedQueueCategories,
     selectedQueueStatuses,
     selectedQueues,
-    fetchQueueTasksFromJira,
-    mergeImportedTasks,
     selectedProjectKey,
     tasks,
+    mergeImportedTasks,
     enrichFilasTasks,
     handleError,
     handleSuccess,
@@ -895,9 +847,9 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
           </div>
           <p className={cn(tasksViewPageSubtitleClass, 'max-w-2xl')}>
             Selecione projeto(s), fila e status do Jira Service Management para importar apenas as
-            tarefas relevantes. Use <strong>Atualizar filas</strong> ou o botão <strong>Jira</strong>{' '}
-            no topo para sincronizar novamente com a seleção atual (projeto, fila e status). Também é
-            possível importar uma issue pelo ID.
+            tarefas relevantes. O sistema atualiza automaticamente a cada 10 minutos (projetos e
+            filas). Use <strong>Atualizar filas</strong> ou o botão <strong>Jira</strong> no topo
+            para sincronizar manualmente. Também é possível importar uma issue pelo ID.
           </p>
         </div>
       </header>

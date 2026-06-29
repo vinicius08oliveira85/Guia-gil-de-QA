@@ -3,22 +3,17 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Project, ProjectDocument } from '../types';
 import type { JiraTask } from '../types';
-import { analyzeDocumentContent, generateTaskFromDocument } from '../services/geminiService';
-import { Modal } from './common/Modal';
+import { generateTaskFromDocument } from '../services/geminiService';
 import { useErrorHandler } from '../hooks/useErrorHandler';
-import { sanitizeHTML } from '../utils/sanitize';
 import { withTimeout } from '../utils/withTimeout';
-import { Badge } from './common/Badge';
 import { EmptyState } from './common/EmptyState';
 import {
   createDocumentFromFile,
   convertDocumentFileToProjectDocument,
 } from '../utils/documentService';
 import { formatFileSize } from '../utils/attachmentService';
-import { SpecificationDocumentProcessor } from './settings/SpecificationDocumentProcessor';
 import { FileImportModal } from './common/FileImportModal';
 import { FileViewer } from './common/FileViewer';
-import { viewFileInNewTab } from '../services/fileViewerService';
 import { DocumentStatsCards } from './documents/DocumentStatsCards';
 import { DocumentCard } from './documents/DocumentCard';
 import { Search, Upload, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
@@ -39,24 +34,12 @@ import {
   documentsFilterPillsGroupClass,
   documentsFilterRowClass,
   documentsFiltersPanelClass,
-  documentsModalAnalysisBodyClass,
   documentsModalBodyClass,
-  documentsModalFieldLabelClass,
-  documentsModalFooterCancelClass,
-  documentsModalFooterClass,
-  documentsModalFooterSaveClass,
-  documentsModalIframeClass,
-  documentsModalInputClass,
-  documentsModalMediaClass,
-  documentsModalMetaClass,
   documentsModalMutedTextClass,
-  documentsModalPreClass,
   documentsModalPreviewInsetClass,
   documentsModalPrimaryBtnClass,
   documentsModalSecondaryBtnClass,
-  documentsModalSectionLabelClass,
   documentsModalShellClass,
-  documentsModalTextareaClass,
   documentsModalTitleClass,
   documentsOutlineBtnClass,
   documentsPageMutedClass,
@@ -67,9 +50,8 @@ import {
   documentsSummaryStatsClass,
   documentsSummaryStatStrongClass,
   documentsSummaryStripClass,
+  documentsViewScopeClass,
 } from './documents/documentsNeuUi';
-import { documentsViewScopeClass } from './documents/documentsNeuUi';
-import { DocumentAnalysisBody } from './documents/DocumentAnalysisBody';
 
 interface DocumentWithMetadata extends ProjectDocument {
   uploadedAt?: string;
@@ -92,18 +74,12 @@ export const DocumentsView: React.FC<{
   onUpdateProject: (project: Project) => void;
   onNavigateToTab?: (tabId: string) => void;
 }> = ({ project, onUpdateProject, onNavigateToTab }) => {
-  const [analysisResult, setAnalysisResult] = useState<{ name: string; content: string } | null>(
-    null
-  );
   const [loadingStates, setLoadingStates] = useState<{
-    [docName: string]: 'analyze' | 'generate' | null;
+    [docName: string]: 'generate' | null;
   }>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | 'all'>('all');
   const [onlyWithoutAnalysis, setOnlyWithoutAnalysis] = useState(false);
-  const [selectedDoc, setSelectedDoc] = useState<DocumentWithMetadata | null>(null);
-  const [showPreview, setShowPreview] = useState(false);
-  const [editingDoc, setEditingDoc] = useState<DocumentWithMetadata | null>(null);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [viewingDocument, setViewingDocument] = useState<DocumentWithMetadata | null>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
@@ -268,31 +244,6 @@ export const DocumentsView: React.FC<{
     }
   };
 
-  const handleAnalyze = async (doc: ProjectDocument) => {
-    setLoadingStates(prev => ({ ...prev, [doc.name]: 'analyze' }));
-    try {
-      const analysis = await withTimeout(
-        analyzeDocumentContent(doc.content, project),
-        DOCUMENT_AI_TIMEOUT_MS,
-        'A operação demorou muito. Tente novamente ou use um documento menor.'
-      );
-      const sanitizedAnalysis = sanitizeHTML(analysis);
-
-      // Salvar análise no documento
-      const updatedDocuments = project.documents.map(d =>
-        d.name === doc.name ? { ...d, analysis: sanitizedAnalysis } : d
-      );
-      onUpdateProject({ ...project, documents: updatedDocuments });
-
-      setAnalysisResult({ name: doc.name, content: sanitizedAnalysis });
-      handleSuccess('Documento analisado com sucesso!');
-    } catch (error) {
-      handleError(error, 'Analisar documento');
-    } finally {
-      setLoadingStates(prev => ({ ...prev, [doc.name]: null }));
-    }
-  };
-
   const handleGenerateTask = async (doc: ProjectDocument) => {
     setLoadingStates(prev => ({ ...prev, [doc.name]: 'generate' }));
     try {
@@ -332,55 +283,6 @@ export const DocumentsView: React.FC<{
       ...project,
       documents: [...project.documents, document],
     });
-  };
-
-  const handleViewDocument = (doc: DocumentWithMetadata) => {
-    try {
-      // Detectar tipo MIME baseado no nome do arquivo
-      const fileName = doc.name.toLowerCase();
-      let mimeType = 'text/plain';
-
-      if (fileName.endsWith('.pdf')) mimeType = 'application/pdf';
-      else if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) mimeType = 'image/jpeg';
-      else if (fileName.endsWith('.png')) mimeType = 'image/png';
-      else if (fileName.endsWith('.gif')) mimeType = 'image/gif';
-      else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls'))
-        mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-      else if (fileName.endsWith('.docx') || fileName.endsWith('.doc'))
-        mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-      else if (fileName.endsWith('.csv')) mimeType = 'text/csv';
-      else if (fileName.endsWith('.json')) mimeType = 'application/json';
-      else if (doc.content.startsWith('data:')) {
-        // Extrair MIME type de data URL
-        const match = doc.content.match(/^data:([^;]+)/);
-        if (match) mimeType = match[1];
-      }
-
-      // Se for data URL, usar diretamente, senão converter para blob
-      if (doc.content.startsWith('data:')) {
-        viewFileInNewTab(doc.content, doc.name, mimeType, { openInNewTab: true });
-      } else {
-        const blob = new Blob([doc.content], { type: mimeType });
-        viewFileInNewTab(blob, doc.name, mimeType, { openInNewTab: true });
-      }
-    } catch (error) {
-      handleError(error, 'Visualizar documento');
-    }
-  };
-
-  const handleEdit = (doc: DocumentWithMetadata) => {
-    setEditingDoc(doc);
-  };
-
-  const handleSaveEdit = () => {
-    if (!editingDoc) return;
-
-    const updatedDocuments = project.documents.map(d =>
-      d.name === editingDoc.name ? { ...d, name: editingDoc.name, content: editingDoc.content } : d
-    );
-    onUpdateProject({ ...project, documents: updatedDocuments });
-    setEditingDoc(null);
-    handleSuccess('Documento atualizado com sucesso!');
   };
 
   const documentsDescription = (
@@ -444,10 +346,6 @@ export const DocumentsView: React.FC<{
           />
         </section>
       </div>
-
-      <section aria-label="Documento de especificação para contexto de IA">
-        <SpecificationDocumentProcessor project={project} onUpdateProject={onUpdateProject} />
-      </section>
 
       <section className={documentsFiltersPanelClass} aria-label="Filtros e busca de documentos">
         {stats.total > 0 ? (
@@ -573,13 +471,10 @@ export const DocumentsView: React.FC<{
               >
                 <DocumentCard
                   doc={doc}
-                  onView={() => handleViewDocument(doc)}
                   onPreview={() => setViewingDocument(doc)}
-                  onAnalyze={() => handleAnalyze(doc)}
                   onGenerate={() => handleGenerateTask(doc)}
-                  onEdit={() => handleEdit(doc)}
                   onRemove={() => handleDelete(doc.name)}
-                  loadingState={loadingStates[doc.name] ?? null}
+                  isGenerating={loadingStates[doc.name] === 'generate'}
                   formatFileSize={formatFileSize}
                 />
               </div>
@@ -626,89 +521,6 @@ export const DocumentsView: React.FC<{
         </div>
       </section>
 
-      {/* Modal de Preview */}
-      {showPreview && selectedDoc && (
-        <Modal
-          isOpen={showPreview}
-          onClose={() => {
-            setShowPreview(false);
-            setSelectedDoc(null);
-          }}
-          title={selectedDoc.name}
-          panelClassName={documentsModalShellClass}
-          bodyClassName={documentsModalBodyClass}
-          titleClassName={documentsModalTitleClass}
-        >
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="default" appearance="pill" size="sm">
-                {formatFileSize(selectedDoc.size || 0)}
-              </Badge>
-              <Badge variant="default" appearance="pill" size="sm">
-                {selectedDoc.content.split('\n').length} linhas
-              </Badge>
-              {selectedDoc.category && (
-                <Badge variant="default" appearance="pill" size="sm">
-                  {DOCUMENT_CATEGORIES.find(c => c.id === selectedDoc.category)?.label}
-                </Badge>
-              )}
-            </div>
-            <div className={documentsModalPreviewInsetClass}>
-              {selectedDoc.content.startsWith('data:image/') ? (
-                <div className="space-y-4">
-                  <img
-                    src={selectedDoc.content}
-                    alt={selectedDoc.name}
-                    className={documentsModalMediaClass}
-                  />
-                  <div className={documentsModalMetaClass}>
-                    <p>
-                      <strong className="text-[#401C31]">Nome:</strong> {selectedDoc.name}
-                    </p>
-                    <p>
-                      <strong className="text-[#401C31]">Tamanho:</strong>{' '}
-                      {formatFileSize(selectedDoc.size || 0)}
-                    </p>
-                    <p>
-                      <strong className="text-[#401C31]">Tipo:</strong>{' '}
-                      {selectedDoc.category || 'Não categorizado'}
-                    </p>
-                  </div>
-                </div>
-              ) : selectedDoc.content.startsWith('data:application/pdf') ? (
-                <div className="space-y-4">
-                  <iframe
-                    src={selectedDoc.content}
-                    className={documentsModalIframeClass}
-                    title={selectedDoc.name}
-                  />
-                  <div className={documentsModalMetaClass}>
-                    <p>
-                      <strong className="text-[#401C31]">Nome:</strong> {selectedDoc.name}
-                    </p>
-                    <p>
-                      <strong className="text-[#401C31]">Tamanho:</strong>{' '}
-                      {formatFileSize(selectedDoc.size || 0)}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <pre className={documentsModalPreClass}>{selectedDoc.content}</pre>
-              )}
-            </div>
-            {selectedDoc.analysis && (
-              <div className="space-y-2">
-                <p className={documentsModalSectionLabelClass}>Análise IA</p>
-                <DocumentAnalysisBody
-                  html={selectedDoc.analysis}
-                  className={documentsModalAnalysisBodyClass}
-                />
-              </div>
-            )}
-          </div>
-        </Modal>
-      )}
-
       {/* Modal de Importação */}
       <FileImportModal
         isOpen={isImportModalOpen}
@@ -739,71 +551,6 @@ export const DocumentsView: React.FC<{
           dividerClassName="border-[#DED7CD]"
           contentInsetClassName={documentsModalPreviewInsetClass}
         />
-      )}
-
-      {/* Modal de Análise */}
-      {analysisResult && (
-        <Modal
-          isOpen={!!analysisResult}
-          onClose={() => setAnalysisResult(null)}
-          title={`Análise de ${analysisResult.name}`}
-          panelClassName={documentsModalShellClass}
-          bodyClassName={documentsModalBodyClass}
-          titleClassName={documentsModalTitleClass}
-        >
-          <div className="space-y-3">
-            <p className={documentsModalSectionLabelClass}>Resultado da análise</p>
-            <DocumentAnalysisBody
-              html={analysisResult.content}
-              className={documentsModalAnalysisBodyClass}
-            />
-          </div>
-        </Modal>
-      )}
-
-      {/* Modal de Edição */}
-      {editingDoc && (
-        <Modal
-          isOpen={!!editingDoc}
-          onClose={() => setEditingDoc(null)}
-          title={`Editar: ${editingDoc.name}`}
-          panelClassName={documentsModalShellClass}
-          bodyClassName={documentsModalBodyClass}
-          titleClassName={documentsModalTitleClass}
-        >
-          <div className="space-y-4">
-            <div>
-              <label className={documentsModalFieldLabelClass}>Nome do Documento</label>
-              <input
-                type="text"
-                value={editingDoc.name}
-                onChange={e => setEditingDoc({ ...editingDoc, name: e.target.value })}
-                className={documentsModalInputClass}
-              />
-            </div>
-            <div>
-              <label className={documentsModalFieldLabelClass}>Conteúdo</label>
-              <textarea
-                value={editingDoc.content}
-                onChange={e => setEditingDoc({ ...editingDoc, content: e.target.value })}
-                rows={15}
-                className={documentsModalTextareaClass}
-              />
-            </div>
-            <div className={documentsModalFooterClass}>
-              <button
-                type="button"
-                className={documentsModalFooterCancelClass}
-                onClick={() => setEditingDoc(null)}
-              >
-                Cancelar
-              </button>
-              <button type="button" className={documentsModalFooterSaveClass} onClick={handleSaveEdit}>
-                Salvar
-              </button>
-            </div>
-          </div>
-        </Modal>
       )}
     </div>
   );

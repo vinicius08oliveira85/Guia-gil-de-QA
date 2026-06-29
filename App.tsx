@@ -17,6 +17,10 @@ import { useKeyboardShortcuts, SHORTCUTS } from './hooks/useKeyboardShortcuts';
 import { KeyboardShortcutsHelp } from './components/common/KeyboardShortcutsHelp';
 import { getExportPreferences } from './utils/preferencesService';
 import { startExportScheduler } from './utils/exportScheduler';
+import {
+  startJiraAutoSyncScheduler,
+  stopJiraAutoSyncScheduler,
+} from './utils/jiraAutoSyncScheduler';
 import { useIsMobile } from './hooks/useIsMobile';
 import { useTheme } from './hooks/useTheme';
 import { lazyWithRetry } from './utils/lazyWithRetry';
@@ -220,6 +224,11 @@ const AppContent: React.FC = () => {
     };
     window.addEventListener('preferences-updated', handlePreferencesUpdate);
     return () => window.removeEventListener('preferences-updated', handlePreferencesUpdate);
+  }, []);
+
+  useEffect(() => {
+    startJiraAutoSyncScheduler();
+    return () => stopJiraAutoSyncScheduler();
   }, []);
 
   const handleCreateProject = useCallback(

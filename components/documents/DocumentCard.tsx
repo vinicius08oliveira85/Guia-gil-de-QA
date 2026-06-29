@@ -1,7 +1,6 @@
 import React from 'react';
-import { Eye, ExternalLink, Bot, Wand2, Pencil, Trash2 } from 'lucide-react';
+import { ExternalLink, Wand2, Trash2 } from 'lucide-react';
 import { Spinner } from '../common/Spinner';
-import { cn } from '../../utils/cn';
 import {
   documentsActionOutlineClass,
   documentsActionPrimaryClass,
@@ -33,25 +32,19 @@ const CATEGORY_LABELS: Record<DocumentCategoryId, string> = {
 
 export interface DocumentCardProps {
   doc: DocumentCardDoc;
-  onView: () => void;
   onPreview: () => void;
-  onAnalyze: () => void;
   onGenerate: () => void;
-  onEdit: () => void;
   onRemove: () => void;
-  loadingState: 'analyze' | 'generate' | null;
+  isGenerating: boolean;
   formatFileSize: (bytes: number) => string;
 }
 
 export const DocumentCard: React.FC<DocumentCardProps> = ({
   doc,
-  onView,
   onPreview,
-  onAnalyze,
   onGenerate,
-  onEdit,
   onRemove,
-  loadingState,
+  isGenerating,
   formatFileSize,
 }) => {
   const category = doc.category ?? 'outros';
@@ -80,15 +73,6 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
         <button
           type="button"
           className={documentsActionOutlineClass}
-          onClick={onView}
-          aria-label="Ver documento"
-        >
-          <Eye aria-hidden />
-          Ver
-        </button>
-        <button
-          type="button"
-          className={documentsActionOutlineClass}
           onClick={onPreview}
           aria-label="Abrir preview"
         >
@@ -98,33 +82,13 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
         <button
           type="button"
           className={documentsActionPrimaryClass}
-          onClick={onAnalyze}
-          disabled={loadingState === 'analyze'}
-          title="Analisa o conteúdo do documento com IA."
-          aria-label="Analisar com IA"
-        >
-          {loadingState === 'analyze' ? <Spinner small /> : <Bot aria-hidden />}
-          Analisar
-        </button>
-        <button
-          type="button"
-          className={documentsActionPrimaryClass}
           onClick={onGenerate}
-          disabled={loadingState === 'generate'}
+          disabled={isGenerating}
           title="Gera uma tarefa a partir do documento com IA."
           aria-label="Gerar tarefa"
         >
-          {loadingState === 'generate' ? <Spinner small /> : <Wand2 aria-hidden />}
+          {isGenerating ? <Spinner small /> : <Wand2 aria-hidden />}
           Gerar
-        </button>
-        <button
-          type="button"
-          className={documentsActionOutlineClass}
-          onClick={onEdit}
-          aria-label="Editar documento"
-        >
-          <Pencil aria-hidden />
-          Editar
         </button>
         <button
           type="button"

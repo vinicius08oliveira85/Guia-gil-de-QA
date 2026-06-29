@@ -37,11 +37,11 @@ export const documentsCardActionsClass = cn(
   'documents-card-actions mt-2.5 border-t border-[color-mix(in_srgb,var(--leve-neu-light)_38%,transparent)] pt-2.5'
 );
 
-/** Grade 2×3 (mobile) / 4+2 (desktop) — trilho inset + pills (modelo Filtrar/Exportar). */
+/** Grade de 3 ações (Preview, Gerar, Remover) — trilho inset + pills (modelo Filtrar/Exportar). */
 export const documentsCardActionsGridClass = cn(
   documentsCardActionsClass,
   appNeuActionTrackWrapClass,
-  'grid grid-cols-2 gap-1.5 p-1.5 sm:grid-cols-4'
+  'grid grid-cols-3 gap-1.5 p-1.5'
 );
 
 const documentsActionBtnBase = cn(
