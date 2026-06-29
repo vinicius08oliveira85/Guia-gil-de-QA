@@ -62,6 +62,47 @@ export function testCaseLooksAutomated(tc: TestCase): boolean {
   );
 }
 
+/** Ordem de alternância ao clicar na badge de tipo de execução. */
+export const EXECUTION_KIND_CYCLE: NonNullable<TestCase['executionKind']>[] = [
+  'manual',
+  'automated',
+  'mixed',
+];
+
+export type ExecutionKindBadgeVariant = 'neutral' | 'info' | 'warning';
+
+/** Rótulo e variante visual da badge de tipo de execução (explícito ou inferido). */
+export function getExecutionKindBadgeDisplay(tc: TestCase): {
+  label: string;
+  variant: ExecutionKindBadgeVariant;
+} {
+  const k = tc.executionKind;
+  if (k === 'automated') return { label: 'Automatizado', variant: 'info' };
+  if (k === 'mixed') return { label: 'Misto', variant: 'warning' };
+  if (k === 'manual') return { label: 'Manual', variant: 'neutral' };
+  const inferredAuto = testCaseLooksAutomated(tc);
+  if (inferredAuto) return { label: 'Automatizado (inferido)', variant: 'info' };
+  return { label: 'Manual (inferido)', variant: 'neutral' };
+}
+
+/** Tipo efetivo considerando inferência pelo texto quando `executionKind` está ausente. */
+export function resolveEffectiveExecutionKind(
+  tc: Pick<TestCase, 'executionKind' | 'action' | 'parameters'>
+): NonNullable<TestCase['executionKind']> {
+  if (tc.executionKind) return tc.executionKind;
+  return testCaseLooksAutomated(tc as TestCase) ? 'automated' : 'manual';
+}
+
+/** Próximo valor ao alternar tipo de execução (manual → automatizado → misto). */
+export function getNextExecutionKind(
+  tc: Pick<TestCase, 'executionKind' | 'action' | 'parameters'>
+): NonNullable<TestCase['executionKind']> {
+  const effective = resolveEffectiveExecutionKind(tc);
+  const idx = EXECUTION_KIND_CYCLE.indexOf(effective);
+  const nextIdx = (idx + 1) % EXECUTION_KIND_CYCLE.length;
+  return EXECUTION_KIND_CYCLE[nextIdx]!;
+}
+
 function isValidStatus(value: unknown): value is TestCase['status'] {
   return typeof value === 'string' && (VALID_STATUS as string[]).includes(value);
 }

@@ -40,7 +40,6 @@ import { TestStrategyCard } from './TestStrategyCard';
 import { ToolsSelector } from './ToolsSelector';
 import { TestReportModal } from './TestReportModal';
 import { testReportGenerateRecordBtnListClass } from './testReportNeuUi';
-import { CommentSection } from '../common/CommentSection';
 import { TaskLinksView } from './TaskLinksView';
 import { AttachmentManager } from '../common/AttachmentManager';
 import { ChecklistView } from '../common/ChecklistView';
@@ -155,7 +154,7 @@ import {
 import { JiraQueueMetaChips } from './JiraQueueMetaChips';
 import { JiraTaskSlaSummary } from './JiraTaskSlaSummary';
 import {
-  JiraFilasCommentsSection,
+  TaskSummaryCommentsSection,
   JiraFilasExtraFieldsGrid,
 } from './JiraFilasSummarySections';
 
@@ -196,7 +195,7 @@ const DescriptionRenderer: React.FC<{
 
 export type TaskWithChildren = JiraTask & { children: TaskWithChildren[] };
 
-type DetailSection = 'overview' | 'bdd' | 'tests' | 'planning' | 'collaboration';
+type DetailSection = 'overview' | 'bdd' | 'tests' | 'planning';
 type TestSubSection = 'strategy' | 'test-cases';
 
 const normalizeStatusName = (value: string) =>
@@ -737,10 +736,6 @@ export const JiraTaskItem: React.FC<{
         tabs.push({ id: 'planning', label: 'Planejamento', badge: planningBadge });
       }
 
-      if (onAddComment) {
-        tabs.push({ id: 'collaboration', label: 'Colaboração', badge: task.comments?.length || 0 });
-      }
-
       return tabs;
     }, [
       hideTestFeatures,
@@ -751,10 +746,8 @@ export const JiraTaskItem: React.FC<{
       task.attachments,
       task.checklist,
       task.estimatedHours,
-      task.comments,
       project,
       onUpdateProject,
-      onAddComment,
     ]);
 
     const prevActiveSectionRef = useRef<DetailSection>(activeSection);
@@ -931,7 +924,14 @@ export const JiraTaskItem: React.FC<{
           )}
         </div>
 
-        {hideTestFeatures ? <JiraFilasCommentsSection task={task} className="space-y-2" /> : null}
+        {(hideTestFeatures || onAddComment || (task.comments?.length ?? 0) > 0) && (
+          <TaskSummaryCommentsSection
+            task={task}
+            onAddComment={hideTestFeatures ? undefined : onAddComment}
+            onEditComment={hideTestFeatures ? undefined : onEditComment}
+            onDeleteComment={hideTestFeatures ? undefined : onDeleteComment}
+          />
+        )}
 
         {hideTestFeatures && task.jiraAttachments && task.jiraAttachments.length > 0 ? (
           <div className="space-y-2">
@@ -1625,28 +1625,6 @@ export const JiraTaskItem: React.FC<{
       );
     };
 
-    const renderCollaborationSection = () => {
-      if (!onAddComment) {
-        return (
-          <p className="text-sm text-base-content/70">
-            Comentários indisponíveis para esta tarefa.
-          </p>
-        );
-      }
-
-      return (
-        <div>
-          <h3 className="text-lg font-semibold text-base-content mb-3">Comentários</h3>
-          <CommentSection
-            comments={task.comments || []}
-            onAddComment={content => onAddComment(content)}
-            onEditComment={onEditComment}
-            onDeleteComment={onDeleteComment}
-          />
-        </div>
-      );
-    };
-
     const renderSectionContent = () => {
       switch (activeSection) {
         case 'overview':
@@ -1657,8 +1635,6 @@ export const JiraTaskItem: React.FC<{
           return renderTestsSection();
         case 'planning':
           return renderPlanningSection();
-        case 'collaboration':
-          return renderCollaborationSection();
         default:
           return null;
       }

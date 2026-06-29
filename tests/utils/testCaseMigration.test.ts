@@ -5,6 +5,9 @@ import {
   getTestCaseEnvironment,
   getTestCaseSuite,
   resolveExecutionKindFromRecord,
+  getExecutionKindBadgeDisplay,
+  getNextExecutionKind,
+  resolveEffectiveExecutionKind,
 } from '../../utils/testCaseMigration';
 import type { TestCase } from '../../types';
 
@@ -133,6 +136,45 @@ describe('testCaseLooksAutomated', () => {
     expect(testCaseLooksAutomated({ ...base(), action: 'clique manual', parameters: '—' })).toBe(
       false
     );
+  });
+});
+
+describe('execution kind cycle', () => {
+  const base = (): TestCase => ({
+    id: '1',
+    action: 'teste',
+    parameters: '—',
+    expectedResult: '',
+    observedResult: '',
+    status: 'Not Run',
+  });
+
+  it('resolveEffectiveExecutionKind usa inferência quando ausente', () => {
+    expect(resolveEffectiveExecutionKind({ ...base(), executionKind: 'manual' })).toBe('manual');
+    expect(
+      resolveEffectiveExecutionKind({
+        ...base(),
+        parameters: 'Executar com Selenium',
+      })
+    ).toBe('automated');
+  });
+
+  it('getNextExecutionKind alterna manual → automatizado → misto', () => {
+    expect(getNextExecutionKind({ ...base(), executionKind: 'manual' })).toBe('automated');
+    expect(getNextExecutionKind({ ...base(), executionKind: 'automated' })).toBe('mixed');
+    expect(getNextExecutionKind({ ...base(), executionKind: 'mixed' })).toBe('manual');
+  });
+
+  it('getExecutionKindBadgeDisplay rotula tipos explícitos e inferidos', () => {
+    expect(getExecutionKindBadgeDisplay({ ...base(), executionKind: 'manual' }).label).toBe(
+      'Manual'
+    );
+    expect(getExecutionKindBadgeDisplay({ ...base(), executionKind: 'automated' }).label).toBe(
+      'Automatizado'
+    );
+    expect(
+      getExecutionKindBadgeDisplay({ ...base(), parameters: 'Executar com Selenium' }).label
+    ).toBe('Automatizado (inferido)');
   });
 });
 

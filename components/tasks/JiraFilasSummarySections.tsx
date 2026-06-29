@@ -55,33 +55,49 @@ export const JiraFilasExtraFieldsGrid: React.FC<JiraFilasExtraFieldsGridProps> =
 
 JiraFilasExtraFieldsGrid.displayName = 'JiraFilasExtraFieldsGrid';
 
-export interface JiraFilasCommentsSectionProps {
+export interface TaskSummaryCommentsSectionProps {
   task: JiraTask;
   className?: string;
+  onAddComment?: (content: string) => void;
+  onEditComment?: (commentId: string, content: string) => void;
+  onDeleteComment?: (commentId: string) => void;
 }
 
 /**
- * Comentários do Jira no resumo das Filas — somente leitura (como Colaboração no projeto).
+ * Comentários no resumo da tarefa (entre Descrição e Anexos do Jira).
+ * Somente leitura nas Filas (Jira); editável no projeto quando callbacks são fornecidos.
  */
-export const JiraFilasCommentsSection: React.FC<JiraFilasCommentsSectionProps> = ({
+export const TaskSummaryCommentsSection: React.FC<TaskSummaryCommentsSectionProps> = ({
   task,
   className,
+  onAddComment,
+  onEditComment,
+  onDeleteComment,
 }) => {
   const comments = task.comments ?? [];
-  if (comments.length === 0) {
-    return (
-      <section className={cn('space-y-2', className)}>
-        <h3 className={leveTaskModalFieldLabelClass}>Comentários</h3>
-        <p className={cn(leveTaskModalMutedClass, 'italic')}>Sem comentários</p>
-      </section>
-    );
-  }
+  const readOnly = !onAddComment;
 
   return (
-    <section className={className}>
-      <CommentSection comments={comments} readOnly />
+    <section className={cn('space-y-2', className)}>
+      <h3 className={leveTaskModalFieldLabelClass}>Comentários</h3>
+      {comments.length === 0 && readOnly ? (
+        <p className={cn(leveTaskModalMutedClass, 'italic')}>Sem comentários</p>
+      ) : (
+        <div className={cn(taskDetailsModalSectionClass, 'p-3')}>
+          <CommentSection
+            comments={comments}
+            readOnly={readOnly}
+            onAddComment={onAddComment}
+            onEditComment={onEditComment}
+            onDeleteComment={onDeleteComment}
+          />
+        </div>
+      )}
     </section>
   );
 };
 
-JiraFilasCommentsSection.displayName = 'JiraFilasCommentsSection';
+TaskSummaryCommentsSection.displayName = 'TaskSummaryCommentsSection';
+
+/** @deprecated Use {@link TaskSummaryCommentsSection}. */
+export const JiraFilasCommentsSection = TaskSummaryCommentsSection;

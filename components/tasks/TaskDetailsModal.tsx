@@ -12,7 +12,6 @@ import { TestCasesSection } from './TestCasesSection';
 import { TestStrategyCard } from './TestStrategyCard';
 import { ToolsSelector } from './ToolsSelector';
 import { TestReportModal } from './TestReportModal';
-import { CommentSection } from '../common/CommentSection';
 import { AttachmentManager } from '../common/AttachmentManager';
 import { ChecklistView } from '../common/ChecklistView';
 import { EstimationInput } from '../common/EstimationInput';
@@ -30,7 +29,7 @@ import { fetchJiraAttachmentAsDataUrl } from '../../utils/jiraAttachmentFetch';
 import { TaskWithChildren } from './JiraTaskItem';
 import { JiraTaskSlaSummary } from './JiraTaskSlaSummary';
 import {
-  JiraFilasCommentsSection,
+  TaskSummaryCommentsSection,
   JiraFilasExtraFieldsGrid,
 } from './JiraFilasSummarySections';
 import { TaskLinksView } from './TaskLinksView';
@@ -97,7 +96,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 
-type DetailSection = 'overview' | 'bdd' | 'tests' | 'businessRules' | 'planning' | 'collaboration';
+type DetailSection = 'overview' | 'bdd' | 'tests' | 'businessRules' | 'planning';
 type TestSubSection = 'strategy' | 'test-cases';
 
 const CARD_TITLE_CLASS = cn(
@@ -301,10 +300,6 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
       tabs.push({ id: 'planning', label: 'Planejamento', badge: planningBadge });
     }
 
-    if (onAddComment) {
-      tabs.push({ id: 'collaboration', label: 'Colaboração', badge: task.comments?.length || 0 });
-    }
-
     return tabs;
   }, [
     hideTestFeatures,
@@ -315,10 +310,8 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     task.attachments,
     task.checklist,
     task.estimatedHours,
-    task.comments,
     project,
     onUpdateProject,
-    onAddComment,
     project?.tasks,
     task.linkedBusinessRuleIds,
     task.linkedBusinessRuleCategories,
@@ -519,7 +512,16 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           </div>
         </section>
 
-        {hideTestFeatures ? <JiraFilasCommentsSection task={task} className="space-y-2" /> : null}
+        {(hideTestFeatures ||
+          onAddComment ||
+          (task.comments?.length ?? 0) > 0) && (
+          <TaskSummaryCommentsSection
+            task={task}
+            onAddComment={hideTestFeatures ? undefined : onAddComment}
+            onEditComment={hideTestFeatures ? undefined : onEditComment}
+            onDeleteComment={hideTestFeatures ? undefined : onDeleteComment}
+          />
+        )}
 
         {(() => {
           const versions = getTaskVersions(task);
@@ -1058,28 +1060,6 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     );
   };
 
-  const renderCollaborationSection = () => {
-    if (!onAddComment) {
-      return (
-        <p className={leveTaskModalMutedClass}>Comentários indisponíveis para esta tarefa.</p>
-      );
-    }
-
-    return (
-      <div className="space-y-4">
-        <header className={cn(taskDetailsModalSectionClass, 'p-4')}>
-          <h2 className={leveTaskModalPageTitleClass}>Colaboração</h2>
-        </header>
-        <CommentSection
-          comments={task.comments || []}
-          onAddComment={content => onAddComment(content)}
-          onEditComment={onEditComment}
-          onDeleteComment={onDeleteComment}
-        />
-      </div>
-    );
-  };
-
   const renderSectionContent = () => {
     switch (activeSection) {
       case 'overview':
@@ -1092,8 +1072,6 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         return renderBusinessRulesSection();
       case 'planning':
         return renderPlanningSection();
-      case 'collaboration':
-        return renderCollaborationSection();
       default:
         return null;
     }

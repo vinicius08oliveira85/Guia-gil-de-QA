@@ -1,8 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import type { TestCase, TestCaseExecutionKind } from '../../types';
 import { Modal } from '../common/Modal';
 import { SafeMarkdown } from '../common/SafeMarkdown';
 import { cn } from '../../utils/cn';
+import {
+  getExecutionKindBadgeDisplay,
+  getNextExecutionKind,
+} from '../../utils/testCaseMigration';
 import { outlineActionBtn, primaryActionBtn, searchInputClass } from '../common/viewUi';
 import { AppSelect } from '../common/AppSelect';
 import {
@@ -20,6 +24,7 @@ import {
   taskDetailsModalTitleClass,
   taskDetailsModalTextareaClass,
 } from './taskDetailsNeuUi';
+import { TestCaseExecutionKindBadgeButton } from './TestCaseExecutionKindBadgeButton';
 
 interface TestCaseEditorModalProps {
   testCase: TestCase;
@@ -60,6 +65,28 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
     setEnvironment(testCase.environment ?? '');
     setSuite(testCase.suite ?? '');
   }, [testCase]);
+
+  const executionPreviewCase = useMemo(
+    (): Pick<TestCase, 'executionKind' | 'action' | 'parameters'> => ({
+      executionKind: executionKind || undefined,
+      action,
+      parameters,
+    }),
+    [executionKind, action, parameters]
+  );
+
+  const executionBadge = useMemo(
+    () =>
+      getExecutionKindBadgeDisplay({
+        ...testCase,
+        ...executionPreviewCase,
+      }),
+    [testCase, executionPreviewCase]
+  );
+
+  const handleCycleExecutionKind = useCallback(() => {
+    setExecutionKind(getNextExecutionKind(executionPreviewCase));
+  }, [executionPreviewCase]);
 
   const handleSubmit = () => {
     onSave({
@@ -179,19 +206,13 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
             Opcional — auditoria e filtros
           </p>
           <div>
-            <label className={labelClass}>Tipo de execução</label>
-            <AppSelect
-              value={executionKind}
-              onChange={raw =>
-                setExecutionKind((raw || '') as TestCaseExecutionKind | '')
-              }
-              className={taskDetailsModalNeuSelectTriggerClass}
-            >
-              <option value="manual">Manual (padrão)</option>
-              <option value="">Inferir pelo texto</option>
-              <option value="automated">Automatizado</option>
-              <option value="mixed">Misto</option>
-            </AppSelect>
+            <span className={labelClass}>Tipo de execução</span>
+            <TestCaseExecutionKindBadgeButton
+              label={executionBadge.label}
+              variant={executionBadge.variant}
+              onClick={handleCycleExecutionKind}
+              className="mt-1"
+            />
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>

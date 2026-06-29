@@ -10,10 +10,8 @@ import { cn } from '../../utils/cn';
 import {
   leveSettingsSectionIconWrapClass,
   leveTaskModalGhostBtnClass,
-  leveTaskModalInsetClass,
   leveTaskModalMutedClass,
   leveTaskModalMutedXsClass,
-  leveTaskModalProgressShellClass,
   leveTaskModalSectionAccentClass,
   leveTaskModalSectionClass,
   leveTaskModalStatPillActiveClass,
@@ -25,13 +23,12 @@ import {
   taskDetailsModalStatusTrackClass,
   taskDetailsModalTabClass,
 } from './taskDetailsNeuUi';
-
-const STATUS_LABEL: Record<TestCase['status'], string> = {
-  'Not Run': 'Não Executado',
-  Passed: 'Aprovado',
-  Failed: 'Reprovado',
-  Blocked: 'Bloqueado',
-};
+import {
+  TEST_CASE_STATUS_BADGE_TONE,
+  TEST_CASE_STATUS_DOT_COLOR,
+  TEST_CASE_STATUS_LABEL,
+  TEST_CASE_TOTAL_BADGE_TONE,
+} from './testCaseStatusVisuals';
 
 function getTestCaseStats(cases: TestCase[]) {
   const total = cases.length;
@@ -39,8 +36,7 @@ function getTestCaseStats(cases: TestCase[]) {
   const passed = cases.filter(c => c.status === 'Passed').length;
   const failed = cases.filter(c => c.status === 'Failed').length;
   const blocked = cases.filter(c => c.status === 'Blocked').length;
-  const executed = passed + failed + blocked;
-  return { total, notRun, passed, failed, blocked, executed };
+  return { total, notRun, passed, failed, blocked };
 }
 
 export interface TestCasesSectionProps {
@@ -101,6 +97,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
         label: 'Total',
         value: stats.total,
         status: undefined as TestCase['status'] | undefined,
+        tone: TEST_CASE_TOTAL_BADGE_TONE,
         onClick: () => setStatusFilter([]),
         isActive: statusFilter.length === 0,
       },
@@ -108,6 +105,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
         label: 'Não exec.',
         value: stats.notRun,
         status: 'Not Run' as const,
+        tone: TEST_CASE_STATUS_BADGE_TONE['Not Run'],
         onClick: () => toggleStatusFilter('Not Run'),
         isActive: statusFilter.includes('Not Run'),
       },
@@ -115,6 +113,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
         label: 'Aprovados',
         value: stats.passed,
         status: 'Passed' as const,
+        tone: TEST_CASE_STATUS_BADGE_TONE.Passed,
         onClick: () => toggleStatusFilter('Passed'),
         isActive: statusFilter.includes('Passed'),
       },
@@ -122,6 +121,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
         label: 'Reprovados',
         value: stats.failed,
         status: 'Failed' as const,
+        tone: TEST_CASE_STATUS_BADGE_TONE.Failed,
         onClick: () => toggleStatusFilter('Failed'),
         isActive: statusFilter.includes('Failed'),
       },
@@ -129,6 +129,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
         label: 'Bloqueados',
         value: stats.blocked,
         status: 'Blocked' as const,
+        tone: TEST_CASE_STATUS_BADGE_TONE.Blocked,
         onClick: () => toggleStatusFilter('Blocked'),
         isActive: statusFilter.includes('Blocked'),
       },
@@ -149,14 +150,6 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
       return next;
     });
   }, []);
-
-  const toggleSelectAll = useCallback(() => {
-    if (selectedIds.size === filteredCases.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(filteredCases.map(tc => tc.id)));
-    }
-  }, [filteredCases, selectedIds.size]);
 
   if (!task.id) return null;
 
@@ -213,30 +206,17 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                   {!item.isActive && (
                     <SlidersHorizontal className="h-3 w-3 shrink-0 opacity-40" aria-hidden />
                   )}
-                  <span>
-                    {item.label}: {item.value}
+                  <span>{item.label}</span>
+                  <span
+                    className={cn(
+                      'ml-1 rounded-full px-1.5 text-[11px] font-bold tabular-nums',
+                      item.tone
+                    )}
+                  >
+                    {item.value}
                   </span>
                 </button>
               ))}
-            </div>
-
-            {/* Barra de progresso */}
-            <div className={cn(leveTaskModalInsetClass, 'flex flex-col gap-1.5')}>
-              <div className={cn('flex items-center justify-between text-xs', leveTaskModalMutedXsClass)}>
-                <span>
-                  {stats.executed} de {stats.total} executados
-                  {stats.total > 0 && ` (${Math.round((stats.executed / stats.total) * 100)}%)`}
-                </span>
-                <span>{stats.passed} aprovados</span>
-              </div>
-              <div className={leveTaskModalProgressShellClass}>
-                <progress
-                  className="progress w-full bg-transparent"
-                  value={stats.total > 0 ? stats.executed : 0}
-                  max={stats.total || 1}
-                  aria-label="Progresso de execução dos casos de teste"
-                />
-              </div>
             </div>
 
             {/* Chips de filtros ativos (status via KPIs) */}
@@ -245,14 +225,18 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                 {statusFilter.map(s => (
                   <span
                     key={s}
-                    className={cn(leveTaskModalStatPillActiveClass, 'gap-1 pr-1 py-1.5')}
+                    className={cn(leveTaskModalStatPillActiveClass, 'gap-1.5 pr-1 py-1.5')}
                   >
-                    {STATUS_LABEL[s]}
+                    <span
+                      className={cn('h-2 w-2 shrink-0 rounded-full', TEST_CASE_STATUS_DOT_COLOR[s])}
+                      aria-hidden
+                    />
+                    {TEST_CASE_STATUS_LABEL[s]}
                     <button
                       type="button"
                       onClick={() => toggleStatusFilter(s)}
                       className="btn btn-ghost btn-xs btn-circle p-0 min-h-0 h-4 w-4"
-                      aria-label={`Remover filtro ${STATUS_LABEL[s]}`}
+                      aria-label={`Remover filtro ${TEST_CASE_STATUS_LABEL[s]}`}
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -350,21 +334,6 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
               </button>
             </div>
           )}
-
-          <div className={cn(leveTaskModalInsetClass, 'flex items-center gap-2 py-2')}>
-            <label className="label cursor-pointer gap-2 py-0">
-              <input
-                type="checkbox"
-                checked={
-                  filteredCases.length > 0 && selectedIds.size === filteredCases.length
-                }
-                onChange={toggleSelectAll}
-                className="checkbox checkbox-sm checkbox-highlight"
-                aria-label="Selecionar todos os casos visíveis"
-              />
-              <span className={leveTaskModalMutedXsClass}>Selecionar todos</span>
-            </label>
-          </div>
 
           {filteredCases.map(tc => (
             <TestCaseItem

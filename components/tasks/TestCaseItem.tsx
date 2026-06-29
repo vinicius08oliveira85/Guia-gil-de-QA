@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { TestCase, TestCaseExecutionKind } from '../../types';
+import type { TestCase } from '../../types';
 import {
   getTestCaseEnvironment,
   getTestCaseSuite,
+  getExecutionKindBadgeDisplay,
+  getNextExecutionKind,
   testCaseLooksAutomated,
 } from '../../utils/testCaseMigration';
 import {
@@ -14,11 +16,9 @@ import {
   type RoteiroFieldView,
 } from '../../utils/testCaseActionDisplay';
 import { ChevronDownIcon, EditIcon, ListIcon, TrashIcon } from '../common/Icons';
-import { Badge } from '../common/Badge';
 import { Copy, MoreVertical } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { appMenuPanelClass } from '../common/viewUi';
-import { AppSelect } from '../common/AppSelect';
 import {
   leveTaskModalMutedClass,
   leveTaskModalMutedXsClass,
@@ -26,27 +26,24 @@ import {
 } from '../common/projectCardUi';
 import {
   taskDetailsModalActionToolbarClass,
-  taskDetailsModalExecBadgeClass,
   taskDetailsModalRoteiroBlockClass,
   taskDetailsModalRoteiroHeaderClass,
   taskDetailsModalRoteiroInnerClass,
   taskDetailsModalRoteiroShellClass,
-  taskDetailsModalNeuSelectTriggerClass,
-  taskDetailsModalStatusBtnClass,
   taskDetailsModalTestCaseCardClass,
   taskDetailsModalTextareaClass,
   taskDetailsModalToolbarIconClass,
 } from './taskDetailsNeuUi';
+import {
+  TestCaseStatusControls,
+  TestCaseStatusGlyph,
+  TestCaseStatusIndicator,
+} from './TestCaseStatusControls';
+import { TestCaseExecutionKindBadgeButton } from './TestCaseExecutionKindBadgeButton';
+import { TEST_CASE_STATUS_BORDER } from './testCaseStatusVisuals';
 
 /** Evita re-render global do projeto a cada tecla no resultado obtido. */
 const OBSERVED_RESULT_PERSIST_MS = 500;
-
-const STATUS_EMOJI: Record<TestCase['status'], string> = {
-  'Not Run': '○',
-  Passed: '✅',
-  Failed: '❌',
-  Blocked: '⚠️',
-};
 
 function RoteiroStructuredBody({ view }: { view: RoteiroFieldView }) {
   if (view.kind === 'plain') {
@@ -118,13 +115,6 @@ export const TestCaseItem: React.FC<{
   selected,
   onToggleSelect,
 }) => {
-  const statusLabel: Record<TestCase['status'], string> = {
-    'Not Run': 'Não Executado',
-    Passed: 'Aprovado',
-    Failed: 'Reprovado',
-    Blocked: 'Bloqueado',
-  };
-
   const [detailsOpen, setDetailsOpen] = useState(() => testCase.status === 'Failed');
 
   const [localObservedResult, setLocalObservedResult] = useState(
@@ -202,15 +192,15 @@ export const TestCaseItem: React.FC<{
     [testCase.expectedResult]
   );
 
-  const executionBadge = useMemo(() => {
-    const k = testCase.executionKind;
-    if (k === 'automated') return { label: 'Automatizado', variant: 'info' as const };
-    if (k === 'mixed') return { label: 'Misto', variant: 'warning' as const };
-    if (k === 'manual') return { label: 'Manual', variant: 'neutral' as const };
-    const inferredAuto = testCaseLooksAutomated(testCase);
-    if (inferredAuto) return { label: 'Automatizado (inferido)', variant: 'info' as const };
-    return { label: 'Manual (inferido)', variant: 'neutral' as const };
-  }, [testCase]);
+  const executionBadge = useMemo(
+    () => getExecutionKindBadgeDisplay(testCase),
+    [testCase]
+  );
+
+  const handleCycleExecutionKind = useCallback(() => {
+    if (!onExecutionKindChange) return;
+    onExecutionKindChange(getNextExecutionKind(testCase));
+  }, [onExecutionKindChange, testCase]);
 
   const metaChips = useMemo(() => {
     const env = getTestCaseEnvironment(testCase);
@@ -247,6 +237,8 @@ export const TestCaseItem: React.FC<{
     <div
       className={cn(
         taskDetailsModalTestCaseCardClass,
+        'border-l-4',
+        TEST_CASE_STATUS_BORDER[testCase.status],
         'hover:border-[color-mix(in_srgb,var(--leve-header-accent)_30%,transparent)]',
         selected &&
           'ring-2 ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] ring-offset-2 ring-offset-[var(--leve-header-bg)]'
@@ -265,31 +257,23 @@ export const TestCaseItem: React.FC<{
           </label>
         )}
 
-        <span
-          className="flex h-8 w-8 shrink-0 items-center justify-center text-lg leading-none"
-          title={statusLabel[testCase.status]}
-          aria-hidden
-        >
-          <span className="sr-only">{statusLabel[testCase.status]}</span>
-          {STATUS_EMOJI[testCase.status]}
-        </span>
+        <TestCaseStatusIndicator status={testCase.status} />
 
-        <p
-          className="min-w-0 flex-1 line-clamp-2 break-words font-sans text-sm font-semibold leading-snug text-[var(--leve-header-text)] sm:text-base"
-          title={listRowTitleAttr || undefined}
-        >
-          <span className="sr-only">Título do roteiro: </span>
-          {listTitle}
-        </p>
-
-        {metaLine ? (
+        <div className="flex min-w-0 flex-1 flex-col">
           <p
-            className="font-body text-muted hidden max-w-[min(12rem,28vw)] shrink-0 truncate text-xs md:block"
-            title={metaLine}
+            className="min-w-0 line-clamp-2 break-words font-sans text-sm font-semibold leading-snug text-[var(--leve-header-text)] sm:text-base"
+            title={listRowTitleAttr || undefined}
           >
-            {metaLine}
+            <span className="sr-only">Título do roteiro: </span>
+            {listTitle}
           </p>
-        ) : null}
+
+          {metaLine ? (
+            <p className="font-body text-muted mt-0.5 truncate text-xs" title={metaLine}>
+              {metaLine}
+            </p>
+          ) : null}
+        </div>
 
         {/* Grupo de ações: Editar, Duplicar, Excluir — integrados numa toolbar única */}
         <div
@@ -335,55 +319,7 @@ export const TestCaseItem: React.FC<{
           )}
         </div>
 
-        {/* Grupo de status: Aprovar, Reprovar, Bloquear — integrados numa toolbar única */}
-        <div
-          className={cn(taskDetailsModalActionToolbarClass, 'hidden md:inline-flex')}
-          role="group"
-          aria-label="Marcar resultado da execução"
-        >
-          <button
-            type="button"
-            onClick={() => onStatusChange('Passed')}
-            title="Aprovar"
-            aria-label="Marcar como Aprovado"
-            className={cn(
-              taskDetailsModalStatusBtnClass(testCase.status === 'Passed'),
-              testCase.status === 'Passed' ? 'text-success' : 'text-success/70'
-            )}
-          >
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 6L9 17l-5-5" />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={() => onStatusChange('Failed')}
-            title="Reprovar"
-            aria-label="Marcar como Reprovado"
-            className={cn(
-              taskDetailsModalStatusBtnClass(testCase.status === 'Failed'),
-              testCase.status === 'Failed' ? 'text-error' : 'text-error/70'
-            )}
-          >
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={() => onStatusChange('Blocked')}
-            title="Bloquear"
-            aria-label="Marcar como Bloqueado"
-            className={cn(
-              taskDetailsModalStatusBtnClass(testCase.status === 'Blocked'),
-              testCase.status === 'Blocked' ? 'text-warning' : 'text-warning/70'
-            )}
-          >
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-            </svg>
-          </button>
-        </div>
+        <TestCaseStatusControls status={testCase.status} onStatusChange={onStatusChange} />
 
         <div className="dropdown dropdown-end dropdown-top shrink-0 md:hidden">
           <div
@@ -428,7 +364,8 @@ export const TestCaseItem: React.FC<{
                 className={cn('font-body', testCase.status === 'Passed' && 'active')}
                 onClick={() => onStatusChange('Passed')}
               >
-                ✅ Aprovar
+                <TestCaseStatusGlyph status="Passed" />
+                Aprovar
               </button>
             </li>
             <li>
@@ -437,7 +374,8 @@ export const TestCaseItem: React.FC<{
                 className={cn('font-body', testCase.status === 'Failed' && 'active')}
                 onClick={() => onStatusChange('Failed')}
               >
-                ❌ Reprovar
+                <TestCaseStatusGlyph status="Failed" />
+                Reprovar
               </button>
             </li>
             <li>
@@ -446,56 +384,22 @@ export const TestCaseItem: React.FC<{
                 className={cn('font-body', testCase.status === 'Blocked' && 'active')}
                 onClick={() => onStatusChange('Blocked')}
               >
-                ⚠️ Bloquear
+                <TestCaseStatusGlyph status="Blocked" />
+                Bloquear
               </button>
             </li>
           </ul>
         </div>
       </div>
 
-      <div className="mt-1.5 flex min-w-0 flex-wrap items-center gap-2 px-0.5">
-        <Badge
-          variant="neu"
-          size="sm"
-          appearance="pill"
-          className={taskDetailsModalExecBadgeClass}
-        >
-          <span className="normal-case tracking-normal">{executionBadge.label}</span>
-        </Badge>
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5 sm:max-w-[16rem] sm:flex-initial">
-          <label
-            htmlFor={`tc-exec-kind-${testCase.id}`}
-            className="task-card-field-label"
-          >
-            Tipo de execução
-          </label>
-          <AppSelect
-            id={`tc-exec-kind-${testCase.id}`}
-            value={testCase.executionKind ?? ''}
-            onChange={raw => {
-              if (!onExecutionKindChange) return;
-              if (raw === '') onExecutionKindChange(undefined);
-              else onExecutionKindChange(raw as TestCaseExecutionKind);
-            }}
-            disabled={!onExecutionKindChange}
-            title={
-              onExecutionKindChange
-                ? 'Manual, automatizado, misto ou inferir pelo texto do roteiro (mesma regra do editor).'
-                : 'Edição do tipo de execução indisponível neste contexto.'
-            }
-            aria-label="Tipo de execução do caso de teste"
-            className={cn(
-              taskDetailsModalNeuSelectTriggerClass,
-              'text-xs',
-              !onExecutionKindChange && 'cursor-not-allowed opacity-70'
-            )}
-          >
-            <option value="manual">Manual (padrão)</option>
-            <option value="">Inferir pelo texto</option>
-            <option value="automated">Automatizado</option>
-            <option value="mixed">Misto</option>
-          </AppSelect>
-        </div>
+      <div className="mt-1.5 flex min-w-0 flex-col gap-1 px-0.5">
+        <span className="task-card-field-label">Tipo de execução</span>
+        <TestCaseExecutionKindBadgeButton
+          label={executionBadge.label}
+          variant={executionBadge.variant}
+          onClick={handleCycleExecutionKind}
+          disabled={!onExecutionKindChange}
+        />
       </div>
 
       <div className={taskDetailsModalRoteiroShellClass}>

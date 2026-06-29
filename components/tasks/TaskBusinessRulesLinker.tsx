@@ -3,10 +3,10 @@ import { JiraTask, Project, BusinessRule } from '../../types';
 import { useProjectsStore } from '../../store/projectsStore';
 import { Button } from '../common/Button';
 import { filterBusinessRulesByQuery } from '../../utils/businessRulesFilter';
-import { Search, ChevronDown } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { BusinessRuleLinkCard } from './BusinessRuleLinkCard';
 import {
-  leveTaskModalCategoryBadgeClass,
   leveTaskModalFieldLabelClass,
   leveTaskModalInsetClass,
   leveTaskModalMutedClass,
@@ -17,6 +17,21 @@ import {
   leveTaskModalStrongClass,
   leveViewSearchInputClass,
 } from '../common/projectCardUi';
+
+/** Chip compacto para contadores de seleção (categorias / regras / total). */
+const linkerCountChipClass = cn(
+  'leve-neu-pill inline-flex items-center gap-1 rounded-full px-2.5 py-0.5',
+  'font-sans text-[11px] font-semibold text-[var(--leve-header-text)]'
+);
+
+/** Botão de ação textual (Marcar todas / Limpar). */
+const linkerInlineActionClass = cn(
+  'rounded-full px-2 py-0.5 font-sans text-[11px] font-semibold',
+  'text-[var(--leve-header-accent)] transition-colors',
+  'hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_10%,transparent)]',
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)]',
+  'disabled:cursor-not-allowed disabled:opacity-40'
+);
 
 const CARD_TITLE_CLASS = leveTaskModalFieldLabelClass;
 
@@ -56,6 +71,41 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
     const s = new Set(projectRules.map(r => (r.category ?? '').trim()).filter(Boolean));
     return [...s].sort((a, b) => a.localeCompare(b, 'pt-BR'));
   }, [projectRules]);
+
+  const categoryRuleCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const rule of projectRules) {
+      const key = (rule.category ?? '').trim();
+      if (!key) continue;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    return counts;
+  }, [projectRules]);
+
+  const selectedRuleIdSet = useMemo(
+    () => new Set(task.linkedBusinessRuleIds ?? []),
+    [task.linkedBusinessRuleIds]
+  );
+
+  /** Ids cobertos por uma categoria vinculada (entram no prompt automaticamente). */
+  const idsCoveredByCategory = useMemo(() => {
+    if (selectedCategorySet.size === 0) return new Set<string>();
+    const covered = new Set<string>();
+    for (const rule of projectRules) {
+      if (selectedCategorySet.has((rule.category ?? '').trim())) covered.add(rule.id);
+    }
+    return covered;
+  }, [projectRules, selectedCategorySet]);
+
+  /** Total de regras efetivamente enviadas à IA (união categoria + regra). */
+  const effectiveRuleCount = useMemo(() => {
+    const union = new Set(idsCoveredByCategory);
+    selectedRuleIdSet.forEach(id => union.add(id));
+    return union.size;
+  }, [idsCoveredByCategory, selectedRuleIdSet]);
+
+  const allCategoriesSelected =
+    uniqueCategories.length > 0 && uniqueCategories.every(c => selectedCategorySet.has(c));
 
   const filteredRules = useMemo(
     () => filterBusinessRulesByQuery(projectRules, search),
@@ -120,6 +170,35 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
     [onUpdateProject, project.id, task.id]
   );
 
+  const setLinkedCategories = useCallback(
+    (categories: string[]) => {
+      const latest = useProjectsStore.getState().projects.find(p => p.id === project.id);
+      if (!latest) return;
+      onUpdateProject({
+        ...latest,
+        tasks: latest.tasks.map(t =>
+          t.id === task.id ? { ...t, linkedBusinessRuleCategories: categories } : t
+        ),
+      });
+    },
+    [onUpdateProject, project.id, task.id]
+  );
+
+  const handleToggleAllCategories = useCallback(() => {
+    setLinkedCategories(allCategoriesSelected ? [] : [...uniqueCategories]);
+  }, [allCategoriesSelected, setLinkedCategories, uniqueCategories]);
+
+  const handleClearLinkedRules = useCallback(() => {
+    const latest = useProjectsStore.getState().projects.find(p => p.id === project.id);
+    if (!latest) return;
+    onUpdateProject({
+      ...latest,
+      tasks: latest.tasks.map(t =>
+        t.id === task.id ? { ...t, linkedBusinessRuleIds: [] } : t
+      ),
+    });
+  }, [onUpdateProject, project.id, task.id]);
+
   return (
     <div className="space-y-3">
       <section
@@ -157,14 +236,48 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
               usa só título e descrição da tarefa.
             </p>
 
+            <div
+              className="flex flex-wrap items-center gap-1.5"
+              aria-label="Resumo da seleção de regras"
+            >
+              <span className={linkerCountChipClass}>
+                {selectedCategorySet.size} categoria{selectedCategorySet.size === 1 ? '' : 's'}
+              </span>
+              <span className={linkerCountChipClass}>
+                {selectedRuleIdSet.size} regra{selectedRuleIdSet.size === 1 ? '' : 's'}
+              </span>
+              <span
+                className={cn(
+                  linkerCountChipClass,
+                  effectiveRuleCount > 0 &&
+                    'text-[var(--leve-header-accent)] ring-1 ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)]'
+                )}
+                title="Total de regras enviadas à IA (união de categorias e regras, sem duplicar)"
+              >
+                {effectiveRuleCount} no prompt
+              </span>
+            </div>
+
             <div className={leveTaskModalInsetClass}>
-              <h4 className={cn('text-sm font-semibold', leveTaskModalStrongClass)}>Vincular por categoria</h4>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h4 className={cn('text-sm font-semibold', leveTaskModalStrongClass)}>
+                  Vincular por categoria
+                </h4>
+                <button
+                  type="button"
+                  className={linkerInlineActionClass}
+                  onClick={handleToggleAllCategories}
+                  disabled={uniqueCategories.length === 0}
+                >
+                  {allCategoriesSelected ? 'Limpar' : 'Marcar todas'}
+                </button>
+              </div>
               <p className={leveTaskModalMutedXsClass}>
                 Marque categorias para incluir automaticamente todas as regras do projeto nessa
                 classificação.
               </p>
               <div
-                className="flex flex-wrap gap-2"
+                className="mt-2 flex flex-wrap gap-2"
                 role="group"
                 aria-label="Categorias de regras de negócio"
               >
@@ -186,6 +299,16 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
                         aria-label={`${checked ? 'Desmarcar' : 'Marcar'} categoria: ${cat}`}
                       />
                       <span>{cat}</span>
+                      <span
+                        className={cn(
+                          'rounded-full px-1.5 text-[10px] font-bold tabular-nums',
+                          checked
+                            ? 'bg-[color-mix(in_srgb,var(--leve-header-accent)_22%,transparent)]'
+                            : 'bg-[color-mix(in_srgb,var(--leve-neu-dark)_14%,transparent)] text-[var(--leve-header-text-muted)]'
+                        )}
+                      >
+                        {categoryRuleCounts.get(cat) ?? 0}
+                      </span>
                     </label>
                   );
                 })}
@@ -193,7 +316,19 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
             </div>
 
             <div className={cn(leveTaskModalInsetClass, 'space-y-3')}>
-              <h4 className={cn('text-sm font-semibold', leveTaskModalStrongClass)}>Vincular por regra</h4>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h4 className={cn('text-sm font-semibold', leveTaskModalStrongClass)}>
+                  Vincular por regra
+                </h4>
+                <button
+                  type="button"
+                  className={linkerInlineActionClass}
+                  onClick={handleClearLinkedRules}
+                  disabled={selectedRuleIdSet.size === 0}
+                >
+                  Limpar regras
+                </button>
+              </div>
               <p className={leveTaskModalMutedXsClass}>
                 Escolha regras individuais. Clique no título de cada cartão para expandir a
                 descrição.
@@ -212,6 +347,16 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
                     className={cn(leveViewSearchInputClass, 'min-h-[44px] w-full pl-10')}
                     aria-label="Filtrar lista de regras de negócio"
                   />
+                  {search && (
+                    <button
+                      type="button"
+                      onClick={() => setSearch('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--leve-header-text-muted)] transition-colors hover:text-[var(--leve-header-accent)]"
+                      aria-label="Limpar filtro de regras"
+                    >
+                      <X className="h-4 w-4" aria-hidden />
+                    </button>
+                  )}
                 </div>
               )}
               {linkedHiddenByFilter.length > 0 && (
@@ -226,47 +371,14 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
                   <ul className="max-h-48 space-y-2 overflow-y-auto pr-1" role="list">
                     {linkedHiddenByFilter.map(rule => (
                       <li key={`br-hidden-${rule.id}`}>
-                        <div className={cn(leveTaskModalSectionClass, 'flex overflow-hidden')}>
-                          <label
-                            className="flex shrink-0 cursor-pointer items-start p-3"
-                            htmlFor={`br-cb-hidden-${safeDomId}-${rule.id}`}
-                          >
-                            <input
-                              id={`br-cb-hidden-${safeDomId}-${rule.id}`}
-                              type="checkbox"
-                              className="checkbox checkbox-highlight mt-0.5 shrink-0"
-                              checked
-                              onChange={e => handleToggle(rule.id, e.target.checked)}
-                              aria-label={`Desvincular regra: ${rule.title}`}
-                            />
-                          </label>
-                          <details className="group min-w-0 flex-1 border-l border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]">
-                            <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-2 py-3 pr-3 text-left text-sm font-medium text-[var(--leve-header-text)] transition-[background-color,box-shadow] hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_6%,var(--leve-neu-bg))] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] [&::-webkit-details-marker]:hidden">
-                              <span className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-                                <span>{rule.title}</span>
-                                <span className={leveTaskModalCategoryBadgeClass}>
-                                  {rule.category}
-                                </span>
-                              </span>
-                              <ChevronDown
-                                className="h-5 w-5 shrink-0 text-[var(--leve-header-text-muted)] transition-transform group-open:rotate-180"
-                                aria-hidden
-                              />
-                            </summary>
-                            <div
-                              className={cn(
-                                'border-t border-[var(--leve-header-border)] pb-3 pr-3 pt-2 text-sm whitespace-pre-wrap',
-                                leveTaskModalMutedClass
-                              )}
-                            >
-                              {rule.description.trim() ? (
-                                rule.description
-                              ) : (
-                                <span className={cn('italic', leveTaskModalMutedXsClass)}>Sem descrição</span>
-                              )}
-                            </div>
-                          </details>
-                        </div>
+                        <BusinessRuleLinkCard
+                          rule={rule}
+                          checked
+                          onToggle={checked => handleToggle(rule.id, checked)}
+                          domIdPrefix={safeDomId}
+                          variant="hidden"
+                          coveredByCategory={idsCoveredByCategory.has(rule.id)}
+                        />
                       </li>
                     ))}
                   </ul>
@@ -283,55 +395,16 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
                   aria-label="Lista de regras de negócio do projeto"
                 >
                   {filteredRules.map(rule => {
-                    const checked = (task.linkedBusinessRuleIds ?? []).includes(rule.id);
+                    const checked = selectedRuleIdSet.has(rule.id);
                     return (
                       <li key={rule.id}>
-                        <div
-                          className={cn(
-                            leveTaskModalSectionClass,
-                            'flex overflow-hidden hover:border-[color-mix(in_srgb,var(--leve-header-accent)_30%,transparent)]'
-                          )}
-                        >
-                          <label
-                            className="flex shrink-0 cursor-pointer items-start p-3"
-                            htmlFor={`br-cb-${safeDomId}-${rule.id}`}
-                          >
-                            <input
-                              id={`br-cb-${safeDomId}-${rule.id}`}
-                              type="checkbox"
-                              className="checkbox checkbox-highlight mt-0.5 shrink-0"
-                              checked={checked}
-                              onChange={e => handleToggle(rule.id, e.target.checked)}
-                              aria-label={`${checked ? 'Desmarcar' : 'Marcar'} vínculo da regra: ${rule.title}`}
-                            />
-                          </label>
-                          <details className="group min-w-0 flex-1 border-l border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]">
-                            <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-2 py-3 pr-3 text-left text-sm font-medium text-[var(--leve-header-text)] transition-[background-color,box-shadow] hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_6%,var(--leve-neu-bg))] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] [&::-webkit-details-marker]:hidden">
-                              <span className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-                                <span>{rule.title}</span>
-                                <span className={leveTaskModalCategoryBadgeClass}>
-                                  {rule.category}
-                                </span>
-                              </span>
-                              <ChevronDown
-                                className="h-5 w-5 shrink-0 text-[var(--leve-header-text-muted)] transition-transform group-open:rotate-180"
-                                aria-hidden
-                              />
-                            </summary>
-                            <div
-                              className={cn(
-                                'border-t border-[var(--leve-header-border)] pb-3 pr-3 pt-2 text-sm whitespace-pre-wrap',
-                                leveTaskModalMutedClass
-                              )}
-                            >
-                              {rule.description.trim() ? (
-                                rule.description
-                              ) : (
-                                <span className={cn('italic', leveTaskModalMutedXsClass)}>Sem descrição</span>
-                              )}
-                            </div>
-                          </details>
-                        </div>
+                        <BusinessRuleLinkCard
+                          rule={rule}
+                          checked={checked}
+                          onToggle={value => handleToggle(rule.id, value)}
+                          domIdPrefix={safeDomId}
+                          coveredByCategory={!checked && idsCoveredByCategory.has(rule.id)}
+                        />
                       </li>
                     );
                   })}
