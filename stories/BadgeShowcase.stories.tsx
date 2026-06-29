@@ -150,12 +150,133 @@ function ShowcaseCard({ children, className }: { children: React.ReactNode; clas
   );
 }
 
-/** Mapeia variante do showcase para variante do Badge do projeto (outline -> default) */
+/** Classes CSS por variante — estilo Soft / Pastel. */
+const softVariantClasses: Record<TestType['variant'], string> = {
+  error:
+    'border-red-200 bg-red-50 text-red-700 dark:bg-red-950/40 dark:border-red-800 dark:text-red-300',
+  warning:
+    'border-amber-200 bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-300',
+  info: 'border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-300',
+  success:
+    'border-green-200 bg-green-50 text-green-700 dark:bg-green-950/40 dark:border-green-800 dark:text-green-300',
+  outline: 'border-base-300 bg-base-200/60 text-base-content',
+};
+
+/** Classes CSS por variante — estilo Outline colorido. */
+const outlineVariantClasses: Record<TestType['variant'], string> = {
+  error: 'border-red-500 text-red-600 dark:text-red-400',
+  warning: 'border-amber-500 text-amber-700 dark:text-amber-400',
+  info: 'border-blue-500 text-blue-600 dark:text-blue-400',
+  success: 'border-green-500 text-green-600 dark:text-green-400',
+  outline: 'border-base-300 text-base-content',
+};
+
 function badgeVariant(
   v: TestType['variant']
 ): 'default' | 'success' | 'warning' | 'error' | 'info' {
   if (v === 'outline') return 'default';
   return v;
+}
+
+interface CategorySectionProps {
+  category: TestCategory;
+  softVariantClasses: Record<string, string>;
+  outlineVariantClasses: Record<string, string>;
+}
+
+function CategorySection({
+  category,
+  softVariantClasses,
+  outlineVariantClasses,
+}: CategorySectionProps) {
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1">
+        <SectionTitle>{category.title}</SectionTitle>
+        <SectionDescription>{category.description}</SectionDescription>
+      </div>
+      <ShowcaseCard>
+        <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-2">
+            <p className="text-xs font-medium text-base-content/70 uppercase tracking-wider">
+              Pill + Icone
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              {category.tests.map((t, i) => {
+                const Icon = t.icon;
+                return (
+                  <Badge
+                    key={`solid-${i}`}
+                    variant={badgeVariant(t.variant)}
+                    appearance="pill"
+                    className="inline-flex items-center gap-1.5"
+                  >
+                    <Icon className="size-3" />
+                    {t.label}
+                  </Badge>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <p className="text-xs font-medium text-base-content/70 uppercase tracking-wider">
+              Pill (texto)
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              {category.tests.map((t, i) => (
+                <Badge key={`text-${i}`} variant={badgeVariant(t.variant)} appearance="pill">
+                  {t.label}
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <p className="text-xs font-medium text-base-content/70 uppercase tracking-wider">
+              Soft / Pastel
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              {category.tests.map((t, i) => {
+                const Icon = t.icon;
+                return (
+                  <Badge
+                    key={`soft-${i}`}
+                    variant="default"
+                    className={`inline-flex items-center gap-1.5 rounded-full ${softVariantClasses[t.variant]}`}
+                  >
+                    <Icon className="size-3" />
+                    {t.label}
+                  </Badge>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <p className="text-xs font-medium text-base-content/70 uppercase tracking-wider">
+              Outline colorido
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              {category.tests.map((t, i) => {
+                const Icon = t.icon;
+                return (
+                  <Badge
+                    key={`outline-${i}`}
+                    variant="default"
+                    className={`inline-flex items-center gap-1.5 rounded-full border bg-transparent ${outlineVariantClasses[t.variant]}`}
+                  >
+                    <Icon className="size-3" />
+                    {t.label}
+                  </Badge>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </ShowcaseCard>
+    </section>
+  );
 }
 
 export function BadgeShowcase() {
@@ -254,113 +375,12 @@ export function BadgeShowcase() {
 
       {/* Por Categoria */}
       {testCategories.map(cat => (
-        <section key={cat.title} className="flex flex-col gap-3">
-          <div className="flex flex-col gap-1">
-            <SectionTitle>{cat.title}</SectionTitle>
-            <SectionDescription>{cat.description}</SectionDescription>
-          </div>
-          <ShowcaseCard>
-            <div className="flex flex-col gap-5">
-              {/* Solid com icone (pill) */}
-              <div className="flex flex-col gap-2">
-                <p className="text-xs font-medium text-base-content/70 uppercase tracking-wider">
-                  Pill + Icone
-                </p>
-                <div className="flex flex-wrap items-center gap-2">
-                  {cat.tests.map((t, i) => {
-                    const Icon = t.icon;
-                    return (
-                      <Badge
-                        key={`solid-${i}`}
-                        variant={badgeVariant(t.variant)}
-                        appearance="pill"
-                        className="inline-flex items-center gap-1.5"
-                      >
-                        <Icon className="size-3" />
-                        {t.label}
-                      </Badge>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Solid sem icone */}
-              <div className="flex flex-col gap-2">
-                <p className="text-xs font-medium text-base-content/70 uppercase tracking-wider">
-                  Pill (texto)
-                </p>
-                <div className="flex flex-wrap items-center gap-2">
-                  {cat.tests.map((t, i) => (
-                    <Badge key={`text-${i}`} variant={badgeVariant(t.variant)} appearance="pill">
-                      {t.label}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-
-              {/* Soft / Pastel */}
-              <div className="flex flex-col gap-2">
-                <p className="text-xs font-medium text-base-content/70 uppercase tracking-wider">
-                  Soft / Pastel
-                </p>
-                <div className="flex flex-wrap items-center gap-2">
-                  {cat.tests.map((t, i) => {
-                    const Icon = t.icon;
-                    const softClass: string = {
-                      error:
-                        'border-red-200 bg-red-50 text-red-700 dark:bg-red-950/40 dark:border-red-800 dark:text-red-300',
-                      warning:
-                        'border-amber-200 bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-300',
-                      info: 'border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-300',
-                      success:
-                        'border-green-200 bg-green-50 text-green-700 dark:bg-green-950/40 dark:border-green-800 dark:text-green-300',
-                      outline: 'border-base-300 bg-base-200/60 text-base-content',
-                    }[t.variant];
-                    return (
-                      <Badge
-                        key={`soft-${i}`}
-                        variant="default"
-                        className={`inline-flex items-center gap-1.5 rounded-full ${softClass}`}
-                      >
-                        <Icon className="size-3" />
-                        {t.label}
-                      </Badge>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Outline colorido */}
-              <div className="flex flex-col gap-2">
-                <p className="text-xs font-medium text-base-content/70 uppercase tracking-wider">
-                  Outline colorido
-                </p>
-                <div className="flex flex-wrap items-center gap-2">
-                  {cat.tests.map((t, i) => {
-                    const Icon = t.icon;
-                    const outlineClass: string = {
-                      error: 'border-red-500 text-red-600 dark:text-red-400',
-                      warning: 'border-amber-500 text-amber-700 dark:text-amber-400',
-                      info: 'border-blue-500 text-blue-600 dark:text-blue-400',
-                      success: 'border-green-500 text-green-600 dark:text-green-400',
-                      outline: 'border-base-300 text-base-content',
-                    }[t.variant];
-                    return (
-                      <Badge
-                        key={`outline-${i}`}
-                        variant="default"
-                        className={`inline-flex items-center gap-1.5 rounded-full border bg-transparent ${outlineClass}`}
-                      >
-                        <Icon className="size-3" />
-                        {t.label}
-                      </Badge>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </ShowcaseCard>
-        </section>
+        <CategorySection
+          key={cat.title}
+          category={cat}
+          softVariantClasses={softVariantClasses}
+          outlineVariantClasses={outlineVariantClasses}
+        />
       ))}
 
       {/* Tabela de referencia completa */}

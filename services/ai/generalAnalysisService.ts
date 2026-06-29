@@ -161,6 +161,95 @@ const getRiskLevelFromScore = (score: number): TaskIAAnalysis['riskLevel'] => {
   return 'Baixo';
 };
 
+interface RiskContribution {
+  score: number;
+  signals: string[];
+}
+
+const calculateStoryPointsRisk = (
+  storyPoints: number,
+  totalTests: number,
+  hasBDD: boolean
+): RiskContribution => {
+  const signals: string[] = [];
+  let score = 0;
+
+  if (storyPoints > 0) {
+    score += Math.min(
+      RISK_SCORE_STORY_POINTS_CAP,
+      storyPoints * RISK_SCORE_STORY_POINTS_MULTIPLIER
+    );
+  }
+  if (storyPoints > RISK_SCORE_LARGE_TASK_STORY_POINTS_THRESHOLD && totalTests === 0) {
+    signals.push('Tarefa grande sem testes');
+    score += RISK_SCORE_LARGE_TASK_NO_TESTS;
+  }
+  if (storyPoints > RISK_SCORE_COMPLEX_TASK_STORY_POINTS_THRESHOLD && !hasBDD) {
+    signals.push('Tarefa complexa sem BDD');
+    score += RISK_SCORE_COMPLEX_TASK_NO_BDD;
+  }
+
+  return { score, signals };
+};
+
+const calculateCompletenessRisk = (
+  hasDescription: boolean,
+  totalTests: number,
+  hasBDD: boolean,
+  hasStrategy: boolean,
+  dependenciesCount: number
+): RiskContribution => {
+  const signals: string[] = [];
+  let score = 0;
+
+  if (!hasDescription) {
+    score += RISK_SCORE_NO_DESCRIPTION;
+    signals.push('Sem descrição detalhada');
+  }
+  if (totalTests === 0) {
+    score += RISK_SCORE_NO_TESTS;
+    signals.push('Sem casos de teste');
+  }
+  if (!hasBDD) {
+    score += RISK_SCORE_NO_BDD;
+    signals.push('Sem cenários BDD');
+  }
+  if (!hasStrategy) {
+    score += RISK_SCORE_NO_STRATEGY;
+    signals.push('Sem estratégia de testes');
+  }
+  if (dependenciesCount > 0) {
+    score += RISK_SCORE_DEPENDENCIES;
+    signals.push('Possui dependências abertas');
+  }
+
+  return { score, signals };
+};
+
+const calculateTestStatusRisk = (
+  testsFailed: number,
+  testsNotRun: number,
+  totalTests: number,
+  testsPassed: number
+): RiskContribution => {
+  const signals: string[] = [];
+  let score = 0;
+
+  if (testsFailed > 0) {
+    score += Math.min(
+      RISK_SCORE_FAILED_TEST_CAP,
+      testsFailed * RISK_SCORE_FAILED_TEST_MULTIPLIER
+    );
+    signals.push(`${testsFailed} teste(s) falhando`);
+  }
+  if (testsNotRun > Math.max(0, totalTests - testsPassed)) {
+    score += RISK_SCORE_PENDING_TESTS;
+    signals.push('Testes pendentes de execução');
+  }
+
+  return { score, signals };
+};
+
 const calculateTaskSnapshot = (task: JiraTask): TaskSnapshot => {
   const testCases = task.testCases || [];
   const totalTests = testCases.length;
@@ -174,54 +263,28 @@ const calculateTaskSnapshot = (task: JiraTask): TaskSnapshot => {
   const displaySprint = resolveTaskDisplaySprint(task);
 
   const riskSignals: string[] = [];
+  const storyPointsRisk = calculateStoryPointsRisk(storyPoints, totalTests, hasBDD);
+  const completenessRisk = calculateCompletenessRisk(
+    hasDescription,
+    totalTests,
+    hasBDD,
+    hasStrategy,
+    task.dependencies?.length || 0
+  );
+  const testStatusRisk = calculateTestStatusRisk(
+    testsFailed,
+    testsNotRun,
+    totalTests,
+    testsPassed
+  );
+
   let riskScore = RISK_SCORE_BASE;
-
-  if (storyPoints > 0) {
-    riskScore += Math.min(
-      RISK_SCORE_STORY_POINTS_CAP,
-      storyPoints * RISK_SCORE_STORY_POINTS_MULTIPLIER
-    );
-  }
-  if (storyPoints > RISK_SCORE_LARGE_TASK_STORY_POINTS_THRESHOLD && totalTests === 0) {
-    riskSignals.push('Tarefa grande sem testes');
-    riskScore += RISK_SCORE_LARGE_TASK_NO_TESTS;
-  }
-  if (storyPoints > RISK_SCORE_COMPLEX_TASK_STORY_POINTS_THRESHOLD && !hasBDD) {
-    riskSignals.push('Tarefa complexa sem BDD');
-    riskScore += RISK_SCORE_COMPLEX_TASK_NO_BDD;
-  }
-
-  if (!hasDescription) {
-    riskScore += RISK_SCORE_NO_DESCRIPTION;
-    riskSignals.push('Sem descrição detalhada');
-  }
-  if (totalTests === 0) {
-    riskScore += RISK_SCORE_NO_TESTS;
-    riskSignals.push('Sem casos de teste');
-  }
-  if (testsFailed > 0) {
-    riskScore += Math.min(
-      RISK_SCORE_FAILED_TEST_CAP,
-      testsFailed * RISK_SCORE_FAILED_TEST_MULTIPLIER
-    );
-    riskSignals.push(`${testsFailed} teste(s) falhando`);
-  }
-  if (testsNotRun > Math.max(0, totalTests - testsPassed)) {
-    riskScore += RISK_SCORE_PENDING_TESTS;
-    riskSignals.push('Testes pendentes de execução');
-  }
-  if (!hasBDD) {
-    riskScore += RISK_SCORE_NO_BDD;
-    riskSignals.push('Sem cenários BDD');
-  }
-  if (!hasStrategy) {
-    riskScore += RISK_SCORE_NO_STRATEGY;
-    riskSignals.push('Sem estratégia de testes');
-  }
-  if ((task.dependencies?.length || 0) > 0) {
-    riskScore += RISK_SCORE_DEPENDENCIES;
-    riskSignals.push('Possui dependências abertas');
-  }
+  riskScore += storyPointsRisk.score + completenessRisk.score + testStatusRisk.score;
+  riskSignals.push(
+    ...storyPointsRisk.signals,
+    ...completenessRisk.signals,
+    ...testStatusRisk.signals
+  );
 
   riskScore = Math.min(RISK_SCORE_MAX, riskScore);
 

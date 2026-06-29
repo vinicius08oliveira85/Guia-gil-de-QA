@@ -204,17 +204,15 @@ export const forceUpdate = (): void => {
     .getRegistration()
     .then(registration => {
       if (registration?.waiting) {
-        // Envia mensagem para o service worker para pular a espera
         try {
           registration.waiting.postMessage({ type: 'SKIP_WAITING' });
         } catch (error) {
           logger.warn('Erro ao enviar mensagem para service worker', 'pwa', error);
+        } finally {
+          setTimeout(() => {
+            window.location.reload();
+          }, RELOAD_DELAY_MS);
         }
-
-        // Recarrega a página após um pequeno delay
-        setTimeout(() => {
-          window.location.reload();
-        }, RELOAD_DELAY_MS);
       }
     })
     .catch(error => {

@@ -1,13 +1,10 @@
-import type {
-  BddScenario,
-  BusinessRule,
-  JiraTask,
-  JiraTaskType,
-  Project,
-  TestCaseDetailLevel,
-  TestStrategy,
-} from '../../types';
+import type { BddScenario, JiraTask, JiraTaskType, Project, TestCaseDetailLevel, TestStrategy } from '../../types';
 import { getDocumentContext } from './documentContextService';
+import {
+  formatBusinessRulesForPrompt,
+  summarizeBddForPrompt,
+  summarizeStrategiesForPrompt,
+} from './promptUtils';
 
 /**
  * Regras de formatação visual dos campos do roteiro (casos de teste).
@@ -37,85 +34,13 @@ ${TEST_CASE_VISUAL_FORMAT_INSTRUCTIONS}
 /** Tamanho máximo do trecho de especificação injetado após o bloco da tarefa (evita documento “engolir” a tarefa). */
 export const TASK_GEN_MAX_DOC_CHARS = 3200;
 
-/** Limite do bloco de regras de negócio no prompt (projetos com muitas regras). */
-export const BUSINESS_RULES_PROMPT_MAX_CHARS = 4000;
-
-/**
- * Monta o bloco de regras para o prompt a partir de:
- * - `task.linkedBusinessRuleIds` (regras individuais), e
- * - `task.linkedBusinessRuleCategories` (todas as regras do projeto nessas categorias),
- * unindo por `id` sem duplicar e respeitando {@link BUSINESS_RULES_PROMPT_MAX_CHARS}.
- */
-export function formatBusinessRulesForPrompt(
-  project: Project | null | undefined,
-  task?: JiraTask | null
-): string {
-  if (!task) return '';
-  const all = project?.businessRules ?? [];
-  if (all.length === 0) return '';
-
-  const byId = new Map(all.map(r => [r.id, r]));
-
-  const selectedIds = new Set<string>();
-  for (const id of task.linkedBusinessRuleIds ?? []) {
-    if (id) selectedIds.add(id);
-  }
-
-  // Coleta regras por categorias vinculadas
-  const categoryKeys = new Set(
-    (task.linkedBusinessRuleCategories ?? []).map(c => String(c).trim()).filter(Boolean)
-  );
-  for (const rule of all) {
-    const cat = (rule.category ?? '').trim();
-    if (categoryKeys.has(cat)) {
-      selectedIds.add(rule.id);
-    }
-  }
-
-  if (selectedIds.size === 0) return '';
-
-  const items = Array.from(selectedIds)
-    .map(id => byId.get(id))
-    .filter((r): r is BusinessRule => !!r);
-  if (items.length === 0) return '';
-
-  items.sort(
-    (a, b) =>
-      a.category.localeCompare(b.category, 'pt-BR') || a.title.localeCompare(b.title, 'pt-BR')
-  );
-
-  const header =
-    '### REGRAS DE NEGÓCIO APLICÁVEIS ###\n' +
-    'Valide o escopo apenas com estas regras. Não invente comportamentos.\n';
-
-  const lines: string[] = [];
-  let used = header.length;
-  for (let i = 0; i < items.length; i++) {
-    const r = items[i];
-    const refs = (r.linkedBusinessRuleIds ?? [])
-      .map(id => byId.get(id))
-      .filter((x): x is BusinessRule => !!x);
-    const refLine =
-      refs.length > 0
-        ? `\nReferências (regras vinculadas nesta regra): ${refs.map(x => `${x.title} [${x.category}] [id: ${x.id}]`).join('; ')}`
-        : '';
-    const block =
-      `[Regra ${i + 1}: ${r.title} — ${r.category}]\n` +
-      `id: ${r.id}\n` +
-      `Descrição: ${r.description}${refLine}`;
-
-    const nextLen = block.length + (lines.length ? 2 : 0);
-    if (used + nextLen > BUSINESS_RULES_PROMPT_MAX_CHARS) {
-      lines.push('[... demais regras omitidas por limite de tamanho ...]');
-      break;
-    }
-    lines.push(block);
-    used += nextLen;
-  }
-
-  const body = lines.join('\n\n');
-  return `${header}\n${body}`.trim();
-}
+/** Reexporta utilitários de prompt usados por testes e serviços de IA. */
+export {
+  BUSINESS_RULES_PROMPT_MAX_CHARS,
+  formatBusinessRulesForPrompt,
+  summarizeBddForPrompt,
+  summarizeStrategiesForPrompt,
+} from './promptUtils';
 
 /**
  * Instrução unificada de análise (título, descrição, regras vinculadas) para as fases de geração por tarefa.
@@ -189,20 +114,21 @@ Priorize: verificação da correção, regressão em áreas relacionadas, cenár
 `;
 }
 
-/** Bloco de prompt por nível de detalhe dos casos de teste (exportado para testes). */
-export function detailLevelBlock(detailLevel: TestCaseDetailLevel): string {
-  if (detailLevel === 'Resumido') {
-    return `
+const DETAIL_LEVEL_BLOCKS = new Map<TestCaseDetailLevel, string>([
+  [
+    'Resumido',
+    `
 ═══════════════════════════════════════════════════════════════
 Nível de detalhe: **Resumido** (campo JSON \`action\` / **Ação necessária**)
 ═══════════════════════════════════════════════════════════════
 - Gere **poucos** passos numerados (\`1.\`, \`2.\`, \`3.\` …), sempre com **quebra de linha real** (\`\\n\`) entre cada passo.
 - Linguagem **objetiva** e direta; evite passos redundantes ou verificações longas.
 - **parameters** e **expectedResult**: texto conciso; use linhas iniciadas por **•** (U+2022) somente quando houver **vários** itens distintos (um bullet por linha).
-`.trim();
-  }
-
-  return `
+`.trim(),
+  ],
+  [
+    'Estruturado',
+    `
 ═══════════════════════════════════════════════════════════════
 Nível de detalhe: **Estruturado** (campo JSON \`action\` / **Ação necessária**)
 ═══════════════════════════════════════════════════════════════
@@ -210,25 +136,13 @@ Nível de detalhe: **Estruturado** (campo JSON \`action\` / **Ação necessária
 - Inclua **verificações intermediárias detalhadas** ao longo do roteiro (o que conferir após passos críticos, estados esperados, mensagens ou dados intermediários).
 - **parameters** e **expectedResult**: com **vários** pontos, cada linha relevante deve começar com **•** (U+2022), **um ponto por linha** (alinhado às regras globais do roteiro).
 - Aplicar **rigorosamente** cada item de \`TEST_CASE_VISUAL_FORMAT_INSTRUCTIONS\` (o mesmo texto do bloco **FORMATAÇÃO VISUAL OBRIGATÓRIA** já incluído acima neste prompt); não resuma nem omita essas regras na prática.
-`.trim();
-}
+`.trim(),
+  ],
+]);
 
-export function summarizeStrategiesForPrompt(strategies: TestStrategy[], maxChars = 2800): string {
-  if (!strategies.length) return '(nenhuma estratégia)';
-  const lines = strategies.map(
-    s =>
-      `- **${s.testType}**: ${s.description.slice(0, 400)}${s.description.length > 400 ? '…' : ''}`
-  );
-  return lines.join('\n').slice(0, maxChars);
-}
-
-export function summarizeBddForPrompt(scenarios: BddScenario[], maxChars = 4500): string {
-  if (!scenarios.length) return '(nenhum cenário BDD)';
-  const parts = scenarios.map(
-    b =>
-      `#### ${b.title}\n${(b.gherkin || '').slice(0, 1200)}${(b.gherkin || '').length > 1200 ? '\n…' : ''}`
-  );
-  return parts.join('\n\n').slice(0, maxChars);
+/** Bloco de prompt por nível de detalhe dos casos de teste (exportado para testes). */
+export function detailLevelBlock(detailLevel: TestCaseDetailLevel): string {
+  return DETAIL_LEVEL_BLOCKS.get(detailLevel) ?? DETAIL_LEVEL_BLOCKS.get('Estruturado')!;
 }
 
 /** Fase 1: somente estratégias. */
