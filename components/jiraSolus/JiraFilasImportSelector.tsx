@@ -8,9 +8,21 @@ import {
   getJiraQueueCategories,
   getJiraQueueStatusLabels,
 } from '../../utils/jiraQueueTree';
-import { JiraFilasCheckboxList } from './JiraFilasCheckboxList';
 import { JiraFilasSearchableMultiSelect } from './JiraFilasSearchableMultiSelect';
 import { jiraSolusFieldClass, jiraSolusFieldLabelClass, jiraSolusSelectClass } from './jiraSolusNeuUi';
+
+const formatSelectionSummary = (
+  options: { value: string; label: string }[],
+  selectedValues: string[],
+  emptyLabel: string
+): string => {
+  if (selectedValues.length === 0) return emptyLabel;
+  if (selectedValues.length === 1) {
+    const selectedOption = options.find(option => option.value === selectedValues[0]);
+    return selectedOption?.label ?? selectedValues[0];
+  }
+  return `${selectedValues.length} selecionados`;
+};
 
 export interface JiraFilasImportSelectorProps {
   projects: JiraProject[];
@@ -72,6 +84,22 @@ export const JiraFilasImportSelector: React.FC<JiraFilasImportSelectorProps> = (
   );
 
   const hasProjects = selectedProjectKeys.length > 0;
+  const hasQueueCategories = selectedQueueCategories.length > 0;
+
+  const queueSummary = useMemo(
+    () => formatSelectionSummary(queueCategoryOptions, selectedQueueCategories, 'Selecione a(s) fila(s)'),
+    [queueCategoryOptions, selectedQueueCategories]
+  );
+
+  const statusSummary = useMemo(
+    () =>
+      formatSelectionSummary(
+        statusOptions,
+        selectedQueueStatuses,
+        hasQueueCategories ? 'Selecione o(s) status' : 'Selecione fila(s) primeiro'
+      ),
+    [hasQueueCategories, selectedQueueStatuses, statusOptions]
+  );
 
   return (
     <div className="grid gap-3 lg:grid-cols-3">
@@ -90,39 +118,35 @@ export const JiraFilasImportSelector: React.FC<JiraFilasImportSelectorProps> = (
         />
       </div>
 
-      {hasProjects ? (
-        <>
-          <JiraFilasCheckboxList
-            title="2. Fila"
-            options={queueCategoryOptions}
-            selectedValues={selectedQueueCategories}
-            onChange={onQueueCategoriesChange}
-            disabled={disabled}
-            isLoading={isLoadingQueues}
-            emptyMessage="Nenhuma fila categorizada neste projeto."
-            aria-label="Selecionar filas de importação"
-          />
+      <div className={jiraSolusFieldClass}>
+        <span className={jiraSolusFieldLabelClass}>2. Fila</span>
+        <JiraFilasSearchableMultiSelect
+          options={queueCategoryOptions}
+          selectedValues={selectedQueueCategories}
+          onChange={onQueueCategoriesChange}
+          disabled={disabled || !hasProjects || isLoadingQueues}
+          className={jiraSolusSelectClass}
+          placeholder={isLoadingQueues ? 'Carregando…' : 'Selecione a(s) fila(s)'}
+          searchPlaceholder="Buscar fila…"
+          summaryLabel={isLoadingQueues ? 'Carregando…' : queueSummary}
+          aria-label="Selecionar filas de importação"
+        />
+      </div>
 
-          <JiraFilasCheckboxList
-            title="3. Status"
-            options={statusOptions}
-            selectedValues={selectedQueueStatuses}
-            onChange={onQueueStatusesChange}
-            disabled={disabled || selectedQueueCategories.length === 0}
-            isLoading={isLoadingQueues}
-            emptyMessage={
-              selectedQueueCategories.length === 0
-                ? 'Selecione ao menos uma fila.'
-                : 'Nenhum status disponível para as filas selecionadas.'
-            }
-            aria-label="Selecionar status de importação"
-          />
-        </>
-      ) : (
-        <p className="font-sans text-sm text-[var(--brand-text-muted)] lg:col-span-2">
-          Selecione um ou mais projetos para escolher fila e status.
-        </p>
-      )}
+      <div className={jiraSolusFieldClass}>
+        <span className={jiraSolusFieldLabelClass}>3. Status</span>
+        <JiraFilasSearchableMultiSelect
+          options={statusOptions}
+          selectedValues={selectedQueueStatuses}
+          onChange={onQueueStatusesChange}
+          disabled={disabled || !hasProjects || !hasQueueCategories || isLoadingQueues}
+          className={jiraSolusSelectClass}
+          placeholder={isLoadingQueues ? 'Carregando…' : 'Selecione o(s) status'}
+          searchPlaceholder="Buscar status…"
+          summaryLabel={isLoadingQueues ? 'Carregando…' : statusSummary}
+          aria-label="Selecionar status de importação"
+        />
+      </div>
     </div>
   );
 };
