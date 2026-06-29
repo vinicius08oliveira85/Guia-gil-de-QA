@@ -3,14 +3,14 @@ import type { JiraTask } from '../../types';
 import { importFilasRelatedIssues } from '../../services/jira/filasRelatedIssues';
 
 vi.mock('../../services/jira/issues', () => ({
-  getJiraIssueByKey: vi.fn(),
+  getJiraIssuesByKeysBulk: vi.fn(),
 }));
 
 vi.mock('../../services/jira/issueToTask', () => ({
   jiraIssueToTask: vi.fn(),
 }));
 
-import { getJiraIssueByKey } from '../../services/jira/issues';
+import { getJiraIssuesByKeysBulk } from '../../services/jira/issues';
 import { jiraIssueToTask } from '../../services/jira/issueToTask';
 
 const config = { url: 'https://jira.test', email: 'a@b.com', apiToken: 'token' };
@@ -31,7 +31,7 @@ function makeTask(overrides: Partial<JiraTask> = {}): JiraTask {
 describe('importFilasRelatedIssues', () => {
   it('importa tarefa relacionada ausente e vincula como filha da principal', async () => {
     const primary = makeTask();
-    vi.mocked(getJiraIssueByKey).mockResolvedValue({ key: 'SUS-2', fields: {} });
+    vi.mocked(getJiraIssuesByKeysBulk).mockResolvedValue([{ key: 'SUS-2', fields: {} }]);
     vi.mocked(jiraIssueToTask).mockResolvedValue({
       id: 'SUS-2',
       title: 'Relacionada',
@@ -45,7 +45,7 @@ describe('importFilasRelatedIssues', () => {
       rootTaskIds: new Set(['SUS-1']),
     });
 
-    expect(getJiraIssueByKey).toHaveBeenCalledWith(config, 'SUS-2');
+    expect(getJiraIssuesByKeysBulk).toHaveBeenCalledWith(config, ['SUS-2'], undefined);
     expect(result).toHaveLength(2);
     const related = result.find(t => t.id === 'SUS-2');
     expect(related?.parentId).toBe('SUS-1');
@@ -67,7 +67,7 @@ describe('importFilasRelatedIssues', () => {
       rootTaskIds: new Set(['SUS-1']),
     });
 
-    expect(getJiraIssueByKey).not.toHaveBeenCalled();
+    expect(getJiraIssuesByKeysBulk).not.toHaveBeenCalled();
     expect(result.find(t => t.id === 'SUS-2')?.parentId).toBe('SUS-1');
   });
 
@@ -81,7 +81,7 @@ describe('importFilasRelatedIssues', () => {
     });
 
     expect(result.find(t => t.id === 'SUS-1')?.parentId).toBeUndefined();
-    expect(getJiraIssueByKey).not.toHaveBeenCalled();
+    expect(getJiraIssuesByKeysBulk).not.toHaveBeenCalled();
   });
 
   it('vincula tarefas da mesma importação em lote pelo issue link', async () => {
@@ -105,7 +105,7 @@ describe('importFilasRelatedIssues', () => {
 
     const result = await importFilasRelatedIssues(config, [parent, child]);
 
-    expect(getJiraIssueByKey).not.toHaveBeenCalled();
+    expect(getJiraIssuesByKeysBulk).not.toHaveBeenCalled();
     expect(result.find(t => t.id === 'SUS-2')?.parentId).toBe('SUS-1');
   });
 });

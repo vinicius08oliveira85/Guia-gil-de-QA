@@ -3,7 +3,7 @@ import { Download, Filter, List, Loader2, RefreshCw, Search, X } from 'lucide-re
 import {
   getJiraConfig,
   getJiraProjects,
-  getJiraIssueByKey,
+  getJiraIssuesByKeysBulk,
   getJiraStatuses,
   getJiraQueuesForProject,
   transitionJiraIssueToStatus,
@@ -566,9 +566,28 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
       const updated: JiraTask[] = [];
       const failures: string[] = [];
 
+      const taskIds = importedTasks.map(t => t.id);
+      const issues = await getJiraIssuesByKeysBulk(config, taskIds, (current, total) =>
+        setImportProgress({ current, total })
+      );
+      const issueByKey = new Map(
+        issues.filter(issue => issue.key).map(issue => [issue.key!, issue])
+      );
+
       for (const existing of importedTasks) {
+        const issue = issueByKey.get(existing.id);
+        if (!issue) {
+          logger.warn('Tarefa não retornada pelo bulkfetch; mantendo versão local.', 'JiraFilasPanel', {
+            taskId: existing.id,
+          });
+          failures.push(existing.id);
+          updated.push(existing);
+          processed += 1;
+          setImportProgress({ current: processed, total: importedTasks.length });
+          continue;
+        }
+
         try {
-          const issue = await getJiraIssueByKey(config, existing.id);
           const task = await jiraIssueToTask(config, issue, {
             jiraProjectKey: selectedProjectKey || existing.id.split('-')[0],
             existingTask: existing,
@@ -656,7 +675,12 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
         sprintCtxRef.current = await buildJiraSprintSyncContext(config, selectedProjectKey);
       }
 
-      const issue = await getJiraIssueByKey(config, key);
+      const issues = await getJiraIssuesByKeysBulk(config, [key]);
+      const issue = issues.find(i => i.key === key);
+      if (!issue) {
+        handleWarning(`Tarefa ${key} não encontrada no Jira.`);
+        return;
+      }
       const existing = tasks.find(t => t.id === key);
       const task = await jiraIssueToTask(config, issue, {
         jiraProjectKey: selectedProjectKey || key.split('-')[0],
@@ -703,7 +727,12 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
         if (!sprintCtxRef.current && selectedProjectKey) {
           sprintCtxRef.current = await buildJiraSprintSyncContext(config, selectedProjectKey);
         }
-        const issue = await getJiraIssueByKey(config, taskId);
+        const issues = await getJiraIssuesByKeysBulk(config, [taskId]);
+        const issue = issues.find(i => i.key === taskId);
+        if (!issue) {
+          handleWarning(`Tarefa ${taskId} não encontrada no Jira.`);
+          return;
+        }
         const existing = tasks.find(t => t.id === taskId);
         const updated = await jiraIssueToTask(config, issue, {
           jiraProjectKey: selectedProjectKey || taskId.split('-')[0],

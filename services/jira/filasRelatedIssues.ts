@@ -1,13 +1,12 @@
 import type { JiraTask } from '../../types';
 import type { JiraConfig } from './types';
-import { getJiraIssueByKey } from './issues';
+import { getJiraIssuesByKeysBulk } from './issues';
 import { jiraIssueToTask } from './issueToTask';
 import type { JiraSprintSyncContext } from './sprintSync';
 import { isValidJiraKey } from '../../utils/jiraFieldMapper';
 import { parentLinkCreatesCycle } from '../../utils/taskParentCycle';
 import { logger } from '../../utils/logger';
 
-const DEFAULT_CONCURRENCY = 4;
 const DEFAULT_MAX_DEPTH = 2;
 
 export interface ImportFilasRelatedIssuesOptions {
@@ -23,7 +22,6 @@ export interface ImportFilasRelatedIssuesOptions {
   rootTaskIds?: Set<string>;
   /** @deprecated Use rootTaskIds */
   primaryTaskIds?: Set<string>;
-  concurrency?: number;
   /** Profundidade de busca recursiva de relacionamentos (padrão: 2). */
   maxDepth?: number;
   onProgress?: (done: number, total: number) => void;
@@ -32,33 +30,6 @@ export interface ImportFilasRelatedIssuesOptions {
 interface RelatedFetchTarget {
   relatedKey: string;
   parentTaskId: string;
-}
-
-async function mapWithConcurrency<T, R>(
-  items: T[],
-  concurrency: number,
-  mapper: (item: T, index: number) => Promise<R>,
-  onProgress?: (done: number, total: number) => void
-): Promise<R[]> {
-  if (items.length === 0) return [];
-  const results: R[] = new Array(items.length);
-  let nextIndex = 0;
-  let completed = 0;
-
-  const worker = async () => {
-    while (nextIndex < items.length) {
-      const index = nextIndex;
-      nextIndex += 1;
-      results[index] = await mapper(items[index], index);
-      completed += 1;
-      onProgress?.(completed, items.length);
-    }
-  };
-
-  await Promise.all(
-    Array.from({ length: Math.min(concurrency, items.length) }, () => worker())
-  );
-  return results;
 }
 
 function collectRelatedFetchTargets(
@@ -147,7 +118,6 @@ export async function importFilasRelatedIssues(
 ): Promise<JiraTask[]> {
   if (importedTasks.length === 0) return importedTasks;
 
-  const concurrency = options.concurrency ?? DEFAULT_CONCURRENCY;
   const maxDepth = options.maxDepth ?? DEFAULT_MAX_DEPTH;
   const rootTaskIds =
     options.rootTaskIds ?? options.primaryTaskIds ?? new Set<string>();
@@ -170,12 +140,34 @@ export async function importFilasRelatedIssues(
     const targets = collectRelatedFetchTargets(frontier, knownIds);
     if (targets.length === 0) break;
 
-    const fetched = await mapWithConcurrency(
-      targets,
-      concurrency,
-      async target => {
+    const uniqueKeys = [...new Set(targets.map(t => t.relatedKey))];
+    let fetchedIssues: Awaited<ReturnType<typeof getJiraIssuesByKeysBulk>> = [];
+    try {
+      fetchedIssues = await getJiraIssuesByKeysBulk(config, uniqueKeys, options.onProgress);
+    } catch (error) {
+      logger.warn('Falha ao buscar tarefas relacionadas do Jira em lote.', 'filasRelatedIssues', {
+        keys: uniqueKeys,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      break;
+    }
+
+    const issueByKey = new Map(
+      fetchedIssues.filter(issue => issue.key).map(issue => [issue.key!, issue])
+    );
+
+    const fetched = await Promise.all(
+      targets.map(async target => {
+        const issue = issueByKey.get(target.relatedKey);
+        if (!issue) {
+          logger.warn('Tarefa relacionada não retornada pelo bulkfetch.', 'filasRelatedIssues', {
+            relatedKey: target.relatedKey,
+            parentTaskId: target.parentTaskId,
+          });
+          return null;
+        }
+
         try {
-          const issue = await getJiraIssueByKey(config, target.relatedKey);
           const existing = taskById.get(target.relatedKey);
           const task = await jiraIssueToTask(config, issue, {
             jiraProjectKey: options.jiraProjectKey ?? target.relatedKey.split('-')[0],
@@ -196,8 +188,7 @@ export async function importFilasRelatedIssues(
           });
           return null;
         }
-      },
-      options.onProgress
+      })
     );
 
     const added: JiraTask[] = [];

@@ -8,6 +8,11 @@ export type GetJiraIssuesOptions = {
   sprintFieldIds?: string[];
   /** JQL customizado (ex.: fila do Jira Service Management). */
   jql?: string;
+  /**
+   * Busca leve só para descobrir chaves de issues (id, key).
+   * Use quando os campos completos virão de `getJiraIssuesByKeysBulk` em seguida.
+   */
+  discoveryOnly?: boolean;
 };
 
 export const getJiraIssuesByJql = async (
@@ -77,11 +82,16 @@ export const getJiraIssues = async (
     const search = new URLSearchParams();
     search.set('jql', jql);
     search.set('maxResults', String(pageSize));
-    search.set('expand', 'renderedFields,comment,attachment');
-    const sprintIds = (options?.sprintFieldIds ?? []).filter(id => id.startsWith('customfield_'));
-    const fieldsParam =
-      sprintIds.length > 0 ? `*all,${[...new Set(sprintIds)].join(',')}` : '*all';
-    search.set('fields', fieldsParam);
+    const discoveryOnly = options?.discoveryOnly ?? false;
+    if (discoveryOnly) {
+      search.set('fields', 'id,key');
+    } else {
+      search.set('expand', 'renderedFields,comment,attachment');
+      const sprintIds = (options?.sprintFieldIds ?? []).filter(id => id.startsWith('customfield_'));
+      const fieldsParam =
+        sprintIds.length > 0 ? `*all,${[...new Set(sprintIds)].join(',')}` : '*all';
+      search.set('fields', fieldsParam);
+    }
     if (typeof params.startAt === 'number') {
       search.set('startAt', String(params.startAt));
     }
@@ -234,6 +244,59 @@ export const getJiraIssues = async (
   );
 
   return allIssues;
+};
+
+const BULK_FETCH_CHUNK = 100;
+
+/**
+ * Busca issues por chave/ID via endpoint `issue/bulkfetch` (leitura forte).
+ *
+ * Ao contrário de `search/jql` (consistência eventual — pode não refletir
+ * escritas recentes como troca de Responsável/status), o bulkfetch lê o estado
+ * atual da issue, garantindo dados atualizados ao sincronizar filas.
+ *
+ * Respeita o limite de 100 issues por requisição (chunking automático).
+ */
+export const getJiraIssuesByKeysBulk = async (
+  config: JiraConfig,
+  issueKeysOrIds: string[],
+  onProgress?: (current: number, total: number) => void
+): Promise<JiraIssue[]> => {
+  const unique = Array.from(
+    new Set(issueKeysOrIds.map(key => key.trim()).filter(Boolean))
+  );
+  if (unique.length === 0) return [];
+
+  const all: JiraIssue[] = [];
+  for (let start = 0; start < unique.length; start += BULK_FETCH_CHUNK) {
+    const chunk = unique.slice(start, start + BULK_FETCH_CHUNK);
+    const response = await jiraApiCall<{ issues?: JiraIssue[]; issueErrors?: unknown[] }>(
+      config,
+      'issue/bulkfetch',
+      {
+        method: 'POST',
+        timeout: 60000,
+        body: {
+          issueIdsOrKeys: chunk,
+          fields: ['*all'],
+          expand: ['renderedFields'],
+          fieldsByKeys: false,
+        },
+      }
+    );
+    const issues = response.issues ?? [];
+    all.push(...issues);
+    if (response.issueErrors?.length) {
+      logger.warn(
+        `bulkfetch retornou ${response.issueErrors.length} erro(s) de issue`,
+        'jiraService'
+      );
+    }
+    onProgress?.(Math.min(start + chunk.length, unique.length), unique.length);
+  }
+
+  logger.info(`bulkfetch: ${all.length}/${unique.length} issue(s) atualizadas`, 'jiraService');
+  return all;
 };
 
 /**

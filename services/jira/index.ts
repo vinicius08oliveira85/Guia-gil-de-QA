@@ -34,7 +34,12 @@ export type { EnrichTasksWithJiraSlasOptions } from './sla';
 export { importFilasRelatedIssues } from './filasRelatedIssues';
 export type { ImportFilasRelatedIssuesOptions } from './filasRelatedIssues';
 
-export { getJiraIssues, getJiraIssuesByJql, getJiraIssueByKey } from './issues';
+export {
+  getJiraIssues,
+  getJiraIssuesByJql,
+  getJiraIssueByKey,
+  getJiraIssuesByKeysBulk,
+} from './issues';
 
 export {
   updateJiraIssue,

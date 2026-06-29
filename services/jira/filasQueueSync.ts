@@ -16,6 +16,7 @@ import { buildJiraSprintSyncContext } from './sprintSync';
 import {
   getJiraConfig,
   getJiraIssuesByJql,
+  getJiraIssuesByKeysBulk,
   getJiraQueuesForProject,
   type JiraConfig,
   type JiraQueue,
@@ -107,15 +108,32 @@ export async function syncFilasQueuesFromJira(
   let processedQueues = 0;
 
   for (const queue of selectedQueues) {
-    const issues = await getJiraIssuesByJql(config, queue.jql, undefined, (current, total) => {
-      const base = processedQueues;
-      onProgress?.(base + current, selectedQueues.length * (total ?? (current || 1)));
-    });
+    const issues = await getJiraIssuesByJql(
+      config,
+      queue.jql,
+      undefined,
+      (current, total) => {
+        const base = processedQueues;
+        onProgress?.(base + current, selectedQueues.length * (total ?? (current || 1)));
+      },
+      { discoveryOnly: true }
+    );
     for (const issue of issues) {
       if (issue.key) issueByKey.set(issue.key, issue);
     }
     processedQueues += 1;
     onProgress?.(processedQueues, selectedQueues.length);
+  }
+
+  // O endpoint `search/jql` tem consistência eventual e pode devolver campos
+  // desatualizados (ex.: Responsável recém-alterado). Relê o estado atual das
+  // issues descobertas via bulkfetch (leitura forte) para refletir as escritas.
+  const discoveredKeys = Array.from(issueByKey.keys());
+  const freshIssues = await getJiraIssuesByKeysBulk(config, discoveredKeys, (current, total) =>
+    onProgress?.(current, total)
+  );
+  for (const issue of freshIssues) {
+    if (issue.key) issueByKey.set(issue.key, issue);
   }
 
   const issues = Array.from(issueByKey.values());
