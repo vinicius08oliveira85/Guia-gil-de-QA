@@ -142,7 +142,6 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
         modifier: 'taxa de conclusão',
         icon: Percent,
         colorTheme: 'info',
-        progressValue: totalTasks > 0 ? efficiencyPercent : undefined,
         onClick: goTasks,
       },
     ];

@@ -89,8 +89,10 @@ export const JiraQueueMetaChips: React.FC<JiraQueueMetaChipsProps> = ({ task }) 
   return (
     <div
       className={cn(
-        'grid shrink-0 items-center gap-1.5 sm:gap-2',
-        'grid-cols-[minmax(0,9.5rem)_minmax(0,9.5rem)_minmax(0,7rem)_minmax(0,6rem)]'
+        // Mobile: 2 colunas (4 chips quebram em 2 linhas) para caber na tela.
+        // md+: linha única de 4 colunas com larguras fixas.
+        'grid w-full grid-cols-2 items-center gap-1.5 sm:gap-2',
+        'md:w-auto md:shrink-0 md:grid-cols-[minmax(0,9.5rem)_minmax(0,9.5rem)_minmax(0,7rem)_minmax(0,6rem)]'
       )}
       role="group"
       aria-label="Relator, Responsável, Status SLA e Data de Criação"
