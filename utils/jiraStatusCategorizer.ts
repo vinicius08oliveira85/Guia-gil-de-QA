@@ -56,7 +56,7 @@ export const categorizeJiraStatus = (jiraStatus: unknown): JiraStatusCategory =>
     return 'Validado';
   }
 
-  // Em Andamento: Status que indicam trabalho em progresso
+  // Em Andamento: Status que indicam trabalho em progresso (inclui retrabalho/ajustes)
   if (
     status.includes('progress') ||
     status.includes('andamento') ||
@@ -66,7 +66,18 @@ export const categorizeJiraStatus = (jiraStatus: unknown): JiraStatusCategory =>
     status.includes('trabalhando') ||
     status.includes('working') ||
     status.includes('em execução') ||
-    status.includes('executando')
+    status.includes('executando') ||
+    status.includes('ajuste') ||
+    status.includes('retrabalho') ||
+    status.includes('rework') ||
+    status.includes('reaberto') ||
+    status.includes('reabertura') ||
+    status.includes('reopened') ||
+    status.includes('correção') ||
+    status.includes('correcao') ||
+    status.includes('revisão') ||
+    status.includes('revisao') ||
+    status.includes('review')
   ) {
     return 'Em Andamento';
   }
@@ -108,6 +119,30 @@ export const categorizeJiraStatus = (jiraStatus: unknown): JiraStatusCategory =>
  */
 export const getTaskStatusCategory = (task: JiraTask): JiraStatusCategory => {
   return categorizeJiraStatus(task.jiraStatus);
+};
+
+/** Status interno simplificado em 3 buckets usado para métricas e filtros. */
+export type TaskStatusBucket = 'To Do' | 'In Progress' | 'Done';
+
+/**
+ * Mapeia um status do Jira (ou rótulo PT) para o status interno em 3 buckets.
+ *
+ * Fonte única de verdade derivada de {@link categorizeJiraStatus}: status
+ * intermediários (validação, teste, QA, ajustes, retrabalho, bloqueado) contam
+ * como "In Progress", evitando que apareçam indevidamente como "Pendentes".
+ */
+export const mapJiraStatusToTaskStatus = (
+  jiraStatus: string | undefined | null
+): TaskStatusBucket => {
+  switch (categorizeJiraStatus(jiraStatus)) {
+    case 'Concluído':
+      return 'Done';
+    case 'Pendente':
+    case 'Outros':
+      return 'To Do';
+    default:
+      return 'In Progress';
+  }
 };
 
 function resolveTaskJiraStatusLabel(task: JiraTask): string {

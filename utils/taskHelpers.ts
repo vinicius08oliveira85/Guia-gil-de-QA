@@ -1,37 +1,9 @@
 import { JiraTask } from '../types';
 import { coerceOptionalString } from './coerceString';
+import { mapJiraStatusToTaskStatus } from './jiraStatusCategorizer';
 
 const MAX_TEST_PHASE_RECURSION_DEPTH = 100;
 const testPhaseSubtaskIndexCache = new WeakMap<readonly JiraTask[], Map<string, JiraTask[]>>();
-
-/** Mapeia nome de status (Jira ou PT) para categoria interna. Mesma lógica do jiraService. */
-const mapJiraStatusToTaskStatus = (
-  jiraStatus: string | undefined | null
-): 'To Do' | 'In Progress' | 'Done' => {
-  if (!jiraStatus) return 'To Do';
-  const s = jiraStatus.toLowerCase();
-  if (
-    s.includes('done') ||
-    s.includes('resolved') ||
-    s.includes('closed') ||
-    s.includes('concluído') ||
-    s.includes('concluido') ||
-    s.includes('finalizado') ||
-    s.includes('resolvido') ||
-    s.includes('fechado')
-  )
-    return 'Done';
-  if (
-    s.includes('progress') ||
-    s.includes('in progress') ||
-    s.includes('em andamento') ||
-    s.includes('andamento') ||
-    s.includes('em desenvolvimento') ||
-    s.includes('desenvolvimento')
-  )
-    return 'In Progress';
-  return 'To Do';
-};
 
 const STATUS_TO_PT: Record<string, string> = {
   'To Do': 'A Fazer',

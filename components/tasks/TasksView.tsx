@@ -1782,27 +1782,27 @@ export const TasksView: React.FC<{
     }
   }, [project?.tasks]);
 
-  const toDoLabel = useMemo(
+  // Rótulos de status agrupados por categoria para que os indicadores filtrem
+  // por TODOS os status da categoria (alinhando contagem do card e lista filtrada).
+  const toDoLabels = useMemo(
     () =>
-      statusOptions.find(
-        o => PT_STATUS_TO_CATEGORY[o] === 'To Do' || mapJiraStatusToTaskStatus(o) === 'To Do'
-      ) ?? statusOptions[0],
+      statusOptions.filter(
+        o => (PT_STATUS_TO_CATEGORY[o] ?? mapJiraStatusToTaskStatus(o)) === 'To Do'
+      ),
     [statusOptions]
   );
-  const inProgressLabel = useMemo(
+  const inProgressLabels = useMemo(
     () =>
-      statusOptions.find(
-        o =>
-          PT_STATUS_TO_CATEGORY[o] === 'In Progress' ||
-          mapJiraStatusToTaskStatus(o) === 'In Progress'
-      ) ?? statusOptions[1],
+      statusOptions.filter(
+        o => (PT_STATUS_TO_CATEGORY[o] ?? mapJiraStatusToTaskStatus(o)) === 'In Progress'
+      ),
     [statusOptions]
   );
-  const doneLabel = useMemo(
+  const doneLabels = useMemo(
     () =>
-      statusOptions.find(
-        o => PT_STATUS_TO_CATEGORY[o] === 'Done' || mapJiraStatusToTaskStatus(o) === 'Done'
-      ) ?? statusOptions[2],
+      statusOptions.filter(
+        o => (PT_STATUS_TO_CATEGORY[o] ?? mapJiraStatusToTaskStatus(o)) === 'Done'
+      ),
     [statusOptions]
   );
   const nonDoneLabels = useMemo(
@@ -1811,6 +1811,12 @@ export const TasksView: React.FC<{
         o => (PT_STATUS_TO_CATEGORY[o] ?? mapJiraStatusToTaskStatus(o)) !== 'Done'
       ),
     [statusOptions]
+  );
+
+  const sameStatusSet = useCallback(
+    (labels: string[]) =>
+      statusFilter.length === labels.length && statusFilter.every(s => labels.includes(s)),
+    [statusFilter]
   );
 
   const indicatorItems = useMemo(
@@ -1830,15 +1836,14 @@ export const TasksView: React.FC<{
         colorTheme: 'warning' as const,
         onClick: () => {
           setSearchQuery('');
-          setStatusFilter([toDoLabel]);
+          setStatusFilter(toDoLabels);
           setTypeFilter([]);
           setTestStatusFilter([]);
           setQualityFilter([]);
           setPriorityFilter([]);
           setTestCaseExecutionStatusFilter([]);
         },
-        isActive:
-          statusFilter.length === 1 && statusFilter[0] === toDoLabel && typeFilter.length === 0,
+        isActive: typeFilter.length === 0 && sameStatusSet(toDoLabels),
       },
       {
         label: 'Em Andamento',
@@ -1848,17 +1853,14 @@ export const TasksView: React.FC<{
         colorTheme: 'info' as const,
         onClick: () => {
           setSearchQuery('');
-          setStatusFilter([inProgressLabel]);
+          setStatusFilter(inProgressLabels);
           setTypeFilter([]);
           setTestStatusFilter([]);
           setQualityFilter([]);
           setPriorityFilter([]);
           setTestCaseExecutionStatusFilter([]);
         },
-        isActive:
-          statusFilter.length === 1 &&
-          statusFilter[0] === inProgressLabel &&
-          typeFilter.length === 0,
+        isActive: typeFilter.length === 0 && sameStatusSet(inProgressLabels),
       },
       {
         label: 'Concluídas',
@@ -1868,15 +1870,14 @@ export const TasksView: React.FC<{
         colorTheme: 'success' as const,
         onClick: () => {
           setSearchQuery('');
-          setStatusFilter([doneLabel]);
+          setStatusFilter(doneLabels);
           setTypeFilter([]);
           setTestStatusFilter([]);
           setQualityFilter([]);
           setPriorityFilter([]);
           setTestCaseExecutionStatusFilter([]);
         },
-        isActive:
-          statusFilter.length === 1 && statusFilter[0] === doneLabel && typeFilter.length === 0,
+        isActive: typeFilter.length === 0 && sameStatusSet(doneLabels),
       },
       {
         label: 'Bugs Abertos',
@@ -1907,10 +1908,11 @@ export const TasksView: React.FC<{
       stats.done,
       stats.bugsOpen,
       metrics.bugsBySeverity,
-      toDoLabel,
-      inProgressLabel,
-      doneLabel,
+      toDoLabels,
+      inProgressLabels,
+      doneLabels,
       nonDoneLabels,
+      sameStatusSet,
       statusFilter,
       typeFilter,
       setSearchQuery,

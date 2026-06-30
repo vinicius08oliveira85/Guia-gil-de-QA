@@ -123,12 +123,16 @@ export function isJiraBacklogLikeStatus(jiraStatus: string | undefined): boolean
 }
 
 /**
- * Tarefa no backlog: não Epic e (To Do normalizado ou status Jira de fila/backlog).
+ * Tarefa no backlog: não Epic e ainda na fila/não iniciada.
+ *
+ * Quando há `jiraStatus`, ele é a fonte de verdade (evita contar como backlog
+ * itens já em validação/ajustes cujo `task.status` interno ficou defasado antes
+ * de uma nova sincronização). Sem `jiraStatus`, usa o status interno.
  */
 export function isBacklogTask(task: JiraTask): boolean {
   if (task.type === 'Epic') return false;
-  if (task.status === 'To Do') return true;
-  return isJiraBacklogLikeStatus(task.jiraStatus);
+  if (task.jiraStatus?.trim()) return isJiraBacklogLikeStatus(task.jiraStatus);
+  return task.status === 'To Do';
 }
 
 /**

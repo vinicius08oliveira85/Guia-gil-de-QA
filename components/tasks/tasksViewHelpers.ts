@@ -1,6 +1,9 @@
 import { Project, JiraTask, TaskTestStatus } from '../../types';
 import { getDisplayStatus } from '../../utils/taskHelpers';
+import { mapJiraStatusToTaskStatus } from '../../utils/jiraStatusCategorizer';
 import { calculateTaskTestStatus } from '../../services/taskTestStatusService';
+
+export { mapJiraStatusToTaskStatus };
 
 export const TASK_ID_REGEX = /^([A-Z]+)-(\d+)/i;
 
@@ -12,34 +15,6 @@ export function buildAttachmentsContextForTask(task: JiraTask): string {
   if (names.length === 0) return '';
   return `A tarefa possui os seguintes anexos (podem conter requisitos, especificações ou evidências relevantes): ${names.join(', ')}.`;
 }
-
-export const mapJiraStatusToTaskStatus = (
-  jiraStatus: string | undefined | null
-): 'To Do' | 'In Progress' | 'Done' => {
-  if (!jiraStatus) return 'To Do';
-  const status = jiraStatus.toLowerCase();
-  if (
-    status.includes('done') ||
-    status.includes('resolved') ||
-    status.includes('closed') ||
-    status.includes('concluído') ||
-    status.includes('concluido') ||
-    status.includes('finalizado') ||
-    status.includes('resolvido') ||
-    status.includes('fechado')
-  )
-    return 'Done';
-  if (
-    status.includes('progress') ||
-    status.includes('in progress') ||
-    status.includes('em andamento') ||
-    status.includes('andamento') ||
-    status.includes('em desenvolvimento') ||
-    status.includes('desenvolvimento')
-  )
-    return 'In Progress';
-  return 'To Do';
-};
 
 export const getStatusFilterOptions = (project: Project): string[] => {
   const jiraStatuses = project?.settings?.jiraStatuses;

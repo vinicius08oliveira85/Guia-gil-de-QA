@@ -5,35 +5,8 @@ import { jiraApiCall } from './api';
 import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
 import { logger } from '../../utils/logger';
 
-export const mapJiraStatusToTaskStatus = (
-  jiraStatus: string | undefined | null
-): 'To Do' | 'In Progress' | 'Done' => {
-  if (!jiraStatus) return 'To Do';
-  const status = jiraStatus.toLowerCase();
-  if (
-    status.includes('done') ||
-    status.includes('resolved') ||
-    status.includes('closed') ||
-    status.includes('concluído') ||
-    status.includes('concluido') ||
-    status.includes('finalizado') ||
-    status.includes('resolvido') ||
-    status.includes('fechado')
-  ) {
-    return 'Done';
-  }
-  if (
-    status.includes('progress') ||
-    status.includes('in progress') ||
-    status.includes('em andamento') ||
-    status.includes('andamento') ||
-    status.includes('em desenvolvimento') ||
-    status.includes('desenvolvimento')
-  ) {
-    return 'In Progress';
-  }
-  return 'To Do';
-};
+// Fonte única de verdade em utils/jiraStatusCategorizer (reexportado p/ compat).
+export { mapJiraStatusToTaskStatus } from '../../utils/jiraStatusCategorizer';
 
 export const mapJiraTypeToTaskType = (
   jiraType: string | undefined | null
