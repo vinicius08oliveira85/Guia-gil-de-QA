@@ -46,15 +46,15 @@ import {
 } from './tasks/tasksPanelNeuStyles';
 import { countBacklogTasks, type TasksListMode } from '../utils/backlogTasks';
 import {
-  closeTaskTabState,
   isProjectFixedTabId,
   isTaskTabId,
-  openTaskTabState,
   resolveTaskTabLabels,
   taskIdFromTabId,
   type ProjectFixedTabId,
   type WorkspaceTabId,
 } from '../utils/workspaceTabs';
+import { getAdjacentOpenTaskId } from '../utils/workspaceSessionStorage';
+import { useWorkspaceTabs } from '../hooks/useWorkspaceTabs';
 import { useBusinessRuleDossierSync } from '../hooks/useBusinessRuleDossierSync';
 import { ProjectWorkspaceTabBar } from './project/ProjectWorkspaceTabBar';
 import { TaskWorkspacePanel } from './tasks/TaskWorkspacePanel';
@@ -67,29 +67,30 @@ const TAB_LABELS: Record<string, string> = {
   businessRules: 'Regras de negócio',
 };
 
-function normalizePathname(pathname: string): string {
-  const trimmed = pathname.replace(/\/+$/, '');
-  return trimmed === '' ? '/' : trimmed;
-}
-
-function readTasksListModeFromUrl(): TasksListMode {
-  if (typeof window === 'undefined') return 'all';
-  const params = new URLSearchParams(window.location.search);
-  const subview = params.get('subview');
-  const view = params.get('view');
-  if (subview === 'backlog' || view === 'backlog') return 'backlog';
-  if (normalizePathname(window.location.pathname) === '/backlog') return 'backlog';
-  return 'all';
-}
-
 export const ProjectView: React.FC<{
   project: Project;
   onUpdateProject: (project: Project) => void | Promise<void>;
   onDeleteProject?: (projectId: string) => void | Promise<void>;
 }> = ({ project, onUpdateProject, onDeleteProject }) => {
-  const [activeTab, setActiveTab] = useState<WorkspaceTabId>('dashboard');
-  const [openTaskTabIds, setOpenTaskTabIds] = useState<string[]>([]);
-  const [tasksListMode, setTasksListMode] = useState<TasksListMode>('all');
+  const {
+    activeTab,
+    openTaskTabIds,
+    tasksListMode,
+    taskSections,
+    setActiveTab,
+    setTasksListMode,
+    setTaskSection,
+    openTaskTab,
+    closeTaskTab,
+    focusTaskTab,
+  } = useWorkspaceTabs({
+    scope: 'project',
+    scopeId: project.id,
+    defaultActiveTab: 'dashboard',
+    syncUrl: true,
+    projectIdForUrl: project.id,
+    fallbackFixedTab: 'tasks',
+  });
   const [initialTaskId, setInitialTaskId] = useState<string | undefined>(undefined);
   /** Deep link do Dashboard: filtrar tarefas com casos em certos status (ex.: falhas). */
   const [tasksExecutionNavKey, setTasksExecutionNavKey] = useState(0);
@@ -259,45 +260,15 @@ export const ProjectView: React.FC<{
     }
   }, [currentProject, supabaseAvailable]);
 
-  // Verificar taskIdToFocus na montagem e ao mudar de projeto
+  // Deep link pontual (ex.: vindo de outra tela)
   useEffect(() => {
     const taskIdToFocus = sessionStorage.getItem('taskIdToFocus');
-    if (taskIdToFocus) {
-      sessionStorage.removeItem('taskIdToFocus');
-      const next = openTaskTabState(openTaskTabIds, activeTab, taskIdToFocus);
-      setOpenTaskTabIds(next.openTaskTabIds);
-      setActiveTab(next.activeTab);
-      setBreadcrumbTaskId(taskIdToFocus);
-      setInitialTaskId(taskIdToFocus);
-      return;
-    }
-    const modeFromUrl = readTasksListModeFromUrl();
-    if (modeFromUrl === 'backlog') {
-      setActiveTab('tasks');
-      setTasksListMode('backlog');
-    }
-  }, [currentProject.id]);
-
-  /** Sincroniza subvisão backlog: ?project=&subview=backlog (dentro de Tarefas & Testes). */
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (!isProjectFixedTabId(activeTab) || activeTab !== 'tasks') return;
-    const params = new URLSearchParams();
-    params.set('project', currentProject.id);
-    if (tasksListMode === 'backlog') {
-      params.set('subview', 'backlog');
-    }
-    const desiredSearch = `?${params.toString()}`;
-    const path = normalizePathname(window.location.pathname);
-    const canonicalPath = path === '/backlog' ? '/' : path;
-    if (path === '/backlog') {
-      window.history.replaceState({}, '', `/${desiredSearch}`);
-      return;
-    }
-    if (window.location.search !== desiredSearch) {
-      window.history.replaceState({}, '', `${canonicalPath}${desiredSearch}`);
-    }
-  }, [currentProject.id, activeTab, tasksListMode]);
+    if (!taskIdToFocus) return;
+    sessionStorage.removeItem('taskIdToFocus');
+    focusTaskTab(taskIdToFocus);
+    setBreadcrumbTaskId(taskIdToFocus);
+    setInitialTaskId(taskIdToFocus);
+  }, [currentProject.id, focusTaskTab]);
 
   const tabs: Array<{ id: ProjectFixedTabId; label: string }> = [
     { id: 'dashboard', label: 'Dashboard' },
@@ -316,17 +287,20 @@ export const ProjectView: React.FC<{
     [activeTab]
   );
 
-  const handleSelectWorkspaceTab = useCallback((tabId: WorkspaceTabId) => {
-    setActiveTab(tabId);
-    if (isProjectFixedTabId(tabId) && tabId !== 'tasks') {
-      setTasksListMode('all');
-      setBreadcrumbTaskId(null);
-    }
-    if (isTaskTabId(tabId)) {
-      const id = taskIdFromTabId(tabId);
-      if (id) setBreadcrumbTaskId(id);
-    }
-  }, []);
+  const handleSelectWorkspaceTab = useCallback(
+    (tabId: WorkspaceTabId) => {
+      setActiveTab(tabId);
+      if (isProjectFixedTabId(tabId) && tabId !== 'tasks') {
+        setTasksListMode('all');
+        setBreadcrumbTaskId(null);
+      }
+      if (isTaskTabId(tabId)) {
+        const id = taskIdFromTabId(tabId);
+        if (id) setBreadcrumbTaskId(id);
+      }
+    },
+    [setActiveTab, setTasksListMode]
+  );
 
   const handleTabClick = useCallback(
     (tabId: string) => {
@@ -337,30 +311,29 @@ export const ProjectView: React.FC<{
 
   const handleOpenTaskTab = useCallback(
     (task: JiraTask) => {
-      const next = openTaskTabState(openTaskTabIds, activeTab, task.id);
-      setOpenTaskTabIds(next.openTaskTabIds);
-      setActiveTab(next.activeTab);
+      openTaskTab(task);
       setBreadcrumbTaskId(task.id);
     },
-    [openTaskTabIds, activeTab]
+    [openTaskTab]
   );
 
   const handleCloseTaskTab = useCallback(
     (taskId: string) => {
-      const next = closeTaskTabState(openTaskTabIds, activeTab, taskId);
-      setOpenTaskTabIds(next.openTaskTabIds);
-      setActiveTab(next.activeTab);
+      closeTaskTab(taskId);
       setBreadcrumbTaskId(prev => (prev === taskId ? null : prev));
     },
-    [openTaskTabIds, activeTab]
+    [closeTaskTab]
   );
 
-  const handleTasksListModeChange = useCallback((mode: TasksListMode) => {
-    setTasksListMode(mode);
-    if (!isProjectFixedTabId(activeTab) || activeTab !== 'tasks') {
-      setActiveTab('tasks');
-    }
-  }, [activeTab]);
+  const handleTasksListModeChange = useCallback(
+    (mode: TasksListMode) => {
+      setTasksListMode(mode);
+      if (!isProjectFixedTabId(activeTab) || activeTab !== 'tasks') {
+        setActiveTab('tasks');
+      }
+    },
+    [activeTab, setActiveTab, setTasksListMode]
+  );
 
   const backlogCount = useMemo(
     () => countBacklogTasks(currentProject.tasks),
@@ -370,20 +343,7 @@ export const ProjectView: React.FC<{
   const handleNavigateToBacklog = useCallback(() => {
     setTasksListMode('backlog');
     setActiveTab('tasks');
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const syncFromUrl = () => {
-      const mode = readTasksListModeFromUrl();
-      setTasksListMode(mode);
-      if (mode === 'backlog') {
-        setActiveTab('tasks');
-      }
-    };
-    window.addEventListener('popstate', syncFromUrl);
-    return () => window.removeEventListener('popstate', syncFromUrl);
-  }, []);
+  }, [setActiveTab, setTasksListMode]);
 
   const handleNavigateToTasksWithExecutionStatuses = useCallback(
     (statuses: TestCase['status'][]) => {
@@ -391,8 +351,36 @@ export const ProjectView: React.FC<{
       setTasksExecutionNavKey(k => k + 1);
       setActiveTab('tasks');
     },
-    []
+    [setActiveTab]
   );
+
+  const handleNavigateAdjacentTask = useCallback(
+    (direction: 'prev' | 'next') => {
+      if (!activeTaskId) return;
+      const nextId = getAdjacentOpenTaskId(openTaskTabIds, activeTaskId, direction);
+      if (nextId) {
+        focusTaskTab(nextId);
+        setBreadcrumbTaskId(nextId);
+      }
+    },
+    [activeTaskId, openTaskTabIds, focusTaskTab]
+  );
+
+  useEffect(() => {
+    if (!activeTaskId || openTaskTabIds.length < 2) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        handleNavigateAdjacentTask('prev');
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        handleNavigateAdjacentTask('next');
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [activeTaskId, openTaskTabIds.length, handleNavigateAdjacentTask]);
 
   const handleTaskDetailsOpenChange = useCallback((taskId: string, isOpen: boolean) => {
     if (isOpen) setBreadcrumbTaskId(taskId);
@@ -405,21 +393,24 @@ export const ProjectView: React.FC<{
     }
   }, [activeTab]);
 
-  const scrollToTaskInList = useCallback((taskId: string) => {
-    setActiveTab('tasks');
-    setInitialTaskId(taskId);
-    const safe =
-      typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
-        ? CSS.escape(taskId)
-        : taskId.replace(/["\\]/g, '');
-    requestAnimationFrame(() => {
+  const scrollToTaskInList = useCallback(
+    (taskId: string) => {
+      setActiveTab('tasks');
+      setInitialTaskId(taskId);
+      const safe =
+        typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
+          ? CSS.escape(taskId)
+          : taskId.replace(/["\\]/g, '');
       requestAnimationFrame(() => {
-        document
-          .querySelector(`[data-task-id="${safe}"]`)
-          ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        requestAnimationFrame(() => {
+          document
+            .querySelector(`[data-task-id="${safe}"]`)
+            ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
       });
-    });
-  }, []);
+    },
+    [setActiveTab]
+  );
 
   const handleTabKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -703,18 +694,39 @@ export const ProjectView: React.FC<{
         </div>
 
         <div className="mt-4 sm:mt-5 max-md:mt-2">
-          <PageTransition transitionKey={activeTab}>
-            {activeTaskId ? (
+          {openTaskTabIds.map(taskId => (
+            <div
+              key={taskId}
+              className={activeTaskId === taskId ? undefined : 'hidden'}
+              aria-hidden={activeTaskId !== taskId}
+            >
               <TaskWorkspacePanel
-                key={activeTaskId}
-                taskId={activeTaskId}
+                taskId={taskId}
                 project={currentProject}
                 onUpdateProject={onUpdateProject}
                 onNavigateToTab={handleTabClick}
                 onOpenTaskTab={handleOpenTaskTab}
-                onClose={() => handleCloseTaskTab(activeTaskId)}
+                onClose={() => handleCloseTaskTab(taskId)}
+                initialSection={taskSections[taskId]}
+                onSectionChange={section => setTaskSection(taskId, section)}
+                openTaskNav={
+                  openTaskTabIds.length > 1
+                    ? {
+                        currentIndex: openTaskTabIds.indexOf(taskId) + 1,
+                        total: openTaskTabIds.length,
+                        onPrev: () => handleNavigateAdjacentTask('prev'),
+                        onNext: () => handleNavigateAdjacentTask('next'),
+                      }
+                    : undefined
+                }
               />
-            ) : null}
+            </div>
+          ))}
+          <div
+            className={isTaskTabId(activeTab) ? 'hidden' : undefined}
+            aria-hidden={isTaskTabId(activeTab)}
+          >
+            <PageTransition transitionKey={activeTab}>
             {isProjectFixedTabId(activeTab) && activeTab === 'dashboard' && (
               <section id="tab-panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
                 <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
@@ -774,7 +786,8 @@ export const ProjectView: React.FC<{
                 </Suspense>
               </section>
             )}
-          </PageTransition>
+            </PageTransition>
+          </div>
         </div>
       </div>
       {onDeleteProject && (

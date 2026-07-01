@@ -22,15 +22,15 @@ import {
   projectChromeHeaderShellClass,
 } from '../tasks/tasksPanelNeuStyles';
 import {
-  closeTaskTabState,
   isJiraSolusFixedTabId,
   isTaskTabId,
-  openTaskTabState,
   resolveTaskTabLabels,
   taskIdFromTabId,
   type JiraSolusFixedTabId,
   type WorkspaceTabId,
 } from '../../utils/workspaceTabs';
+import { getAdjacentOpenTaskId } from '../../utils/workspaceSessionStorage';
+import { useWorkspaceTabs } from '../../hooks/useWorkspaceTabs';
 
 const FIXED_TABS: Array<{ id: JiraSolusFixedTabId; label: string }> = [
   { id: 'dashboard', label: 'Dashboard' },
@@ -60,15 +60,30 @@ function applySnapshotToState(
  * Filas (Jira), com abas dinâmicas de tarefa no estilo console.
  */
 export const JiraSolusView = React.memo(() => {
-  const [activeTab, setActiveTab] = useState<WorkspaceTabId>('dashboard');
-  const [openTaskTabIds, setOpenTaskTabIds] = useState<string[]>([]);
-  const [filasBridge, setFilasBridge] = useState<JiraFilasWorkspaceBridge | null>(null);
-
   const initialSnapshot = useMemo(() => readTaskTrackingSnapshot(), []);
   const [tasks, setTasks] = useState<JiraTask[]>(() => initialSnapshot.tasks);
   const [selectedProjectKey, setSelectedProjectKey] = useState(
     () => initialSnapshot.selectedProjectKey
   );
+
+  const workspaceScopeId = selectedProjectKey || 'global';
+  const {
+    activeTab,
+    openTaskTabIds,
+    taskSections,
+    setActiveTab,
+    setTaskSection,
+    openTaskTab,
+    closeTaskTab,
+    focusTaskTab,
+  } = useWorkspaceTabs({
+    scope: 'jira-solus',
+    scopeId: workspaceScopeId,
+    defaultActiveTab: 'dashboard',
+    fallbackFixedTab: 'filas',
+  });
+
+  const [filasBridge, setFilasBridge] = useState<JiraFilasWorkspaceBridge | null>(null);
   const [jiraStatuses, setJiraStatuses] = useState<Array<{ name: string; color: string }>>([]);
   const [slaRiskWindowHours, setSlaRiskWindowHours] = useState(
     () => initialSnapshot.slaRiskWindowHours
@@ -128,32 +143,59 @@ export const JiraSolusView = React.memo(() => {
   const showFilasPanel = isJiraSolusFixedTabId(activeTab) && activeTab === 'filas';
   const keepFilasMounted = showFilasPanel || openTaskTabIds.length > 0;
 
-  const handleApplyFilter = useCallback((filter: JiraFilasFilter) => {
-    setActiveFilter(filter);
-    setActiveTab('filas');
-  }, []);
+  const handleApplyFilter = useCallback(
+    (filter: JiraFilasFilter) => {
+      setActiveFilter(filter);
+      setActiveTab('filas');
+    },
+    [setActiveTab]
+  );
 
-  const handleSelectWorkspaceTab = useCallback((tabId: WorkspaceTabId) => {
-    setActiveTab(tabId);
-  }, []);
+  const handleSelectWorkspaceTab = useCallback(
+    (tabId: WorkspaceTabId) => {
+      setActiveTab(tabId);
+    },
+    [setActiveTab]
+  );
 
   const handleOpenTaskTab = useCallback(
     (task: JiraTask) => {
-      const next = openTaskTabState(openTaskTabIds, activeTab, task.id);
-      setOpenTaskTabIds(next.openTaskTabIds);
-      setActiveTab(next.activeTab);
+      openTaskTab(task);
     },
-    [openTaskTabIds, activeTab]
+    [openTaskTab]
   );
 
   const handleCloseTaskTab = useCallback(
     (taskId: string) => {
-      const next = closeTaskTabState(openTaskTabIds, activeTab, taskId, 'filas');
-      setOpenTaskTabIds(next.openTaskTabIds);
-      setActiveTab(next.activeTab);
+      closeTaskTab(taskId);
     },
-    [openTaskTabIds, activeTab]
+    [closeTaskTab]
   );
+
+  const handleNavigateAdjacentTask = useCallback(
+    (direction: 'prev' | 'next') => {
+      if (!activeTaskId) return;
+      const nextId = getAdjacentOpenTaskId(openTaskTabIds, activeTaskId, direction);
+      if (nextId) focusTaskTab(nextId);
+    },
+    [activeTaskId, openTaskTabIds, focusTaskTab]
+  );
+
+  useEffect(() => {
+    if (!activeTaskId || openTaskTabIds.length < 2) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        handleNavigateAdjacentTask('prev');
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        handleNavigateAdjacentTask('next');
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [activeTaskId, openTaskTabIds.length, handleNavigateAdjacentTask]);
 
   const handleTabKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -242,24 +284,47 @@ export const JiraSolusView = React.memo(() => {
       </div>
 
       <div className="mt-4 sm:mt-5 max-md:mt-2">
-        {activeTaskId && filasBridge ? (
-          <TaskWorkspacePanel
-            key={activeTaskId}
-            taskId={activeTaskId}
-            project={filasBridge.filasProject}
-            onUpdateProject={filasBridge.onUpdateProject}
-            onOpenTaskTab={handleOpenTaskTab}
-            onClose={() => handleCloseTaskTab(activeTaskId)}
-            hideTestFeatures
-            onUpdateFromJira={filasBridge.onUpdateFromJira}
-            isUpdatingFromJira={filasBridge.isUpdatingFromJira === activeTaskId}
-          />
-        ) : activeTaskId ? (
-          <div className="rounded-lg border border-base-300/60 bg-base-100 p-4 text-sm text-base-content/80">
-            Carregando detalhes da tarefa…
+        {openTaskTabIds.map(taskId => (
+          <div
+            key={taskId}
+            className={activeTaskId === taskId ? undefined : 'hidden'}
+            aria-hidden={activeTaskId !== taskId}
+          >
+            {filasBridge ? (
+              <TaskWorkspacePanel
+                taskId={taskId}
+                project={filasBridge.filasProject}
+                onUpdateProject={filasBridge.onUpdateProject}
+                onOpenTaskTab={handleOpenTaskTab}
+                onClose={() => handleCloseTaskTab(taskId)}
+                hideTestFeatures
+                onUpdateFromJira={filasBridge.onUpdateFromJira}
+                isUpdatingFromJira={filasBridge.isUpdatingFromJira === taskId}
+                initialSection={taskSections[taskId]}
+                onSectionChange={section => setTaskSection(taskId, section)}
+                openTaskNav={
+                  openTaskTabIds.length > 1
+                    ? {
+                        currentIndex: openTaskTabIds.indexOf(taskId) + 1,
+                        total: openTaskTabIds.length,
+                        onPrev: () => handleNavigateAdjacentTask('prev'),
+                        onNext: () => handleNavigateAdjacentTask('next'),
+                      }
+                    : undefined
+                }
+              />
+            ) : (
+              <div className="rounded-lg border border-base-300/60 bg-base-100 p-4 text-sm text-base-content/80">
+                Carregando detalhes da tarefa…
+              </div>
+            )}
           </div>
-        ) : null}
+        ))}
 
+        <div
+          className={isTaskTabId(activeTab) ? 'hidden' : undefined}
+          aria-hidden={isTaskTabId(activeTab)}
+        >
         {isJiraSolusFixedTabId(activeTab) && activeTab === 'dashboard' && (
           <section
             id="jira-solus-panel-dashboard"
@@ -298,6 +363,7 @@ export const JiraSolusView = React.memo(() => {
             />
           </section>
         ) : null}
+        </div>
       </div>
     </div>
   );

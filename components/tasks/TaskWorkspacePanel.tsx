@@ -12,6 +12,8 @@ import {
   tasksPanelNeuModalTitleClass,
 } from './tasksPanelNeuStyles';
 
+import type { TaskDetailSectionId, OpenTaskNavProps } from '../../utils/workspaceSessionStorage';
+
 export interface TaskWorkspacePanelProps {
   taskId: string;
   project: Project;
@@ -24,6 +26,9 @@ export interface TaskWorkspacePanelProps {
   /** Substitui a sincronização padrão do projeto (ex.: importação de filas). */
   onUpdateFromJira?: (taskId: string) => Promise<void>;
   isUpdatingFromJira?: boolean;
+  initialSection?: TaskDetailSectionId;
+  onSectionChange?: (section: TaskDetailSectionId) => void;
+  openTaskNav?: OpenTaskNavProps;
 }
 
 /**
@@ -39,6 +44,9 @@ export const TaskWorkspacePanel: React.FC<TaskWorkspacePanelProps> = ({
   hideTestFeatures = false,
   onUpdateFromJira,
   isUpdatingFromJira,
+  initialSection,
+  onSectionChange,
+  openTaskNav,
 }) => {
   const actions = useTaskDetailActions(project, onUpdateProject);
 
@@ -117,6 +125,9 @@ export const TaskWorkspacePanel: React.FC<TaskWorkspacePanelProps> = ({
           isUpdatingFromJira ?? actions.updatingFromJiraTaskId === taskId
         }
         hideTestFeatures={hideTestFeatures}
+        initialSection={initialSection}
+        onSectionChange={onSectionChange}
+        openTaskNav={openTaskNav}
       />
 
       {actions.testCaseEditorRef ? (

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { JiraTask, BddScenario, TestCaseDetailLevel, Project, TestCase } from '../../types';
 import { TestCasesFreshnessIndicator } from './TestCasesFreshnessIndicator';
@@ -97,7 +97,8 @@ import {
   ChevronRight,
 } from 'lucide-react';
 
-type DetailSection = 'overview' | 'bdd' | 'tests' | 'businessRules' | 'planning';
+import type { TaskDetailSectionId, OpenTaskNavProps } from '../../utils/workspaceSessionStorage';
+type DetailSection = TaskDetailSectionId;
 type TestSubSection = 'strategy' | 'test-cases';
 
 const CARD_TITLE_CLASS = cn(
@@ -193,6 +194,11 @@ interface TaskDetailsViewProps {
    * sem testes, BDD ou colaboração.
    */
   hideTestFeatures?: boolean;
+  /** Seção inicial restaurada da sessão do workspace. */
+  initialSection?: DetailSection;
+  onSectionChange?: (section: DetailSection) => void;
+  /** Navegação entre abas de tarefa abertas (modo workspace). */
+  openTaskNav?: OpenTaskNavProps;
 }
 
 export type { TaskDetailsViewProps };
@@ -229,6 +235,9 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
   onUpdateFromJira,
   isUpdatingFromJira,
   hideTestFeatures = false,
+  initialSection,
+  onSectionChange,
+  openTaskNav,
 }) => {
   const reduceMotion = useReducedMotion();
   const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
@@ -241,7 +250,23 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
     loadingJiraAttachmentId,
     handleViewJiraAttachment,
   } = useJiraAttachmentViewer();
-  const [activeSection, setActiveSection] = useState<DetailSection>('overview');
+  const [activeSection, setActiveSectionState] = useState<DetailSection>(
+    initialSection ?? 'overview'
+  );
+
+  const setActiveSection = useCallback(
+    (section: DetailSection) => {
+      setActiveSectionState(section);
+      onSectionChange?.(section);
+    },
+    [onSectionChange]
+  );
+
+  useEffect(() => {
+    if (initialSection) {
+      setActiveSectionState(initialSection);
+    }
+  }, [initialSection]);
   const [activeTestSubSection, setActiveTestSubSection] = useState<TestSubSection>('strategy');
   const nextStep = getNextStepForTask(task);
   const hasTests = task.testCases && task.testCases.length > 0;
@@ -354,7 +379,7 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
     ) {
       setActiveSection('overview');
     }
-  }, [sectionTabs, activeSection, task.type, project, onUpdateProject]);
+  }, [sectionTabs, activeSection, task.type, project, onUpdateProject, setActiveSection]);
 
   const handleSaveScenario = (scenario: Omit<BddScenario, 'id'>) => {
     onSaveBddScenario(task.id, scenario, editingBddScenario?.id);
@@ -1151,6 +1176,38 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
             : 'Voltar para a lista de tarefas'
         }
       />
+      {presentation === 'workspace' && openTaskNav && openTaskNav.total > 1 ? (
+        <nav
+          className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-base-300/50 bg-base-200/40 px-3 py-2"
+          aria-label="Navegação entre tarefas abertas"
+        >
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className={cn(taskDetailsModalGhostBtnClass, 'gap-1')}
+            onClick={openTaskNav.onPrev}
+            aria-label="Tarefa anterior (Alt + seta esquerda)"
+          >
+            <ChevronLeft className="h-4 w-4 shrink-0" aria-hidden />
+            Tarefa anterior
+          </Button>
+          <span className="text-xs text-base-content/70" aria-live="polite">
+            {openTaskNav.currentIndex} de {openTaskNav.total}
+          </span>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className={cn(taskDetailsModalGhostBtnClass, 'gap-1')}
+            onClick={openTaskNav.onNext}
+            aria-label="Próxima tarefa (Alt + seta direita)"
+          >
+            Próxima tarefa
+            <ChevronRight className="h-4 w-4 shrink-0" aria-hidden />
+          </Button>
+        </nav>
+      ) : null}
       <div className={taskDetailsModalTabsScrollWrapClass}>
         <div className={taskDetailsModalTabsTrackClass} role="tablist" aria-label="Seções da tarefa">
           {sectionTabs.length > 1
