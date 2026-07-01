@@ -37,14 +37,14 @@ describe('formatBusinessRulesForPrompt', () => {
 
   it('com linkedBusinessRuleIds resolve e usa delimitador ###', () => {
     const project = baseProject([
-      { id: 'a', title: 'R1', description: 'D1', category: 'Geral', createdAt: '2020-01-01' },
-      { id: 'b', title: 'R2', description: 'D2', category: 'Segurança', createdAt: '2020-01-02' },
+      { id: 'a', title: 'R1', description: 'D1', category: 'Geral', createdAt: '2020-01-01', linkedTaskIds: [] },
+      { id: 'b', title: 'R2', description: 'D2', category: 'Segurança', createdAt: '2020-01-02', linkedTaskIds: [] },
     ]);
     const task = minimalTask({ linkedBusinessRuleIds: ['b'] });
     const out = formatBusinessRulesForPrompt(project, task);
     expect(out).toContain('### REGRAS DE NEGÓCIO APLICÁVEIS ###');
     expect(out).toContain('id: b');
-    expect(out).toContain('[Regra 1: R2 — Segurança]');
+    expect(out).toContain('[Regra 1: R2]');
     expect(out).not.toContain('id: a');
   });
 

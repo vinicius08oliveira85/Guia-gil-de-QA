@@ -55,6 +55,7 @@ import {
   type ProjectFixedTabId,
   type WorkspaceTabId,
 } from '../utils/workspaceTabs';
+import { useBusinessRuleDossierSync } from '../hooks/useBusinessRuleDossierSync';
 import { ProjectWorkspaceTabBar } from './project/ProjectWorkspaceTabBar';
 import { TaskWorkspacePanel } from './tasks/TaskWorkspacePanel';
 import type { JiraTask } from '../types';
@@ -113,6 +114,8 @@ export const ProjectView: React.FC<{
 
   // Projeto mais recente do store (mesmo id do prop); fallback ao prop se ainda não estiver na lista
   const currentProject = storeProject ?? project;
+
+  const analyzingBusinessRuleIds = useBusinessRuleDossierSync(currentProject, onUpdateProject);
 
   const metrics = useProjectMetrics(currentProject);
   const previousPhasesRef = useRef<string>('');
@@ -764,6 +767,7 @@ export const ProjectView: React.FC<{
                   <BusinessRulesManager
                     project={currentProject}
                     onUpdateProject={onUpdateProject}
+                    analyzingRuleIds={analyzingBusinessRuleIds}
                   />
                 </Suspense>
               </section>

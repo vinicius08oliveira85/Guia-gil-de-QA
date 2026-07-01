@@ -1,16 +1,74 @@
 import { z } from 'zod';
 import { DEFAULT_BUSINESS_RULE_CATEGORY } from './businessRuleDefaults';
 
+const BusinessRuleAnalysisItemSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  taskIds: z.array(z.string()),
+});
+
+const BusinessRuleFunctionalityItemSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  implemented: z.string(),
+  expectedResult: z.string(),
+  taskIds: z.array(z.string()),
+  implementationStatus: z.enum(['implementado', 'parcial', 'pendente', 'legado']).optional(),
+});
+
+const BusinessRuleAnalysisSchema = z.object({
+  version: z.number().int().min(1),
+  generatedAt: z.string(),
+  markdown: z.string(),
+  executiveSummary: z.string(),
+  asWas: z.string(),
+  asIs: z.string(),
+  toBe: z.string(),
+  components: z.array(BusinessRuleAnalysisItemSchema),
+  functionalities: z.array(BusinessRuleFunctionalityItemSchema),
+  integrations: z.array(
+    z.object({
+      system: z.string(),
+      type: z.string(),
+      evidence: z.string(),
+      taskIds: z.array(z.string()),
+    })
+  ),
+  traceability: z.array(
+    z.object({
+      taskId: z.string(),
+      section: z.string(),
+      confidence: z.enum(['alta', 'media', 'baixa']),
+    })
+  ),
+});
+
+const BusinessRuleScreenshotSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  dataUrl: z.string().min(1),
+  caption: z.string().optional(),
+  uploadedAt: z.string(),
+});
+
 // Schemas auxiliares
 export const BusinessRuleSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
-  description: z.string(),
+  searchKeywords: z.array(z.string()).optional(),
+  createdAt: z.string(),
+  linkedTaskIds: z.array(z.string()).default([]),
+  updatedAt: z.string().optional(),
+  taskSnapshotHash: z.string().optional(),
+  screenshots: z.array(BusinessRuleScreenshotSchema).optional(),
+  analysis: BusinessRuleAnalysisSchema.optional(),
+  analysisHistory: z.array(BusinessRuleAnalysisSchema).optional(),
+  isOutdated: z.boolean().optional(),
+  description: z.string().optional(),
   category: z
     .string()
     .optional()
     .transform(c => (c && c.trim() ? c.trim() : DEFAULT_BUSINESS_RULE_CATEGORY)),
-  createdAt: z.string(),
   linkedBusinessRuleIds: z.array(z.string()).optional(),
 });
 

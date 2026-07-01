@@ -30,12 +30,12 @@ export function sortBusinessRules(
         return ta - tb;
       }
       case 'category_asc': {
-        const c = a.category.localeCompare(b.category, 'pt-BR', { sensitivity: 'base' });
-        return c !== 0 ? c : a.title.localeCompare(b.title, 'pt-BR', { sensitivity: 'base' });
+        const ca = (a.category ?? '').localeCompare(b.category ?? '', 'pt-BR', { sensitivity: 'base' });
+        return ca !== 0 ? ca : a.title.localeCompare(b.title, 'pt-BR', { sensitivity: 'base' });
       }
       case 'category_desc': {
-        const c = b.category.localeCompare(a.category, 'pt-BR', { sensitivity: 'base' });
-        return c !== 0 ? c : a.title.localeCompare(b.title, 'pt-BR', { sensitivity: 'base' });
+        const cd = (b.category ?? '').localeCompare(a.category ?? '', 'pt-BR', { sensitivity: 'base' });
+        return cd !== 0 ? cd : a.title.localeCompare(b.title, 'pt-BR', { sensitivity: 'base' });
       }
       default:
         return 0;

@@ -81,13 +81,30 @@ function lastErrorWarrantsAlternateGeminiModel(error: unknown, modelIndex: numbe
   return false;
 }
 
+export type GeminiContentPart =
+  | { text: string }
+  | { inlineData: { mimeType: string; data: string } };
+
+export type GeminiContentsInput =
+  | string
+  | GeminiContentPart[]
+  | { parts: GeminiContentPart[] };
+
 export interface GeminiGenerateContentParams {
   model: string;
-  contents: string;
+  contents: GeminiContentsInput;
   config?: {
     responseMimeType?: string;
     responseSchema?: unknown;
   };
+}
+
+function normalizeGeminiContents(contents: GeminiContentsInput): string | { parts: GeminiContentPart[] } {
+  if (typeof contents === 'string') return contents;
+  if (Array.isArray(contents)) {
+    return { parts: contents };
+  }
+  return contents;
 }
 
 export interface GeminiResponse {
@@ -386,7 +403,7 @@ export async function callGeminiWithRetry(
             try {
               const response = await ai.models.generateContent({
                 model: modelId,
-                contents: params.contents,
+                contents: normalizeGeminiContents(params.contents),
                 config: params.config,
               });
 

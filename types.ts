@@ -279,14 +279,87 @@ export const SUGGESTED_TOOLS = ['Postman', 'Insomnia', 'DBeaver', 'Kibana'] as c
 
 export type SuggestedTool = (typeof SUGGESTED_TOOLS)[number];
 
+export type BusinessRuleTraceabilityConfidence = 'alta' | 'media' | 'baixa';
+
+export interface BusinessRuleScreenshot {
+  id: string;
+  name: string;
+  dataUrl: string;
+  caption?: string;
+  uploadedAt: string;
+}
+
+export interface BusinessRuleAnalysisItem {
+  name: string;
+  description: string;
+  taskIds: string[];
+}
+
+export type BusinessRuleFunctionalityStatus =
+  | 'implementado'
+  | 'parcial'
+  | 'pendente'
+  | 'legado';
+
+/** Funcionalidade detalhada do dossiê: o que foi feito e resultado esperado. */
+export interface BusinessRuleFunctionalityItem {
+  name: string;
+  /** Resumo curto da funcionalidade. */
+  description: string;
+  /** O que foi implementado (telas, fluxos, validações, regras). */
+  implemented: string;
+  /** Resultado esperado para o usuário ou negócio. */
+  expectedResult: string;
+  taskIds: string[];
+  implementationStatus?: BusinessRuleFunctionalityStatus;
+}
+
+export interface BusinessRuleIntegrationItem {
+  system: string;
+  type: string;
+  evidence: string;
+  taskIds: string[];
+}
+
+export interface BusinessRuleTraceabilityItem {
+  taskId: string;
+  section: string;
+  confidence: BusinessRuleTraceabilityConfidence;
+}
+
+export interface BusinessRuleAnalysis {
+  version: number;
+  generatedAt: string;
+  markdown: string;
+  executiveSummary: string;
+  asWas: string;
+  asIs: string;
+  toBe: string;
+  components: BusinessRuleAnalysisItem[];
+  functionalities: BusinessRuleFunctionalityItem[];
+  integrations: BusinessRuleIntegrationItem[];
+  traceability: BusinessRuleTraceabilityItem[];
+}
+
 export interface BusinessRule {
   id: string;
   title: string;
-  description: string;
-  /** Classificação livre (ex.: Segurança, Financeiro); legado sem valor tratado como "Geral" na normalização. */
-  category: string;
+  /** Palavras-chave para buscar tasks e orientar a IA (ex.: Foto do dia, Mapa de Internação). */
+  searchKeywords?: string[];
   createdAt: string;
-  /** Outras regras do mesmo projeto vinculadas a esta; a UI insere `@NomeDaRegra` na descrição ao marcar. */
+  updatedAt?: string;
+  linkedTaskIds: string[];
+  taskSnapshotHash?: string;
+  screenshots?: BusinessRuleScreenshot[];
+  analysis?: BusinessRuleAnalysis;
+  /** Versões anteriores do dossiê (máx. 5 na normalização). */
+  analysisHistory?: BusinessRuleAnalysis[];
+  isOutdated?: boolean;
+  /** Legado: descrição manual (somente migração). */
+  description?: string;
+  /** Legado: classificação livre. */
+  category?: string;
+  /** Legado: vínculo entre regras. */
   linkedBusinessRuleIds?: string[];
 }
 

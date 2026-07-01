@@ -35,14 +35,28 @@ function normalizeRule(row: unknown): BusinessRule | null {
         .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
         .map(x => x.trim())
     : undefined;
-  return {
+  const linkedTaskIdsRaw = o.linkedTaskIds;
+  const linkedTaskIds = Array.isArray(linkedTaskIdsRaw)
+    ? linkedTaskIdsRaw.filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
+    : [];
+  const searchKeywordsRaw = o.searchKeywords;
+  const searchKeywords = Array.isArray(searchKeywordsRaw)
+    ? searchKeywordsRaw.filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
+    : undefined;
+  return normalizeBusinessRule({
     id: String(o.id).trim(),
     title,
     description,
     category,
     createdAt,
+    linkedTaskIds,
+    ...(searchKeywords?.length ? { searchKeywords } : {}),
     ...(linkedBusinessRuleIds && linkedBusinessRuleIds.length > 0 ? { linkedBusinessRuleIds } : {}),
-  };
+    ...(typeof o.analysis === 'object' && o.analysis ? { analysis: o.analysis as BusinessRule['analysis'] } : {}),
+    ...(Array.isArray(o.analysisHistory) ? { analysisHistory: o.analysisHistory as BusinessRule['analysisHistory'] } : {}),
+    ...(typeof o.taskSnapshotHash === 'string' ? { taskSnapshotHash: o.taskSnapshotHash } : {}),
+    ...(typeof o.isOutdated === 'boolean' ? { isOutdated: o.isOutdated } : {}),
+  });
 }
 
 /** Valida `format` / `formatVersion` quando presentes (legado sem campos continua válido). */
@@ -138,15 +152,22 @@ export function mergeBusinessRulesInto(
   for (const inc of incoming) {
     const cur = map.get(inc.id);
     if (cur) {
-      map.set(inc.id, {
+      map.set(inc.id, normalizeBusinessRule({
         ...cur,
         title: inc.title,
-        description: inc.description,
+        description: inc.description ?? cur.description,
         category: inc.category?.trim() ? inc.category.trim() : cur.category,
+        linkedTaskIds: inc.linkedTaskIds ?? cur.linkedTaskIds,
+        searchKeywords: inc.searchKeywords ?? cur.searchKeywords,
+        createdAt: cur.createdAt,
         ...(inc.linkedBusinessRuleIds !== undefined
           ? { linkedBusinessRuleIds: inc.linkedBusinessRuleIds }
           : {}),
-      });
+        ...(inc.analysis ? { analysis: inc.analysis } : {}),
+        ...(inc.analysisHistory ? { analysisHistory: inc.analysisHistory } : {}),
+        ...(inc.taskSnapshotHash ? { taskSnapshotHash: inc.taskSnapshotHash } : {}),
+        ...(inc.isOutdated !== undefined ? { isOutdated: inc.isOutdated } : {}),
+      }));
     } else {
       map.set(inc.id, normalizeBusinessRule(inc));
     }

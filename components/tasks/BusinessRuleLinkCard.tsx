@@ -2,6 +2,7 @@ import React from 'react';
 import { ChevronDown } from 'lucide-react';
 import type { BusinessRule } from '../../types';
 import { cn } from '../../utils/cn';
+import { getBusinessRulePromptText } from '../../utils/businessRulePromptText';
 import {
   leveTaskModalCategoryBadgeClass,
   leveTaskModalMutedClass,
@@ -59,7 +60,7 @@ export const BusinessRuleLinkCard: React.FC<BusinessRuleLinkCardProps> = ({
         <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-2 py-3 pr-3 text-left text-sm font-medium text-[var(--leve-header-text)] transition-[background-color,box-shadow] hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_6%,var(--leve-neu-bg))] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] [&::-webkit-details-marker]:hidden">
           <span className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
             <span className="truncate">{rule.title}</span>
-            <span className={leveTaskModalCategoryBadgeClass}>{rule.category}</span>
+            <span className={leveTaskModalCategoryBadgeClass}>{rule.category ?? 'Geral'}</span>
             {coveredByCategory && (
               <span
                 className="leve-neu-pill shrink-0 px-2 py-0.5 font-sans text-[10px] font-semibold text-[var(--leve-header-text-muted)]"
@@ -80,11 +81,14 @@ export const BusinessRuleLinkCard: React.FC<BusinessRuleLinkCardProps> = ({
             leveTaskModalMutedClass
           )}
         >
-          {rule.description.trim() ? (
-            rule.description
-          ) : (
-            <span className={cn('italic', leveTaskModalMutedXsClass)}>Sem descrição</span>
-          )}
+          {(() => {
+            const text = getBusinessRulePromptText(rule).trim();
+            return text ? (
+              text
+            ) : (
+              <span className={cn('italic', leveTaskModalMutedXsClass)}>Sem conteúdo</span>
+            );
+          })()}
         </div>
       </details>
     </div>

@@ -102,12 +102,12 @@ describe('validateBusinessRulesImportEnvelope', () => {
 
 describe('mergeBusinessRulesInto', () => {
   const e: BusinessRule[] = [
-    { id: '1', title: 'A', description: 'a', category: 'Geral', createdAt: 't1' },
+    { id: '1', title: 'A', description: 'a', category: 'Geral', createdAt: 't1', linkedTaskIds: [] },
   ];
 
   it('adiciona novas ao final', () => {
     const incoming: BusinessRule[] = [
-      { id: '2', title: 'B', description: 'b', category: 'Geral', createdAt: 't2' },
+      { id: '2', title: 'B', description: 'b', category: 'Geral', createdAt: 't2', linkedTaskIds: [] },
     ];
     const { merged, addedCount, updatedCount } = mergeBusinessRulesInto(e, incoming);
     expect(addedCount).toBe(1);
@@ -117,7 +117,7 @@ describe('mergeBusinessRulesInto', () => {
 
   it('atualiza por id e preserva ordem', () => {
     const incoming: BusinessRule[] = [
-      { id: '1', title: 'A2', description: 'a2', category: 'Segurança', createdAt: 't99' },
+      { id: '1', title: 'A2', description: 'a2', category: 'Segurança', createdAt: 't99', linkedTaskIds: [] },
     ];
     const { merged, addedCount, updatedCount } = mergeBusinessRulesInto(e, incoming);
     expect(updatedCount).toBe(1);

@@ -41,7 +41,7 @@ export const exportBusinessRulesToJSON = (projectName: string, rules: BusinessRu
       projectName,
       exportedAt: new Date().toISOString(),
       readme:
-        'Cada item em businessRules: id, title, description, category, createdAt (obrigatórios no app); linkedBusinessRuleIds opcional (ids de outras regras do mesmo array).',
+        'Cada item em businessRules: id, title, createdAt, linkedTaskIds; searchKeywords, analysis, screenshots e demais campos do dossiê IA são opcionais.',
       businessRules: rules,
     },
     null,

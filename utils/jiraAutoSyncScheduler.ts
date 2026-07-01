@@ -1,6 +1,7 @@
 import { runJiraAutoSync } from '../services/jira/jiraAutoSync';
 import { JIRA_AUTO_SYNC_INTERVAL_MINUTES } from './jiraAutoSyncConstants';
 import { getCurrentSlotKey, getNextAlignedRunDate } from './jiraAutoSyncTiming';
+import { JIRA_AUTO_SYNC_COMPLETE_EVENT } from '../services/businessRuleDossierSyncService';
 import { logger } from './logger';
 
 let alignedTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -12,6 +13,9 @@ async function tick(): Promise<void> {
   const summary = await runJiraAutoSync();
   if (summary) {
     lastAlignedSlotKey = getCurrentSlotKey();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent(JIRA_AUTO_SYNC_COMPLETE_EVENT));
+    }
   }
 }
 
