@@ -1,52 +1,76 @@
 import { runJiraAutoSync } from '../services/jira/jiraAutoSync';
-import { JIRA_AUTO_SYNC_INTERVAL_MS } from './jiraAutoSyncConstants';
+import { JIRA_AUTO_SYNC_INTERVAL_MINUTES } from './jiraAutoSyncConstants';
+import { getCurrentSlotKey, getNextAlignedRunDate } from './jiraAutoSyncTiming';
 import { logger } from './logger';
 
-let schedulerInterval: ReturnType<typeof setInterval> | null = null;
-let lastRunAt = 0;
+let alignedTimeout: ReturnType<typeof setTimeout> | null = null;
+let lastAlignedSlotKey = '';
 let visibilityHandler: (() => void) | null = null;
+let schedulerStarted = false;
 
 async function tick(): Promise<void> {
   const summary = await runJiraAutoSync();
   if (summary) {
-    lastRunAt = Date.now();
+    lastAlignedSlotKey = getCurrentSlotKey();
   }
 }
 
+function scheduleNextAlignedTick(): void {
+  if (alignedTimeout) {
+    clearTimeout(alignedTimeout);
+    alignedTimeout = null;
+  }
+
+  const delay = Math.max(0, getNextAlignedRunDate().getTime() - Date.now());
+
+  alignedTimeout = setTimeout(() => {
+    void (async () => {
+      await tick();
+      scheduleNextAlignedTick();
+    })();
+  }, delay);
+}
+
+function handleVisibilityChange(): void {
+  if (document.visibilityState !== 'visible') return;
+
+  const currentSlotKey = getCurrentSlotKey();
+  if (currentSlotKey === lastAlignedSlotKey) return;
+
+  void tick();
+}
+
 /**
- * Inicia o agendador de sincronização automática com o Jira (a cada 10 minutos).
- * Também dispara ao retornar à aba se o intervalo já tiver expirado.
+ * Inicia o agendador de sincronização automática com o Jira.
+ * Dispara imediatamente ao abrir o app e depois nos horários alinhados (:00, :20, :40…).
+ * Também dispara ao retornar à aba se o slot atual ainda não foi sincronizado.
  */
 export function startJiraAutoSyncScheduler(): void {
-  if (schedulerInterval) return;
+  if (schedulerStarted) return;
+  schedulerStarted = true;
 
-  lastRunAt = Date.now();
+  void tick();
+  scheduleNextAlignedTick();
 
-  schedulerInterval = setInterval(() => {
-    void tick();
-  }, JIRA_AUTO_SYNC_INTERVAL_MS);
-
-  visibilityHandler = () => {
-    if (document.visibilityState !== 'visible') return;
-    if (Date.now() - lastRunAt < JIRA_AUTO_SYNC_INTERVAL_MS) return;
-    void tick();
-  };
-
+  visibilityHandler = handleVisibilityChange;
   document.addEventListener('visibilitychange', visibilityHandler);
+
   logger.info(
-    `Agendador Jira iniciado (intervalo: ${JIRA_AUTO_SYNC_INTERVAL_MS / 60_000} min)`,
+    `Agendador Jira iniciado (sync na abertura + a cada ${JIRA_AUTO_SYNC_INTERVAL_MINUTES} min alinhado ao relógio)`,
     'jiraAutoSyncScheduler'
   );
 }
 
 /** Interrompe o agendador de sincronização automática com o Jira. */
 export function stopJiraAutoSyncScheduler(): void {
-  if (schedulerInterval) {
-    clearInterval(schedulerInterval);
-    schedulerInterval = null;
+  if (alignedTimeout) {
+    clearTimeout(alignedTimeout);
+    alignedTimeout = null;
   }
   if (visibilityHandler) {
     document.removeEventListener('visibilitychange', visibilityHandler);
     visibilityHandler = null;
   }
+  schedulerStarted = false;
+  lastAlignedSlotKey = '';
 }

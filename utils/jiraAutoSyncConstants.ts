@@ -1,2 +1,4 @@
-/** Intervalo padrão da sincronização automática com o Jira (10 minutos). */
-export const JIRA_AUTO_SYNC_INTERVAL_MS = 10 * 60 * 1000;
+/** Intervalo da sincronização automática com o Jira (20 minutos, alinhado ao relógio). */
+export const JIRA_AUTO_SYNC_INTERVAL_MINUTES = 20;
+
+export const JIRA_AUTO_SYNC_INTERVAL_MS = JIRA_AUTO_SYNC_INTERVAL_MINUTES * 60 * 1000;
