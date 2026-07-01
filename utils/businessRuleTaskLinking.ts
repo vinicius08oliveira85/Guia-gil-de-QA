@@ -1,5 +1,55 @@
 import type { BusinessRule, JiraTask, Project } from '../types';
 
+/** Verifica vínculo bidirecional entre task e regra. */
+export function isBusinessRuleLinkedToTask(task: JiraTask, rule: BusinessRule): boolean {
+  return (
+    (task.linkedBusinessRuleIds ?? []).includes(rule.id) ||
+    (rule.linkedTaskIds ?? []).includes(task.id)
+  );
+}
+
+/** Resolve ids de regras vinculadas à task (direto + reverso na regra). */
+export function getLinkedBusinessRuleIdsForTask(task: JiraTask, project: Project): string[] {
+  const ids = new Set(task.linkedBusinessRuleIds ?? []);
+  for (const rule of project.businessRules ?? []) {
+    if ((rule.linkedTaskIds ?? []).includes(task.id)) {
+      ids.add(rule.id);
+    }
+  }
+  return [...ids];
+}
+
+/** Indica se a regra entra no prompt por categoria vinculada na task (legado). */
+export function isBusinessRuleCoveredByTaskCategory(task: JiraTask, rule: BusinessRule): boolean {
+  const categories = new Set(
+    (task.linkedBusinessRuleCategories ?? []).map(c => String(c).trim()).filter(Boolean)
+  );
+  if (categories.size === 0) return false;
+  return categories.has((rule.category ?? '').trim());
+}
+
+/**
+ * Vincula ou desvincula uma regra da task (sincroniza linkedTaskIds na regra).
+ */
+export function toggleBusinessRuleTaskLink(
+  project: Project,
+  taskId: string,
+  ruleId: string,
+  linked: boolean
+): Project {
+  const rule = project.businessRules.find(r => r.id === ruleId);
+  if (!rule) return project;
+
+  const linkedTaskIds = new Set(rule.linkedTaskIds ?? []);
+  if (linked) {
+    linkedTaskIds.add(taskId);
+  } else {
+    linkedTaskIds.delete(taskId);
+  }
+
+  return applyBusinessRuleTaskLinks(project, ruleId, [...linkedTaskIds]);
+}
+
 /**
  * Sincroniza vínculos bidirecionais entre regra e tasks.
  */
@@ -28,8 +78,9 @@ export function applyBusinessRuleTaskLinks(
     }
 
     const linkedBusinessRuleIds = [...current];
+    const { linkedBusinessRuleIds: _prev, ...taskRest } = task;
     return {
-      ...task,
+      ...taskRest,
       ...(linkedBusinessRuleIds.length > 0 ? { linkedBusinessRuleIds } : {}),
     };
   });
@@ -51,8 +102,9 @@ export function removeBusinessRuleFromProject(
       return task;
     }
     const next = (task.linkedBusinessRuleIds ?? []).filter(id => id !== ruleId);
+    const { linkedBusinessRuleIds: _prev, ...taskRest } = task;
     return {
-      ...task,
+      ...taskRest,
       ...(next.length > 0 ? { linkedBusinessRuleIds: next } : {}),
     };
   });

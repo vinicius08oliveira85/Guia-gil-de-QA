@@ -1,15 +1,20 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { JiraTask, Project } from '../../types';
 import { Button } from '../common/Button';
-import { getBusinessRulePromptText } from '../../utils/businessRulePromptText';
+import {
+  getLinkedBusinessRuleIdsForTask,
+  isBusinessRuleCoveredByTaskCategory,
+  isBusinessRuleLinkedToTask,
+  toggleBusinessRuleTaskLink,
+} from '../../utils/businessRuleTaskLinking';
+import { sortBusinessRules } from '../../utils/businessRulesSort';
 import { cn } from '../../utils/cn';
 import {
   leveTaskModalFieldLabelClass,
-  leveTaskModalInsetClass,
   leveTaskModalMutedClass,
   leveTaskModalSectionClass,
-  leveTaskModalStrongClass,
 } from '../common/projectCardUi';
+import { BusinessRuleLinkCard } from './BusinessRuleLinkCard';
 
 export interface TaskBusinessRulesLinkerProps {
   task: Pick<JiraTask, 'id' | 'linkedBusinessRuleIds' | 'linkedBusinessRuleCategories'>;
@@ -19,25 +24,43 @@ export interface TaskBusinessRulesLinkerProps {
 }
 
 /**
- * Exibe regras de negócio vinculadas automaticamente à tarefa (somente leitura).
+ * Vincula regras de negócio à tarefa com seleção por checkbox (sincroniza dossiê ↔ task).
  */
 export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = ({
   task,
   project,
+  onUpdateProject,
   onNavigateToTab,
 }) => {
   const safeDomId = useMemo(() => task.id.replace(/[^a-zA-Z0-9_-]/g, '_'), [task.id]);
-  const projectRules = project.businessRules ?? [];
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const linkedRules = useMemo(() => {
-    const ids = new Set(task.linkedBusinessRuleIds ?? []);
-    for (const rule of projectRules) {
-      if ((rule.linkedTaskIds ?? []).includes(task.id)) {
-        ids.add(rule.id);
-      }
-    }
-    return projectRules.filter(r => ids.has(r.id));
-  }, [projectRules, task.id, task.linkedBusinessRuleIds]);
+  const projectRules = project.businessRules ?? [];
+  const linkedCount = useMemo(
+    () => getLinkedBusinessRuleIdsForTask(task as JiraTask, project).length,
+    [task, project]
+  );
+
+  const sortedRules = useMemo(
+    () => sortBusinessRules(projectRules, 'title_asc'),
+    [projectRules]
+  );
+
+  const filteredRules = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return sortedRules;
+    return sortedRules.filter(
+      r =>
+        r.title.toLowerCase().includes(q) ||
+        (r.searchKeywords ?? []).some(k => k.toLowerCase().includes(q))
+    );
+  }, [sortedRules, searchQuery]);
+
+  const handleToggle = (ruleId: string, checked: boolean) => {
+    if (!onUpdateProject) return;
+    const updated = toggleBusinessRuleTaskLink(project, task.id, ruleId, checked);
+    onUpdateProject(updated);
+  };
 
   return (
     <div className="space-y-3">
@@ -45,9 +68,29 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
         className={cn(leveTaskModalSectionClass, 'space-y-3 p-4')}
         aria-labelledby={`task-br-heading-${safeDomId}`}
       >
-        <h3 id={`task-br-heading-${safeDomId}`} className={leveTaskModalFieldLabelClass}>
-          Regras de negócio
-        </h3>
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div>
+            <h3 id={`task-br-heading-${safeDomId}`} className={leveTaskModalFieldLabelClass}>
+              Regras de negócio
+            </h3>
+            <p className={cn('mt-1', leveTaskModalMutedClass)}>
+              Marque as regras que se aplicam a esta task. O vínculo é salvo nos dois sentidos (task
+              e dossiê).
+              {linkedCount > 0 ? ` ${linkedCount} vinculada(s).` : ''}
+            </p>
+          </div>
+          {onNavigateToTab && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onNavigateToTab('businessRules')}
+            >
+              Gerenciar dossiês
+            </Button>
+          )}
+        </div>
+
         {projectRules.length === 0 ? (
           <div className="space-y-2">
             <p className={leveTaskModalMutedClass}>
@@ -65,41 +108,52 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
               </Button>
             )}
           </div>
-        ) : linkedRules.length === 0 ? (
-          <div className="space-y-2">
-            <p className={leveTaskModalMutedClass}>
-              Nenhuma regra vinculada a esta tarefa. Os vínculos são criados automaticamente ao
-              gerar dossiês na aba Regras de negócio.
-            </p>
-            {onNavigateToTab && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onNavigateToTab('businessRules')}
-              >
-                Ir para Regras de negócio
-              </Button>
-            )}
-          </div>
         ) : (
-          <ul className={leveTaskModalInsetClass} role="list">
-            {linkedRules.map(rule => (
-              <li key={rule.id} className="border-b border-base-300/30 py-3 last:border-0">
-                <p className={cn('text-sm font-semibold', leveTaskModalStrongClass)}>{rule.title}</p>
-                {rule.analysis ? (
-                  <p className="mt-1 text-xs text-base-content/70">
-                    Dossiê v{rule.analysis.version}
-                    {rule.isOutdated ? ' · desatualizado' : ''}
-                  </p>
-                ) : null}
-                <p className="mt-2 text-sm leading-relaxed text-base-content/80">
-                  {getBusinessRulePromptText(rule).slice(0, 400)}
-                  {getBusinessRulePromptText(rule).length > 400 ? '…' : ''}
-                </p>
-              </li>
-            ))}
-          </ul>
+          <>
+            <label className="sr-only" htmlFor={`task-br-search-${safeDomId}`}>
+              Buscar regra de negócio
+            </label>
+            <input
+              id={`task-br-search-${safeDomId}`}
+              type="search"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Buscar regra por nome ou palavra-chave…"
+              className="input input-bordered input-sm w-full"
+              aria-label="Buscar regra de negócio"
+            />
+
+            {filteredRules.length === 0 ? (
+              <p className={leveTaskModalMutedClass}>Nenhuma regra corresponde à busca.</p>
+            ) : (
+              <ul className="space-y-2" role="list">
+                {filteredRules.map(rule => {
+                  const coveredByCategory = isBusinessRuleCoveredByTaskCategory(
+                    task as JiraTask,
+                    rule
+                  );
+                  const linked =
+                    isBusinessRuleLinkedToTask(task as JiraTask, rule) || coveredByCategory;
+
+                  return (
+                    <li key={rule.id}>
+                      <BusinessRuleLinkCard
+                        rule={rule}
+                        checked={linked}
+                        coveredByCategory={coveredByCategory}
+                        domIdPrefix={safeDomId}
+                        variant="task"
+                        onToggle={checked => {
+                          if (coveredByCategory) return;
+                          handleToggle(rule.id, checked);
+                        }}
+                      />
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </>
         )}
       </section>
     </div>

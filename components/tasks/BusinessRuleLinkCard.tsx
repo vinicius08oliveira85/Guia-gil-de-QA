@@ -52,6 +52,7 @@ export const BusinessRuleLinkCard: React.FC<BusinessRuleLinkCardProps> = ({
           type="checkbox"
           className="checkbox checkbox-highlight mt-0.5 shrink-0"
           checked={checked}
+          disabled={coveredByCategory}
           onChange={e => onToggle(e.target.checked)}
           aria-label={`${checked ? 'Desmarcar' : 'Marcar'} vínculo da regra: ${rule.title}`}
         />

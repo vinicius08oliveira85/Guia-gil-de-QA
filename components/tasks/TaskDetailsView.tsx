@@ -34,6 +34,7 @@ import {
 } from './JiraFilasSummarySections';
 import { TaskLinksView } from './TaskLinksView';
 import { getTaskDependents } from '../../utils/dependencyService';
+import { getLinkedBusinessRuleIdsForTask } from '../../utils/businessRuleTaskLinking';
 import { cn } from '../../utils/cn';
 import { TaskBusinessRulesLinker } from './TaskBusinessRulesLinker';
 import { FileViewer } from '../common/FileViewer';
@@ -276,7 +277,7 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
     }
 
     if (project && onUpdateProject) {
-      const idSet = new Set((task.linkedBusinessRuleIds ?? []).filter(Boolean));
+      const idSet = new Set(getLinkedBusinessRuleIdsForTask(task, project));
       const catSet = new Set(
         (task.linkedBusinessRuleCategories ?? [])
           .map(c => (typeof c === 'string' ? c.trim() : ''))
