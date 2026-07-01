@@ -277,7 +277,7 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
     }
 
     if (project && onUpdateProject) {
-      const idSet = new Set(getLinkedBusinessRuleIdsForTask(task, project));
+      const idSet = new Set(getLinkedBusinessRuleIdsForTask(project, task));
       const catSet = new Set(
         (task.linkedBusinessRuleCategories ?? [])
           .map(c => (typeof c === 'string' ? c.trim() : ''))

@@ -1,15 +1,10 @@
 import type { BusinessRule, JiraTask, Project } from '../types';
 
-/** Verifica vínculo bidirecional entre task e regra. */
-export function isBusinessRuleLinkedToTask(task: JiraTask, rule: BusinessRule): boolean {
-  return (
-    (task.linkedBusinessRuleIds ?? []).includes(rule.id) ||
-    (rule.linkedTaskIds ?? []).includes(task.id)
-  );
-}
-
-/** Resolve ids de regras vinculadas à task (direto + reverso na regra). */
-export function getLinkedBusinessRuleIdsForTask(task: JiraTask, project: Project): string[] {
+/** Resolve ids de regras vinculadas à task (direto e via rule.linkedTaskIds). */
+export function getLinkedBusinessRuleIdsForTask(
+  project: Project,
+  task: Pick<JiraTask, 'id' | 'linkedBusinessRuleIds'>
+): string[] {
   const ids = new Set(task.linkedBusinessRuleIds ?? []);
   for (const rule of project.businessRules ?? []) {
     if ((rule.linkedTaskIds ?? []).includes(task.id)) {
@@ -19,35 +14,52 @@ export function getLinkedBusinessRuleIdsForTask(task: JiraTask, project: Project
   return [...ids];
 }
 
-/** Indica se a regra entra no prompt por categoria vinculada na task (legado). */
-export function isBusinessRuleCoveredByTaskCategory(task: JiraTask, rule: BusinessRule): boolean {
-  const categories = new Set(
-    (task.linkedBusinessRuleCategories ?? []).map(c => String(c).trim()).filter(Boolean)
-  );
-  if (categories.size === 0) return false;
-  return categories.has((rule.category ?? '').trim());
-}
-
-/**
- * Vincula ou desvincula uma regra da task (sincroniza linkedTaskIds na regra).
- */
-export function toggleBusinessRuleTaskLink(
+export function isTaskLinkedToBusinessRule(
   project: Project,
   taskId: string,
-  ruleId: string,
-  linked: boolean
+  ruleId: string
+): boolean {
+  const task = project.tasks.find(t => t.id === taskId);
+  if (!task) return false;
+  return getLinkedBusinessRuleIdsForTask(project, task).includes(ruleId);
+}
+
+/** Vincula task à regra (bidirecional). A regra permanece no projeto. */
+export function linkTaskToBusinessRule(
+  project: Project,
+  taskId: string,
+  ruleId: string
 ): Project {
   const rule = project.businessRules.find(r => r.id === ruleId);
   if (!rule) return project;
 
   const linkedTaskIds = new Set(rule.linkedTaskIds ?? []);
-  if (linked) {
-    linkedTaskIds.add(taskId);
-  } else {
-    linkedTaskIds.delete(taskId);
+  linkedTaskIds.add(taskId);
+  return applyBusinessRuleTaskLinks(project, ruleId, [...linkedTaskIds]);
+}
+
+/** Desvincula task da regra (bidirecional). A regra permanece no projeto. */
+export function unlinkTaskFromBusinessRule(
+  project: Project,
+  taskId: string,
+  ruleId: string
+): Project {
+  const rule = project.businessRules.find(r => r.id === ruleId);
+  if (!rule) {
+    const tasks = project.tasks.map(task => {
+      if (task.id !== taskId) return task;
+      const next = (task.linkedBusinessRuleIds ?? []).filter(id => id !== ruleId);
+      if (next.length === 0) {
+        const { linkedBusinessRuleIds: _removed, ...rest } = task;
+        return rest as JiraTask;
+      }
+      return { ...task, linkedBusinessRuleIds: next };
+    });
+    return { ...project, tasks };
   }
 
-  return applyBusinessRuleTaskLinks(project, ruleId, [...linkedTaskIds]);
+  const linkedTaskIds = (rule.linkedTaskIds ?? []).filter(id => id !== taskId);
+  return applyBusinessRuleTaskLinks(project, ruleId, linkedTaskIds);
 }
 
 /**
@@ -78,9 +90,8 @@ export function applyBusinessRuleTaskLinks(
     }
 
     const linkedBusinessRuleIds = [...current];
-    const { linkedBusinessRuleIds: _prev, ...taskRest } = task;
     return {
-      ...taskRest,
+      ...task,
       ...(linkedBusinessRuleIds.length > 0 ? { linkedBusinessRuleIds } : {}),
     };
   });
@@ -102,9 +113,8 @@ export function removeBusinessRuleFromProject(
       return task;
     }
     const next = (task.linkedBusinessRuleIds ?? []).filter(id => id !== ruleId);
-    const { linkedBusinessRuleIds: _prev, ...taskRest } = task;
     return {
-      ...taskRest,
+      ...task,
       ...(next.length > 0 ? { linkedBusinessRuleIds: next } : {}),
     };
   });
