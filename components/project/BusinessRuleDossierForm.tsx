@@ -32,7 +32,7 @@ export interface BusinessRuleDossierFormProps {
   project: Project;
   editingRule?: BusinessRule | null;
   onClose: () => void;
-  onSaved: (project: Project) => void;
+  onSaved: (project: Project) => void | Promise<void>;
 }
 
 /**
@@ -137,7 +137,7 @@ export const BusinessRuleDossierForm: React.FC<BusinessRuleDossierFormProps> = (
         ? linkedProject.businessRules.map(r => (r.id === result.rule.id ? result.rule : r))
         : [...linkedProject.businessRules, result.rule];
 
-      onSaved({ ...linkedProject, businessRules: rules });
+      await onSaved({ ...linkedProject, businessRules: rules });
       handleSuccess(editingRule?.analysis ? 'Dossiê reanalisado com sucesso.' : 'Dossiê gerado com sucesso.');
       onClose();
     } catch (error) {

@@ -176,9 +176,11 @@ export const ProjectView: React.FC<{
       // Use setTimeout to ensure update happens after render, preventing React error #130
       setTimeout(() => {
         if (!isMountedRef.current) return;
+        const latest =
+          useProjectsStore.getState().projects.find(p => p.id === project.id) ?? projectRef.current;
         void useProjectsStore
           .getState()
-          .updateProject({ ...projectRef.current, phases: metrics.newPhases }, { silent: true })
+          .updateProject({ ...latest, phases: metrics.newPhases }, { silent: true })
           .catch(err => logger.warn('Erro ao atualizar fases do projeto', 'ProjectView', err));
       }, 0);
     }

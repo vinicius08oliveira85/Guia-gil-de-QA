@@ -1,4 +1,4 @@
-import { Project } from '../types';
+import { Project, type BusinessRule } from '../types';
 import { logger } from './logger';
 import { normalizeProjectBusinessRules } from './businessRuleDefaults';
 
@@ -17,6 +17,31 @@ const compareTimestamps = (timestamp1?: string, timestamp2?: string): number => 
   if (date1 > date2) return 1;
   if (date1 < date2) return -1;
   return 0;
+};
+
+/** Une regras de negócio por id, preservando a versão com updatedAt/createdAt mais recente. */
+export const mergeBusinessRules = (
+  localRules: BusinessRule[],
+  remoteRules: BusinessRule[]
+): BusinessRule[] => {
+  const map = new Map<string, BusinessRule>();
+
+  for (const rule of remoteRules) {
+    map.set(rule.id, rule);
+  }
+
+  for (const rule of localRules) {
+    const existing = map.get(rule.id);
+    if (!existing) {
+      map.set(rule.id, rule);
+      continue;
+    }
+    const localAt = rule.updatedAt || rule.createdAt;
+    const remoteAt = existing.updatedAt || existing.createdAt;
+    map.set(rule.id, compareTimestamps(localAt, remoteAt) >= 0 ? rule : existing);
+  }
+
+  return Array.from(map.values());
 };
 
 /**
@@ -115,6 +140,10 @@ export const mergeProjects = (localProject: Project, remoteProject: Project): Pr
       // Preservar tags e settings do mais recente
       tags: timestampComparison >= 0 ? localProject.tags : remoteProject.tags,
       settings: timestampComparison >= 0 ? localProject.settings : remoteProject.settings,
+      businessRules: mergeBusinessRules(
+        localProject.businessRules ?? [],
+        remoteProject.businessRules ?? []
+      ),
       businessRuleCategoryPresets:
         timestampComparison >= 0
           ? localProject.businessRuleCategoryPresets
@@ -128,20 +157,34 @@ export const mergeProjects = (localProject: Project, remoteProject: Project): Pr
     return normalizeProjectBusinessRules(merged);
   }
 
-  // Se um projeto é claramente mais recente, usar ele completamente
+  // Se um projeto é claramente mais recente, usar como base e mesclar regras de negócio
   if (timestampComparison > 0) {
     logger.debug(
       `Projeto local é mais recente para ${localProject.id}, preservando versão local`,
       'projectMerge'
     );
-    return normalizeProjectBusinessRules(localProject);
-  } else {
-    logger.debug(
-      `Projeto remoto é mais recente para ${remoteProject.id}, usando versão remota`,
-      'projectMerge'
-    );
-    return normalizeProjectBusinessRules(remoteProject);
+    return normalizeProjectBusinessRules({
+      ...localProject,
+      businessRules: mergeBusinessRules(
+        localProject.businessRules ?? [],
+        remoteProject.businessRules ?? []
+      ),
+      tasks: mergeTasks(localProject.tasks, remoteProject.tasks),
+    });
   }
+
+  logger.debug(
+    `Projeto remoto é mais recente para ${remoteProject.id}, usando versão remota`,
+    'projectMerge'
+  );
+  return normalizeProjectBusinessRules({
+    ...remoteProject,
+    businessRules: mergeBusinessRules(
+      localProject.businessRules ?? [],
+      remoteProject.businessRules ?? []
+    ),
+    tasks: mergeTasks(localProject.tasks, remoteProject.tasks),
+  });
 };
 
 /**

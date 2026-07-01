@@ -316,6 +316,11 @@ export const autoFixIntegrityIssues = (project: Project): Project => {
     logger.warn('Campo phases corrigido para array vazio', 'dataIntegrityService');
   }
 
+  if (!Array.isArray(fixedProject.businessRules)) {
+    fixedProject.businessRules = [];
+    logger.warn('Campo businessRules corrigido para array vazio', 'dataIntegrityService');
+  }
+
   // Corrigir tarefas
   fixedProject.tasks = fixedProject.tasks.map((task, index) => {
     const fixedTask = { ...task };

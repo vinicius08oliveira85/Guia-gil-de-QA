@@ -58,6 +58,11 @@ const buildProjectFingerprint = (project: Project): string =>
       id: rule.id,
       title: rule.title,
       descriptionLength: rule.description?.length ?? 0,
+      linkedTaskCount: rule.linkedTaskIds?.length ?? 0,
+      analysisVersion: rule.analysis?.version ?? 0,
+      analysisGeneratedAt: rule.analysis?.generatedAt,
+      keywordCount: rule.searchKeywords?.length ?? 0,
+      screenshotCount: rule.screenshots?.length ?? 0,
     })),
     settingsFingerprint: JSON.stringify(project.settings ?? {}),
     analysisFingerprint: {
@@ -160,6 +165,27 @@ export const useAutoSave = ({
     const oldTaskAnalyses = oldProject.tasks.map(t => ({ id: t.id, iaAnalysis: t.iaAnalysis }));
     const newTaskAnalyses = newProject.tasks.map(t => ({ id: t.id, iaAnalysis: t.iaAnalysis }));
     if (JSON.stringify(oldTaskAnalyses) !== JSON.stringify(newTaskAnalyses)) {
+      return true;
+    }
+
+    // Mudanças em regras de negócio / dossiês
+    const oldRulesFingerprint = JSON.stringify(
+      (oldProject.businessRules ?? []).map(r => ({
+        id: r.id,
+        updatedAt: r.updatedAt,
+        analysisVersion: r.analysis?.version,
+        linkedTaskIds: r.linkedTaskIds,
+      }))
+    );
+    const newRulesFingerprint = JSON.stringify(
+      (newProject.businessRules ?? []).map(r => ({
+        id: r.id,
+        updatedAt: r.updatedAt,
+        analysisVersion: r.analysis?.version,
+        linkedTaskIds: r.linkedTaskIds,
+      }))
+    );
+    if (oldRulesFingerprint !== newRulesFingerprint) {
       return true;
     }
 
