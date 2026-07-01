@@ -11,6 +11,31 @@ export interface BusinessRuleTaskMatch {
 
 const DEFAULT_MAX_MATCHES = 30;
 
+const PT_STOPWORDS = new Set([
+  'de',
+  'da',
+  'do',
+  'das',
+  'dos',
+  'e',
+  'o',
+  'a',
+  'os',
+  'as',
+  'em',
+  'no',
+  'na',
+  'nos',
+  'nas',
+  'um',
+  'uma',
+  'uns',
+  'umas',
+  'por',
+  'para',
+  'com',
+]);
+
 /**
  * Sugere texto inicial de palavras-chave a partir do nome da regra (conversão legado).
  */
@@ -37,6 +62,42 @@ export function formatKeywordsForInput(keywords: string[] | undefined): string {
 }
 
 /**
+ * Normaliza texto para comparação (minúsculas, sem acentos).
+ */
+export function normalizeBusinessRuleMatchText(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '');
+}
+
+/**
+ * Tokens significativos de uma frase (ignora stopwords curtas).
+ */
+export function significantTokensFromPhrase(phrase: string): string[] {
+  const normalized = normalizeBusinessRuleMatchText(phrase);
+  return normalized
+    .split(/\s+/)
+    .filter(word => word.length >= 3 && !PT_STOPWORDS.has(word));
+}
+
+function normalizePhrase(keyword: string): string {
+  return keyword.replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Frases de busca (sem decomposição em palavras soltas — evita falsos positivos).
+ */
+function collectSearchPhrases(sources: string[]): string[] {
+  const phrases = new Set<string>();
+  for (const source of sources) {
+    const phrase = normalizePhrase(source);
+    if (phrase) phrases.add(phrase);
+  }
+  return [...phrases].sort((a, b) => b.length - a.length);
+}
+
+/**
  * Extrai termos de busca a partir de palavras-chave explícitas ou do título (legado).
  */
 export function resolveBusinessRuleSearchTerms(
@@ -44,26 +105,13 @@ export function resolveBusinessRuleSearchTerms(
   searchKeywords?: string[]
 ): string[] {
   if (searchKeywords && searchKeywords.length > 0) {
-    return expandSearchTerms(searchKeywords);
+    return collectSearchPhrases(searchKeywords);
   }
   return parseBusinessRuleSearchTermsFromTitle(title);
 }
 
-function expandSearchTerms(keywords: string[]): string[] {
-  const terms = new Set<string>();
-  for (const keyword of keywords) {
-    const phrase = keyword.replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
-    if (!phrase) continue;
-    terms.add(phrase);
-    for (const part of phrase.split(/\s+/).filter(w => w.length >= 3)) {
-      terms.add(part);
-    }
-  }
-  return [...terms].sort((a, b) => b.length - a.length);
-}
-
 /**
- * Extrai termos de busca a partir do título da regra (ex.: RN-Mapa_de_Internação).
+ * Extrai frases de busca a partir do título da regra (ex.: RN-Mapa_de_Internação).
  */
 export function parseBusinessRuleSearchTermsFromTitle(title: string): string[] {
   const raw = title.trim();
@@ -71,15 +119,7 @@ export function parseBusinessRuleSearchTermsFromTitle(title: string): string[] {
 
   const withoutPrefix = raw.replace(/^(RN|REGRA|BR)[-_\s]*/i, '');
   const phrase = withoutPrefix.replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
-  const terms = new Set<string>();
-
-  if (phrase) terms.add(phrase);
-
-  for (const part of phrase.split(/\s+/).filter(w => w.length >= 3)) {
-    terms.add(part);
-  }
-
-  return [...terms].sort((a, b) => b.length - a.length);
+  return phrase ? [phrase] : [];
 }
 
 function scoreToConfidence(score: number): BusinessRuleMatchConfidence {
@@ -111,33 +151,68 @@ function taskSearchBlob(task: JiraTask): string {
     }
   }
 
-  return parts.join(' ').toLowerCase();
+  return parts.join(' ');
 }
 
-function scoreTask(task: JiraTask, terms: string[]): { score: number; matchedTerms: string[] } {
+/**
+ * Verifica se uma frase-chave casa com o texto da task.
+ * Frases com 2+ tokens exigem que TODOS os tokens significativos estejam presentes.
+ */
+export function phraseMatchesTaskText(
+  phrase: string,
+  text: string
+): { matches: boolean; score: number } {
+  const normalizedPhrase = normalizeBusinessRuleMatchText(phrase);
+  const blob = normalizeBusinessRuleMatchText(text);
+  if (!normalizedPhrase || !blob) return { matches: false, score: 0 };
+
+  const tokens = significantTokensFromPhrase(phrase);
+  if (tokens.length === 0) return { matches: false, score: 0 };
+
+  if (tokens.length === 1) {
+    const token = tokens[0];
+    if (!blob.includes(token)) return { matches: false, score: 0 };
+    const score = Math.min(55, 25 + token.length * 2);
+    return { matches: true, score };
+  }
+
+  const allTokensPresent = tokens.every(token => blob.includes(token));
+  if (!allTokensPresent) return { matches: false, score: 0 };
+
+  let score = 45 + Math.min(25, normalizedPhrase.length);
+  if (blob.includes(normalizedPhrase)) {
+    score += 20;
+  }
+  return { matches: true, score: Math.min(85, score) };
+}
+
+function scoreTask(
+  task: JiraTask,
+  phrases: string[]
+): { score: number; matchedTerms: string[] } {
   const blob = taskSearchBlob(task);
+  const titleBlob = task.title ?? '';
   const matchedTerms: string[] = [];
   let score = 0;
 
-  for (const term of terms) {
-    const t = term.toLowerCase();
-    if (!t) continue;
-    if (blob.includes(t)) {
-      matchedTerms.push(term);
-      const weight = Math.min(50, 20 + t.length * 2);
-      score += weight;
-      if (task.title.toLowerCase().includes(t)) score += 15;
-      if (task.id.toLowerCase().includes(t)) score += 5;
+  for (const phrase of phrases) {
+    const { matches, score: phraseScore } = phraseMatchesTaskText(phrase, blob);
+    if (!matches) continue;
+
+    matchedTerms.push(phrase);
+    score += phraseScore;
+
+    const titleMatch = phraseMatchesTaskText(phrase, titleBlob);
+    if (titleMatch.matches) score += 15;
+    if (normalizeBusinessRuleMatchText(task.id).includes(normalizeBusinessRuleMatchText(phrase))) {
+      score += 5;
     }
   }
 
   return { score: Math.min(100, score), matchedTerms };
 }
 
-function includeParentTasks(
-  tasks: JiraTask[],
-  matchedIds: Set<string>
-): void {
+function includeParentTasks(tasks: JiraTask[], matchedIds: Set<string>): void {
   const byId = new Map(tasks.map(t => [t.id, t]));
   for (const id of [...matchedIds]) {
     const task = byId.get(id);
@@ -166,12 +241,12 @@ export function matchTasksForBusinessRule(
   searchKeywords?: string[],
   maxMatches = DEFAULT_MAX_MATCHES
 ): BusinessRuleTaskMatch[] {
-  const terms = resolveBusinessRuleSearchTerms(title, searchKeywords);
-  if (terms.length === 0 || tasks.length === 0) return [];
+  const phrases = resolveBusinessRuleSearchTerms(title, searchKeywords);
+  if (phrases.length === 0 || tasks.length === 0) return [];
 
   const scored = tasks
     .map(task => {
-      const { score, matchedTerms } = scoreTask(task, terms);
+      const { score, matchedTerms } = scoreTask(task, phrases);
       return {
         taskId: task.id,
         score,

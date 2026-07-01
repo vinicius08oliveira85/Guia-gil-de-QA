@@ -6,6 +6,8 @@ import {
   getSuggestedTaskIdsFromMatches,
   resolveBusinessRuleSearchTerms,
   suggestKeywordsFromRuleTitle,
+  phraseMatchesTaskText,
+  significantTokensFromPhrase,
 } from '../../utils/businessRuleTaskMatcher';
 import type { JiraTask } from '../../types';
 
@@ -32,14 +34,55 @@ describe('businessRuleTaskMatcher', () => {
 
   it('resolveBusinessRuleSearchTerms prioriza palavras-chave sobre título', () => {
     const terms = resolveBusinessRuleSearchTerms('RN-Outro', ['Foto do dia', 'Mapa de Internação']);
-    expect(terms.some(t => t.includes('Mapa de Internação'))).toBe(true);
+    expect(terms).toContain('Mapa de Internação');
+    expect(terms).toContain('Foto do dia');
     expect(terms.some(t => t === 'Outro')).toBe(false);
   });
 
-  it('parseBusinessRuleSearchTermsFromTitle extrai frase e termos', () => {
+  it('parseBusinessRuleSearchTermsFromTitle extrai frase sem decompor em palavras soltas', () => {
     const terms = parseBusinessRuleSearchTermsFromTitle('RN-Mapa_de_Internação');
-    expect(terms).toContain('Mapa de Internação');
-    expect(terms.some(t => t.toLowerCase().includes('mapa'))).toBe(true);
+    expect(terms).toEqual(['Mapa de Internação']);
+  });
+
+  it('significantTokensFromPhrase ignora stopwords', () => {
+    expect(significantTokensFromPhrase('Painel de Internação')).toEqual(['painel', 'internacao']);
+    expect(significantTokensFromPhrase('Mapa de Internação')).toEqual(['mapa', 'internacao']);
+  });
+
+  it('não confunde Painel de Internação com Mapa de Internação', () => {
+    const tasks = [
+      task('GDPI-1', 'Painel de Internação - filtros'),
+      task('GDPI-2', 'Mapa de Internação - layout', 'Tela do mapa de internação'),
+      task('GDPI-3', 'Menu com módulos de internação', 'Cita internação sem o módulo específico'),
+    ];
+    const matches = matchTasksForBusinessRule(tasks, 'RN-Painel', ['Painel de Internação']);
+    const ids = matches.map(m => m.taskId);
+
+    expect(ids).toContain('GDPI-1');
+    expect(ids).not.toContain('GDPI-2');
+    expect(ids).not.toContain('GDPI-3');
+  });
+
+  it('não confunde Mapa de Internação com Painel de Internação', () => {
+    const tasks = [
+      task('GDPI-1', 'Painel de Internação - filtros'),
+      task('GDPI-2', 'Mapa de Internação - layout'),
+    ];
+    const matches = matchTasksForBusinessRule(tasks, 'RN-Mapa', ['Mapa de Internação']);
+    const ids = matches.map(m => m.taskId);
+
+    expect(ids).toContain('GDPI-2');
+    expect(ids).not.toContain('GDPI-1');
+  });
+
+  it('phraseMatchesTaskText exige todos os tokens em frases compostas', () => {
+    expect(phraseMatchesTaskText('Painel de Internação', 'Painel de Internação - filtros').matches).toBe(
+      true
+    );
+    expect(phraseMatchesTaskText('Painel de Internação', 'Mapa de Internação - layout').matches).toBe(
+      false
+    );
+    expect(phraseMatchesTaskText('Foto do dia', 'Foto do dia no painel').matches).toBe(true);
   });
 
   it('matchTasksForBusinessRule ranqueia tasks por palavras-chave', () => {
@@ -55,6 +98,7 @@ describe('businessRuleTaskMatcher', () => {
     expect(matches.length).toBeGreaterThan(0);
     expect(matches.some(m => m.taskId === 'GDPI-2')).toBe(true);
     expect(matches.some(m => m.taskId === 'GDPI-3')).toBe(true);
+    expect(matches.some(m => m.taskId === 'GDPI-1')).toBe(false);
   });
 
   it('getSuggestedTaskIdsFromMatches ignora confiança baixa', () => {
