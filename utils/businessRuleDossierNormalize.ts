@@ -1,4 +1,28 @@
-import type { BusinessRuleFunctionalityItem } from '../types';
+import type { BusinessRuleFunctionalityItem, BusinessRuleTaskSheet } from '../types';
+
+const PLACEHOLDER = '[A CONFIRMAR]';
+
+/** Normaliza ficha técnica da IA. */
+export function normalizeTaskSheetItem(
+  raw: Partial<BusinessRuleTaskSheet> & { taskId: string }
+): BusinessRuleTaskSheet {
+  return {
+    taskId: raw.taskId.trim(),
+    taskTitle: raw.taskTitle?.trim() || raw.taskId.trim(),
+    implemented: raw.implemented?.trim() || PLACEHOLDER,
+    legacyBefore: raw.legacyBefore?.trim() || PLACEHOLDER,
+    improvedAfter: raw.improvedAfter?.trim() || PLACEHOLDER,
+    purpose: raw.purpose?.trim() || PLACEHOLDER,
+    integratedSystems: raw.integratedSystems?.trim() || PLACEHOLDER,
+    expectedResult: raw.expectedResult?.trim() || PLACEHOLDER,
+  };
+}
+
+export function normalizeTaskSheetItems(
+  items: Array<Partial<BusinessRuleTaskSheet> & { taskId: string }> | undefined
+): BusinessRuleTaskSheet[] {
+  return (items ?? []).map(normalizeTaskSheetItem);
+}
 
 /** Normaliza funcionalidade da IA ou legado (só description). */
 export function normalizeFunctionalityItem(

@@ -16,6 +16,17 @@ const BusinessRuleFunctionalityItemSchema = z.object({
   implementationStatus: z.enum(['implementado', 'parcial', 'pendente', 'legado']).optional(),
 });
 
+const BusinessRuleTaskSheetSchema = z.object({
+  taskId: z.string(),
+  taskTitle: z.string(),
+  implemented: z.string(),
+  legacyBefore: z.string(),
+  improvedAfter: z.string(),
+  purpose: z.string(),
+  integratedSystems: z.string(),
+  expectedResult: z.string(),
+});
+
 const BusinessRuleAnalysisSchema = z.object({
   version: z.number().int().min(1),
   generatedAt: z.string(),
@@ -26,6 +37,7 @@ const BusinessRuleAnalysisSchema = z.object({
   toBe: z.string(),
   components: z.array(BusinessRuleAnalysisItemSchema),
   functionalities: z.array(BusinessRuleFunctionalityItemSchema),
+  taskSheets: z.array(BusinessRuleTaskSheetSchema).optional().default([]),
   integrations: z.array(
     z.object({
       system: z.string(),

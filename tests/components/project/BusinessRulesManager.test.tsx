@@ -37,6 +37,7 @@ describe('BusinessRulesManager', () => {
             toBe: 'Será',
             components: [],
             functionalities: [],
+            taskSheets: [],
             integrations: [],
             traceability: [],
           },

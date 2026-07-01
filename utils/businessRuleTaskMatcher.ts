@@ -150,6 +150,13 @@ function includeParentTasks(
   }
 }
 
+/** IDs de tasks sugeridas para seleção automática (confiança alta ou média). */
+export function getSuggestedTaskIdsFromMatches(
+  matches: BusinessRuleTaskMatch[]
+): string[] {
+  return matches.filter(m => m.confidence !== 'baixa').map(m => m.taskId);
+}
+
 /**
  * Encontra tasks do projeto relacionadas às palavras-chave da regra.
  */

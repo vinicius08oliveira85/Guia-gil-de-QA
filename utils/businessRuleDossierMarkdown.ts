@@ -1,4 +1,8 @@
-import type { BusinessRuleAnalysis, BusinessRuleFunctionalityItem } from '../types';
+import type {
+  BusinessRuleAnalysis,
+  BusinessRuleFunctionalityItem,
+  BusinessRuleTaskSheet,
+} from '../types';
 
 const STATUS_LABELS: Record<NonNullable<BusinessRuleFunctionalityItem['implementationStatus']>, string> = {
   implementado: 'Implementado',
@@ -6,6 +10,38 @@ const STATUS_LABELS: Record<NonNullable<BusinessRuleFunctionalityItem['implement
   pendente: 'Pendente',
   legado: 'Legado / descontinuado',
 };
+
+function renderTaskSheet(sheet: BusinessRuleTaskSheet): string[] {
+  const title = sheet.taskTitle.trim();
+  const heading = title
+    ? `### Ficha Técnica da Task: ${sheet.taskId} — "${title}"`
+    : `### Ficha Técnica da Task: ${sheet.taskId}`;
+
+  return [
+    heading,
+    '',
+    `**Identificação (Jira):** ${sheet.taskId}`,
+    '',
+    '**O que foi feito e implementado:**',
+    sheet.implemented.trim(),
+    '',
+    '**O que foi substituído / Melhorado:**',
+    '',
+    `- **Como era antes (Legado):** ${sheet.legacyBefore.trim()}`,
+    `- **Como ficou agora (Melhoria):** ${sheet.improvedAfter.trim()}`,
+    '',
+    '**Funcionalidade e Integrações:**',
+    '',
+    `- **O que a função faz:** ${sheet.purpose.trim()}`,
+    `- **Sistemas/Módulos integrados:** ${sheet.integratedSystems.trim()}`,
+    '',
+    '**Resultado esperado:**',
+    sheet.expectedResult.trim(),
+    '',
+    '---',
+    '',
+  ];
+}
 
 function renderFunctionality(f: BusinessRuleFunctionalityItem): string[] {
   const lines: string[] = [`### ${f.name}`, ''];
@@ -47,6 +83,17 @@ export function buildDossierMarkdown(
     '',
   ];
 
+  if (analysis.taskSheets.length > 0) {
+    lines.push('## Fichas técnicas por task', '');
+    lines.push(
+      'Detalhamento individual de cada task vinculada: implementação, legado vs melhoria, integrações e resultado esperado.',
+      ''
+    );
+    for (const sheet of analysis.taskSheets) {
+      lines.push(...renderTaskSheet(sheet));
+    }
+  }
+
   if (analysis.components.length > 0) {
     lines.push('## Componentes', '');
     for (const c of analysis.components) {
@@ -61,7 +108,7 @@ export function buildDossierMarkdown(
   if (analysis.functionalities.length > 0) {
     lines.push('## Funcionalidades', '');
     lines.push(
-      'Detalhamento por funcionalidade: implementação atual e resultado esperado para o usuário/negócio.',
+      'Visão consolidada por funcionalidade de negócio (pode agrupar mais de uma task).',
       ''
     );
     for (const f of analysis.functionalities) {

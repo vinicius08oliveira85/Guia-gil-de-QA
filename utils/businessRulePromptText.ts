@@ -1,5 +1,24 @@
 import type { BusinessRule } from '../types';
 
+function formatTaskSheetsForPrompt(rule: BusinessRule): string {
+  const sheets = rule.analysis?.taskSheets ?? [];
+  if (sheets.length === 0) return '';
+
+  const blocks = sheets.map(s => {
+    return [
+      `- ${s.taskId}: ${s.taskTitle}`,
+      `  Implementado: ${s.implemented}`,
+      `  Legado: ${s.legacyBefore}`,
+      `  Melhoria: ${s.improvedAfter}`,
+      `  Função: ${s.purpose}`,
+      `  Integrações: ${s.integratedSystems}`,
+      `  Resultado esperado: ${s.expectedResult}`,
+    ].join('\n');
+  });
+
+  return `Fichas técnicas por task:\n${blocks.join('\n\n')}`;
+}
+
 function formatFunctionalitiesForPrompt(rule: BusinessRule): string {
   const items = rule.analysis?.functionalities ?? [];
   if (items.length === 0) return '';
@@ -29,6 +48,7 @@ export function getBusinessRulePromptText(rule: BusinessRule): string {
       rule.analysis.executiveSummary,
       rule.analysis.asIs ? `Como está: ${rule.analysis.asIs}` : '',
       rule.analysis.toBe ? `Como será: ${rule.analysis.toBe}` : '',
+      formatTaskSheetsForPrompt(rule),
       formatFunctionalitiesForPrompt(rule),
     ].filter(Boolean);
     return parts.join('\n\n');

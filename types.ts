@@ -314,6 +314,24 @@ export interface BusinessRuleFunctionalityItem {
   implementationStatus?: BusinessRuleFunctionalityStatus;
 }
 
+/** Ficha técnica detalhada por task vinculada ao dossiê. */
+export interface BusinessRuleTaskSheet {
+  taskId: string;
+  taskTitle: string;
+  /** O que foi feito e implementado (escopo técnico/funcional). */
+  implemented: string;
+  /** Como era antes (legado). */
+  legacyBefore: string;
+  /** Como ficou agora (melhoria). */
+  improvedAfter: string;
+  /** Objetivo final para o usuário. */
+  purpose: string;
+  /** Sistemas/módulos integrados. */
+  integratedSystems: string;
+  /** Comportamento esperado após execução da task. */
+  expectedResult: string;
+}
+
 export interface BusinessRuleIntegrationItem {
   system: string;
   type: string;
@@ -337,6 +355,8 @@ export interface BusinessRuleAnalysis {
   toBe: string;
   components: BusinessRuleAnalysisItem[];
   functionalities: BusinessRuleFunctionalityItem[];
+  /** Ficha técnica por task (seção principal do dossiê). */
+  taskSheets: BusinessRuleTaskSheet[];
   integrations: BusinessRuleIntegrationItem[];
   traceability: BusinessRuleTraceabilityItem[];
 }

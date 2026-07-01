@@ -13,7 +13,7 @@ import { callGeminiWithRetry, type GeminiContentPart } from './geminiApiWrapper'
 import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
 
 import { buildDossierMarkdown } from '../../utils/businessRuleDossierMarkdown';
-import { normalizeFunctionalityItems } from '../../utils/businessRuleDossierNormalize';
+import { normalizeFunctionalityItems, normalizeTaskSheetItems } from '../../utils/businessRuleDossierNormalize';
 
 const TASK_DESC_MAX = 800;
 const BATCH_SIZE = 15;
@@ -44,6 +44,30 @@ const functionalityItemSchema = {
   required: ['name', 'description', 'implemented', 'expectedResult', 'taskIds'],
 };
 
+const taskSheetItemSchema = {
+  type: 'object',
+  properties: {
+    taskId: { type: 'string' },
+    taskTitle: { type: 'string' },
+    implemented: { type: 'string' },
+    legacyBefore: { type: 'string' },
+    improvedAfter: { type: 'string' },
+    purpose: { type: 'string' },
+    integratedSystems: { type: 'string' },
+    expectedResult: { type: 'string' },
+  },
+  required: [
+    'taskId',
+    'taskTitle',
+    'implemented',
+    'legacyBefore',
+    'improvedAfter',
+    'purpose',
+    'integratedSystems',
+    'expectedResult',
+  ],
+};
+
 const dossierResponseSchema = {
   type: 'object',
   properties: {
@@ -51,6 +75,7 @@ const dossierResponseSchema = {
     asWas: { type: 'string' },
     asIs: { type: 'string' },
     toBe: { type: 'string' },
+    taskSheets: { type: 'array', items: taskSheetItemSchema },
     components: { type: 'array', items: analysisItemSchema },
     functionalities: { type: 'array', items: functionalityItemSchema },
     integrations: {
@@ -84,6 +109,7 @@ const dossierResponseSchema = {
     'asWas',
     'asIs',
     'toBe',
+    'taskSheets',
     'components',
     'functionalities',
     'integrations',
@@ -143,6 +169,7 @@ interface DossierAiPayload {
   asWas: string;
   asIs: string;
   toBe: string;
+  taskSheets: BusinessRuleAnalysis['taskSheets'];
   components: BusinessRuleAnalysis['components'];
   functionalities: BusinessRuleAnalysis['functionalities'];
   integrations: BusinessRuleAnalysis['integrations'];
@@ -201,7 +228,19 @@ INSTRUÇÕES GERAIS:
 - asIs: estado atual consolidado (parágrafos detalhados).
 - toBe: evolução prevista com base em tasks abertas ou gaps (parágrafos detalhados).
 
-FUNCIONALIDADES (seção mais importante — seja detalhado):
+FICHAS TÉCNICAS POR TASK (seção principal — obrigatória):
+- Gere UMA ficha em taskSheets para CADA task listada em TASKS RELACIONADAS.
+- Use exatamente o taskId da task no campo taskId e o título no campo taskTitle.
+- Para cada ficha:
+  - implemented: o que foi feito e implementado (escopo técnico/funcional em produção). Mínimo 2 frases com evidência.
+  - legacyBefore: como era antes (comportamento legado inferido da task ou [A CONFIRMAR]).
+  - improvedAfter: como ficou agora (novo comportamento/melhoria).
+  - purpose: o que a função faz para o usuário final (objetivo de negócio).
+  - integratedSystems: sistemas/módulos/APIs integrados (ex.: banco, API, Firebase). Use [A CONFIRMAR] se não houver evidência.
+  - expectedResult: comportamento exato esperado após a execução dessa task.
+- Não omita tasks da lista; se faltar evidência, preencha com [A CONFIRMAR] em vez de inventar.
+
+FUNCIONALIDADES (visão consolidada — complementar às fichas):
 - Liste CADA funcionalidade distinta identificada nas tasks (não agrupe demais).
 - Para cada item em functionalities, preencha:
   - name: nome claro e específico da funcionalidade.
@@ -270,6 +309,7 @@ export async function generateBusinessRuleDossier(
     toBe: payload.toBe,
     components: payload.components ?? [],
     functionalities: normalizeFunctionalityItems(payload.functionalities),
+    taskSheets: normalizeTaskSheetItems(payload.taskSheets),
     integrations: payload.integrations ?? [],
     traceability: payload.traceability ?? [],
   };
@@ -326,6 +366,7 @@ export async function refreshBusinessRuleDossier(
     toBe: payload.toBe,
     components: payload.components ?? [],
     functionalities: normalizeFunctionalityItems(payload.functionalities),
+    taskSheets: normalizeTaskSheetItems(payload.taskSheets),
     integrations: payload.integrations ?? [],
     traceability: payload.traceability ?? [],
   };

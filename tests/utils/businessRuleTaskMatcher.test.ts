@@ -3,6 +3,7 @@ import {
   parseBusinessRuleSearchTermsFromTitle,
   parseKeywordsFromInput,
   matchTasksForBusinessRule,
+  getSuggestedTaskIdsFromMatches,
   resolveBusinessRuleSearchTerms,
   suggestKeywordsFromRuleTitle,
 } from '../../utils/businessRuleTaskMatcher';
@@ -54,5 +55,18 @@ describe('businessRuleTaskMatcher', () => {
     expect(matches.length).toBeGreaterThan(0);
     expect(matches.some(m => m.taskId === 'GDPI-2')).toBe(true);
     expect(matches.some(m => m.taskId === 'GDPI-3')).toBe(true);
+  });
+
+  it('getSuggestedTaskIdsFromMatches ignora confiança baixa', () => {
+    const matches = matchTasksForBusinessRule(
+      [task('GDPI-1', 'Mapa de Internação'), task('GDPI-2', 'Outro')],
+      'RN-X',
+      ['Mapa de Internação']
+    );
+    const suggested = getSuggestedTaskIdsFromMatches(matches);
+    expect(suggested).toContain('GDPI-1');
+    expect(suggested.every(id => matches.find(m => m.taskId === id)?.confidence !== 'baixa')).toBe(
+      true
+    );
   });
 });

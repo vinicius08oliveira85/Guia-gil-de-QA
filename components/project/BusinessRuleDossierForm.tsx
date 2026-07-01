@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Loader2, Sparkles } from 'lucide-react';
 import type { BusinessRule, BusinessRuleScreenshot, Project } from '../../types';
 import {
   formatKeywordsForInput,
+  getSuggestedTaskIdsFromMatches,
   matchTasksForBusinessRule,
   parseKeywordsFromInput,
   suggestKeywordsFromRuleTitle,
@@ -72,13 +73,28 @@ export const BusinessRuleDossierForm: React.FC<BusinessRuleDossierFormProps> = (
     [project.tasks, title, searchKeywords]
   );
 
+  const skipNextAutoSelect = useRef(Boolean(editingRule?.linkedTaskIds?.length));
+
   useEffect(() => {
-    if (editingRule) return;
-    if (selectedTaskIds.length > 0) return;
     if (searchKeywords.length === 0) return;
-    const auto = matches.filter(m => m.confidence !== 'baixa').map(m => m.taskId);
-    if (auto.length > 0) setSelectedTaskIds(auto);
-  }, [matches, editingRule, selectedTaskIds.length, searchKeywords.length]);
+
+    const suggested = getSuggestedTaskIdsFromMatches(matches);
+    if (suggested.length === 0) return;
+
+    if (skipNextAutoSelect.current) {
+      skipNextAutoSelect.current = false;
+      return;
+    }
+
+    setSelectedTaskIds(prev => {
+      const merged = new Set([...prev, ...suggested]);
+      const next = [...merged];
+      if (next.length === prev.length && suggested.every(id => prev.includes(id))) {
+        return prev;
+      }
+      return next;
+    });
+  }, [matches, searchKeywords]);
 
   const toggleTask = (taskId: string, checked: boolean) => {
     setSelectedTaskIds(prev => {

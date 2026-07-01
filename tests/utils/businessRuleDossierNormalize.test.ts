@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   normalizeFunctionalityItem,
   normalizeFunctionalityItems,
+  normalizeTaskSheetItem,
 } from '../../utils/businessRuleDossierNormalize';
 
 describe('businessRuleDossierNormalize', () => {
@@ -37,5 +38,22 @@ describe('businessRuleDossierNormalize', () => {
     ]);
     expect(items).toHaveLength(1);
     expect(items[0].name).toBe('A');
+  });
+});
+
+describe('normalizeTaskSheetItems', () => {
+  it('preenche campos obrigatórios da ficha técnica', () => {
+    const sheet = normalizeTaskSheetItem({
+      taskId: 'GDPI-1',
+      taskTitle: 'Sincronização',
+      implemented: 'Sync de dados',
+      legacyBefore: 'Manual',
+      improvedAfter: 'Automático',
+      purpose: 'Manter mapa atualizado',
+      integratedSystems: 'API internação',
+      expectedResult: 'Dados consistentes',
+    });
+    expect(sheet.taskId).toBe('GDPI-1');
+    expect(sheet.expectedResult).toBe('Dados consistentes');
   });
 });
