@@ -60,7 +60,7 @@ export const taskDetailsNeuInsetDeepClass = 'task-details-neu-inset-deep';
 
 export const taskDetailsModalTabsTrackClass = cn(
 
-  'task-details-neu-track flex w-full flex-wrap gap-1.5 overflow-visible rounded-full p-2'
+  'task-details-neu-track flex w-full flex-wrap gap-1 overflow-visible rounded-full p-1.5'
 
 );
 
@@ -68,7 +68,7 @@ export const taskDetailsModalTabsTrackClass = cn(
 
 const tabBaseClass =
 
-  'task-details-neu-tab inline-flex min-h-[2.25rem] shrink-0 snap-start items-center gap-2 px-3 py-2 font-sans text-xs font-semibold transition-[box-shadow,color,transform] sm:min-h-0 sm:text-sm';
+  'task-details-neu-tab inline-flex min-h-[2rem] shrink-0 snap-start items-center gap-1.5 rounded-full px-2.5 py-1.5 font-sans text-sm font-semibold leading-tight transition-[box-shadow,color,transform]';
 
 
 
@@ -84,7 +84,7 @@ export const taskDetailsModalTabClass = (active: boolean) =>
 
 export const taskDetailsModalTabsScrollWrapClass =
 
-  'overflow-x-auto overflow-y-visible px-1 py-1.5 -mx-0.5';
+  'overflow-x-auto overflow-y-visible px-0.5 py-1 -mx-0.5';
 
 
 
@@ -122,9 +122,47 @@ export const taskDetailsModalPanelShellClass = cn(
 
   taskDetailsNeuInsetDeepClass,
 
-  'rounded-[var(--leve-header-radius)] p-3 sm:p-4'
+  'rounded-[var(--leve-header-radius)] p-2.5 sm:p-3'
 
 );
+
+
+
+/** Rótulo de seção no Resumo (Descrição, Comentários, cartões). */
+
+export const taskDetailsOverviewLabelClass = cn(
+
+  'task-details-overview-label inline-block font-sans text-xs font-extrabold uppercase tracking-wide',
+
+  'text-[var(--leve-header-accent)]',
+
+  'border-b border-[var(--leve-header-accent)] pb-0.5'
+
+);
+
+
+
+/** Valor nos cartões do Resumo (Responsável, Prioridade, etc.). */
+
+export const taskDetailsOverviewValueClass =
+
+  'font-sans text-sm font-semibold leading-snug text-[var(--leve-header-text)]';
+
+
+
+export const taskDetailsOverviewSummaryCardClass = cn(taskDetailsModalSectionClass, 'p-2.5');
+
+
+
+export const taskDetailsOverviewSectionClass = 'space-y-1.5';
+
+
+
+export const taskDetailsOverviewGridClass = 'grid grid-cols-1 gap-3 lg:grid-cols-3';
+
+
+
+export const taskDetailsOverviewMainClass = 'space-y-2.5 lg:col-span-2';
 
 
 
@@ -138,9 +176,9 @@ export const taskDetailsModalDescriptionClass = cn(
 
   taskDetailsNeuInsetClass,
 
-  'text-sm leading-relaxed text-[var(--leve-header-text)]',
+  'px-3 py-2.5 text-[0.9375rem] leading-snug text-[var(--leve-header-text)]',
 
-  '[&_ul]:list-disc [&_ol]:list-decimal [&_ul]:space-y-1.5 [&_ol]:space-y-1.5'
+  '[&_ul]:list-disc [&_ol]:list-decimal [&_ul]:space-y-0.5 [&_ol]:space-y-0.5'
 
 );
 

@@ -79,6 +79,12 @@ import {
   taskDetailsModalHeaderSectionClass,
   taskDetailsModalWatchersClass,
   taskDetailsModalPrimaryCtaClass,
+  taskDetailsOverviewGridClass,
+  taskDetailsOverviewLabelClass,
+  taskDetailsOverviewMainClass,
+  taskDetailsOverviewSectionClass,
+  taskDetailsOverviewSummaryCardClass,
+  taskDetailsOverviewValueClass,
 } from './taskDetailsNeuUi';
 import { testReportGenerateRecordBtnClass } from './testReportNeuUi';
 import { BackButton } from '../common/BackButton';
@@ -148,7 +154,7 @@ const DescriptionRenderer: React.FC<{
     return <p className={cn(leveTaskModalMutedClass, 'italic')}>Sem descrição</p>;
   }
 
-  return <JiraRichContent html={htmlContent} className="" />;
+  return <JiraRichContent html={htmlContent} className="prose-p:mb-1 prose-li:mb-0 prose-ul:my-1 prose-ol:my-1 leading-snug" />;
 };
 
 interface TaskDetailsViewProps {
@@ -402,33 +408,37 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
   };
 
   const renderOverviewSection = () => (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div className={taskDetailsOverviewGridClass}>
       {/* Coluna principal */}
-      <div className="lg:col-span-2 space-y-3">
+      <div className={taskDetailsOverviewMainClass}>
         {hideTestFeatures ? (
           <>
             <JiraTaskSlaSummary task={task} />
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {task.reporter?.displayName ? (
-                <div className={cn(taskDetailsModalSectionClass, 'p-2.5')}>
-                  <p className={cn(leveTaskModalFieldLabelClass, 'mb-1 block')}>Relator</p>
-                  <p className={cn('text-sm font-semibold', leveTaskModalStrongClass)}>
-                    {task.reporter.displayName}
+                <div className={taskDetailsOverviewSummaryCardClass}>
+                  <p className={cn(taskDetailsOverviewLabelClass, 'mb-1 block normal-case tracking-normal')}>
+                    Relator
                   </p>
+                  <p className={taskDetailsOverviewValueClass}>{task.reporter.displayName}</p>
                 </div>
               ) : null}
               {(task.jiraAssignee?.displayName ?? task.assignee) ? (
-                <div className={cn(taskDetailsModalSectionClass, 'p-2.5')}>
-                  <p className={cn(leveTaskModalFieldLabelClass, 'mb-1 block')}>Responsável</p>
-                  <p className={cn('text-sm font-semibold', leveTaskModalStrongClass)}>
+                <div className={taskDetailsOverviewSummaryCardClass}>
+                  <p className={cn(taskDetailsOverviewLabelClass, 'mb-1 block normal-case tracking-normal')}>
+                    Responsável
+                  </p>
+                  <p className={taskDetailsOverviewValueClass}>
                     {task.jiraAssignee?.displayName ?? task.assignee}
                   </p>
                 </div>
               ) : null}
               {task.createdAt ? (
-                <div className={cn(taskDetailsModalSectionClass, 'p-2.5')}>
-                  <p className={cn(leveTaskModalFieldLabelClass, 'mb-1 block')}>Data de criação</p>
-                  <p className={cn('text-sm font-semibold', leveTaskModalStrongClass)}>
+                <div className={taskDetailsOverviewSummaryCardClass}>
+                  <p className={cn(taskDetailsOverviewLabelClass, 'mb-1 block normal-case tracking-normal')}>
+                    Data de criação
+                  </p>
+                  <p className={taskDetailsOverviewValueClass}>
                     {new Date(task.createdAt).toLocaleDateString('pt-BR')}
                   </p>
                 </div>
@@ -446,39 +456,39 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
           task.assignee ||
           task.jiraAssignee?.displayName ||
           nextStep) && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
             {task.owner && (
-              <div className={cn(taskDetailsModalSectionClass, 'p-3')}>
-                <p className={cn(leveTaskModalFieldLabelClass, 'mb-1 block')}>Owner</p>
-                <p className={cn('text-sm font-medium', leveTaskModalStrongClass)}>{task.owner}</p>
+              <div className={taskDetailsOverviewSummaryCardClass}>
+                <p className={cn(taskDetailsOverviewLabelClass, 'mb-1 block')}>Owner</p>
+                <p className={taskDetailsOverviewValueClass}>{task.owner}</p>
               </div>
             )}
             {(task.jiraAssignee?.displayName ?? task.assignee) && (
-              <div className={cn(taskDetailsModalSectionClass, 'p-3')}>
-                <p className={cn(leveTaskModalFieldLabelClass, 'mb-1 block')}>Responsável</p>
-                <p className={cn('text-sm font-medium', leveTaskModalStrongClass)}>
+              <div className={taskDetailsOverviewSummaryCardClass}>
+                <p className={cn(taskDetailsOverviewLabelClass, 'mb-1 block')}>Responsável</p>
+                <p className={taskDetailsOverviewValueClass}>
                   {task.jiraAssignee?.displayName ?? task.assignee}
                 </p>
               </div>
             )}
             {(task.priority || task.jiraPriority) && (
-              <div className={cn(taskDetailsModalSectionClass, 'p-3')}>
-                <p className={cn(leveTaskModalFieldLabelClass, 'mb-1 block')}>Prioridade</p>
-                <p className={cn('text-sm font-medium', leveTaskModalStrongClass)}>
+              <div className={taskDetailsOverviewSummaryCardClass}>
+                <p className={cn(taskDetailsOverviewLabelClass, 'mb-1 block')}>Prioridade</p>
+                <p className={taskDetailsOverviewValueClass}>
                   {getDisplayPriorityLabel(task, project)}
                 </p>
               </div>
             )}
             {task.severity && (
-              <div className={cn(taskDetailsModalSectionClass, 'p-3')}>
-                <p className={cn(leveTaskModalFieldLabelClass, 'mb-1 block')}>Severidade</p>
-                <p className={cn('text-sm font-medium', leveTaskModalStrongClass)}>{task.severity}</p>
+              <div className={taskDetailsOverviewSummaryCardClass}>
+                <p className={cn(taskDetailsOverviewLabelClass, 'mb-1 block')}>Severidade</p>
+                <p className={taskDetailsOverviewValueClass}>{task.severity}</p>
               </div>
             )}
             {nextStep && (
-              <div className={cn(leveTaskModalSectionAccentClass, 'p-3')}>
-                <p className={cn(leveTaskModalFieldLabelClass, 'mb-1 block')}>Próximo passo</p>
-                <p className={cn('text-[0.82rem] font-medium line-clamp-2', leveTaskModalStrongClass)}>
+              <div className={cn(leveTaskModalSectionAccentClass, 'p-2.5')}>
+                <p className={cn(taskDetailsOverviewLabelClass, 'mb-1 block')}>Próximo passo</p>
+                <p className={cn('text-sm font-medium leading-snug line-clamp-2', leveTaskModalStrongClass)}>
                   {nextStep}
                 </p>
               </div>
@@ -509,8 +519,8 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
             </div>
           )}
 
-        <section className="space-y-2">
-          <h3 className={leveTaskModalFieldLabelClass}>Descrição</h3>
+        <section className={taskDetailsOverviewSectionClass}>
+          <h3 className={taskDetailsOverviewLabelClass}>Descrição</h3>
           <div className={taskDetailsModalDescriptionClass}>
             {task.description ? (
               <DescriptionRenderer
@@ -539,10 +549,10 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
           const otherTags = task.tags?.filter(tag => !/^V\d+/i.test(tag.trim())) || [];
           return (
             (versions.length > 0 || otherTags.length > 0) && (
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {versions.length > 0 && (
                   <div>
-                    <p className={cn(leveTaskModalFieldLabelClass, 'mb-1.5 block')}>
+                    <p className={cn(taskDetailsOverviewLabelClass, 'mb-1 block')}>
                       Versão do Projeto
                     </p>
                     <VersionBadges versions={versions} size="md" />
@@ -551,7 +561,7 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
                 {otherTags.length > 0 && (
                   <div>
                     {versions.length > 0 && (
-                      <p className={cn(leveTaskModalFieldLabelClass, 'mb-1.5 block')}>Tags</p>
+                      <p className={cn(taskDetailsOverviewLabelClass, 'mb-1 block')}>Tags</p>
                     )}
                     <div className="flex flex-wrap gap-2">
                       {otherTags.map(tag => (
@@ -572,10 +582,10 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
         })()}
 
         {jiraAttachmentItems.length > 0 && (
-          <section className="space-y-2">
-            <h3 className={leveTaskModalFieldLabelClass}>Anexos do Jira</h3>
-            <div className={cn(taskDetailsModalSectionClass, 'p-3')}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <section className={taskDetailsOverviewSectionClass}>
+            <h3 className={taskDetailsOverviewLabelClass}>Anexos do Jira</h3>
+            <div className={cn(taskDetailsModalSectionClass, 'p-2.5')}>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
                 {jiraAttachmentItems.map(att => (
                   <JiraAttachment
                     key={att.id}
@@ -595,7 +605,7 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
       </div>
 
       {/* Sidebar: Atualizar do Jira + Campos do Jira + Ações Rápidas */}
-      <aside className="space-y-4">
+      <aside className="space-y-3">
         {onUpdateFromJira && /^[A-Z]+-\d+$/.test(task.id) && (
           <div className={cn(taskDetailsModalSectionClass, 'p-4')}>
             <Button
@@ -1149,7 +1159,7 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
   );
 
   const innerContent = (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       <BackButton
         className={cn('task-details-neu-back-btn self-start -ml-1', taskDetailsModalGhostBtnClass)}
         onClick={onClose}

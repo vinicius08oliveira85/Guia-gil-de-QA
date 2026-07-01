@@ -7,11 +7,15 @@ import {
 } from '../../utils/jiraFilasSummaryFields';
 import { CommentSection } from '../common/CommentSection';
 import {
-  leveTaskModalFieldLabelClass,
   leveTaskModalMutedClass,
-  leveTaskModalStrongClass,
 } from '../common/projectCardUi';
-import { taskDetailsModalSectionClass } from './taskDetailsNeuUi';
+import {
+  taskDetailsModalSectionClass,
+  taskDetailsOverviewLabelClass,
+  taskDetailsOverviewSectionClass,
+  taskDetailsOverviewSummaryCardClass,
+  taskDetailsOverviewValueClass,
+} from './taskDetailsNeuUi';
 
 export interface JiraFilasExtraFieldsGridProps {
   task: JiraTask;
@@ -26,7 +30,7 @@ export interface JiraFilasExtraFieldsGridProps {
 export const JiraFilasExtraFieldsGrid: React.FC<JiraFilasExtraFieldsGridProps> = ({
   task,
   className,
-  cardClassName = taskDetailsModalSectionClass,
+  cardClassName = taskDetailsOverviewSummaryCardClass,
 }) => {
   const fields = useMemo(() => resolveJiraFilasSummaryFields(task), [task]);
   if (!hasJiraFilasSummaryFields(fields)) return null;
@@ -42,11 +46,11 @@ export const JiraFilasExtraFieldsGrid: React.FC<JiraFilasExtraFieldsGridProps> =
   return (
     <div className={cn('grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3', className)}>
       {items.map(item => (
-        <div key={item.label} className={cn(cardClassName, 'p-2.5')}>
-          <p className={cn(leveTaskModalFieldLabelClass, 'mb-1 block normal-case tracking-normal')}>
+        <div key={item.label} className={cardClassName}>
+          <p className={cn(taskDetailsOverviewLabelClass, 'mb-1 block normal-case tracking-normal')}>
             {item.label}
           </p>
-          <p className={cn('text-sm font-semibold', leveTaskModalStrongClass)}>{item.value}</p>
+          <p className={taskDetailsOverviewValueClass}>{item.value}</p>
         </div>
       ))}
     </div>
@@ -78,12 +82,12 @@ export const TaskSummaryCommentsSection: React.FC<TaskSummaryCommentsSectionProp
   const readOnly = !onAddComment;
 
   return (
-    <section className={cn('space-y-2', className)}>
-      <h3 className={leveTaskModalFieldLabelClass}>Comentários</h3>
+    <section className={cn(taskDetailsOverviewSectionClass, className)}>
+      <h3 className={taskDetailsOverviewLabelClass}>Comentários</h3>
       {comments.length === 0 && readOnly ? (
-        <p className={cn(leveTaskModalMutedClass, 'italic')}>Sem comentários</p>
+        <p className={cn(leveTaskModalMutedClass, 'italic text-sm')}>Sem comentários</p>
       ) : (
-        <div className={cn(taskDetailsModalSectionClass, 'p-3')}>
+        <div className={cn(taskDetailsModalSectionClass, 'p-2.5')}>
           <CommentSection
             comments={comments}
             readOnly={readOnly}

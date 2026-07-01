@@ -366,3 +366,26 @@
   background: color-mix(in srgb, oklch(var(--wa)) 12%, var(--td-neu-bg)) !important;
   color: #b45309 !important;
 }
+
+/* Resumo — tipografia e espaçamento mais compactos na descrição rica do Jira */
+:is(.task-details-neu-modal) .task-details-neu-description .jira-rich-content {
+  font-size: 0.9375rem !important;
+  line-height: 1.45 !important;
+}
+
+:is(.task-details-neu-modal) .task-details-neu-description .jira-rich-content :where(p) {
+  margin-bottom: 0.25rem !important;
+}
+
+:is(.task-details-neu-modal) .task-details-neu-description .jira-rich-content :where(ul, ol) {
+  margin-top: 0.25rem !important;
+  margin-bottom: 0.25rem !important;
+}
+
+:is(.task-details-neu-modal) .task-details-neu-description .jira-rich-content :where(li) {
+  margin-bottom: 0.1rem !important;
+}
+
+:is(.task-details-neu-modal) .task-details-neu-tab {
+  font-size: 0.875rem !important;
+}
