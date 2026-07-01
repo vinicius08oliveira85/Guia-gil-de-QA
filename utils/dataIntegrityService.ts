@@ -2,6 +2,7 @@ import { Project, JiraTask, TestCase } from '../types';
 import { migrateTestCase } from './testCaseMigration';
 import { logger } from './logger';
 import { restoreBackup } from '../services/backupService';
+import { projectWithNotepadPages, resolveNotepadPages } from './notepadPages';
 
 export interface IntegrityIssue {
   type: 'missing_field' | 'invalid_data' | 'corrupted_data' | 'inconsistent_data';
@@ -320,6 +321,11 @@ export const autoFixIntegrityIssues = (project: Project): Project => {
     fixedProject.businessRules = [];
     logger.warn('Campo businessRules corrigido para array vazio', 'dataIntegrityService');
   }
+
+  const normalizedNotepadPages = resolveNotepadPages(fixedProject);
+  const notepadNormalized = projectWithNotepadPages(fixedProject, normalizedNotepadPages);
+  fixedProject.notepadPages = notepadNormalized.notepadPages;
+  fixedProject.notepadContent = undefined;
 
   // Corrigir tarefas
   fixedProject.tasks = fixedProject.tasks.map((task, index) => {

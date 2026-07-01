@@ -15,7 +15,10 @@ const DocumentsView = lazyWithRetry(() =>
 const BusinessRulesManager = lazyWithRetry(() =>
   import('./project/BusinessRulesManager').then(m => ({ default: m.BusinessRulesManager }))
 );
-import { PageTransition } from './common/PageTransition';
+const NotepadView = lazyWithRetry(() =>
+  import('./project/NotepadView').then(m => ({ default: m.NotepadView }))
+);
+import { KeepAlivePanel } from './common/KeepAlivePanel';
 import { Breadcrumbs } from './common/Breadcrumbs';
 import type { BreadcrumbItem } from './common/Breadcrumbs';
 import { ConfirmDialog } from './common/ConfirmDialog';
@@ -25,7 +28,7 @@ import { useAutoSave } from '../hooks/useAutoSave';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import toast from 'react-hot-toast';
 import { Spinner } from './common/Spinner';
-import { Trash2, CheckCircle2, AlertTriangle, CloudOff, Layers } from 'lucide-react';
+import { Trash2, CheckCircle2, AlertTriangle, CloudOff, Layers, PanelRight } from 'lucide-react';
 import { logger } from '../utils/logger';
 import { Button } from './common/Button';
 import { cn } from '../utils/cn';
@@ -56,7 +59,9 @@ import {
 import { getAdjacentOpenTaskId } from '../utils/workspaceSessionStorage';
 import { useWorkspaceTabs } from '../hooks/useWorkspaceTabs';
 import { useBusinessRuleDossierSync } from '../hooks/useBusinessRuleDossierSync';
+import { useNotepadDock } from '../hooks/useNotepadDock';
 import { ProjectWorkspaceTabBar } from './project/ProjectWorkspaceTabBar';
+import { NotepadDockPanel } from './project/NotepadDockPanel';
 import { TaskWorkspacePanel } from './tasks/TaskWorkspacePanel';
 import type { JiraTask } from '../types';
 
@@ -64,6 +69,7 @@ const TAB_LABELS: Record<string, string> = {
   dashboard: 'Dashboard',
   tasks: 'Tarefas & Testes',
   documents: 'Documentos',
+  notepad: 'Bloco de Notas',
   businessRules: 'Regras de negócio',
 };
 
@@ -117,6 +123,18 @@ export const ProjectView: React.FC<{
   const currentProject = storeProject ?? project;
 
   const analyzingBusinessRuleIds = useBusinessRuleDossierSync(currentProject, onUpdateProject);
+
+  const {
+    isOpen: isNotepadDockOpen,
+    width: notepadDockWidth,
+    toggle: toggleNotepadDock,
+    close: closeNotepadDock,
+    setWidth: setNotepadDockWidth,
+  } = useNotepadDock(currentProject.id);
+
+  const showNotepadDock =
+    isNotepadDockOpen &&
+    !(isProjectFixedTabId(activeTab) && activeTab === 'notepad');
 
   const metrics = useProjectMetrics(currentProject);
   const previousPhasesRef = useRef<string>('');
@@ -275,6 +293,7 @@ export const ProjectView: React.FC<{
     { id: 'tasks', label: 'Tarefas & Testes' },
     { id: 'documents', label: 'Documentos' },
     { id: 'businessRules', label: 'Regras de negócio' },
+    { id: 'notepad', label: 'Bloco de Notas' },
   ];
 
   const taskTabLabels = useMemo(
@@ -479,6 +498,8 @@ export const ProjectView: React.FC<{
       }
     } else if (isProjectFixedTabId(activeTab) && activeTab === 'documents') {
       items.push({ label: TAB_LABELS.documents });
+    } else if (isProjectFixedTabId(activeTab) && activeTab === 'notepad') {
+      items.push({ label: TAB_LABELS.notepad });
     } else if (isProjectFixedTabId(activeTab) && activeTab === 'businessRules') {
       items.push({ label: TAB_LABELS.businessRules });
     }
@@ -573,6 +594,29 @@ export const ProjectView: React.FC<{
                   </div>
                 )}
 
+                <div className={projectChromeToolbarDividerClass} aria-hidden />
+                <button
+                  type="button"
+                  onClick={toggleNotepadDock}
+                  className={cn(
+                    projectChromeSyncBtnClass,
+                    isNotepadDockOpen &&
+                      'bg-[color-mix(in_srgb,var(--workspace-panel-accent)_14%,transparent)] text-[var(--workspace-panel-accent)]'
+                  )}
+                  aria-label={
+                    isNotepadDockOpen
+                      ? 'Fechar coluna fixa do bloco de notas'
+                      : 'Abrir coluna fixa do bloco de notas'
+                  }
+                  aria-pressed={isNotepadDockOpen}
+                  title="Coluna fixa do Bloco de Notas"
+                >
+                  <PanelRight className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                  <span className="hidden sm:inline">
+                    {isNotepadDockOpen ? 'Notas fixas' : 'Fixar notas'}
+                  </span>
+                </button>
+
                 {/* Botão Sincronizar — só quando há supabase E salvamento pendente */}
                 {supabaseAvailable && lastSaveToSupabase === false && saveStatus === 'idle' && (
                   <>
@@ -626,6 +670,7 @@ export const ProjectView: React.FC<{
               activeTab !== 'dashboard' &&
               activeTab !== 'tasks' &&
               activeTab !== 'documents' &&
+              activeTab !== 'notepad' &&
               activeTab !== 'businessRules' && (
             <div className="flex min-w-0 flex-nowrap items-center gap-x-2 overflow-hidden">
               <span className="inline-flex shrink-0 items-center rounded-[var(--project-dashboard-insight-inner-radius)] bg-[var(--leve-header-cream)] px-2 py-0.5 font-sans text-[10px] font-bold leading-none text-[var(--leve-header-accent)]">
@@ -693,7 +738,8 @@ export const ProjectView: React.FC<{
           />
         </div>
 
-        <div className="mt-4 sm:mt-5 max-md:mt-2">
+        <div className={cn('mt-4 flex min-w-0 gap-0 sm:mt-5 max-md:mt-2', showNotepadDock && 'items-stretch')}>
+          <div className="min-w-0 flex-1">
           {openTaskTabIds.map(taskId => (
             <div
               key={taskId}
@@ -726,68 +772,102 @@ export const ProjectView: React.FC<{
             className={isTaskTabId(activeTab) ? 'hidden' : undefined}
             aria-hidden={isTaskTabId(activeTab)}
           >
-            <PageTransition transitionKey={activeTab}>
-            {isProjectFixedTabId(activeTab) && activeTab === 'dashboard' && (
-              <section id="tab-panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
-                <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
-                  <QADashboard
-                    project={currentProject}
-                    onUpdateProject={onUpdateProject}
-                    onNavigateToTab={tabId => handleTabClick(tabId)}
-                    onNavigateToBacklog={handleNavigateToBacklog}
-                    onNavigateToTasksWithExecutionStatuses={
-                      handleNavigateToTasksWithExecutionStatuses
-                    }
-                  />
-                </Suspense>
-              </section>
-            )}
-            {isProjectFixedTabId(activeTab) && activeTab === 'tasks' && (
-              <section id="tab-panel-tasks" role="tabpanel" aria-labelledby="tab-tasks">
-                <Suspense fallback={<LoadingSkeleton variant="task" count={5} />}>
-                  <TasksView
-                    project={currentProject}
-                    onUpdateProject={onUpdateProject}
-                    onNavigateToTab={tabId => handleTabClick(tabId)}
-                    onOpenTaskTab={handleOpenTaskTab}
-                    initialTaskId={initialTaskId}
-                    onTaskDetailsOpenChange={handleTaskDetailsOpenChange}
-                    tasksExecutionNavKey={tasksExecutionNavKey}
-                    tasksExecutionNavStatuses={tasksExecutionNavStatuses}
-                    listMode={tasksListMode}
-                    onListModeChange={handleTasksListModeChange}
-                  />
-                </Suspense>
-              </section>
-            )}
-            {isProjectFixedTabId(activeTab) && activeTab === 'documents' && (
-              <section id="tab-panel-documents" role="tabpanel" aria-labelledby="tab-documents">
-                <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
-                  <DocumentsView
-                    project={currentProject}
-                    onUpdateProject={onUpdateProject}
-                    onNavigateToTab={handleTabClick}
-                  />
-                </Suspense>
-              </section>
-            )}
-            {isProjectFixedTabId(activeTab) && activeTab === 'businessRules' && (
-              <section
-                id="tab-panel-businessRules"
-                role="tabpanel"
-                aria-labelledby="tab-businessRules"
-              >
-                <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
-                  <BusinessRulesManager
-                    project={currentProject}
-                    onUpdateProject={onUpdateProject}
-                    analyzingRuleIds={analyzingBusinessRuleIds}
-                  />
-                </Suspense>
-              </section>
-            )}
-            </PageTransition>
+            <KeepAlivePanel
+              id="tab-panel-dashboard"
+              labelledBy="tab-dashboard"
+              active={isProjectFixedTabId(activeTab) && activeTab === 'dashboard'}
+              lazy={false}
+            >
+              <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
+                <QADashboard
+                  project={currentProject}
+                  onUpdateProject={onUpdateProject}
+                  onNavigateToTab={tabId => handleTabClick(tabId)}
+                  onNavigateToBacklog={handleNavigateToBacklog}
+                  onNavigateToTasksWithExecutionStatuses={
+                    handleNavigateToTasksWithExecutionStatuses
+                  }
+                />
+              </Suspense>
+            </KeepAlivePanel>
+            <KeepAlivePanel
+              id="tab-panel-tasks"
+              labelledBy="tab-tasks"
+              active={isProjectFixedTabId(activeTab) && activeTab === 'tasks'}
+            >
+              <Suspense fallback={<LoadingSkeleton variant="task" count={5} />}>
+                <TasksView
+                  project={currentProject}
+                  onUpdateProject={onUpdateProject}
+                  onNavigateToTab={tabId => handleTabClick(tabId)}
+                  onOpenTaskTab={handleOpenTaskTab}
+                  initialTaskId={initialTaskId}
+                  onTaskDetailsOpenChange={handleTaskDetailsOpenChange}
+                  tasksExecutionNavKey={tasksExecutionNavKey}
+                  tasksExecutionNavStatuses={tasksExecutionNavStatuses}
+                  listMode={tasksListMode}
+                  onListModeChange={handleTasksListModeChange}
+                />
+              </Suspense>
+            </KeepAlivePanel>
+            <KeepAlivePanel
+              id="tab-panel-documents"
+              labelledBy="tab-documents"
+              active={isProjectFixedTabId(activeTab) && activeTab === 'documents'}
+            >
+              <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
+                <DocumentsView
+                  project={currentProject}
+                  onUpdateProject={onUpdateProject}
+                  onNavigateToTab={handleTabClick}
+                />
+              </Suspense>
+            </KeepAlivePanel>
+            <KeepAlivePanel
+              id="tab-panel-notepad"
+              labelledBy="tab-notepad"
+              active={isProjectFixedTabId(activeTab) && activeTab === 'notepad'}
+            >
+              <Suspense fallback={<LoadingSkeleton variant="card" count={1} />}>
+                <NotepadView
+                  project={currentProject}
+                  onUpdateProject={onUpdateProject}
+                  dockOpen={isNotepadDockOpen}
+                  onToggleDock={toggleNotepadDock}
+                />
+              </Suspense>
+            </KeepAlivePanel>
+            <KeepAlivePanel
+              id="tab-panel-businessRules"
+              labelledBy="tab-businessRules"
+              active={isProjectFixedTabId(activeTab) && activeTab === 'businessRules'}
+            >
+              <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
+                <BusinessRulesManager
+                  project={currentProject}
+                  onUpdateProject={onUpdateProject}
+                  analyzingRuleIds={analyzingBusinessRuleIds}
+                />
+              </Suspense>
+            </KeepAlivePanel>
           </div>
+          </div>
+            {showNotepadDock && (
+              <NotepadDockPanel
+                project={currentProject}
+                width={notepadDockWidth}
+                onWidthChange={setNotepadDockWidth}
+                onClose={closeNotepadDock}
+                onToggleDock={toggleNotepadDock}
+              />
+            )}
+          {showNotepadDock ? (
+            <div
+              className="fixed inset-0 z-30 bg-black/20 max-md:block lg:hidden"
+              aria-hidden
+              onClick={closeNotepadDock}
+            />
+          ) : null}
         </div>
       </div>
       {onDeleteProject && (

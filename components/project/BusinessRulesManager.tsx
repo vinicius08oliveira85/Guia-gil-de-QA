@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { Plus, Scale, Download, Upload } from 'lucide-react';
+import { Plus, Scale, Download, Upload, ChevronsDownUp, ChevronsUpDown } from 'lucide-react';
 import type { BusinessRule, Project } from '../../types';
 import { filterBusinessRulesByQuery } from '../../utils/businessRulesFilter';
 import { sortBusinessRules, type BusinessRuleSortKey } from '../../utils/businessRulesSort';
@@ -59,6 +59,7 @@ export const BusinessRulesManager: React.FC<{
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [sortBy, setSortBy] = useState<BusinessRuleSortKey>('created_desc');
   const [localAnalyzing, setLocalAnalyzing] = useState<Set<string>>(new Set());
+  const [expandedRuleIds, setExpandedRuleIds] = useState<Set<string>>(() => new Set());
 
   const importInputRef = useRef<HTMLInputElement>(null);
 
@@ -143,6 +144,24 @@ export const BusinessRulesManager: React.FC<{
 
   const jiraProjectKey = project.settings?.jiraProjectKey;
   const analyzingSet = new Set([...analyzingRuleIds, ...localAnalyzing]);
+
+  const collapseAllRules = () => setExpandedRuleIds(new Set());
+
+  const expandAllRules = () => {
+    setExpandedRuleIds(new Set(filteredRules.map(rule => rule.id)));
+  };
+
+  const handleRuleExpandedChange = (ruleId: string, open: boolean) => {
+    setExpandedRuleIds(prev => {
+      const next = new Set(prev);
+      if (open) {
+        next.add(ruleId);
+      } else {
+        next.delete(ruleId);
+      }
+      return next;
+    });
+  };
 
   return (
     <>
@@ -273,6 +292,28 @@ export const BusinessRulesManager: React.FC<{
                 <option value="title_desc">Título Z–A</option>
               </AppSelect>
             </div>
+            {filteredRules.length > 0 ? (
+              <div className="flex w-full flex-wrap items-end gap-2 sm:w-auto">
+                <button
+                  type="button"
+                  className={tasksViewHeaderSecondaryBtnClass}
+                  onClick={expandAllRules}
+                  aria-label="Expandir todas as regras de negócio"
+                >
+                  <ChevronsUpDown className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                  <span className="hidden sm:inline">Expandir todas</span>
+                </button>
+                <button
+                  type="button"
+                  className={tasksViewHeaderSecondaryBtnClass}
+                  onClick={collapseAllRules}
+                  aria-label="Recolher todas as regras de negócio"
+                >
+                  <ChevronsDownUp className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                  <span className="hidden sm:inline">Recolher todas</span>
+                </button>
+              </div>
+            ) : null}
           </div>
         </section>
 
@@ -303,6 +344,8 @@ export const BusinessRulesManager: React.FC<{
                 <li key={rule.id}>
                   <BusinessRuleDossierCard
                     rule={rule}
+                    isExpanded={expandedRuleIds.has(rule.id)}
+                    onExpandedChange={open => handleRuleExpandedChange(rule.id, open)}
                     isAnalyzing={analyzingSet.has(rule.id)}
                     onEdit={openEdit}
                     onDelete={setDeleteId}

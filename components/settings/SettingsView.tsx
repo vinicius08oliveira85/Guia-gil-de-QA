@@ -19,6 +19,7 @@ import {
   leveViewPageTitleClass,
 } from '../common/projectCardUi';
 import { settingsContentShell } from '../common/viewUi';
+import { KeepAlivePanel } from '../common/KeepAlivePanel';
 
 const lazyLoadTab = (importFn: () => Promise<any>, name: string) => {
   return React.lazy(() =>
@@ -148,6 +149,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     role="tab"
                     aria-selected={isActive}
                     aria-controls={`tab-panel-${tab.id}`}
+                    id={`tab-${tab.id}`}
                     type="button"
                   >
                     <Icon className="h-4 w-4 shrink-0" aria-hidden />
@@ -163,27 +165,50 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       <div className={leveSettingsContentAreaClass}>
         <div className={cn(settingsContentShell, 'py-6 max-md:py-3')}>
           <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
-            <div
-              id={`tab-panel-${activeTab}`}
-              role="tabpanel"
-              aria-labelledby={`tab-${activeTab}`}
+            <KeepAlivePanel
+              id="tab-panel-jira"
+              labelledBy="tab-jira"
+              active={activeTab === 'jira'}
+              lazy={false}
               className={leveSettingsPanelClass}
             >
-              {activeTab === 'jira' && (
-                <JiraSettingsTab
-                  onProjectImported={onProjectImported}
-                  onDirtyChange={setHasUnsavedChanges}
-                />
-              )}
-              {activeTab === 'supabase' && <SupabaseSettingsTab />}
-              {activeTab === 'local-data' && (
-                <LocalDataManagement onImportComplete={onLocalBackupRestored} />
-              )}
-              {activeTab === 'api-keys' && (
-                <GeminiApiKeysTab onDirtyChange={setHasUnsavedChanges} />
-              )}
-              {activeTab === 'preferences' && <PreferencesTab />}
-            </div>
+              <JiraSettingsTab
+                onProjectImported={onProjectImported}
+                onDirtyChange={setHasUnsavedChanges}
+              />
+            </KeepAlivePanel>
+            <KeepAlivePanel
+              id="tab-panel-supabase"
+              labelledBy="tab-supabase"
+              active={activeTab === 'supabase'}
+              className={leveSettingsPanelClass}
+            >
+              <SupabaseSettingsTab />
+            </KeepAlivePanel>
+            <KeepAlivePanel
+              id="tab-panel-local-data"
+              labelledBy="tab-local-data"
+              active={activeTab === 'local-data'}
+              className={leveSettingsPanelClass}
+            >
+              <LocalDataManagement onImportComplete={onLocalBackupRestored} />
+            </KeepAlivePanel>
+            <KeepAlivePanel
+              id="tab-panel-api-keys"
+              labelledBy="tab-api-keys"
+              active={activeTab === 'api-keys'}
+              className={leveSettingsPanelClass}
+            >
+              <GeminiApiKeysTab onDirtyChange={setHasUnsavedChanges} />
+            </KeepAlivePanel>
+            <KeepAlivePanel
+              id="tab-panel-preferences"
+              labelledBy="tab-preferences"
+              active={activeTab === 'preferences'}
+              className={leveSettingsPanelClass}
+            >
+              <PreferencesTab />
+            </KeepAlivePanel>
           </Suspense>
         </div>
       </div>

@@ -47,6 +47,8 @@ interface ProjectsState {
     project: Project,
     options?: { silent?: boolean; syncRemote?: boolean }
   ) => Promise<void>;
+  /** Atualiza o projeto só na memória (Zustand); persistência fica a cargo do useAutoSave. */
+  upsertProjectInMemory: (project: Project) => void;
   deleteProject: (projectId: string) => Promise<void>;
   selectProject: (projectId: string | null) => void;
   addTaskToProject: (projectId: string, task: JiraTask) => Promise<void>;
@@ -565,6 +567,13 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       });
       throw error;
     }
+  },
+
+  upsertProjectInMemory: (project: Project) => {
+    const withTimestamp = { ...project, updatedAt: new Date().toISOString() };
+    set(state => ({
+      projects: state.projects.map(p => (p.id === withTimestamp.id ? withTimestamp : p)),
+    }));
   },
 
   deleteProject: async (projectId: string) => {

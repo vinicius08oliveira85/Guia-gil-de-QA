@@ -23,8 +23,9 @@ export const businessRulesCardClass = cn(
 );
 
 export const businessRulesCardSummaryClass = cn(
-  'business-rules-card-summary flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-left',
-  'max-md:min-h-9 max-md:gap-2 max-md:px-3 max-md:py-2',
+  'business-rules-card-summary flex min-h-[44px] cursor-pointer list-none flex-col gap-3 px-4 py-3 text-left',
+  'sm:flex-row sm:flex-wrap sm:items-center sm:justify-between',
+  'max-md:min-h-9 max-md:gap-2.5 max-md:px-3 max-md:py-2.5',
   'transition-[background-color,box-shadow] duration-200',
   'hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_22%,var(--leve-neu-bg))]',
   'focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] focus-visible:ring-inset',
@@ -68,7 +69,22 @@ export const businessRulesCardEmptyDescClass = cn(
 export const businessRulesCardLinkedTextClass =
   'business-rules-card-linked text-sm leading-relaxed text-[var(--leve-header-text)]';
 
-/** Editar / Excluir — trilho inset + pills alinhados no eixo. */
+/** Linha título + chevron no cabeçalho do card. */
+export const businessRulesCardSummaryHeaderClass = cn(
+  'business-rules-card-summary-header',
+  'order-2 flex min-w-0 flex-1 items-start justify-between gap-2 sm:order-1 sm:items-center'
+);
+
+/** Ações no cabeçalho do card (Editar, Reanalisar, Excluir). */
+export const businessRulesCardSummaryActionsClass = cn(
+  'business-rules-card-actions',
+  'workspace-chrome-inset app-neu-action-track',
+  'order-1 flex w-full shrink-0 flex-row flex-nowrap items-stretch justify-stretch gap-0.5',
+  'rounded-[var(--leve-header-radius)] p-0.5',
+  'sm:order-2 sm:w-auto sm:flex-wrap sm:items-center sm:justify-end'
+);
+
+/** @deprecated Ações na base do card — use `businessRulesCardSummaryActionsClass`. */
 export const businessRulesCardActionsClass = cn(
   'business-rules-card-actions',
   'workspace-chrome-inset app-neu-action-track',
@@ -78,8 +94,13 @@ export const businessRulesCardActionsClass = cn(
 
 const businessRulesCardActionBtnBase = cn(
   'h-9 min-h-9 shrink-0 items-center justify-center gap-1.5 px-4 leading-none',
-  '[&_svg]:block [&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0'
+  'max-md:h-8 max-md:min-h-8 max-md:flex-1 max-md:px-2 max-md:gap-0',
+  '[&_svg]:block [&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0',
+  'max-md:[&_svg]:h-3.5 max-md:[&_svg]:w-3.5'
 );
+
+/** Rótulo textual dos botões de ação — oculto em telas estreitas (ícone + aria-label). */
+export const businessRulesCardActionLabelClass = 'hidden sm:inline';
 
 export const businessRulesCardEditBtnClass = cn(
   'business-rules-card-action-btn business-rules-card-action-edit',

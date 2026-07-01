@@ -1,6 +1,7 @@
 import React, { useState, Suspense } from 'react';
 import { Modal } from '../common/Modal';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
+import { KeepAlivePanel } from '../common/KeepAlivePanel';
 import { Project } from '../../types';
 
 // Lazy load das tabs com tratamento de erro
@@ -85,10 +86,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         {/* Tab Content */}
         <div className="flex-1 overflow-y-auto">
           <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
-            {activeTab === 'jira' && <JiraSettingsTab onProjectImported={onProjectImported} />}
-            {activeTab === 'supabase' && <SupabaseSettingsTab />}
-            {activeTab === 'api-keys' && <GeminiApiKeysTab />}
-            {activeTab === 'preferences' && <PreferencesTab />}
+            <KeepAlivePanel
+              id="settings-modal-panel-jira"
+              active={activeTab === 'jira'}
+              lazy={false}
+            >
+              <JiraSettingsTab onProjectImported={onProjectImported} />
+            </KeepAlivePanel>
+            <KeepAlivePanel id="settings-modal-panel-supabase" active={activeTab === 'supabase'}>
+              <SupabaseSettingsTab />
+            </KeepAlivePanel>
+            <KeepAlivePanel id="settings-modal-panel-api-keys" active={activeTab === 'api-keys'}>
+              <GeminiApiKeysTab />
+            </KeepAlivePanel>
+            <KeepAlivePanel id="settings-modal-panel-preferences" active={activeTab === 'preferences'}>
+              <PreferencesTab />
+            </KeepAlivePanel>
           </Suspense>
         </div>
       </div>

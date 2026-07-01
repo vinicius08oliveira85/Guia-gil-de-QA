@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { JiraTask, BddScenario, TestCaseDetailLevel, Project, TestCase } from '../../types';
 import { TestCasesFreshnessIndicator } from './TestCasesFreshnessIndicator';
 import { TestCaseDetailLevelControl } from './TestCaseDetailLevelControl';
@@ -239,7 +238,6 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
   onSectionChange,
   openTaskNav,
 }) => {
-  const reduceMotion = useReducedMotion();
   const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
   const [isCreatingBdd, setIsCreatingBdd] = useState(false);
   const [detailLevel, setDetailLevel] = useState<TestCaseDetailLevel>('Estruturado');
@@ -345,21 +343,6 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
     task.linkedBusinessRuleIds,
     task.linkedBusinessRuleCategories,
   ]);
-
-  const prevActiveSectionRef = useRef<DetailSection>(activeSection);
-  const [sectionEnterDirection, setSectionEnterDirection] = useState<1 | -1>(1);
-
-  useEffect(() => {
-    const prev = prevActiveSectionRef.current;
-    if (prev !== activeSection) {
-      const oldIdx = sectionTabs.findIndex(t => t.id === prev);
-      const newIdx = sectionTabs.findIndex(t => t.id === activeSection);
-      if (oldIdx >= 0 && newIdx >= 0 && oldIdx !== newIdx) {
-        setSectionEnterDirection(newIdx > oldIdx ? 1 : -1);
-      }
-      prevActiveSectionRef.current = activeSection;
-    }
-  }, [activeSection, sectionTabs]);
 
   useEffect(() => {
     const currentTabExists = sectionTabs.some(tab => tab.id === activeSection);
@@ -1088,8 +1071,8 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
     );
   };
 
-  const renderSectionContent = () => {
-    switch (activeSection) {
+  const renderSectionById = (sectionId: DetailSection) => {
+    switch (sectionId) {
       case 'overview':
         return renderOverviewSection();
       case 'bdd':
@@ -1247,27 +1230,25 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
         </div>
       </div>
 
-      <div
-        id={`task-${safeDomId}-panel-${activeSection}`}
-        role="tabpanel"
-        aria-labelledby={`task-${safeDomId}-tab-${activeSection}`}
-        className={cn(taskDetailsModalPanelShellClass, 'overflow-visible')}
-      >
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={activeSection}
-            initial={reduceMotion ? false : { opacity: 0, x: sectionEnterDirection * 28 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={reduceMotion ? undefined : { opacity: 0, x: sectionEnterDirection * -28 }}
-            transition={{
-              duration: reduceMotion ? 0 : 0.22,
-              ease: [0.25, 1, 0.5, 1],
-            }}
-          >
-            {renderSectionContent()}
-            {sectionTabs.length > 1 ? renderNavigationFooter() : null}
-          </motion.div>
-        </AnimatePresence>
+      <div className={cn(taskDetailsModalPanelShellClass, 'overflow-visible')}>
+        {sectionTabs.map(tab => {
+          const isActive = tab.id === activeSection;
+          const panelId = `task-${safeDomId}-panel-${tab.id}`;
+          return (
+            <div
+              key={tab.id}
+              id={panelId}
+              role="tabpanel"
+              aria-labelledby={`task-${safeDomId}-tab-${tab.id}`}
+              hidden={!isActive}
+              aria-hidden={!isActive}
+              className={cn(!isActive && 'hidden')}
+            >
+              {renderSectionById(tab.id)}
+              {isActive && sectionTabs.length > 1 ? renderNavigationFooter() : null}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -576,6 +576,21 @@ export interface Project {
   specificationDocument?: string; // Conteúdo processado do documento de especificação
   /** Histórico de análises IA completas do projeto (persistido no Supabase com o projeto) */
   projectFullAnalyses?: ProjectFullAnalysis[];
+  /** Páginas do Bloco de Notas (abas internas com texto puro). */
+  notepadPages?: NotepadPage[];
+  /**
+   * @deprecated Conteúdo legado de nota única — migrado automaticamente para `notepadPages`.
+   */
+  notepadContent?: string;
+}
+
+/** Aba interna do Bloco de Notas do projeto. */
+export interface NotepadPage {
+  id: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Comment {

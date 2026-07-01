@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { Project } from '../types';
 import { useProjectsStore } from '../store/projectsStore';
 import { logger } from '../utils/logger';
+import { notepadPagesFingerprint, resolveNotepadPages } from '../utils/notepadPages';
 
 interface UseAutoSaveOptions {
   project: Project;
@@ -64,6 +65,7 @@ const buildProjectFingerprint = (project: Project): string =>
       keywordCount: rule.searchKeywords?.length ?? 0,
       screenshotCount: rule.screenshots?.length ?? 0,
     })),
+    notepadPages: notepadPagesFingerprint(resolveNotepadPages(project)),
     settingsFingerprint: JSON.stringify(project.settings ?? {}),
     analysisFingerprint: {
       general: project.generalIAAnalysis?.generatedAt,
@@ -102,6 +104,7 @@ export const useAutoSave = ({
     settingsRef: unknown;
     phasesRef: unknown;
     businessRulesRef: unknown;
+    notepadPagesRef: unknown;
   } | null>(null);
   const activeProjectIdRef = useRef<string | null>(null);
 
@@ -244,7 +247,8 @@ export const useAutoSave = ({
       meta.documentsRef === project.documents &&
       meta.settingsRef === project.settings &&
       meta.phasesRef === project.phases &&
-      meta.businessRulesRef === project.businessRules
+      meta.businessRulesRef === project.businessRules &&
+      meta.notepadPagesRef === project.notepadPages
     ) {
       return;
     }
@@ -260,6 +264,7 @@ export const useAutoSave = ({
       settingsRef: project.settings,
       phasesRef: project.phases,
       businessRulesRef: project.businessRules,
+      notepadPagesRef: project.notepadPages,
     };
 
     // Se não há projeto anterior, apenas armazenar e retornar

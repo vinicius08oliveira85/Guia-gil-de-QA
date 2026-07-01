@@ -31,6 +31,7 @@ import {
 } from '../../utils/workspaceTabs';
 import { getAdjacentOpenTaskId } from '../../utils/workspaceSessionStorage';
 import { useWorkspaceTabs } from '../../hooks/useWorkspaceTabs';
+import { KeepAlivePanel } from '../common/KeepAlivePanel';
 
 const FIXED_TABS: Array<{ id: JiraSolusFixedTabId; label: string }> = [
   { id: 'dashboard', label: 'Dashboard' },
@@ -141,7 +142,7 @@ export const JiraSolusView = React.memo(() => {
   );
 
   const showFilasPanel = isJiraSolusFixedTabId(activeTab) && activeTab === 'filas';
-  const keepFilasMounted = showFilasPanel || openTaskTabIds.length > 0;
+  const showDashboardPanel = isJiraSolusFixedTabId(activeTab) && activeTab === 'dashboard';
 
   const handleApplyFilter = useCallback(
     (filter: JiraFilasFilter) => {
@@ -325,11 +326,11 @@ export const JiraSolusView = React.memo(() => {
           className={isTaskTabId(activeTab) ? 'hidden' : undefined}
           aria-hidden={isTaskTabId(activeTab)}
         >
-        {isJiraSolusFixedTabId(activeTab) && activeTab === 'dashboard' && (
-          <section
+          <KeepAlivePanel
             id="jira-solus-panel-dashboard"
-            role="tabpanel"
-            aria-labelledby="tab-dashboard"
+            labelledBy="tab-dashboard"
+            active={showDashboardPanel}
+            lazy={false}
           >
             <JiraFilasDashboardPanel
               tasks={tasks}
@@ -338,15 +339,12 @@ export const JiraSolusView = React.memo(() => {
               activeFilter={activeFilter}
               onApplyFilter={handleApplyFilter}
             />
-          </section>
-        )}
+          </KeepAlivePanel>
 
-        {keepFilasMounted ? (
-          <section
+          <KeepAlivePanel
             id="jira-solus-panel-filas"
-            role="tabpanel"
-            aria-labelledby="tab-filas"
-            hidden={!showFilasPanel}
+            labelledBy="tab-filas"
+            active={showFilasPanel}
           >
             <JiraFilasPanel
               tasks={tasks}
@@ -361,8 +359,7 @@ export const JiraSolusView = React.memo(() => {
               onOpenTaskTab={handleOpenTaskTab}
               onWorkspaceBridgeChange={setFilasBridge}
             />
-          </section>
-        ) : null}
+          </KeepAlivePanel>
         </div>
       </div>
     </div>

@@ -1,23 +1,27 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { ChevronDown, Pencil, RefreshCw, Trash2 } from 'lucide-react';
 import type { BusinessRule } from '../../types';
 import { isLegacyBusinessRule } from '../../utils/businessRuleDefaults';
 import { SafeMarkdown } from '../common/SafeMarkdown';
 import {
-  businessRulesCardActionsClass,
+  businessRulesCardActionLabelClass,
   businessRulesCardBodyClass,
   businessRulesCardChevronClass,
   businessRulesCardClass,
   businessRulesCardDeleteBtnClass,
   businessRulesCardEditBtnClass,
   businessRulesCardLabelClass,
+  businessRulesCardSummaryActionsClass,
   businessRulesCardSummaryClass,
+  businessRulesCardSummaryHeaderClass,
   businessRulesCardTitleClass,
   businessRulesCategoryBadgeClass,
 } from './businessRulesNeuUi';
 
 export interface BusinessRuleDossierCardProps {
   rule: BusinessRule;
+  isExpanded?: boolean;
+  onExpandedChange?: (open: boolean) => void;
   isAnalyzing?: boolean;
   onEdit: (rule: BusinessRule) => void;
   onDelete: (ruleId: string) => void;
@@ -25,11 +29,18 @@ export interface BusinessRuleDossierCardProps {
   onConvertLegacy: (rule: BusinessRule) => void;
 }
 
+function stopSummaryToggle(e: React.MouseEvent | React.KeyboardEvent) {
+  e.preventDefault();
+  e.stopPropagation();
+}
+
 /**
  * Card de exibição do dossiê de uma regra de negócio.
  */
 export const BusinessRuleDossierCard: React.FC<BusinessRuleDossierCardProps> = ({
   rule,
+  isExpanded = false,
+  onExpandedChange,
   isAnalyzing = false,
   onEdit,
   onDelete,
@@ -39,47 +50,98 @@ export const BusinessRuleDossierCard: React.FC<BusinessRuleDossierCardProps> = (
   const legacy = isLegacyBusinessRule(rule);
   const outdated = rule.isOutdated && !isAnalyzing;
 
+  const handleToggle = useCallback(
+    (e: React.SyntheticEvent<HTMLDetailsElement>) => {
+      onExpandedChange?.(e.currentTarget.open);
+    },
+    [onExpandedChange]
+  );
+
+  const renderActions = (className: string) => (
+    <div
+      className={className}
+      role="group"
+      aria-label={`Ações da regra ${rule.title}`}
+      onClick={stopSummaryToggle}
+      onKeyDown={stopSummaryToggle}
+    >
+      <button
+        type="button"
+        className={businessRulesCardEditBtnClass}
+        onClick={() => onEdit(rule)}
+        aria-label={`Editar regra ${rule.title}`}
+      >
+        <Pencil className="h-4 w-4 shrink-0" aria-hidden />
+        <span className={businessRulesCardActionLabelClass}>Editar</span>
+      </button>
+      {rule.analysis ? (
+        <button
+          type="button"
+          className={businessRulesCardEditBtnClass}
+          onClick={() => onReanalyze(rule)}
+          disabled={isAnalyzing}
+          aria-label={`Reanalisar regra ${rule.title}`}
+        >
+          <RefreshCw className="h-4 w-4 shrink-0" aria-hidden />
+          <span className={businessRulesCardActionLabelClass}>Reanalisar</span>
+        </button>
+      ) : null}
+      <button
+        type="button"
+        className={businessRulesCardDeleteBtnClass}
+        onClick={() => onDelete(rule.id)}
+        aria-label={`Excluir regra ${rule.title}`}
+      >
+        <Trash2 className="h-4 w-4 shrink-0" aria-hidden />
+        <span className={businessRulesCardActionLabelClass}>Excluir</span>
+      </button>
+    </div>
+  );
+
   return (
     <div className={businessRulesCardClass}>
-      <details className="group" open={!!rule.analysis}>
+      <details className="group" open={isExpanded} onToggle={handleToggle}>
         <summary className={businessRulesCardSummaryClass}>
-          <span className="min-w-0 flex-1">
-            <span className={businessRulesCardTitleClass}>{rule.title}</span>
-            <span className="mt-2 inline-flex flex-wrap items-center gap-2">
-              {legacy && (
-                <span className={businessRulesCategoryBadgeClass('warning')} role="status">
-                  Legada
-                </span>
-              )}
-              {outdated && (
-                <span className={businessRulesCategoryBadgeClass('warning')} role="status">
-                  Desatualizado
-                </span>
-              )}
-              {isAnalyzing && (
-                <span className={businessRulesCategoryBadgeClass('info')} role="status">
-                  Analisando…
-                </span>
-              )}
-              {rule.analysis && (
-                <span className={businessRulesCategoryBadgeClass('secondary')} role="status">
-                  v{rule.analysis.version} · {rule.linkedTaskIds.length} task(s)
-                </span>
-              )}
+          <div className={businessRulesCardSummaryHeaderClass}>
+            <span className="min-w-0 flex-1">
+              <span className={businessRulesCardTitleClass}>{rule.title}</span>
+              <span className="mt-2 inline-flex flex-wrap items-center gap-2">
+                {legacy ? (
+                  <span className={businessRulesCategoryBadgeClass('warning')} role="status">
+                    Legada
+                  </span>
+                ) : null}
+                {outdated ? (
+                  <span className={businessRulesCategoryBadgeClass('warning')} role="status">
+                    Desatualizado
+                  </span>
+                ) : null}
+                {isAnalyzing ? (
+                  <span className={businessRulesCategoryBadgeClass('info')} role="status">
+                    Analisando…
+                  </span>
+                ) : null}
+                {rule.analysis ? (
+                  <span className={businessRulesCategoryBadgeClass('secondary')} role="status">
+                    v{rule.analysis.version} · {rule.linkedTaskIds.length} task(s)
+                  </span>
+                ) : null}
+              </span>
             </span>
-          </span>
-          <ChevronDown className={businessRulesCardChevronClass} aria-hidden />
+            <ChevronDown className={businessRulesCardChevronClass} aria-hidden />
+          </div>
+          {renderActions(businessRulesCardSummaryActionsClass)}
         </summary>
 
         <div className={businessRulesCardBodyClass}>
-          {rule.searchKeywords && rule.searchKeywords.length > 0 && (
+          {rule.searchKeywords && rule.searchKeywords.length > 0 ? (
             <div className="mb-3">
               <p className={businessRulesCardLabelClass}>Palavras-chave</p>
               <p className="text-sm text-base-content/80">{rule.searchKeywords.join(', ')}</p>
             </div>
-          )}
+          ) : null}
 
-          {legacy && !rule.analysis && (
+          {legacy && !rule.analysis ? (
             <div className="mb-3 rounded-lg border border-warning/30 bg-warning/5 p-3 text-sm">
               Regra legada com descrição manual. Converta para dossiê IA para análise automática.
               <button
@@ -90,7 +152,7 @@ export const BusinessRuleDossierCard: React.FC<BusinessRuleDossierCardProps> = (
                 Converter
               </button>
             </div>
-          )}
+          ) : null}
 
           {rule.analysis ? (
             <div>
@@ -106,7 +168,7 @@ export const BusinessRuleDossierCard: React.FC<BusinessRuleDossierCardProps> = (
             <p className="text-sm text-base-content/60">Sem análise gerada.</p>
           )}
 
-          {(rule.analysisHistory?.length ?? 0) > 0 && (
+          {(rule.analysisHistory?.length ?? 0) > 0 ? (
             <details className="mt-3">
               <summary className="cursor-pointer text-sm font-medium">Histórico de versões</summary>
               <ul className="mt-2 space-y-2 text-xs text-base-content/70" role="list">
@@ -117,40 +179,7 @@ export const BusinessRuleDossierCard: React.FC<BusinessRuleDossierCardProps> = (
                 ))}
               </ul>
             </details>
-          )}
-
-          <div className={businessRulesCardActionsClass}>
-            <button
-              type="button"
-              className={businessRulesCardEditBtnClass}
-              onClick={() => onEdit(rule)}
-              aria-label={`Editar regra ${rule.title}`}
-            >
-              <Pencil className="h-4 w-4 shrink-0" aria-hidden />
-              Editar
-            </button>
-            {rule.analysis && (
-              <button
-                type="button"
-                className={businessRulesCardEditBtnClass}
-                onClick={() => onReanalyze(rule)}
-                disabled={isAnalyzing}
-                aria-label={`Reanalisar regra ${rule.title}`}
-              >
-                <RefreshCw className="h-4 w-4 shrink-0" aria-hidden />
-                Reanalisar
-              </button>
-            )}
-            <button
-              type="button"
-              className={businessRulesCardDeleteBtnClass}
-              onClick={() => onDelete(rule.id)}
-              aria-label={`Excluir regra ${rule.title}`}
-            >
-              <Trash2 className="h-4 w-4 shrink-0" aria-hidden />
-              Excluir
-            </button>
-          </div>
+          ) : null}
         </div>
       </details>
     </div>

@@ -1,7 +1,12 @@
 import type { JiraTask } from '../types';
 
 /** Abas fixas do projeto. */
-export type ProjectFixedTabId = 'dashboard' | 'tasks' | 'documents' | 'businessRules';
+export type ProjectFixedTabId =
+  | 'dashboard'
+  | 'tasks'
+  | 'documents'
+  | 'notepad'
+  | 'businessRules';
 
 /** Abas fixas da tela Acompanhamento de Tarefas (Jira Solus). */
 export type JiraSolusFixedTabId = 'dashboard' | 'filas';
@@ -14,6 +19,7 @@ export const PROJECT_FIXED_TAB_IDS: ProjectFixedTabId[] = [
   'tasks',
   'documents',
   'businessRules',
+  'notepad',
 ];
 
 export const JIRA_SOLUS_FIXED_TAB_IDS: JiraSolusFixedTabId[] = ['dashboard', 'filas'];
