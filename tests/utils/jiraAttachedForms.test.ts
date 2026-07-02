@@ -8,8 +8,10 @@ import {
   formatJiraFormAnswerValue,
   formatFormAnswerRawValue,
   hasAttachedFormsContent,
+  mergeFormAnswers,
   parseFormDetailAnswers,
   parseFormIndexResponse,
+  resolveChoiceLabel,
 } from '../../services/jira/attachedForms';
 import type { JiraTask } from '../../types';
 
@@ -59,7 +61,6 @@ describe('jiraAttachedFormsField', () => {
 describe('attachedForms helpers', () => {
   it('formata resposta do formulário', () => {
     expect(formatJiraFormAnswerValue({ label: 'Setor', answer: 'NCI' })).toBe('NCI');
-    expect(formatJiraFormAnswerValue({ label: 'Opção', choice: 2 })).toBe('2');
     expect(formatJiraFormAnswerValue({ label: 'Vazio' })).toBe('—');
   });
 
@@ -84,22 +85,81 @@ describe('attachedForms helpers', () => {
     const answers = parseFormDetailAnswers({
       design: {
         questions: {
-          q1: { label: 'O que você precisa?' },
-          q2: { label: 'Qual sistema?' },
+          q1: {
+            label: 'O que você precisa?',
+            choices: [
+              { id: 2, label: 'Solicitar acesso ou permissão' },
+            ],
+          },
+          q2: {
+            label: 'Qual sistema?',
+            choices: [{ id: 4, label: 'Salesforce' }],
+          },
+          q3: {
+            label: 'Usuário',
+          },
+          q4: {
+            label: 'Informações',
+          },
         },
       },
       state: {
         answers: {
-          q1: 'Solicitar acesso ou permissão',
-          q2: { choices: ['Salesforce'] },
+          q1: 2,
+          q2: { choices: ['4'] },
+          q3: { text: 'jorge.arruda' },
+          q4: {
+            text: 'Boa tarde, equipe!\n\nSolicito criação de acesso ao SalesForce.',
+          },
         },
         status: 's',
       },
     });
 
-    expect(answers).toHaveLength(2);
+    expect(answers).toHaveLength(4);
     expect(answers[0].answer).toBe('Solicitar acesso ou permissão');
     expect(answers[1].answer).toBe('Salesforce');
+    expect(answers[2].answer).toBe('jorge.arruda');
+    expect(answers[3].answer).toContain('SalesForce');
+  });
+
+  it('mescla format/answers com design do formulário', () => {
+    const detail = {
+      design: {
+        questions: {
+          '7': {
+            label: 'Tipo de acesso',
+            choices: [{ id: 1, label: 'Novo acesso' }],
+          },
+        },
+      },
+      state: {
+        answers: {
+          '7': 1,
+        },
+      },
+    };
+
+    const merged = mergeFormAnswers(detail, [
+      { label: 'O que você precisa?', answer: 'Solicitar acesso ou permissão' },
+      { label: 'Tipo de acesso', answer: '', choice: 1 },
+      { label: 'Justificativa', answer: '' },
+    ]);
+
+    expect(merged).toHaveLength(2);
+    expect(merged[0].answer).toBe('Solicitar acesso ou permissão');
+    expect(merged[1].answer).toBe('Novo acesso');
+  });
+
+  it('resolve rótulo de choice por id', () => {
+    const question = {
+      choices: [
+        { id: 1, label: 'Novo acesso' },
+        { id: 2, label: 'Alteração de acesso' },
+      ],
+    };
+    expect(resolveChoiceLabel(question, 1)).toBe('Novo acesso');
+    expect(resolveChoiceLabel(question, 2)).toBe('Alteração de acesso');
   });
 
   it('formata respostas complexas', () => {

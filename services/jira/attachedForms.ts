@@ -45,9 +45,16 @@ interface ProformaFormsProperty {
   forms?: ProformaFormEntry[];
 }
 
+interface JiraFormChoice {
+  id?: string | number;
+  label?: string;
+  value?: string;
+}
+
 interface JiraFormQuestion {
   label?: string;
   type?: string;
+  choices?: JiraFormChoice[] | Record<string, JiraFormChoice>;
 }
 
 interface JiraFormDetail {
@@ -117,6 +124,124 @@ function resolveProformaFormId(form: ProformaFormEntry): string | undefined {
   return undefined;
 }
 
+/** Resolve rótulo de uma opção pelo id no design do formulário. */
+export function resolveChoiceLabel(
+  question: JiraFormQuestion | undefined,
+  choiceId: string | number
+): string | undefined {
+  if (!question?.choices) return undefined;
+
+  const id = String(choiceId);
+
+  if (Array.isArray(question.choices)) {
+    const byId = question.choices.find(
+      choice => String(choice.id ?? choice.value ?? '') === id
+    );
+    if (byId?.label?.trim()) return byId.label.trim();
+
+    const index = Number(id);
+    if (Number.isInteger(index) && index > 0 && index <= question.choices.length) {
+      const byPosition = question.choices[index - 1];
+      if (byPosition?.label?.trim()) return byPosition.label.trim();
+    }
+    return undefined;
+  }
+
+  const entry = question.choices[id];
+  if (entry?.label?.trim()) return entry.label.trim();
+  return undefined;
+}
+
+function findQuestionByLabel(
+  questions: Record<string, JiraFormQuestion>,
+  label: string
+): JiraFormQuestion | undefined {
+  const normalized = label.trim().toLowerCase();
+  return Object.values(questions).find(q => q.label?.trim().toLowerCase() === normalized);
+}
+
+function findQuestionKeyByLabel(
+  questions: Record<string, JiraFormQuestion>,
+  label: string
+): string | undefined {
+  const normalized = label.trim().toLowerCase();
+  const entry = Object.entries(questions).find(
+    ([, q]) => q.label?.trim().toLowerCase() === normalized
+  );
+  return entry?.[0];
+}
+
+function findQuestionForAnswerItem(
+  questions: Record<string, JiraFormQuestion>,
+  item: JiraFormAnswer
+): JiraFormQuestion | undefined {
+  if (item.questionKey && questions[item.questionKey]) {
+    return questions[item.questionKey];
+  }
+  if (item.label) {
+    const key = findQuestionKeyByLabel(questions, item.label);
+    if (key) return questions[key];
+    return findQuestionByLabel(questions, item.label);
+  }
+  return undefined;
+}
+
+function isLikelyUnresolvedChoiceId(answer: string, question?: JiraFormQuestion): boolean {
+  if (!question?.choices || !/^\d+$/.test(answer)) return false;
+  return !!resolveChoiceLabel(question, answer);
+}
+
+/** Converte valor bruto de resposta usando metadados da pergunta (texto, choices, etc.). */
+export function resolveFormAnswerValue(
+  question: JiraFormQuestion | undefined,
+  rawValue: unknown
+): string | undefined {
+  if (rawValue == null) return undefined;
+
+  if (typeof rawValue === 'string') {
+    const trimmed = rawValue.trim();
+    if (!trimmed) return undefined;
+    if (question?.choices) {
+      return resolveChoiceLabel(question, trimmed) ?? trimmed;
+    }
+    return trimmed;
+  }
+
+  if (typeof rawValue === 'number') {
+    if (question?.choices) {
+      return resolveChoiceLabel(question, rawValue) ?? String(rawValue);
+    }
+    return String(rawValue);
+  }
+
+  if (typeof rawValue === 'object' && !Array.isArray(rawValue)) {
+    const record = rawValue as Record<string, unknown>;
+    if (typeof record.text === 'string' && record.text.trim()) return record.text.trim();
+    if (Array.isArray(record.choices) && record.choices.length > 0) {
+      const labels = record.choices
+        .map(choice => {
+          if (typeof choice === 'string' || typeof choice === 'number') {
+            return resolveChoiceLabel(question, choice) ?? String(choice);
+          }
+          return formatFormAnswerRawValue(choice);
+        })
+        .filter((part): part is string => !!part);
+      if (labels.length > 0) return labels.join(', ');
+    }
+    if (typeof record.label === 'string' && record.label.trim()) return record.label.trim();
+    if (typeof record.value === 'string' && record.value.trim()) return record.value.trim();
+  }
+
+  return formatFormAnswerRawValue(rawValue);
+}
+
+/** Indica se a resposta tem conteúdo exibível. */
+export function hasMeaningfulFormAnswer(answer?: string): boolean {
+  if (!answer) return false;
+  const trimmed = answer.trim();
+  return trimmed.length > 0 && trimmed !== '—';
+}
+
 function isFormSubmitted(indexEntry?: JiraFormIndexEntry, detail?: JiraFormDetail): boolean {
   if (indexEntry?.submitted === true) return true;
   const status = detail?.state?.status?.trim().toLowerCase();
@@ -173,12 +298,56 @@ export function normalizeFormAnswers(raw: unknown): JiraFormAnswer[] {
     .filter((item): item is JiraFormAnswer => !!item && typeof item === 'object')
     .map(item => ({
       label: item.label?.trim() || undefined,
-      answer: formatFormAnswerRawValue(item.answer),
+      answer: item.answer?.trim() || undefined,
       fieldKey: item.fieldKey?.trim() || undefined,
       questionKey: item.questionKey?.trim() || undefined,
       choice: item.choice,
     }))
     .filter(item => item.label || item.answer || item.choice != null);
+}
+
+/** Mescla respostas simplificadas da API com o design completo do formulário. */
+export function mergeFormAnswers(
+  detail: JiraFormDetail,
+  simplified: JiraFormAnswer[]
+): JiraFormAnswer[] {
+  const questions = detail.design?.questions ?? {};
+  const stateAnswers = detail.state?.answers ?? {};
+  const results: JiraFormAnswer[] = [];
+
+  for (const item of simplified) {
+    const label = item.label?.trim();
+    if (!label) continue;
+
+    const question = findQuestionForAnswerItem(questions, item);
+    const questionKey =
+      item.questionKey ?? findQuestionKeyByLabel(questions, label) ?? undefined;
+
+    let answer = item.answer?.trim();
+
+    if (!answer && item.choice != null) {
+      answer = resolveChoiceLabel(question, item.choice);
+    }
+
+    if (answer && isLikelyUnresolvedChoiceId(answer, question)) {
+      answer = resolveChoiceLabel(question, answer) ?? answer;
+    }
+
+    if (!answer && questionKey) {
+      answer = resolveFormAnswerValue(question, stateAnswers[questionKey]);
+    }
+
+    if (!hasMeaningfulFormAnswer(answer)) continue;
+
+    results.push({
+      label,
+      answer,
+      fieldKey: item.fieldKey,
+      questionKey,
+    });
+  }
+
+  return results;
 }
 
 /** Converte o JSON completo do formulário (`GET .../form/{id}`) em respostas legíveis. */
@@ -188,9 +357,10 @@ export function parseFormDetailAnswers(detail: JiraFormDetail): JiraFormAnswer[]
   const results: JiraFormAnswer[] = [];
 
   for (const [questionId, rawValue] of Object.entries(answers)) {
-    const label = questions[questionId]?.label?.trim() || questionId;
-    const answer = formatFormAnswerRawValue(rawValue);
-    if (!label && !answer) continue;
+    const question = questions[questionId];
+    const label = question?.label?.trim() || questionId;
+    const answer = resolveFormAnswerValue(question, rawValue);
+    if (!hasMeaningfulFormAnswer(answer)) continue;
     results.push({
       label,
       answer,
@@ -208,12 +378,51 @@ async function fetchFormAnswersFromApi(
   formId: string,
   indexEntry?: JiraFormIndexEntry
 ): Promise<{ answers: JiraFormAnswer[]; name?: string; submitted: boolean; updated?: string }> {
+  let detail: JiraFormDetail | undefined;
+  let simplified: JiraFormAnswer[] = [];
+
   try {
-    const detail = await jiraFormsApiCall<JiraFormDetail>(
+    detail = await jiraFormsApiCall<JiraFormDetail>(
       config,
       formsApiPath(cloudId, issueKey, `form/${encodeURIComponent(formId)}`),
       { timeout: 20000 }
     );
+  } catch (error) {
+    logger.debug('Detalhe do formulário indisponível', 'attachedForms', {
+      issueKey,
+      formId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+
+  try {
+    const raw = await jiraFormsApiCall<JiraFormAnswer[]>(
+      config,
+      formsApiPath(cloudId, issueKey, `form/${encodeURIComponent(formId)}/format/answers`),
+      { timeout: 20000 }
+    );
+    simplified = normalizeFormAnswers(raw);
+  } catch (error) {
+    logger.debug('Respostas simplificadas indisponíveis', 'attachedForms', {
+      issueKey,
+      formId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+
+  if (detail && simplified.length > 0) {
+    const answers = mergeFormAnswers(detail, simplified);
+    if (answers.length > 0) {
+      return {
+        answers,
+        name: indexEntry?.name?.trim() || detail.design?.settings?.name?.trim(),
+        submitted: isFormSubmitted(indexEntry, detail),
+        updated: detail.updated ?? indexEntry?.updated,
+      };
+    }
+  }
+
+  if (detail) {
     const answers = parseFormDetailAnswers(detail);
     if (answers.length > 0) {
       return {
@@ -223,26 +432,27 @@ async function fetchFormAnswersFromApi(
         updated: detail.updated ?? indexEntry?.updated,
       };
     }
-  } catch (error) {
-    logger.debug('Detalhe do formulário indisponível, tentando format/answers', 'attachedForms', {
-      issueKey,
-      formId,
-      error: error instanceof Error ? error.message : String(error),
-    });
   }
 
-  const simplified = await jiraFormsApiCall<JiraFormAnswer[]>(
-    config,
-    formsApiPath(cloudId, issueKey, `form/${encodeURIComponent(formId)}/format/answers`),
-    { timeout: 20000 }
-  );
+  if (simplified.length > 0) {
+    const answers = simplified
+      .map(item => ({
+        ...item,
+        answer: item.answer?.trim() || undefined,
+      }))
+      .filter(item => hasMeaningfulFormAnswer(item.answer));
 
-  return {
-    answers: normalizeFormAnswers(simplified),
-    name: indexEntry?.name?.trim(),
-    submitted: isFormSubmitted(indexEntry),
-    updated: indexEntry?.updated,
-  };
+    if (answers.length > 0) {
+      return {
+        answers,
+        name: indexEntry?.name?.trim(),
+        submitted: isFormSubmitted(indexEntry),
+        updated: indexEntry?.updated,
+      };
+    }
+  }
+
+  throw new Error('Formulário sem respostas recuperáveis');
 }
 
 async function fetchFormsViaAtlassianApi(
@@ -436,8 +646,7 @@ export async function fetchIssueAttachedForms(
 /** Formata resposta de um campo do formulário para exibição. */
 export function formatJiraFormAnswerValue(answer: JiraFormAnswer): string {
   const text = answer.answer?.trim();
-  if (text) return text;
-  if (answer.choice != null && String(answer.choice).trim()) return String(answer.choice);
+  if (hasMeaningfulFormAnswer(text)) return text!;
   return '—';
 }
 

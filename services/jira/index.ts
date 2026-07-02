@@ -59,7 +59,11 @@ export {
   formatJiraFormAnswerValue,
   formatFormAnswerRawValue,
   hasAttachedFormsContent,
+  hasMeaningfulFormAnswer,
+  mergeFormAnswers,
   parseFormDetailAnswers,
   parseFormIndexResponse,
+  resolveChoiceLabel,
+  resolveFormAnswerValue,
 } from './attachedForms';
 export type { JiraAttachedForm, JiraFormAnswer } from './attachedForms';

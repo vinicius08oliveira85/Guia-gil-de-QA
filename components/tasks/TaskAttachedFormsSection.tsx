@@ -74,7 +74,9 @@ export const TaskAttachedFormsSection: React.FC<TaskAttachedFormsSectionProps> =
 
               {form.answers.length > 0 ? (
                 <dl className="space-y-2">
-                  {form.answers.map((answer, index) => {
+                  {form.answers
+                    .filter(answer => formatJiraFormAnswerValue(answer) !== '—')
+                    .map((answer, index) => {
                     const label = answer.label?.trim() || `Campo ${index + 1}`;
                     const value = formatJiraFormAnswerValue(answer);
                     return (
