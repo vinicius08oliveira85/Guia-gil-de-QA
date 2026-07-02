@@ -2,7 +2,7 @@ import type { JiraConfig } from './types';
 import { logger } from '../../utils/logger';
 
 type JiraApiRoot = 'api/3' | 'agile/1.0' | 'servicedeskapi' | 'proforma/1';
-type JiraUrlMode = 'rest' | 'site';
+type JiraUrlMode = 'rest' | 'site' | 'atlassian';
 
 async function jiraRequest<T>(
   config: JiraConfig,
@@ -13,6 +13,7 @@ async function jiraRequest<T>(
     timeout?: number;
     apiRoot?: JiraApiRoot;
     urlMode?: JiraUrlMode;
+    extraHeaders?: Record<string, string>;
   } = {}
 ): Promise<T> {
   const timeout = options.timeout || 60000;
@@ -29,6 +30,7 @@ async function jiraRequest<T>(
       endpoint,
       apiRoot,
       urlMode: options.urlMode ?? 'rest',
+      extraHeaders: options.extraHeaders,
       method: options.method || 'GET',
       body: options.body
         ? typeof options.body === 'string'
@@ -116,3 +118,17 @@ export const jiraProformaApiCall = async <T>(
   endpoint: string,
   options: { method?: string; body?: unknown; timeout?: number } = {}
 ): Promise<T> => jiraRequest<T>(config, endpoint, { ...options, apiRoot: 'proforma/1' });
+
+const FORMS_API_HEADERS = { 'X-ExperimentalApi': 'opt-in' };
+
+/** Forms API do Jira Cloud (`api.atlassian.com/jira/forms/cloud/...`). */
+export const jiraFormsApiCall = async <T>(
+  config: JiraConfig,
+  endpoint: string,
+  options: { method?: string; body?: unknown; timeout?: number } = {}
+): Promise<T> =>
+  jiraRequest<T>(config, endpoint, {
+    ...options,
+    urlMode: 'atlassian',
+    extraHeaders: FORMS_API_HEADERS,
+  });

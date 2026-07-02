@@ -1,5 +1,5 @@
 import type { JiraConfig } from './types';
-import { jiraApiCall, jiraProformaApiCall, jiraSitePathCall } from './api';
+import { jiraApiCall, jiraFormsApiCall, jiraProformaApiCall, jiraSitePathCall } from './api';
 import { getJiraFields } from './metadata';
 import { logger } from '../../utils/logger';
 import {
@@ -33,16 +33,42 @@ interface JiraFormIndexEntry {
   formTemplate?: { id?: string };
 }
 
+interface ProformaFormEntry {
+  id?: number | string;
+  uuid?: string;
+  name?: string;
+  submitted?: boolean;
+  updated?: string;
+}
+
 interface ProformaFormsProperty {
-  forms?: Array<{
-    id?: number | string;
-    name?: string;
-    submitted?: boolean;
-    updated?: string;
-  }>;
+  forms?: ProformaFormEntry[];
+}
+
+interface JiraFormQuestion {
+  label?: string;
+  type?: string;
+}
+
+interface JiraFormDetail {
+  id?: string;
+  updated?: string;
+  design?: {
+    questions?: Record<string, JiraFormQuestion>;
+    settings?: { name?: string };
+  };
+  state?: {
+    answers?: Record<string, unknown>;
+    status?: string;
+  };
 }
 
 const cloudIdCache = new Map<string, string>();
+
+function formsApiPath(cloudId: string, issueKey: string, suffix = ''): string {
+  const base = `jira/forms/cloud/${cloudId}/issue/${encodeURIComponent(issueKey)}`;
+  return suffix ? `${base}/${suffix.replace(/^\//, '')}` : `${base}/form`;
+}
 
 async function getJiraCloudId(config: JiraConfig): Promise<string | undefined> {
   const cacheKey = config.url.trim().toLowerCase();
@@ -67,13 +93,87 @@ async function getJiraCloudId(config: JiraConfig): Promise<string | undefined> {
   return undefined;
 }
 
-function normalizeAnswers(raw: unknown): JiraFormAnswer[] {
+/** Extrai lista de formulários de respostas variadas da API. */
+export function parseFormIndexResponse(raw: unknown): JiraFormIndexEntry[] {
+  if (Array.isArray(raw)) {
+    return raw.filter((item): item is JiraFormIndexEntry => !!item && typeof item === 'object');
+  }
+  if (raw && typeof raw === 'object') {
+    const record = raw as Record<string, unknown>;
+    for (const key of ['forms', 'values', 'data']) {
+      const nested = record[key];
+      if (Array.isArray(nested)) {
+        return nested.filter((item): item is JiraFormIndexEntry => !!item && typeof item === 'object');
+      }
+    }
+  }
+  return [];
+}
+
+function resolveProformaFormId(form: ProformaFormEntry): string | undefined {
+  const uuid = form.uuid?.trim();
+  if (uuid) return uuid;
+  if (form.id != null && String(form.id).trim()) return String(form.id).trim();
+  return undefined;
+}
+
+function isFormSubmitted(indexEntry?: JiraFormIndexEntry, detail?: JiraFormDetail): boolean {
+  if (indexEntry?.submitted === true) return true;
+  const status = detail?.state?.status?.trim().toLowerCase();
+  if (!status) return false;
+  return status === 's' || status === 'l' || status === 'submitted' || status === 'locked';
+}
+
+/** Formata valores de resposta do formulário (string, objeto, lista). */
+export function formatFormAnswerRawValue(value: unknown): string | undefined {
+  if (value == null) return undefined;
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed || undefined;
+  }
+
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+
+  if (Array.isArray(value)) {
+    const parts = value
+      .map(item => formatFormAnswerRawValue(item))
+      .filter((part): part is string => !!part);
+    return parts.length > 0 ? parts.join(', ') : undefined;
+  }
+
+  if (typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    if (typeof record.text === 'string' && record.text.trim()) return record.text.trim();
+    if (typeof record.label === 'string' && record.label.trim()) return record.label.trim();
+    if (typeof record.value === 'string' && record.value.trim()) return record.value.trim();
+    if (Array.isArray(record.choices)) {
+      const parts = record.choices
+        .map(item => formatFormAnswerRawValue(item))
+        .filter((part): part is string => !!part);
+      if (parts.length > 0) return parts.join(', ');
+    }
+    if (Array.isArray(record.values)) {
+      const parts = record.values
+        .map(item => formatFormAnswerRawValue(item))
+        .filter((part): part is string => !!part);
+      if (parts.length > 0) return parts.join(', ');
+    }
+    return formatJiraCustomFieldValue(value);
+  }
+
+  return undefined;
+}
+
+export function normalizeFormAnswers(raw: unknown): JiraFormAnswer[] {
   if (!Array.isArray(raw)) return [];
   return raw
     .filter((item): item is JiraFormAnswer => !!item && typeof item === 'object')
     .map(item => ({
       label: item.label?.trim() || undefined,
-      answer: item.answer?.trim() || undefined,
+      answer: formatFormAnswerRawValue(item.answer),
       fieldKey: item.fieldKey?.trim() || undefined,
       questionKey: item.questionKey?.trim() || undefined,
       choice: item.choice,
@@ -81,58 +181,123 @@ function normalizeAnswers(raw: unknown): JiraFormAnswer[] {
     .filter(item => item.label || item.answer || item.choice != null);
 }
 
-async function fetchFormAnswersCloud(
+/** Converte o JSON completo do formulário (`GET .../form/{id}`) em respostas legíveis. */
+export function parseFormDetailAnswers(detail: JiraFormDetail): JiraFormAnswer[] {
+  const questions = detail.design?.questions ?? {};
+  const answers = detail.state?.answers ?? {};
+  const results: JiraFormAnswer[] = [];
+
+  for (const [questionId, rawValue] of Object.entries(answers)) {
+    const label = questions[questionId]?.label?.trim() || questionId;
+    const answer = formatFormAnswerRawValue(rawValue);
+    if (!label && !answer) continue;
+    results.push({
+      label,
+      answer,
+      questionKey: questionId,
+    });
+  }
+
+  return results;
+}
+
+async function fetchFormAnswersFromApi(
   config: JiraConfig,
   cloudId: string,
   issueKey: string,
-  formId: string
-): Promise<JiraFormAnswer[]> {
-  const answers = await jiraSitePathCall<JiraFormAnswer[]>(
+  formId: string,
+  indexEntry?: JiraFormIndexEntry
+): Promise<{ answers: JiraFormAnswer[]; name?: string; submitted: boolean; updated?: string }> {
+  try {
+    const detail = await jiraFormsApiCall<JiraFormDetail>(
+      config,
+      formsApiPath(cloudId, issueKey, `form/${encodeURIComponent(formId)}`),
+      { timeout: 20000 }
+    );
+    const answers = parseFormDetailAnswers(detail);
+    if (answers.length > 0) {
+      return {
+        answers,
+        name: indexEntry?.name?.trim() || detail.design?.settings?.name?.trim(),
+        submitted: isFormSubmitted(indexEntry, detail),
+        updated: detail.updated ?? indexEntry?.updated,
+      };
+    }
+  } catch (error) {
+    logger.debug('Detalhe do formulário indisponível, tentando format/answers', 'attachedForms', {
+      issueKey,
+      formId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+
+  const simplified = await jiraFormsApiCall<JiraFormAnswer[]>(
     config,
-    `jira/forms/cloud/${cloudId}/issue/${encodeURIComponent(issueKey)}/form/${encodeURIComponent(formId)}/format/answers`,
+    formsApiPath(cloudId, issueKey, `form/${encodeURIComponent(formId)}/format/answers`),
     { timeout: 20000 }
   );
-  return normalizeAnswers(answers);
+
+  return {
+    answers: normalizeFormAnswers(simplified),
+    name: indexEntry?.name?.trim(),
+    submitted: isFormSubmitted(indexEntry),
+    updated: indexEntry?.updated,
+  };
 }
 
-async function fetchFormsViaCloudApi(
+async function fetchFormsViaAtlassianApi(
   config: JiraConfig,
-  issueKey: string
+  issueKey: string,
+  seedForms: JiraFormIndexEntry[] = []
 ): Promise<JiraAttachedForm[]> {
   const cloudId = await getJiraCloudId(config);
   if (!cloudId) return [];
 
-  const forms = await jiraSitePathCall<JiraFormIndexEntry[]>(
-    config,
-    `jira/forms/cloud/${cloudId}/issue/${encodeURIComponent(issueKey)}/form`,
-    { timeout: 20000 }
-  );
+  let forms = seedForms;
+  if (forms.length === 0) {
+    const raw = await jiraFormsApiCall<unknown>(config, formsApiPath(cloudId, issueKey), {
+      timeout: 20000,
+    });
+    forms = parseFormIndexResponse(raw);
+  }
 
-  if (!Array.isArray(forms) || forms.length === 0) return [];
+  if (forms.length === 0) return [];
 
   const results: JiraAttachedForm[] = [];
   for (const form of forms) {
     const formId = form.id?.trim();
     if (!formId) continue;
 
-    let answers: JiraFormAnswer[] = [];
     try {
-      answers = await fetchFormAnswersCloud(config, cloudId, issueKey, formId);
+      const { answers, name, submitted, updated } = await fetchFormAnswersFromApi(
+        config,
+        cloudId,
+        issueKey,
+        formId,
+        form
+      );
+
+      results.push({
+        id: formId,
+        name: name || form.name?.trim() || 'Formulário',
+        submitted,
+        updated: updated ?? form.updated,
+        answers,
+      });
     } catch (error) {
-      logger.debug('Respostas do formulário indisponíveis', 'attachedForms', {
+      logger.debug('Formulário sem respostas recuperáveis', 'attachedForms', {
         issueKey,
         formId,
         error: error instanceof Error ? error.message : String(error),
       });
+      results.push({
+        id: formId,
+        name: form.name?.trim() || 'Formulário',
+        submitted: isFormSubmitted(form),
+        updated: form.updated,
+        answers: [],
+      });
     }
-
-    results.push({
-      id: formId,
-      name: form.name?.trim() || 'Formulário',
-      submitted: !!form.submitted,
-      updated: form.updated,
-      answers,
-    });
   }
 
   return results;
@@ -156,9 +321,29 @@ async function fetchFormsViaProformaProperty(
   const forms = property.value?.forms ?? [];
   if (forms.length === 0) return [];
 
+  const cloudId = await getJiraCloudId(config);
+  if (cloudId) {
+    const indexEntries: JiraFormIndexEntry[] = [];
+    for (const form of forms) {
+      const id = resolveProformaFormId(form);
+      if (!id) continue;
+      indexEntries.push({
+        id,
+        name: form.name,
+        submitted: form.submitted,
+        updated: form.updated,
+      });
+    }
+
+    if (indexEntries.length > 0) {
+      const fromCloud = await fetchFormsViaAtlassianApi(config, issueKey, indexEntries);
+      if (fromCloud.length > 0) return fromCloud;
+    }
+  }
+
   const results: JiraAttachedForm[] = [];
   for (const form of forms) {
-    const formId = form.id != null ? String(form.id) : '';
+    const formId = resolveProformaFormId(form);
     if (!formId) continue;
 
     let answers: JiraFormAnswer[] = [];
@@ -168,7 +353,7 @@ async function fetchFormsViaProformaProperty(
         `issue/${encodeURIComponent(issueKey)}/form/${encodeURIComponent(formId)}/answers`,
         { timeout: 20000 }
       );
-      answers = normalizeAnswers(raw);
+      answers = normalizeFormAnswers(raw);
     } catch (error) {
       logger.debug('Respostas Proforma indisponíveis', 'attachedForms', {
         issueKey,
@@ -228,7 +413,7 @@ export async function fetchIssueAttachedForms(
   if (!key) return [];
 
   const strategies = [
-    () => fetchFormsViaCloudApi(config, key),
+    () => fetchFormsViaAtlassianApi(config, key),
     () => fetchFormsViaProformaProperty(config, key),
     () => fetchFormsViaCustomField(config, key),
   ];
@@ -258,11 +443,7 @@ export function formatJiraFormAnswerValue(answer: JiraFormAnswer): string {
 
 /** Verifica se há conteúdo exibível nos formulários. */
 export function hasAttachedFormsContent(forms: JiraAttachedForm[]): boolean {
-  return forms.some(
-    form =>
-      form.answers.length > 0 ||
-      form.name.trim().length > 0
-  );
+  return forms.some(form => form.answers.length > 0 || form.name.trim().length > 0);
 }
 
 /** Exporta padrões para testes. */

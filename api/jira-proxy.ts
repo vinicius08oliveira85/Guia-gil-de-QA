@@ -17,6 +17,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     isBinary = false,
     apiRoot = 'api/3',
     urlMode = 'rest',
+    extraHeaders = {},
   } = req.body;
 
   if (!url || !email || !apiToken || !endpoint) {
@@ -39,13 +40,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     const normalizedEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
     const jiraUrl = isAttachment
       ? `${baseUrl}/${normalizedEndpoint}`
-      : urlMode === 'site'
-        ? `${baseUrl}/${normalizedEndpoint}`
-        : `${baseUrl}/rest/${apiRoot}/${normalizedEndpoint}`;
+      : urlMode === 'atlassian'
+        ? `https://api.atlassian.com/${normalizedEndpoint}`
+        : urlMode === 'site'
+          ? `${baseUrl}/${normalizedEndpoint}`
+          : `${baseUrl}/rest/${apiRoot}/${normalizedEndpoint}`;
 
     // Headers apropriados para binário ou JSON
     const headers: Record<string, string> = {
       Authorization: `Basic ${credentials}`,
+      ...(extraHeaders && typeof extraHeaders === 'object' ? extraHeaders : {}),
     };
 
     if (isAttachment) {

@@ -6,7 +6,10 @@ import {
 } from '../../utils/jiraAttachedFormsField';
 import {
   formatJiraFormAnswerValue,
+  formatFormAnswerRawValue,
   hasAttachedFormsContent,
+  parseFormDetailAnswers,
+  parseFormIndexResponse,
 } from '../../services/jira/attachedForms';
 import type { JiraTask } from '../../types';
 
@@ -70,5 +73,37 @@ describe('attachedForms helpers', () => {
       hasAttachedFormsContent([{ id: '1', name: 'Form', submitted: false, answers: [] }])
     ).toBe(true);
     expect(hasAttachedFormsContent([])).toBe(false);
+  });
+
+  it('parseia índice de formulários em array ou objeto', () => {
+    expect(parseFormIndexResponse([{ id: 'abc', name: 'Form 1' }])).toHaveLength(1);
+    expect(parseFormIndexResponse({ forms: [{ id: 'xyz', name: 'Form 2' }] })).toHaveLength(1);
+  });
+
+  it('parseia respostas do JSON completo do formulário', () => {
+    const answers = parseFormDetailAnswers({
+      design: {
+        questions: {
+          q1: { label: 'O que você precisa?' },
+          q2: { label: 'Qual sistema?' },
+        },
+      },
+      state: {
+        answers: {
+          q1: 'Solicitar acesso ou permissão',
+          q2: { choices: ['Salesforce'] },
+        },
+        status: 's',
+      },
+    });
+
+    expect(answers).toHaveLength(2);
+    expect(answers[0].answer).toBe('Solicitar acesso ou permissão');
+    expect(answers[1].answer).toBe('Salesforce');
+  });
+
+  it('formata respostas complexas', () => {
+    expect(formatFormAnswerRawValue({ text: 'Novo acesso' })).toBe('Novo acesso');
+    expect(formatFormAnswerRawValue({ choices: ['A', 'B'] })).toBe('A, B');
   });
 });

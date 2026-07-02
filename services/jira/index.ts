@@ -57,6 +57,9 @@ export type { JiraIssueToTaskOptions } from './issueToTask';
 export {
   fetchIssueAttachedForms,
   formatJiraFormAnswerValue,
+  formatFormAnswerRawValue,
   hasAttachedFormsContent,
+  parseFormDetailAnswers,
+  parseFormIndexResponse,
 } from './attachedForms';
 export type { JiraAttachedForm, JiraFormAnswer } from './attachedForms';
