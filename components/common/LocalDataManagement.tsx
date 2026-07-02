@@ -246,7 +246,8 @@ export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImpo
           <div className="min-w-0 flex-1">
             <h3 className={leveSettingsSectionTitleClass}>Dados locais</h3>
             <p className={leveSettingsSectionSubtitleClass}>
-              Exporte ou restaure projetos e o Acompanhamento de Tarefas deste dispositivo
+              Exporte ou restaure o backup completo deste dispositivo (projetos, filas Jira,
+              preferências e credenciais)
             </p>
           </div>
         </div>
@@ -262,8 +263,9 @@ export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImpo
             <p className={cn(leveSettingsMutedTextClass, 'mt-1')}>
               Escolha uma pasta fixa no computador. O app grava automaticamente{' '}
               <code className="font-mono text-xs">{LOCAL_FOLDER_BACKUP_FILENAME}</code> com todos os
-              projetos e o Acompanhamento de Tarefas. O IndexedDB continua sendo a fonte principal;
-              a pasta é um espelho legível no disco.
+              projetos, acompanhamento de Filas Jira, preferências, workspace, credenciais e cache
+              de IA. O IndexedDB continua sendo a fonte principal; a pasta é um espelho legível no
+              disco.
             </p>
             {!folderSupported && (
               <p className="mt-2 text-sm text-amber-700 dark:text-amber-300" role="status">

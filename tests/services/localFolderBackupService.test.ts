@@ -29,7 +29,7 @@ const mockDirHandle = {
 
 vi.mock('../../services/dbService', () => ({
   buildLocalBackupData: vi.fn(),
-  BACKUP_EXPORT_FORMAT_VERSION: 2,
+  BACKUP_EXPORT_FORMAT_VERSION: 3,
   saveLocalFolderDirectoryHandle: vi.fn().mockResolvedValue(undefined),
   getLocalFolderDirectoryHandle: vi.fn(),
   clearLocalFolderDirectoryHandle: vi.fn().mockResolvedValue(undefined),

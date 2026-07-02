@@ -69,6 +69,10 @@ import {
   type JiraFilasLocalFilters,
 } from './JiraFilasFiltersModalContent';
 import {
+  readJiraFilasLocalFilters,
+  writeJiraFilasLocalFilters,
+} from '../../utils/jiraFilasLocalFiltersStorage';
+import {
   jiraSolusFieldClass,
   jiraSolusFieldLabelClass,
   jiraSolusInnerPanelClass,
@@ -148,11 +152,17 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [issueKeyInput, setIssueKeyInput] = useState('');
-  const [localFilters, setLocalFilters] = useState<JiraFilasLocalFilters>(EMPTY_JIRA_FILAS_FILTERS);
+  const [localFilters, setLocalFilters] = useState<JiraFilasLocalFilters>(() =>
+    readJiraFilasLocalFilters()
+  );
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
   const [showExportTasksModal, setShowExportTasksModal] = useState(false);
   const [sortBy, setSortBy] = useLocalStorage<TaskSortBy>('jira-filas-sort-by', 'id');
   const [groupBy, setGroupBy] = useLocalStorage<TaskGroupBy>('jira-filas-group-by', 'none');
+
+  useEffect(() => {
+    writeJiraFilasLocalFilters(localFilters);
+  }, [localFilters]);
 
   const [isLoadingProjects, setIsLoadingProjects] = useState(false);
   const [isLoadingQueues, setIsLoadingQueues] = useState(false);

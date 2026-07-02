@@ -41,13 +41,23 @@ describe('taskTrackingStorage', () => {
 
     expect(readTaskTrackingSnapshot()).toEqual({
       selectedProjectKey: 'SUS',
-      queueSelection: { projectKey: 'SUS', queueId: '42', queueIds: ['42'] },
+      queueSelection: {
+        projectKey: 'SUS',
+        projectKeys: ['SUS'],
+        queueCategories: [],
+        queueStatuses: [],
+        queueId: '42',
+        queueIds: ['42'],
+      },
       tasks: [{ id: 'SUS-1', title: 'Tarefa', type: 'Tarefa', status: 'To Do' }],
       slaRiskWindowHours: 72,
     });
     expect(sessionStorage.getItem(FILAS_PROJECT_STORAGE_KEY)).toBe('SUS');
     expect(JSON.parse(sessionStorage.getItem(FILAS_QUEUE_STORAGE_KEY)!)).toEqual({
       projectKey: 'SUS',
+      projectKeys: ['SUS'],
+      queueCategories: [],
+      queueStatuses: [],
       queueId: '42',
       queueIds: ['42'],
     });
@@ -81,5 +91,27 @@ describe('taskTrackingStorage', () => {
     expect(readTaskTrackingSnapshot().tasks).toEqual([
       { id: 'OK-1', title: 'Ok', type: 'Tarefa', status: 'To Do' },
     ]);
+  });
+
+  it('restaura seleção de filas com categorias sem queueIds', () => {
+    restoreTaskTrackingFromBackup({
+      selectedProjectKey: 'SUS',
+      queueSelection: {
+        projectKey: 'SUS',
+        projectKeys: ['SUS', 'ME'],
+        queueCategories: ['Solus'],
+        queueStatuses: ['Abertos'],
+      },
+      tasks: [],
+      slaRiskWindowHours: 48,
+    });
+
+    const snapshot = readTaskTrackingSnapshot();
+    expect(snapshot.queueSelection).toEqual({
+      projectKey: 'SUS',
+      projectKeys: ['SUS', 'ME'],
+      queueCategories: ['Solus'],
+      queueStatuses: ['Abertos'],
+    });
   });
 });

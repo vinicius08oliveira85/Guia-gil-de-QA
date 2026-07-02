@@ -17,13 +17,18 @@ import {
 } from '../utils/testCaseCleanup';
 import { withAcyclicTaskParents } from '../utils/taskParentCycle';
 import {
+  collectFullAppStateBackup,
+  restoreFullAppStateBackup,
+  type FullAppStateBackup,
+} from './fullLocalBackupService';
+import {
   readTaskTrackingSnapshot,
   restoreTaskTrackingFromBackup,
   type TaskTrackingSnapshot,
 } from './taskTrackingStorage';
 
 /** Versão do envelope JSON de backup (independente do DB_VERSION do IndexedDB). */
-export const BACKUP_EXPORT_FORMAT_VERSION = 2;
+export const BACKUP_EXPORT_FORMAT_VERSION = 3;
 
 let db: IDBDatabase | undefined;
 
@@ -292,6 +297,8 @@ export type LocalBackupEnvelope = {
   projects: Project[];
   /** Acompanhamento de Tarefas (Filas Jira) — presente a partir do formato v2. */
   taskTracking?: TaskTrackingSnapshot;
+  /** Preferências, workspace, credenciais, filtros e cache de IA — formato v3+. */
+  appState?: FullAppStateBackup;
 };
 
 /**
@@ -300,6 +307,7 @@ export type LocalBackupEnvelope = {
 export const buildLocalBackupData = async (): Promise<LocalBackupEnvelope> => {
   const projects = await loadProjectsFromIndexedDB();
   const taskTracking = readTaskTrackingSnapshot();
+  const appState = await collectFullAppStateBackup();
   return {
     backupFormatVersion: BACKUP_EXPORT_FORMAT_VERSION,
     dbVersion: DB_VERSION,
@@ -307,6 +315,7 @@ export const buildLocalBackupData = async (): Promise<LocalBackupEnvelope> => {
     app: 'qa-agile-guide',
     projects,
     taskTracking,
+    appState,
   };
 };
 
@@ -388,6 +397,14 @@ export const importProjectsFromBackup = async (
       const snapshot = readTaskTrackingSnapshot();
       taskTrackingTasksRestored = snapshot.tasks.length;
     }
+  }
+
+  const appStateRaw =
+    parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? (parsed as { appState?: FullAppStateBackup }).appState
+      : undefined;
+  if (appStateRaw) {
+    await restoreFullAppStateBackup(appStateRaw);
   }
 
   for (let i = 0; i < rawProjects.length; i++) {

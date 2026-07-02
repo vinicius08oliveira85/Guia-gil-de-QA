@@ -298,10 +298,28 @@ export function normalizeTaskTrackingBackup(raw: unknown): TaskTrackingSnapshot 
   let queueSelection: TaskTrackingQueueSelection | null = null;
   if (o.queueSelection && typeof o.queueSelection === 'object') {
     const q = o.queueSelection as Partial<TaskTrackingQueueSelection>;
-    const pk = typeof q.projectKey === 'string' ? q.projectKey.trim() : '';
+    const projectKeys =
+      Array.isArray(q.projectKeys) && q.projectKeys.length > 0
+        ? q.projectKeys.map(k => k.trim()).filter(Boolean)
+        : typeof q.projectKey === 'string' && q.projectKey.trim()
+          ? [q.projectKey.trim()]
+          : [];
+    const queueCategories = Array.isArray(q.queueCategories)
+      ? q.queueCategories.map(c => c.trim()).filter(Boolean)
+      : [];
+    const queueStatuses = Array.isArray(q.queueStatuses)
+      ? q.queueStatuses.map(s => s.trim()).filter(Boolean)
+      : [];
     const queueIds = normalizeQueueIds(q);
-    if (pk && queueIds.length > 0) {
-      queueSelection = { projectKey: pk, queueIds, queueId: queueIds[0] };
+
+    if (projectKeys.length > 0) {
+      queueSelection = {
+        projectKey: projectKeys[0],
+        projectKeys,
+        queueCategories,
+        queueStatuses,
+        ...(queueIds.length > 0 ? { queueIds, queueId: queueIds[0] } : {}),
+      };
     }
   }
 

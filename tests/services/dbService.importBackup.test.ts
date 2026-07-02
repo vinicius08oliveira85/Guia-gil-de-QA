@@ -38,6 +38,8 @@ function jsonFile(content: unknown, name = 'backup.json'): File {
 
 describe('importProjectsFromBackup', () => {
   beforeEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
     vi.mocked(supabaseService.saveProjectToSupabase).mockClear();
     vi.mocked(supabaseService.saveProjectToSupabase).mockResolvedValue(undefined);
     vi.mocked(supabaseService.isSupabaseAvailable).mockReturnValue(true);
@@ -55,21 +57,17 @@ describe('importProjectsFromBackup', () => {
     expect(supabaseService.saveProjectToSupabase).not.toHaveBeenCalled();
   });
 
-  it('com syncToSupabase chama saveProjectToSupabase após gravar localmente', async () => {
+  it('ignora syncToSupabase e importa apenas no IndexedDB', async () => {
     const file = jsonFile([{ id: 'imp-2', name: 'Com nuvem' }]);
     const result = await importProjectsFromBackup(file, { syncToSupabase: true });
 
     expect(result.imported).toBe(1);
-    expect(result.supabaseSynced).toBe(1);
+    expect(result.supabaseSynced).toBe(0);
     expect(result.supabaseSyncFailed).toBe(0);
-    expect(supabaseService.saveProjectToSupabase).toHaveBeenCalledOnce();
-    expect(vi.mocked(supabaseService.saveProjectToSupabase).mock.calls[0][0]).toMatchObject({
-      id: 'imp-2',
-      name: 'Com nuvem',
-    });
+    expect(supabaseService.saveProjectToSupabase).not.toHaveBeenCalled();
   });
 
-  it('conta falha no Supabase sem impedir import local', async () => {
+  it('não tenta Supabase mesmo se saveProjectToSupabase falharia', async () => {
     vi.mocked(supabaseService.saveProjectToSupabase).mockRejectedValueOnce(new Error('rede'));
 
     const file = jsonFile([{ id: 'imp-3', name: 'Falha remota' }]);
@@ -77,7 +75,8 @@ describe('importProjectsFromBackup', () => {
 
     expect(result.imported).toBe(1);
     expect(result.supabaseSynced).toBe(0);
-    expect(result.supabaseSyncFailed).toBe(1);
+    expect(result.supabaseSyncFailed).toBe(0);
+    expect(supabaseService.saveProjectToSupabase).not.toHaveBeenCalled();
   });
 
   it('não tenta Supabase quando isSupabaseAvailable é false', async () => {
@@ -124,5 +123,31 @@ describe('importProjectsFromBackup', () => {
     expect(result.imported).toBe(0);
     expect(result.taskTrackingTasksRestored).toBe(1);
     expect(sessionStorage.getItem('jira-solus-filas-project-key')).toBe('ABC');
+  });
+
+  it('restaura appState completo (formato v3)', async () => {
+    localStorage.clear();
+    sessionStorage.clear();
+
+    const file = jsonFile({
+      projects: [{ id: 'imp-6', name: 'Com appState' }],
+      appState: {
+        localStorage: {
+          'qa_user_preferences': '{"export":{"defaultFormat":"markdown"}}',
+          'tasks_filters_imp-6': '{"sortBy":"title"}',
+        },
+        sessionStorage: {
+          'jira-solus-filas-project-key': 'GDPI',
+        },
+        testGenerationCache: [],
+      },
+    });
+
+    const result = await importProjectsFromBackup(file);
+
+    expect(result.imported).toBe(1);
+    expect(localStorage.getItem('qa_user_preferences')).toContain('markdown');
+    expect(localStorage.getItem('tasks_filters_imp-6')).toContain('title');
+    expect(sessionStorage.getItem('jira-solus-filas-project-key')).toBe('GDPI');
   });
 });

@@ -163,6 +163,30 @@ export async function clearPersistedCache(): Promise<void> {
 }
 
 /**
+ * Lista todas as entradas do cache de geração de testes (para backup completo).
+ */
+export async function loadAllPersistedCacheEntries(): Promise<PersistedCacheEntry[]> {
+  if (!isIndexedDBAvailable()) return [];
+
+  try {
+    const database = await openCacheDB();
+    return await new Promise<PersistedCacheEntry[]>((resolve, reject) => {
+      const transaction = database.transaction(TEST_GENERATION_CACHE_STORE, 'readonly');
+      const store = transaction.objectStore(TEST_GENERATION_CACHE_STORE);
+      const request = store.getAll();
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const rows = request.result;
+        resolve(Array.isArray(rows) ? (rows as PersistedCacheEntry[]) : []);
+      };
+    });
+  } catch (error) {
+    logger.warn('Falha ao listar cache de geração de testes', LOGGER_CONTEXT, error);
+    return [];
+  }
+}
+
+/**
  * Remove entradas expiradas do store (TTL ultrapassado).
  * Retorna quantas linhas foram removidas. Erros são engolidos (best-effort).
  */
