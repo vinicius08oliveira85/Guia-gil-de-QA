@@ -14,14 +14,13 @@ import {
 import { marked } from 'marked';
 import { sanitizeHTML } from '../../utils/sanitize';
 import { AIService } from './aiServiceInterface';
+import type { TaskAiContext } from './taskAiContext';
 import { getFormattedContext } from './documentContextService';
 import {
   buildBddOnlyPrompt,
   buildComplementaryDocumentSection,
   buildStrategyOnlyPrompt,
   buildTestCasesOnlyPrompt,
-  buildTestGenerationRolePreamble,
-  formatBusinessRulesForPrompt,
   shouldGenerateTestCasesAndBdd,
   TEST_CASE_VISUAL_FORMAT_INSTRUCTIONS,
 } from './testGenerationPrompts';
@@ -36,6 +35,18 @@ import { retryWithBackoff } from '../../utils/retry';
 import { getGeminiConfig } from '../geminiConfigService';
 
 const API_KEY = import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY;
+
+function appendOpenAiImageSummary(ctx: TaskAiContext): TaskAiContext {
+  if (!ctx.imageParts.length) return ctx;
+  const note =
+    '\n\n[AVISO OpenAI: análise visual limitada — use o resumo textual das imagens abaixo.]\n';
+  return {
+    ...ctx,
+    imageSummary:
+      ctx.imageSummary + note + '(Imagens não enviadas ao modelo; interprete pelas legendas acima.)',
+    imageParts: [],
+  };
+}
 
 // Verificar se há alguma chave de IA disponível (OpenAI, Gemini no ambiente ou Gemini nas Configurações)
 const hasAnyAIKey = () => {
@@ -201,28 +212,21 @@ export class OpenAIService implements AIService {
 
   /** Mesmo pipeline em 3 chamadas do Gemini, com temperatura mais baixa para aderência. */
   async generateTestCasesForTask(
-    title: string,
-    description: string,
+    ctx: TaskAiContext,
     bddScenarios?: BddScenario[],
     detailLevel: TestCaseDetailLevel = 'Estruturado',
     taskType?: JiraTaskType,
     project?: Project | null,
-    task?: JiraTask | null,
-    attachmentsContext?: string
+    task?: JiraTask | null
   ): Promise<{ strategy: TestStrategy[]; testCases: TestCase[]; bddScenarios: BddScenario[] }> {
-    const shouldCases = shouldGenerateTestCasesAndBdd(taskType);
+    const effectiveType = taskType ?? ctx.taskType;
+    const shouldCases = shouldGenerateTestCasesAndBdd(effectiveType);
     const baseTs = Date.now();
     const jsonOpts = { responseFormat: { type: 'json_object' as const }, temperature: 0.35 };
+    const openAiCtx = appendOpenAiImageSummary(ctx);
 
     try {
-      const strategyPrompt = await buildStrategyOnlyPrompt(
-        title,
-        description,
-        taskType,
-        project ?? null,
-        attachmentsContext,
-        task
-      );
+      const strategyPrompt = await buildStrategyOnlyPrompt(openAiCtx, project ?? null);
       const strategyJson = await this.callAPI(strategyPrompt, jsonOpts);
       const strategyParsed = parseAiJsonText<{ strategy?: unknown }>(strategyJson);
       if (!strategyParsed || !Array.isArray(strategyParsed.strategy)) {
@@ -239,15 +243,7 @@ export class OpenAIService implements AIService {
       if (bddScenarios && bddScenarios.length > 0) {
         bddOut = bddScenarios;
       } else {
-        const bddPrompt = await buildBddOnlyPrompt(
-          title,
-          description,
-          taskType,
-          project ?? null,
-          strategy,
-          attachmentsContext,
-          task
-        );
+        const bddPrompt = await buildBddOnlyPrompt(openAiCtx, project ?? null, strategy);
         const bddJson = await this.callAPI(bddPrompt, jsonOpts);
         const bddParsed = parseAiJsonText<{ bddScenarios?: unknown }>(bddJson);
         if (!bddParsed || !Array.isArray(bddParsed.bddScenarios)) {
@@ -258,15 +254,11 @@ export class OpenAIService implements AIService {
       }
 
       const tcPrompt = await buildTestCasesOnlyPrompt(
-        title,
-        description,
-        taskType,
+        openAiCtx,
         detailLevel,
         project ?? null,
         strategy,
-        bddOut,
-        attachmentsContext,
-        task
+        bddOut
       );
       const tcJson = await this.callAPI(tcPrompt, jsonOpts);
       const tcParsed = parseAiJsonText<{ testCases?: unknown }>(tcJson);
@@ -460,41 +452,18 @@ export class OpenAIService implements AIService {
   }
 
   async generateBddScenarios(
-    title: string,
-    description: string,
+    ctx: TaskAiContext,
     project?: Project | null,
-    task?: JiraTask | null,
-    attachmentsContext?: string
+    _task?: JiraTask | null
   ): Promise<BddScenario[]> {
-    const br = formatBusinessRulesForPrompt(project ?? null, task);
-    const preamble = buildTestGenerationRolePreamble(title, description, br);
+    const openAiCtx = appendOpenAiImageSummary(ctx);
     const doc = await buildComplementaryDocumentSection(project ?? null);
-    const att = attachmentsContext?.trim()
-      ? `\nAnexos (nomes; use só se coerente com a descrição):\n${attachmentsContext.trim()}\n`
-      : '';
-    const prompt = `
-${preamble}
+    const bddPrompt = await buildBddOnlyPrompt(openAiCtx, project ?? null, []);
+    const prompt = `${bddPrompt}
 
-Você é especialista em BDD. Responda em português brasileiro.
-
-Objetivo: gerar cenários Gherkin **somente** para a tarefa abaixo. Não invente escopo de outras partes do projeto.
-
-Regras Gherkin:
-- Palavras-chave somente em português: Funcionalidade, Cenário (ou Esquema do Cenário), Dado, Quando, Então, E, Mas.
-- Proibido: Given, When, Then, Feature, Scenario em inglês.
-- Um passo por linha.
-- Cubra caminho feliz, variações relevantes, erro/validação e permissão apenas se fizer sentido na descrição.
-
-═══════════════════════════════════════════════════════════════
-TAREFA (prioridade máxima)
-═══════════════════════════════════════════════════════════════
-Título: ${title}
-Descrição: ${description}
-${att}
-${doc}
-
+Objetivo adicional: esta chamada gera **somente** cenários BDD iniciais (sem estratégias prévias).
 Responda somente com JSON válido: {"scenarios":[{"title":"","gherkin":""},...]}.
-`.trim();
+${doc ? `\n${doc}` : ''}`.trim();
 
     try {
       const jsonString = await this.callAPI(prompt, {

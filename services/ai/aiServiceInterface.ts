@@ -10,6 +10,7 @@ import {
   JiraTaskType,
   Project,
 } from '../../types';
+import type { TaskAiContext } from './taskAiContext';
 
 /**
  * Interface comum para todos os serviços de IA.
@@ -19,15 +20,13 @@ import {
  */
 export interface AIService {
   generateTestCasesForTask(
-    title: string,
-    description: string,
+    ctx: TaskAiContext,
     bddScenarios?: BddScenario[],
     /** `Resumido` | `Estruturado` — controla o texto do roteiro em `action` / campos correlatos no prompt. */
     detailLevel?: TestCaseDetailLevel,
     taskType?: JiraTaskType,
     project?: Project | null,
-    task?: JiraTask | null,
-    attachmentsContext?: string
+    task?: JiraTask | null
   ): Promise<{ strategy: TestStrategy[]; testCases: TestCase[]; bddScenarios: BddScenario[] }>;
 
   analyzeDocumentContent(content: string, project?: Project | null): Promise<string>;
@@ -59,11 +58,9 @@ export interface AIService {
   ): Promise<ShiftLeftAnalysis>;
 
   generateBddScenarios(
-    title: string,
-    description: string,
+    ctx: TaskAiContext,
     project?: Project | null,
-    task?: JiraTask | null,
-    attachmentsContext?: string
+    task?: JiraTask | null
   ): Promise<BddScenario[]>;
 
   generateTestPyramidAnalysis(

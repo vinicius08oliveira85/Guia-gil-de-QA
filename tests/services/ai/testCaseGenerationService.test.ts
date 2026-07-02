@@ -28,10 +28,45 @@ vi.mock('../../../services/ai/testCaseGenerationCachePersistence', () => ({
   clearPersistedCache: vi.fn(async () => undefined),
 }));
 
+const mockCtx = {
+  title: 'Login de usuário',
+  description: 'Permitir login com email e senha',
+  taskType: 'Tarefa' as const,
+  attachedFormsContext: '(sem formulários anexados)',
+  businessRulesBlock: '',
+  imageParts: [],
+  imageSummary: '(nenhuma imagem disponível para análise visual)',
+  imageFingerprint: '',
+  attachmentsContext: '',
+  hasRealDescription: true,
+  hasAttachedForms: false,
+  hasImages: false,
+  hasBusinessRules: false,
+};
+
+vi.mock('../../../services/ai/taskAiContext', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../../services/ai/taskAiContext')>();
+  return {
+    ...actual,
+    resolveTaskAiContext: vi.fn(async (task: import('../../../types').JiraTask) => {
+      const description = task.description?.trim() || '(sem descrição)';
+      return {
+        ...mockCtx,
+        title: task.title,
+        description,
+        taskType: task.type,
+        hasRealDescription: !!task.description?.trim(),
+      };
+    }),
+    validateTaskAiContext: vi.fn(),
+  };
+});
+
 import {
   generateTestArtifactsForTask,
   generateTestCasesForTask,
   isTestCasesOutdated,
+  isTestCasesOutdatedAsync,
   invalidateTestCaseCache,
 } from '../../../services/ai/testCaseGenerationService';
 import { testCaseLooksAutomated } from '../../../utils/testCaseMigration';
@@ -88,14 +123,12 @@ describe('testCaseGenerationService.generateTestCasesForTask', () => {
 
     expect(mockGenerate).toHaveBeenCalledTimes(1);
     expect(mockGenerate).toHaveBeenCalledWith(
-      task.title,
-      task.description,
+      mockCtx,
       task.bddScenarios,
       'Estruturado',
       task.type,
       null,
-      task,
-      undefined
+      task
     );
     expect(result).toHaveLength(2);
     expect(result[0].action).toContain('Login válido');
@@ -377,15 +410,19 @@ describe('testCaseGenerationService.isTestCasesOutdated', () => {
   it('retorna false logo após gerar com sucesso', async () => {
     mockGenerate.mockResolvedValueOnce(buildAIResponse([{ action: 'A' }]));
     const task = buildTask();
-    await generateTestCasesForTask(task);
-    expect(isTestCasesOutdated(task)).toBe(false);
+    const artifacts = await generateTestArtifactsForTask(task);
+    expect(isTestCasesOutdated({ ...task, testCasesSnapshotHash: artifacts.snapshotHash })).toBe(
+      false
+    );
   });
 
-  it('retorna true quando o conteúdo da tarefa muda', async () => {
+  it('retorna true quando o hash persistido diverge do cache', async () => {
     mockGenerate.mockResolvedValueOnce(buildAIResponse([{ action: 'A' }]));
     const task = buildTask();
-    await generateTestCasesForTask(task);
-    expect(isTestCasesOutdated({ ...task, title: 'novo título' })).toBe(true);
+    const artifacts = await generateTestArtifactsForTask(task);
+    expect(
+      isTestCasesOutdated({ ...task, testCasesSnapshotHash: `${artifacts.snapshotHash}-old` })
+    ).toBe(true);
   });
 
   it('respeita testCasesSnapshotHash persistido quando o cache em memória está vazio', async () => {
@@ -400,8 +437,13 @@ describe('testCaseGenerationService.isTestCasesOutdated', () => {
 
     invalidateTestCaseCache();
 
-    expect(isTestCasesOutdated(persistedTask)).toBe(false);
-    expect(isTestCasesOutdated({ ...persistedTask, title: 'mudou' })).toBe(true);
+    await expect(isTestCasesOutdatedAsync(persistedTask)).resolves.toBe(false);
+    await expect(
+      isTestCasesOutdatedAsync({
+        ...persistedTask,
+        testCasesSnapshotHash: 'hash-divergente',
+      })
+    ).resolves.toBe(true);
   });
 });
 
@@ -413,10 +455,14 @@ describe('testCaseGenerationService — validação e propagação de erros', ()
     expect(mockGenerate).not.toHaveBeenCalled();
   });
 
-  it('lança erro quando a tarefa não tem descrição', async () => {
+  it('lança erro quando não há fonte de conteúdo analisável', async () => {
+    const { validateTaskAiContext } = await import('../../../services/ai/taskAiContext');
+    vi.mocked(validateTaskAiContext).mockImplementationOnce(() => {
+      throw new Error('Tarefa sem conteúdo analisável');
+    });
     await expect(
       generateTestCasesForTask(buildTask({ description: '' }))
-    ).rejects.toThrow(/sem descrição/i);
+    ).rejects.toThrow(/sem conteúdo analisável/i);
     expect(mockGenerate).not.toHaveBeenCalled();
   });
 

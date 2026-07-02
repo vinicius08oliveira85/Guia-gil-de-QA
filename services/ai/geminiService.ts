@@ -14,11 +14,13 @@ import {
 import { marked } from 'marked';
 import { sanitizeHTML } from '../../utils/sanitize';
 import { AIService } from './aiServiceInterface';
+import type { TaskAiContext } from './taskAiContext';
 import { getFormattedContext } from './documentContextService';
 import {
   callGeminiWithRetry,
   isGeminiRateLimitOrQuotaError,
   isGeminiTemporaryServiceError,
+  type GeminiContentPart,
 } from './geminiApiWrapper';
 import { OpenAIService, isOpenAIEnvApiKeyConfigured } from './openaiService';
 import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
@@ -29,8 +31,6 @@ import {
   buildComplementaryDocumentSection,
   buildStrategyOnlyPrompt,
   buildTestCasesOnlyPrompt,
-  buildTestGenerationRolePreamble,
-  formatBusinessRulesForPrompt,
   shouldGenerateTestCasesAndBdd,
 } from './testGenerationPrompts';
 import { migrateTestCase, resolveExecutionKindFromRecord } from '../../utils/testCaseMigration';
@@ -173,6 +173,14 @@ type GeminiBddRow = { title?: string; gherkin?: string };
 
 type GeminiTestCaseRow = AiRawTestCaseRow;
 
+function buildMultimodalContents(
+  prompt: string,
+  imageParts: GeminiContentPart[]
+): string | GeminiContentPart[] {
+  if (!imageParts.length) return prompt;
+  return [{ text: prompt }, ...imageParts];
+}
+
 export class GeminiService implements AIService {
   private mapStrategyFromResponse(items: unknown[]): TestStrategy[] {
     return (items as GeminiStrategyRow[]).map(item => ({
@@ -226,42 +234,32 @@ export class GeminiService implements AIService {
    * (tarefa primeiro; documento do projeto só como complemento truncado).
    */
   async generateTestCasesForTask(
-    title: string,
-    description: string,
+    ctx: TaskAiContext,
     bddScenarios?: BddScenario[],
     detailLevel: TestCaseDetailLevel = 'Estruturado',
     taskType?: JiraTaskType,
     project?: Project | null,
-    task?: JiraTask | null,
-    attachmentsContext?: string
+    task?: JiraTask | null
   ): Promise<{ strategy: TestStrategy[]; testCases: TestCase[]; bddScenarios: BddScenario[] }> {
-    const shouldCases = shouldGenerateTestCasesAndBdd(taskType);
+    const effectiveType = taskType ?? ctx.taskType;
+    const shouldCases = shouldGenerateTestCasesAndBdd(effectiveType);
     const baseTs = Date.now();
 
     const fallbackOpenAI = () =>
       new OpenAIService().generateTestCasesForTask(
-        title,
-        description,
+        ctx,
         bddScenarios,
         detailLevel,
-        taskType,
+        effectiveType,
         project,
-        task,
-        attachmentsContext
+        task
       );
 
     try {
-      const strategyPrompt = await buildStrategyOnlyPrompt(
-        title,
-        description,
-        taskType,
-        project ?? null,
-        attachmentsContext,
-        task
-      );
+      const strategyPrompt = await buildStrategyOnlyPrompt(ctx, project ?? null);
       const strategyResp = await callGeminiWithRetry({
         model: GEMINI_DEFAULT_MODEL,
-        contents: strategyPrompt,
+        contents: buildMultimodalContents(strategyPrompt, ctx.imageParts),
         config: {
           responseMimeType: 'application/json',
           responseSchema: strategyOnlyResponseSchema,
@@ -282,18 +280,10 @@ export class GeminiService implements AIService {
       if (bddScenarios && bddScenarios.length > 0) {
         bddOut = bddScenarios;
       } else {
-        const bddPrompt = await buildBddOnlyPrompt(
-          title,
-          description,
-          taskType,
-          project ?? null,
-          strategy,
-          attachmentsContext,
-          task
-        );
+        const bddPrompt = await buildBddOnlyPrompt(ctx, project ?? null, strategy);
         const bddResp = await callGeminiWithRetry({
           model: GEMINI_DEFAULT_MODEL,
-          contents: bddPrompt,
+          contents: buildMultimodalContents(bddPrompt, ctx.imageParts),
           config: {
             responseMimeType: 'application/json',
             responseSchema: bddOnlyResponseSchema,
@@ -308,19 +298,15 @@ export class GeminiService implements AIService {
       }
 
       const tcPrompt = await buildTestCasesOnlyPrompt(
-        title,
-        description,
-        taskType,
+        ctx,
         detailLevel,
         project ?? null,
         strategy,
-        bddOut,
-        attachmentsContext,
-        task
+        bddOut
       );
       const tcResp = await callGeminiWithRetry({
         model: GEMINI_DEFAULT_MODEL,
-        contents: tcPrompt,
+        contents: buildMultimodalContents(tcPrompt, ctx.imageParts),
         config: {
           responseMimeType: 'application/json',
           responseSchema: testCasesOnlyResponseSchema,
@@ -621,40 +607,17 @@ export class GeminiService implements AIService {
   }
 
   async generateBddScenarios(
-    title: string,
-    description: string,
+    ctx: TaskAiContext,
     project?: Project | null,
-    task?: JiraTask | null,
-    attachmentsContext?: string
+    task?: JiraTask | null
   ): Promise<BddScenario[]> {
-    const br = formatBusinessRulesForPrompt(project ?? null, task);
-    const preamble = buildTestGenerationRolePreamble(title, description, br);
     const doc = await buildComplementaryDocumentSection(project ?? null);
-    const att = attachmentsContext?.trim()
-      ? `\nAnexos (nomes; use só se coerente com a descrição):\n${attachmentsContext.trim()}\n`
-      : '';
-    const prompt = `
-${preamble}
+    const bddPrompt = await buildBddOnlyPrompt(ctx, project ?? null, []);
+    const prompt = `${bddPrompt}
 
-Você é especialista em BDD. Responda em português brasileiro.
-
-Objetivo: gerar cenários Gherkin **somente** para a tarefa abaixo. Não invente escopo de outras partes do projeto.
-
-Regras:
-- Palavras-chave somente em português: Funcionalidade, Cenário (ou Esquema do Cenário), Dado, Quando, Então, E, Mas.
-- Não use Given, When, Then, Feature, Scenario em inglês. Um passo por linha.
-- Cobrir: caminho feliz; alternativas válidas; exceções/erros; permissões apenas se fizer sentido na descrição.
-
-═══════════════════════════════════════════════════════════════
-TAREFA (prioridade máxima)
-═══════════════════════════════════════════════════════════════
-Título: ${title}
-Descrição: ${description}
-${att}
-${doc}
-
+Objetivo adicional: esta chamada gera **somente** cenários BDD iniciais (sem estratégias prévias).
 Responda somente com JSON válido: {"scenarios":[{"title":"","gherkin":""},...]}.
-`.trim();
+${doc ? `\n${doc}` : ''}`.trim();
 
     const bddSchema = {
       type: Type.OBJECT,
@@ -677,7 +640,7 @@ Responda somente com JSON válido: {"scenarios":[{"title":"","gherkin":""},...]}
     try {
       const response = await callGeminiWithRetry({
         model: GEMINI_DEFAULT_MODEL,
-        contents: prompt,
+        contents: buildMultimodalContents(prompt, ctx.imageParts),
         config: {
           responseMimeType: 'application/json',
           responseSchema: bddSchema,
@@ -699,13 +662,7 @@ Responda somente com JSON válido: {"scenarios":[{"title":"","gherkin":""},...]}
           'generateBddScenarios: Gemini com limite/cota ou serviço temporariamente indisponível; usando OpenAI como fallback',
           'GeminiService'
         );
-        return new OpenAIService().generateBddScenarios(
-          title,
-          description,
-          project,
-          task,
-          attachmentsContext
-        );
+        return new OpenAIService().generateBddScenarios(ctx, project, task);
       }
       logger.error('Erro ao gerar cenários BDD', 'geminiService', error);
       throw error;

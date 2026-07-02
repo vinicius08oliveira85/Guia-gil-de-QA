@@ -1,9 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import {
-  formatBusinessRulesForPrompt,
+  buildTaskContextBlock,
   buildTestGenerationRolePreamble,
-  BUSINESS_RULES_PROMPT_MAX_CHARS,
 } from '../../services/ai/testGenerationPrompts';
+import {
+  formatBusinessRulesForPrompt,
+  BUSINESS_RULES_PROMPT_MAX_CHARS,
+} from '../../services/ai/promptUtils';
+import type { TaskAiContext } from '../../services/ai/taskAiContext';
 import type { JiraTask, Project } from '../../types';
 
 const baseProject = (rules: Project['businessRules']): Project =>
@@ -108,16 +112,55 @@ describe('formatBusinessRulesForPrompt', () => {
 });
 
 describe('buildTestGenerationRolePreamble', () => {
+  const ctx = (overrides: Partial<TaskAiContext> = {}): TaskAiContext => ({
+    title: 'Tit',
+    description: 'Desc',
+    attachedFormsContext: 'Formulário X',
+    businessRulesBlock: '',
+    imageParts: [],
+    imageSummary: '(nenhuma imagem)',
+    imageFingerprint: '',
+    attachmentsContext: '',
+    hasRealDescription: true,
+    hasAttachedForms: true,
+    hasImages: false,
+    hasBusinessRules: false,
+    ...overrides,
+  });
+
   it('inclui placeholder quando não há bloco de regras', () => {
-    const p = buildTestGenerationRolePreamble('Tit', 'Desc', '');
-    expect(p).toContain('bloco TAREFA');
+    const p = buildTestGenerationRolePreamble(ctx());
+    expect(p).toContain('CONTEXTO DA TAREFA');
     expect(p).toContain('### REGRAS DE NEGÓCIO APLICÁVEIS ###');
     expect(p).toContain('nenhuma regra vinculada');
+    expect(p).toContain('formulários anexados');
   });
 
   it('incorpora bloco de regras quando fornecido', () => {
     const br = '### REGRAS DE NEGÓCIO APLICÁVEIS ###\nx';
-    const p = buildTestGenerationRolePreamble('A', 'B', br);
+    const p = buildTestGenerationRolePreamble(ctx({ businessRulesBlock: br, hasBusinessRules: true }));
     expect(p).toContain(br);
+  });
+});
+
+describe('buildTaskContextBlock', () => {
+  it('inclui formulários anexados e imagens', () => {
+    const block = buildTaskContextBlock({
+      title: 'Acesso',
+      description: '(sem descrição)',
+      attachedFormsContext: 'Formulário: TI\n  - Sistema: Salesforce',
+      businessRulesBlock: '',
+      imageParts: [],
+      imageSummary: '- Imagem 1 (descrição)',
+      imageFingerprint: 'x',
+      attachmentsContext: '',
+      hasRealDescription: false,
+      hasAttachedForms: true,
+      hasImages: true,
+      hasBusinessRules: false,
+    });
+    expect(block).toContain('Formulários anexados');
+    expect(block).toContain('Salesforce');
+    expect(block).toContain('Imagens para análise visual');
   });
 });

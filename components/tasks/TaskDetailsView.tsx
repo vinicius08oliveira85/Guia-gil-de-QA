@@ -983,7 +983,7 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
                 </div>
               )}
               {hasTests && (
-                <TestCasesFreshnessIndicator task={task} isGenerating={isGenerating} />
+                <TestCasesFreshnessIndicator task={task} project={project} isGenerating={isGenerating} />
               )}
             </div>
           </div>

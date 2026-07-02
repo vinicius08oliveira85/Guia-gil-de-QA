@@ -16,6 +16,16 @@ import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
 import { hashString } from '../../utils/hash';
 import { logger } from '../../utils/logger';
 import { parseAiJsonText } from '../../utils/aiJsonParse';
+import { taskHasImages } from './taskImageContext';
+import {
+  formatJiraAttachedFormsForPrompt,
+} from './taskAiContext';
+import {
+  fetchIssueAttachedForms,
+  hasAttachedFormsContent,
+} from '../jira/attachedForms';
+import { getJiraConfig } from '../jiraService';
+import { isJiraIntegratedTask } from '../../utils/jiraAttachedFormsField';
 
 const CACHE_TTL_MS = 1000 * 60 * 5; // 5 minutos
 /** Máximo de tarefas no contexto do prompt (análise geral mais rica em projetos grandes). */
@@ -93,6 +103,10 @@ interface TaskSnapshot {
   bddScenarios: number;
   hasTestStrategy: boolean;
   hasDescription: boolean;
+  hasAdequateContext: boolean;
+  hasAttachedForms?: boolean;
+  attachedForms?: string;
+  hasImages: boolean;
   dependencies: number;
   storyPoints: number;
   sprintName?: string;
@@ -193,7 +207,7 @@ const calculateStoryPointsRisk = (
 };
 
 const calculateCompletenessRisk = (
-  hasDescription: boolean,
+  hasAdequateContext: boolean,
   totalTests: number,
   hasBDD: boolean,
   hasStrategy: boolean,
@@ -202,7 +216,7 @@ const calculateCompletenessRisk = (
   const signals: string[] = [];
   let score = 0;
 
-  if (!hasDescription) {
+  if (!hasAdequateContext) {
     score += RISK_SCORE_NO_DESCRIPTION;
     signals.push('Sem descrição detalhada');
   }
@@ -257,6 +271,8 @@ const calculateTaskSnapshot = (task: JiraTask): TaskSnapshot => {
   const testsNotRun = testCases.filter(tc => tc.status === 'Not Run').length;
   const testsPassed = totalTests - testsFailed - testsNotRun;
   const hasDescription = !!task.description && task.description.trim().length > 0;
+  const hasImages = taskHasImages(task);
+  const hasAdequateContext = hasDescription || hasImages;
   const hasBDD = (task.bddScenarios?.length || 0) > 0;
   const hasStrategy = (task.testStrategy?.length || 0) > 0;
   const storyPoints = resolveTaskStoryPoints(task);
@@ -265,7 +281,7 @@ const calculateTaskSnapshot = (task: JiraTask): TaskSnapshot => {
   const riskSignals: string[] = [];
   const storyPointsRisk = calculateStoryPointsRisk(storyPoints, totalTests, hasBDD);
   const completenessRisk = calculateCompletenessRisk(
-    hasDescription,
+    hasAdequateContext,
     totalTests,
     hasBDD,
     hasStrategy,
@@ -302,6 +318,8 @@ const calculateTaskSnapshot = (task: JiraTask): TaskSnapshot => {
     bddScenarios: task.bddScenarios?.length || 0,
     hasTestStrategy: hasStrategy,
     hasDescription,
+    hasAdequateContext,
+    hasImages,
     dependencies: task.dependencies?.length || 0,
     storyPoints,
     sprintName: displaySprint?.name,
@@ -502,7 +520,8 @@ const computeTestSnapshotHash = (snapshot: TestSnapshot): string =>
 
 const buildTaskHeuristicAnalysis = (snapshot: TaskSnapshot): TaskIAAnalysis => {
   const missingItems: string[] = [];
-  if (!snapshot.hasDescription) missingItems.push('Adicionar descrição detalhada da tarefa.');
+  if (!snapshot.hasAdequateContext)
+    missingItems.push('Adicionar descrição detalhada da tarefa ou contexto em formulários anexados.');
   if (snapshot.testCasesTotal === 0)
     missingItems.push('Criar casos de teste funcionais e negativos.');
   if (snapshot.testsNotRun > 0) missingItems.push('Executar casos de teste pendentes.');
@@ -790,6 +809,47 @@ const generalAnalysisSchema = {
   ],
 };
 
+/** Enriquece tarefas prioritárias com trecho de formulários anexados (API Jira). */
+async function enrichPriorityTasksWithForms(
+  priorityTasks: TaskSnapshot[]
+): Promise<TaskSnapshot[]> {
+  const config = getJiraConfig();
+  if (!config || priorityTasks.length === 0) return priorityTasks;
+
+  const enriched = [...priorityTasks];
+  const concurrency = 5;
+
+  for (let i = 0; i < enriched.length; i += concurrency) {
+    const batch = enriched.slice(i, i + concurrency);
+    await Promise.all(
+      batch.map(async (snapshot, batchIndex) => {
+        const index = i + batchIndex;
+        const stubTask = { id: snapshot.id } as JiraTask;
+        if (!isJiraIntegratedTask(stubTask)) return;
+
+        try {
+          const forms = await fetchIssueAttachedForms(config, snapshot.id);
+          const hasForms = hasAttachedFormsContent(forms);
+          const formsText = normalizeText(formatJiraAttachedFormsForPrompt(forms), 500);
+          enriched[index] = {
+            ...snapshot,
+            attachedForms: formsText || undefined,
+            hasAttachedForms: hasForms,
+            hasAdequateContext: snapshot.hasDescription || hasForms || snapshot.hasImages,
+          };
+        } catch (error) {
+          logger.debug('Formulários indisponíveis para análise geral', 'generalAnalysisService', {
+            taskId: snapshot.id,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+      })
+    );
+  }
+
+  return enriched;
+}
+
 /** Monta o payload e hash usados na análise geral (API e UI de freshness). */
 function buildGeneralIaAnalysisSnapshot(project: Project): {
   snapshotHash: string;
@@ -961,12 +1021,25 @@ CONTEXTO E MÉTRICAS (JSON compacto):
  */
 export async function generateGeneralIAAnalysis(project: Project): Promise<GeneralIAAnalysis> {
   try {
-    const {
-      snapshotHash,
-      snapshotJsonCompact,
-      taskSnapshots,
-      priorityTests,
-    } = buildGeneralIaAnalysisSnapshot(project);
+    const baseSnapshot = buildGeneralIaAnalysisSnapshot(project);
+    const parsedPayload = JSON.parse(baseSnapshot.snapshotJsonCompact) as {
+      project: unknown;
+      metrics: unknown;
+      qualitySignals: unknown;
+      priorityTasks: TaskSnapshot[];
+      priorityTests: TestSnapshot[];
+    };
+    const priorityTasks = await enrichPriorityTasksWithForms(parsedPayload.priorityTasks);
+
+    const snapshotPayload = {
+      project: parsedPayload.project,
+      metrics: parsedPayload.metrics,
+      qualitySignals: parsedPayload.qualitySignals,
+      priorityTasks,
+      priorityTests: parsedPayload.priorityTests,
+    };
+    const snapshotJsonCompact = JSON.stringify(snapshotPayload);
+    const snapshotHash = hashString(snapshotJsonCompact);
     const cacheKey = `general-ia-analysis:${project.id}`;
 
     const cached = getCachedAnalysis(cacheKey, snapshotHash);
@@ -1005,7 +1078,7 @@ export async function generateGeneralIAAnalysis(project: Project): Promise<Gener
       ])
     );
 
-    const finalTaskAnalyses: TaskIAAnalysis[] = taskSnapshots.map(snapshot => {
+    const finalTaskAnalyses: TaskIAAnalysis[] = baseSnapshot.taskSnapshots.map(snapshot => {
       const aiAnalysis = aiTaskAnalysesMap.get(snapshot.id);
       if (aiAnalysis) {
         return {
@@ -1027,7 +1100,8 @@ export async function generateGeneralIAAnalysis(project: Project): Promise<Gener
       return buildTaskHeuristicAnalysis(snapshot);
     });
 
-    const finalTestAnalyses: TestIAAnalysis[] = priorityTests.map(snapshot => {
+    const finalTestAnalyses: TestIAAnalysis[] = parsedPayload.priorityTests.map(
+      (snapshot: TestSnapshot) => {
       const aiAnalysis = aiTestAnalysesMap.get(snapshot.id);
       if (aiAnalysis) {
         return {

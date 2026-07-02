@@ -18,7 +18,6 @@ import {
   type TestCaseDetailLevel,
   type TestStrategy,
 } from '../../types';
-import { hashString } from '../../utils/hash';
 import { logger } from '../../utils/logger';
 import { getAIService } from './aiServiceFactory';
 import {
@@ -28,6 +27,11 @@ import {
   savePersistedCacheEntry,
 } from './testCaseGenerationCachePersistence';
 import { migrateTestCase, resolveExecutionKindFromRecord } from '../../utils/testCaseMigration';
+import {
+  computeTaskAiContextHash,
+  resolveTaskAiContext,
+  validateTaskAiContext,
+} from './taskAiContext';
 
 const LOGGER_CONTEXT = 'testCaseGenerationService';
 
@@ -62,8 +66,6 @@ export interface GenerateTestCasesOptions {
   detailLevel?: TestCaseDetailLevel;
   /** Projeto opcional — usado para regras de negócio e contexto de documentos. */
   project?: Project | null;
-  /** Texto livre com nomes/legendas de anexos da tarefa, repassado ao prompt. */
-  attachmentsContext?: string;
   /** Quando `true`, ignora o cache e força nova geração via IA. */
   forceRefresh?: boolean;
   /**
@@ -71,6 +73,11 @@ export interface GenerateTestCasesOptions {
    * Default: `false` — usa os BDDs existentes na tarefa.
    */
   regenerateBdd?: boolean;
+  /**
+   * Contexto já resolvido (evita nova busca de formulários/imagens).
+   * Quando omitido, `resolveTaskAiContext` é chamado internamente.
+   */
+  taskAiContext?: Awaited<ReturnType<typeof resolveTaskAiContext>>;
 }
 
 /**
@@ -98,15 +105,22 @@ export async function generateTestCasesForTask(
  * (título, descrição, tipo, BDDs e regras de negócio vinculadas) e garante que
  * cada `TestCase` retornado tenha `id` único e `status: 'Not Run'`.
  *
- * @throws Error se `task.title` ou `task.description` estiverem vazios.
+ * @throws Error se `task.title` estiver vazio ou não houver fonte de conteúdo analisável.
  */
 export async function generateTestArtifactsForTask(
   task: JiraTask,
   options: GenerateTestCasesOptions = {}
 ): Promise<TestGenerationArtifacts> {
-  validateTaskInput(task);
+  validateTaskTitle(task);
 
-  const snapshotHash = computeSnapshotHash(task, options);
+  const ctx = options.taskAiContext ?? (await resolveTaskAiContext(task, { project: options.project }));
+  validateTaskAiContext(ctx);
+
+  const detailLevel = normalizeTestCaseDetailLevel(options.detailLevel);
+  const snapshotHash = computeTaskAiContextHash(task, ctx, {
+    detailLevel,
+    regenerateBdd: options.regenerateBdd,
+  });
   const { forceRefresh = false, regenerateBdd = false } = options;
 
   if (!forceRefresh) {
@@ -132,18 +146,15 @@ export async function generateTestArtifactsForTask(
 
   try {
     const aiService = getAIService();
-    const detailLevel = normalizeTestCaseDetailLevel(options.detailLevel);
     const bddInput = regenerateBdd ? undefined : task.bddScenarios;
 
     const result = await aiService.generateTestCasesForTask(
-      task.title,
-      task.description,
+      ctx,
       bddInput,
       detailLevel,
       task.type,
       options.project ?? null,
-      task,
-      options.attachmentsContext
+      task
     );
 
     const artifacts: TestGenerationArtifacts = {
@@ -189,18 +200,42 @@ export async function generateTestArtifactsForTask(
  * 3. Sem nenhum dos dois → considera-se desatualizado.
  */
 export function isTestCasesOutdated(task: JiraTask): boolean {
-  const currentHash = computeSnapshotHash(task);
-
   const entry = cache.get(task.id);
   if (entry && entry.expiresAt >= Date.now()) {
-    return entry.hash !== currentHash;
+    if (task.testCasesSnapshotHash) {
+      return entry.hash !== task.testCasesSnapshotHash;
+    }
+    return false;
   }
 
   if (task.testCasesSnapshotHash) {
-    return task.testCasesSnapshotHash !== currentHash;
+    return true;
   }
 
   return true;
+}
+
+/**
+ * Verifica desatualização comparando o hash do contexto resolvido (inclui formulários da API).
+ */
+export async function isTestCasesOutdatedAsync(
+  task: JiraTask,
+  project?: Project | null
+): Promise<boolean> {
+  if (!task.testCasesSnapshotHash) return true;
+
+  const entry = cache.get(task.id);
+  if (entry && entry.expiresAt >= Date.now() && entry.hash === task.testCasesSnapshotHash) {
+    return false;
+  }
+
+  const ctx = await resolveTaskAiContext(task, { project });
+  const currentHash = computeTaskAiContextHash(task, ctx, {
+    detailLevel: 'Estruturado',
+    regenerateBdd: false,
+  });
+
+  return currentHash !== task.testCasesSnapshotHash;
 }
 
 /**
@@ -209,7 +244,10 @@ export function isTestCasesOutdated(task: JiraTask): boolean {
  * se chama `generateTestArtifactsForTask` novamente.
  */
 export function getCachedTestArtifacts(task: JiraTask): TestGenerationArtifacts | null {
-  return readCache(task.id, computeSnapshotHash(task));
+  const entry = cache.get(task.id);
+  if (!entry || entry.expiresAt < Date.now()) return null;
+  if (task.testCasesSnapshotHash && entry.hash !== task.testCasesSnapshotHash) return null;
+  return entry.artifacts;
 }
 
 /**
@@ -232,49 +270,12 @@ export function invalidateTestCaseCache(taskId?: string): void {
   void deletePersistedCacheEntry(taskId);
 }
 
-function validateTaskInput(task: JiraTask): void {
+function validateTaskTitle(task: JiraTask): void {
   if (!task?.title?.trim()) {
     const message = 'Tarefa sem título: não é possível gerar casos de teste.';
     logger.error(message, LOGGER_CONTEXT, { taskId: task?.id });
     throw new Error(message);
   }
-  if (!task?.description?.trim()) {
-    const message = 'Tarefa sem descrição: não é possível gerar casos de teste.';
-    logger.error(message, LOGGER_CONTEXT, { taskId: task.id });
-    throw new Error(message);
-  }
-}
-
-/**
- * Calcula um hash determinístico do conteúdo da tarefa que influencia a geração.
- * Mudanças em título, descrição, tipo, BDDs, regras vinculadas, `detailLevel` ou
- * `regenerateBdd` invalidam o cache.
- */
-function computeSnapshotHash(task: JiraTask, options: GenerateTestCasesOptions = {}): string {
-  const bddSignature = (task.bddScenarios ?? [])
-    .map((scenario: BddScenario) => `${scenario.id}:${scenario.gherkin}`)
-    .join('|');
-
-  const linkedIds = [...(task.linkedBusinessRuleIds ?? [])].sort().join(',');
-  const linkedCategories = [...(task.linkedBusinessRuleCategories ?? [])]
-    .sort()
-    .join(',');
-
-  const payload = [
-    task.id,
-    task.title,
-    task.description,
-    task.type,
-    bddSignature,
-    linkedIds,
-    linkedCategories,
-    options.detailLevel != null
-      ? normalizeTestCaseDetailLevel(options.detailLevel)
-      : 'Estruturado',
-    options.regenerateBdd ? 'regenBdd' : 'keepBdd',
-  ].join('||');
-
-  return hashString(payload);
 }
 
 function readCache(taskId: string, hash: string): TestGenerationArtifacts | null {

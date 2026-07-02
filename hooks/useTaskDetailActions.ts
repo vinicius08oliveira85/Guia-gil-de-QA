@@ -4,6 +4,7 @@ import { useProjectsStore } from '../store/projectsStore';
 import { useErrorHandler } from './useErrorHandler';
 import { getAIService } from '../services/ai/aiServiceFactory';
 import { generateTestArtifactsForTask } from '../services/ai/testCaseGenerationService';
+import { resolveTaskAiContext } from '../services/ai/taskAiContext';
 import { toToastableAiError } from '../utils/aiErrorMapper';
 import { getJiraConfig, updateSingleTaskFromJira } from '../services/jiraService';
 import { createBugFromFailedTest } from '../utils/bugAutoCreation';
@@ -12,7 +13,6 @@ import {
   notifyCommentAdded,
   notifyTestFailed,
 } from '../utils/notificationService';
-import { buildAttachmentsContextForTask } from '../components/tasks/tasksViewHelpers';
 
 interface ConfirmDeleteState {
   type: 'testcase' | 'bdd';
@@ -141,14 +141,8 @@ export function useTaskDetailActions(
           const task = project.tasks.find(t => t.id === taskId);
           if (!task) throw new Error('Task not found');
           const aiService = getAIService();
-          const attachmentsContext = buildAttachmentsContextForTask(task);
-          const scenarios = await aiService.generateBddScenarios(
-            task.title,
-            task.description,
-            project,
-            task,
-            attachmentsContext || undefined
-          );
+          const ctx = await resolveTaskAiContext(task, { project });
+          const scenarios = await aiService.generateBddScenarios(ctx, project, task);
           const updatedTask = {
             ...task,
             bddScenarios: [...(task.bddScenarios || []), ...scenarios],
@@ -175,12 +169,12 @@ export function useTaskDetailActions(
         try {
           const task = project.tasks.find(t => t.id === taskId);
           if (!task) throw new Error('Task not found');
-          const attachmentsContext = buildAttachmentsContextForTask(task);
+          const ctx = await resolveTaskAiContext(task, { project });
           const { strategy, testCases, snapshotHash, generatedAt } =
             await generateTestArtifactsForTask(task, {
               detailLevel,
               project,
-              attachmentsContext: attachmentsContext || undefined,
+              taskAiContext: ctx,
             });
           const updatedTask = {
             ...task,
@@ -211,12 +205,12 @@ export function useTaskDetailActions(
         try {
           const task = project.tasks.find(t => t.id === taskId);
           if (!task) throw new Error('Task not found');
-          const attachmentsContext = buildAttachmentsContextForTask(task);
+          const ctx = await resolveTaskAiContext(task, { project });
           const { strategy, testCases, bddScenarios, snapshotHash, generatedAt } =
             await generateTestArtifactsForTask(task, {
               detailLevel,
               project,
-              attachmentsContext: attachmentsContext || undefined,
+              taskAiContext: ctx,
               regenerateBdd: true,
             });
           const updatedTask = {

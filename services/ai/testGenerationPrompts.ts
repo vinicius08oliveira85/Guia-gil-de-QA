@@ -1,5 +1,6 @@
 import type { BddScenario, JiraTask, JiraTaskType, Project, TestCaseDetailLevel, TestStrategy } from '../../types';
 import { getDocumentContext } from './documentContextService';
+import type { TaskAiContext } from './taskAiContext';
 import {
   formatBusinessRulesForPrompt,
   summarizeBddForPrompt,
@@ -43,21 +44,22 @@ export {
 } from './promptUtils';
 
 /**
- * Instrução unificada de análise (título, descrição, regras vinculadas) para as fases de geração por tarefa.
+ * Instrução unificada de análise (título, descrição, formulários, imagens, regras vinculadas).
  */
-export function buildTestGenerationRolePreamble(
-  _taskTitle: string,
-  _taskDescription: string,
-  rulesBlock: string
-): string {
-  const rb = rulesBlock.trim();
+export function buildTestGenerationRolePreamble(ctx: TaskAiContext): string {
+  const rb = ctx.businessRulesBlock.trim();
   const emptyRulesMsg =
     '\n\n### REGRAS DE NEGÓCIO APLICÁVEIS ###\n' +
-    '(nenhuma regra vinculada; use titulo, descricao e anexos.)\n';
+    '(nenhuma regra vinculada; use título, descrição, formulários anexados e imagens.)\n';
   const rulesPart = rb ? `\n\n${rb}\n` : emptyRulesMsg;
+  const imageNote =
+    ctx.imageParts.length > 0
+      ? ' Imagens anexadas a este prompt devem ser analisadas visualmente (telas, fluxos, mensagens e campos visíveis).'
+      : '';
   return (
-    `Analise o bloco TAREFA abaixo (título, descrição, comentários, imagens e anexos quando constarem). ` +
+    `Analise o bloco CONTEXTO DA TAREFA abaixo (título, descrição, formulários anexados via API Jira, imagens e anexos quando constarem). ` +
     `Use as REGRAS DE NEGÓCIO vinculadas somente quando a seção delimitada estiver preenchida; não invente regras fora do escopo da tarefa.${rulesPart}\n` +
+    `Use todas as fontes com peso equivalente; não invente escopo fora delas.${imageNote} ` +
     `Com base nisso, gere Cenários BDD, Estratégias e Casos de Teste altamente assertivos.`
   ).trim();
 }
@@ -86,23 +88,27 @@ ${excerpt}
 `;
 }
 
-function taskHeaderBlock(
-  title: string,
-  description: string,
-  taskType?: JiraTaskType,
-  attachmentsContext?: string
-): string {
-  const att = attachmentsContext?.trim()
-    ? `\nAnexos (nomes; inferir escopo só se fizer sentido com a descrição):\n${attachmentsContext.trim()}\n`
+
+/** Bloco unificado de contexto da tarefa para as três fases de geração. */
+export function buildTaskContextBlock(ctx: TaskAiContext): string {
+  const att = ctx.attachmentsContext?.trim()
+    ? `\nAnexos (não-imagem): ${ctx.attachmentsContext.trim()}`
     : '';
+  const imagesBlock =
+    ctx.imageSummary.trim() && !ctx.imageSummary.startsWith('(nenhuma')
+      ? `\nImagens para análise visual:\n${ctx.imageSummary}`
+      : '\nImagens para análise visual: (nenhuma)';
   return `
 ═══════════════════════════════════════════════════════════════
-TAREFA (prioridade máxima — todo conteúdo gerado deve ser aderente a isto)
+CONTEXTO DA TAREFA (analisar tudo antes de gerar)
 ═══════════════════════════════════════════════════════════════
-Título: ${title}
-Descrição: ${description}
-${taskType ? `Tipo Jira: ${taskType}` : 'Tipo Jira: (não informado)'}
-${att}`;
+Título: ${ctx.title}
+Descrição: ${ctx.description}
+Formulários anexados (API Jira — campos do portal/Proforma):
+${ctx.attachedFormsContext}
+${imagesBlock}
+${att}
+${ctx.taskType ? `Tipo Jira: ${ctx.taskType}` : 'Tipo Jira: (não informado)'}`;
 }
 
 function bugFocusBlock(): string {
@@ -147,17 +153,12 @@ export function detailLevelBlock(detailLevel: TestCaseDetailLevel): string {
 
 /** Fase 1: somente estratégias. */
 export async function buildStrategyOnlyPrompt(
-  title: string,
-  description: string,
-  taskType: JiraTaskType | undefined,
-  project: Project | null | undefined,
-  attachmentsContext?: string,
-  task?: JiraTask | null
+  ctx: TaskAiContext,
+  project: Project | null | undefined
 ): Promise<string> {
-  const br = formatBusinessRulesForPrompt(project ?? null, task);
-  const preamble = buildTestGenerationRolePreamble(title, description, br);
+  const preamble = buildTestGenerationRolePreamble(ctx);
   const doc = await buildComplementaryDocumentSection(project ?? null);
-  const bug = taskType === 'Bug' ? bugFocusBlock() : '';
+  const bug = ctx.taskType === 'Bug' ? bugFocusBlock() : '';
   return `${preamble}
 
 Você é um analista de QA sênior. Responda em português brasileiro.
@@ -171,7 +172,7 @@ Regras:
 - No máximo 6 estratégias.
 - Campos por item: testType, description, howToExecute (array de passos curtos), tools (string, ferramentas separadas por vírgula).
 
-${taskHeaderBlock(title, description, taskType, attachmentsContext)}
+${buildTaskContextBlock(ctx)}
 ${bug}
 ${doc}
 
@@ -181,18 +182,13 @@ ${PHASE_JSON_FOOTERS.strategy}
 
 /** Fase 2: somente BDD, usando estratégias já definidas. */
 export async function buildBddOnlyPrompt(
-  title: string,
-  description: string,
-  taskType: JiraTaskType | undefined,
+  ctx: TaskAiContext,
   project: Project | null | undefined,
-  strategies: TestStrategy[],
-  attachmentsContext?: string,
-  task?: JiraTask | null
+  strategies: TestStrategy[]
 ): Promise<string> {
-  const br = formatBusinessRulesForPrompt(project ?? null, task);
-  const preamble = buildTestGenerationRolePreamble(title, description, br);
+  const preamble = buildTestGenerationRolePreamble(ctx);
   const doc = await buildComplementaryDocumentSection(project ?? null);
-  const bug = taskType === 'Bug' ? bugFocusBlock() : '';
+  const bug = ctx.taskType === 'Bug' ? bugFocusBlock() : '';
   const strat = summarizeStrategiesForPrompt(strategies);
   return `${preamble}
 
@@ -203,13 +199,13 @@ Objetivo: gerar APENAS cenários Gherkin em JSON (bddScenarios). Não gere estra
 Regras Gherkin:
 - Palavras-chave somente em português: Funcionalidade, Cenário (ou Esquema do Cenário), Dado, Quando, Então, E, Mas.
 - Proibido: Given, When, Then, Feature, Scenario em inglês.
-- Um passo por linha. Cubra caminho feliz, variações relevantes, erro/validação e permissão apenas se fizer sentido na descrição da tarefa.
-- Tudo deve refletir o escopo da tarefa (título + descrição), não outras partes do projeto.
+- Um passo por linha. Cubra caminho feliz, variações relevantes, erro/validação e permissão apenas se fizer sentido no contexto da tarefa.
+- Tudo deve refletir o escopo da tarefa (título, descrição, formulários e imagens), não outras partes do projeto.
 
 Estratégias já definidas (alinhe os cenários a estes tipos de teste):
 ${strat}
 
-${taskHeaderBlock(title, description, taskType, attachmentsContext)}
+${buildTaskContextBlock(ctx)}
 ${bug}
 ${doc}
 
@@ -219,20 +215,15 @@ ${PHASE_JSON_FOOTERS.bddScenarios}
 
 /** Fase 3: somente casos de teste, rastreáveis a estratégias e BDD. */
 export async function buildTestCasesOnlyPrompt(
-  title: string,
-  description: string,
-  taskType: JiraTaskType | undefined,
+  ctx: TaskAiContext,
   detailLevel: TestCaseDetailLevel,
   project: Project | null | undefined,
   strategies: TestStrategy[],
-  bddScenarios: BddScenario[],
-  attachmentsContext?: string,
-  task?: JiraTask | null
+  bddScenarios: BddScenario[]
 ): Promise<string> {
-  const br = formatBusinessRulesForPrompt(project ?? null, task);
-  const preamble = buildTestGenerationRolePreamble(title, description, br);
+  const preamble = buildTestGenerationRolePreamble(ctx);
   const doc = await buildComplementaryDocumentSection(project ?? null);
-  const bug = taskType === 'Bug' ? bugFocusBlock() : '';
+  const bug = ctx.taskType === 'Bug' ? bugFocusBlock() : '';
   const strat = summarizeStrategiesForPrompt(strategies);
   const bdd = summarizeBddForPrompt(bddScenarios);
   const allowedTypes = strategies.map(s => s.testType).filter(Boolean);
@@ -247,7 +238,7 @@ Regras de aderência (roteiro padronizado — use exatamente estes nomes de chav
 - **parameters** (*Parâmetros necessários*): massa de dados, pré-condições, inputs e contexto técnico. Com **vários** itens, cada linha DEVE começar com **•** (bullet Unicode). Se não houver nada específico, use exatamente o texto "—".
 - **expectedResult** (*Resultado esperado*): critérios de sucesso; com **várias** verificações, cada linha DEVE começar com **•**.
 - **Proibido**: preencher **Resultado Obtido** / \`observedResult\` / "resultado obtido" / qualquer campo equivalente — isso é exclusivo do executor humano na aplicação. Não inclua essas chaves no JSON.
-- Não invente módulos, APIs ou telas ausentes do texto da tarefa ou dos BDD.
+- Não invente módulos, APIs ou telas ausentes do contexto da tarefa ou dos BDD.
 
 ${TEST_CASE_VISUAL_FORMAT_PROMPT_SECTION}
 
@@ -263,7 +254,7 @@ ${strat}
 Cenários BDD de referência (alinhe cobertura; não copie texto sem adaptar a passos executáveis):
 ${bdd}
 
-${taskHeaderBlock(title, description, taskType, attachmentsContext)}
+${buildTaskContextBlock(ctx)}
 ${bug}
 ${doc}
 

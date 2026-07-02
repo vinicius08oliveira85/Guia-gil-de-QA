@@ -11,6 +11,7 @@ import {
 } from '../../types';
 import { getAIService } from '../../services/ai/aiServiceFactory';
 import { generateTestArtifactsForTask } from '../../services/ai/testCaseGenerationService';
+import { resolveTaskAiContext } from '../../services/ai/taskAiContext';
 import { Modal } from '../common/Modal';
 import { TaskForm } from './TaskForm';
 import { TestCaseEditorModal } from './TestCaseEditorModal';
@@ -88,7 +89,6 @@ import { viewHeroChromeClass } from '../common/viewHeroChromeUi';
 import { getDisplayStatus } from '../../utils/taskHelpers';
 import { FileExportModal } from '../common/FileExportModal';
 import {
-  buildAttachmentsContextForTask,
   buildTaskTreeSectionA11y,
   parentLinkCreatesCycle,
   taskMatchesStatusName,
@@ -564,14 +564,8 @@ export const TasksView: React.FC<{
           }
 
           const aiService = getAIService();
-          const attachmentsContext = buildAttachmentsContextForTask(task);
-          const scenarios = await aiService.generateBddScenarios(
-            task.title,
-            task.description,
-            project,
-            task,
-            attachmentsContext || undefined
-          );
+          const ctx = await resolveTaskAiContext(task, { project });
+          const scenarios = await aiService.generateBddScenarios(ctx, project, task);
           const updatedTask = {
             ...task,
             bddScenarios: [...(task.bddScenarios || []), ...scenarios],
@@ -646,12 +640,12 @@ export const TasksView: React.FC<{
             return;
           }
 
-          const attachmentsContext = buildAttachmentsContextForTask(task);
+          const ctx = await resolveTaskAiContext(task, { project });
           const { strategy, testCases, snapshotHash, generatedAt } =
             await generateTestArtifactsForTask(task, {
               detailLevel,
               project,
-              attachmentsContext: attachmentsContext || undefined,
+              taskAiContext: ctx,
             });
           const updatedTask = {
             ...task,
@@ -692,12 +686,12 @@ export const TasksView: React.FC<{
             return;
           }
 
-          const attachmentsContext = buildAttachmentsContextForTask(task);
+          const ctx = await resolveTaskAiContext(task, { project });
           const { strategy, testCases, bddScenarios, snapshotHash, generatedAt } =
             await generateTestArtifactsForTask(task, {
               detailLevel,
               project,
-              attachmentsContext: attachmentsContext || undefined,
+              taskAiContext: ctx,
               regenerateBdd: true,
             });
 
@@ -1236,15 +1230,9 @@ export const TasksView: React.FC<{
             });
 
             try {
-              const attachmentsContext = buildAttachmentsContextForTask(task);
+              const ctx = await resolveTaskAiContext(task, { project });
               const scenarios = await withTimeout(
-                aiService.generateBddScenarios(
-                  task.title,
-                  task.description || '',
-                  project,
-                  task,
-                  attachmentsContext || undefined
-                ),
+                aiService.generateBddScenarios(ctx, project, task),
                 60000
               );
 
@@ -1305,12 +1293,12 @@ export const TasksView: React.FC<{
               // Usar a tarefa atualizada do array para garantir que BDDs recém-gerados sejam incluídos
               const currentTask = taskIndex !== -1 ? updatedTasks[taskIndex] : task;
 
-              const attachmentsContext = buildAttachmentsContextForTask(currentTask);
+              const ctx = await resolveTaskAiContext(currentTask, { project });
               const { strategy, testCases, snapshotHash, generatedAt } = await withTimeout(
                 generateTestArtifactsForTask(currentTask, {
                   detailLevel: 'Estruturado',
                   project,
-                  attachmentsContext: attachmentsContext || undefined,
+                  taskAiContext: ctx,
                 }),
                 60000
               );

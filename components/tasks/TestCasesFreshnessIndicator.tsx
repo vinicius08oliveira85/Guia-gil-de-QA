@@ -1,14 +1,15 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
-import type { JiraTask } from '../../types';
-import { isTestCasesOutdated } from '../../services/ai/testCaseGenerationService';
+import type { JiraTask, Project } from '../../types';
+import { isTestCasesOutdatedAsync } from '../../services/ai/testCaseGenerationService';
 import { cn } from '../../utils/cn';
 import { Badge } from '../common/Badge';
 
 interface TestCasesFreshnessIndicatorProps {
   task: JiraTask;
+  project?: Project | null;
   /** Quando true, oculta o indicador (a operação em curso já comunica o estado). */
   isGenerating?: boolean;
   /** `compact` = ícones na lista; `full` = badges e texto (modal / detalhe). */
@@ -29,8 +30,22 @@ interface TestCasesFreshnessIndicatorProps {
  * `isTestCasesOutdated` retornaria `true` mas sem informação útil para o usuário).
  */
 export const TestCasesFreshnessIndicator = React.memo<TestCasesFreshnessIndicatorProps>(
-  ({ task, isGenerating = false, variant = 'full', className }) => {
-    const outdated = useMemo(() => isTestCasesOutdated(task), [task]);
+  ({ task, project = null, isGenerating = false, variant = 'full', className }) => {
+    const [outdated, setOutdated] = useState<boolean | null>(null);
+
+    useEffect(() => {
+      let cancelled = false;
+      if (!task.testCasesSnapshotHash) {
+        setOutdated(null);
+        return;
+      }
+      void isTestCasesOutdatedAsync(task, project).then(result => {
+        if (!cancelled) setOutdated(result);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [task, project]);
 
     const generatedAtRelative = useMemo(() => {
       if (!task.testCasesGeneratedAt) return null;
@@ -42,7 +57,7 @@ export const TestCasesFreshnessIndicator = React.memo<TestCasesFreshnessIndicato
     if (isGenerating) return null;
 
     const hasTrackedGeneration = Boolean(task.testCasesSnapshotHash);
-    if (!hasTrackedGeneration) return null;
+    if (!hasTrackedGeneration || outdated === null) return null;
 
     if (variant === 'compact') {
       return (

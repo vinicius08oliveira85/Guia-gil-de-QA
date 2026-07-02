@@ -1993,6 +1993,7 @@ export const JiraTaskItem: React.FC<{
                   {!hideTestFeatures && (task.type === 'Tarefa' || task.type === 'Bug') && (
                     <TestCasesFreshnessIndicator
                       task={task}
+                      project={project}
                       variant="compact"
                       isGenerating={isGeneratingTests || !!isGeneratingAll || isGenerating}
                       className="inline-flex shrink-0"
