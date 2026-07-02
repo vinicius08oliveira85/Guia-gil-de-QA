@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { Project } from '../types';
 import { useProjectsStore } from '../store/projectsStore';
 import { logger } from '../utils/logger';
+import { scheduleLocalFolderSync } from '../utils/localFolderSyncScheduler';
 import { notepadPagesFingerprint, resolveNotepadPages } from '../utils/notepadPages';
 
 interface UseAutoSaveOptions {
@@ -210,6 +211,7 @@ export const useAutoSave = ({
         logger.debug(`Auto-save: salvando projeto "${projectToSave.name}"`, 'useAutoSave');
         await updateProject(projectToSave, { silent: true });
         logger.debug(`Auto-save: projeto "${projectToSave.name}" salvo com sucesso`, 'useAutoSave');
+        scheduleLocalFolderSync();
       } catch (error) {
         logger.warn('Erro no auto-save (projeto salvo localmente)', 'useAutoSave', error);
         // Não lançar erro - projeto já está salvo localmente

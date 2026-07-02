@@ -1,11 +1,24 @@
-import React, { useRef, useState } from 'react';
-import { Download, HardDrive, Upload } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Download, FolderOpen, HardDrive, RefreshCw, Upload } from 'lucide-react';
 import { exportProjectsToBackup, importProjectsFromBackup } from '../../services/dbService';
 import {
   exportLocalBackupViaFileSystemAccess,
   isFileSystemAccessBackupSupported,
   pickBackupJsonFileViaFileSystemAccess,
 } from '../../services/fileSystemBackupService';
+import {
+  clearConfiguredFolder,
+  getLocalFolderBackupPrefs,
+  isLocalFolderAutoSyncEnabled,
+  isLocalFolderBackupSupported,
+  LOCAL_FOLDER_BACKUP_FILENAME,
+  LOCAL_FOLDER_CONFIG_UPDATED_EVENT,
+  pickBackupFolder,
+  setLocalFolderAutoSyncEnabled,
+  writeBackupToFolder,
+  type LocalFolderBackupPrefs,
+} from '../../services/localFolderBackupService';
+import { isSupabaseAvailable } from '../../services/supabaseService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import {
   leveSettingsCheckboxPanelClass,
@@ -27,14 +40,49 @@ export interface LocalDataManagementProps {
   onImportComplete?: () => void | Promise<void>;
 }
 
+function formatSyncTimestamp(iso: string | null): string | null {
+  if (!iso) return null;
+  try {
+    return new Date(iso).toLocaleString('pt-BR');
+  } catch {
+    return iso;
+  }
+}
+
 /**
  * Backup/import manual do IndexedDB — saída de emergência se a nuvem falhar.
  */
 export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImportComplete }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [busy, setBusy] = useState<'export' | 'import' | null>(null);
+  const [busy, setBusy] = useState<'export' | 'import' | 'folder-pick' | 'folder-save' | null>(
+    null
+  );
   const [syncAfterImport, setSyncAfterImport] = useState(false);
+  const [folderPrefs, setFolderPrefs] = useState<LocalFolderBackupPrefs>({
+    autoSyncEnabled: isLocalFolderAutoSyncEnabled(),
+    folderLabel: null,
+    lastSyncAt: null,
+    lastSyncError: null,
+    hasConfiguredFolder: false,
+  });
   const { handleError, handleSuccess, handleWarning } = useErrorHandler();
+
+  const supabaseAvailable = isSupabaseAvailable();
+  const folderSupported = isLocalFolderBackupSupported();
+
+  const refreshFolderPrefs = useCallback(async () => {
+    const prefs = await getLocalFolderBackupPrefs();
+    setFolderPrefs(prefs);
+  }, []);
+
+  useEffect(() => {
+    void refreshFolderPrefs();
+    const onConfigUpdated = () => {
+      void refreshFolderPrefs();
+    };
+    window.addEventListener(LOCAL_FOLDER_CONFIG_UPDATED_EVENT, onConfigUpdated);
+    return () => window.removeEventListener(LOCAL_FOLDER_CONFIG_UPDATED_EVENT, onConfigUpdated);
+  }, [refreshFolderPrefs]);
 
   const runImportFromFile = async (file: File) => {
     const result = await importProjectsFromBackup(file, {
@@ -137,6 +185,73 @@ export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImpo
     }
   };
 
+  const handlePickFolder = async () => {
+    setBusy('folder-pick');
+    try {
+      const result = await pickBackupFolder();
+      if (result.status === 'unsupported') {
+        handleWarning(
+          'Seu navegador não suporta pasta fixa. Use Chrome ou Edge, ou exporte manualmente.'
+        );
+        return;
+      }
+      if (result.status === 'cancelled') {
+        return;
+      }
+      handleSuccess(`Pasta configurada: ${result.folderLabel}`);
+      const saveResult = await writeBackupToFolder();
+      if (saveResult === 'saved') {
+        handleSuccess(`Backup inicial gravado em ${LOCAL_FOLDER_BACKUP_FILENAME}.`);
+      }
+      await refreshFolderPrefs();
+    } catch (error) {
+      handleError(error, 'Escolher pasta de backup');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleSaveToFolderNow = async () => {
+    setBusy('folder-save');
+    try {
+      const result = await writeBackupToFolder();
+      if (result === 'saved') {
+        handleSuccess(`Backup salvo na pasta (${LOCAL_FOLDER_BACKUP_FILENAME}).`);
+      } else if (result === 'no_folder') {
+        handleWarning('Nenhuma pasta configurada. Escolha uma pasta primeiro.');
+      } else if (result === 'permission_denied') {
+        handleWarning(
+          'Permissão negada para gravar na pasta. Tente novamente e autorize o acesso.'
+        );
+      } else if (result === 'unsupported') {
+        handleWarning('Pasta fixa não suportada neste navegador.');
+      }
+      await refreshFolderPrefs();
+    } catch (error) {
+      handleError(error, 'Salvar backup na pasta');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleClearFolder = async () => {
+    try {
+      await clearConfiguredFolder();
+      handleSuccess('Pasta de backup desvinculada.');
+      await refreshFolderPrefs();
+    } catch (error) {
+      handleError(error, 'Desvincular pasta');
+    }
+  };
+
+  const handleAutoSyncToggle = (enabled: boolean) => {
+    setLocalFolderAutoSyncEnabled(enabled);
+    setFolderPrefs(prev => ({ ...prev, autoSyncEnabled: enabled }));
+  };
+
+  const lastSyncLabel = formatSyncTimestamp(folderPrefs.lastSyncAt);
+  const isBusy = busy !== null;
+
   return (
     <div className="space-y-6">
       <div className={leveSettingsSectionRowClass}>
@@ -154,30 +269,69 @@ export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImpo
       </div>
 
       <div className={leveSettingsInsetPanelClass}>
-        <p className={leveSettingsMutedTextClass}>
-          Em navegadores compatíveis (Chrome, Edge), você escolhe onde salvar ou de qual arquivo
-          carregar o JSON; nos demais, o navegador usa download e seletor de arquivo padrão. O
-          backup inclui todos os projetos (IndexedDB) e o Acompanhamento de Tarefas — tarefas
-          importadas das filas Jira, projeto/fila selecionados e janela de SLA. A importação
-          substitui projetos com o mesmo ID e restaura o acompanhamento salvo no arquivo.
-        </p>
+        <div className="flex items-start gap-3">
+          <div className={cn(leveSettingsSectionIconWrapClass, 'h-10 w-10 shrink-0')}>
+            <FolderOpen className="h-5 w-5" aria-hidden />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h4 className={leveSettingsStrongTextClass}>Pasta de backup automático</h4>
+            <p className={cn(leveSettingsMutedTextClass, 'mt-1')}>
+              Escolha uma pasta fixa no computador. O app grava automaticamente{' '}
+              <code className="font-mono text-xs">{LOCAL_FOLDER_BACKUP_FILENAME}</code> com todos os
+              projetos e o Acompanhamento de Tarefas. O IndexedDB continua sendo a fonte principal;
+              a pasta é um espelho legível no disco.
+            </p>
+            {!folderSupported && (
+              <p className="mt-2 text-sm text-amber-700 dark:text-amber-300" role="status">
+                Pasta fixa requer Chrome ou Edge. Nos demais navegadores, use o export manual abaixo.
+              </p>
+            )}
+            {folderPrefs.hasConfiguredFolder ? (
+              <p className="mt-2 text-sm text-[var(--leve-header-text)]" role="status">
+                Pasta atual:{' '}
+                <span className={leveSettingsStrongTextClass}>
+                  {folderPrefs.folderLabel ?? '(sem nome)'}
+                </span>
+                {lastSyncLabel ? (
+                  <span className="mt-0.5 block text-[var(--leve-header-text-muted)]">
+                    Última gravação: {lastSyncLabel}
+                  </span>
+                ) : null}
+                {folderPrefs.lastSyncError ? (
+                  <span className="mt-0.5 block text-amber-700 dark:text-amber-300">
+                    {folderPrefs.lastSyncError}
+                  </span>
+                ) : null}
+              </p>
+            ) : (
+              <p className="mt-2 text-sm text-[var(--leve-header-text-muted)]" role="status">
+                Nenhuma pasta configurada.
+              </p>
+            )}
+          </div>
+        </div>
 
-        <label className={cn(leveSettingsCheckboxPanelClass, 'mt-4 flex cursor-pointer items-start gap-3')}>
+        <label
+          className={cn(leveSettingsCheckboxPanelClass, 'mt-4 flex cursor-pointer items-start gap-3')}
+        >
           <input
             type="checkbox"
             className="checkbox checkbox-sm mt-0.5 shrink-0 border-[color-mix(in_srgb,var(--leve-header-text)_20%,transparent)] [--chkbg:var(--leve-header-accent)]"
-            checked={syncAfterImport}
-            onChange={e => setSyncAfterImport(e.target.checked)}
-            aria-describedby="sync-after-import-hint"
+            checked={folderPrefs.autoSyncEnabled}
+            onChange={e => handleAutoSyncToggle(e.target.checked)}
+            disabled={!folderSupported || !folderPrefs.hasConfiguredFolder}
+            aria-describedby="auto-sync-folder-hint"
           />
           <span className="text-sm leading-snug text-[var(--leve-header-text)]">
-            <span className={leveSettingsStrongTextClass}>Enviar ao Supabase após importar</span>
+            <span className={leveSettingsStrongTextClass}>
+              Sincronizar automaticamente com a pasta
+            </span>
             <span
-              id="sync-after-import-hint"
+              id="auto-sync-folder-hint"
               className="mt-0.5 block text-[var(--leve-header-text-muted)]"
             >
-              Opcional: só aplica se o Supabase estiver configurado. Útil para alinhar a nuvem com o
-              backup restaurado; desmarque se quiser manter apenas cópia local.
+              Após mudanças nos projetos ou no Acompanhamento de Tarefas, o backup é regravado na
+              pasta em até cerca de 1 minuto.
             </span>
           </span>
         </label>
@@ -186,8 +340,83 @@ export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImpo
           <button
             type="button"
             className={cn(leveViewPrimaryBtnClass, 'gap-2')}
+            onClick={handlePickFolder}
+            disabled={isBusy || !folderSupported}
+            aria-label={
+              folderPrefs.hasConfiguredFolder ? 'Alterar pasta de backup' : 'Escolher pasta de backup'
+            }
+          >
+            <FolderOpen className="h-4 w-4" aria-hidden />
+            {busy === 'folder-pick'
+              ? 'Abrindo…'
+              : folderPrefs.hasConfiguredFolder
+                ? 'Alterar pasta'
+                : 'Escolher pasta'}
+          </button>
+          <button
+            type="button"
+            className={cn(leveViewOutlineBtnClass, 'gap-2')}
+            onClick={handleSaveToFolderNow}
+            disabled={isBusy || !folderPrefs.hasConfiguredFolder}
+            aria-label="Salvar backup agora na pasta configurada"
+          >
+            <RefreshCw className="h-4 w-4" aria-hidden />
+            {busy === 'folder-save' ? 'Salvando…' : 'Salvar agora'}
+          </button>
+          {folderPrefs.hasConfiguredFolder ? (
+            <button
+              type="button"
+              className={cn(leveViewOutlineBtnClass, 'gap-2')}
+              onClick={handleClearFolder}
+              disabled={isBusy}
+              aria-label="Desvincular pasta de backup"
+            >
+              Desvincular pasta
+            </button>
+          ) : null}
+        </div>
+      </div>
+
+      <div className={leveSettingsInsetPanelClass}>
+        <h4 className={leveSettingsStrongTextClass}>Exportar / importar manual</h4>
+        <p className={cn(leveSettingsMutedTextClass, 'mt-1')}>
+          Em navegadores compatíveis (Chrome, Edge), você escolhe onde salvar ou de qual arquivo
+          carregar o JSON; nos demais, o navegador usa download e seletor de arquivo padrão. O backup
+          inclui todos os projetos (IndexedDB) e o Acompanhamento de Tarefas — tarefas importadas das
+          filas Jira, projeto/fila selecionados e janela de SLA. A importação substitui projetos com
+          o mesmo ID e restaura o acompanhamento salvo no arquivo.
+        </p>
+
+        {supabaseAvailable ? (
+          <label
+            className={cn(leveSettingsCheckboxPanelClass, 'mt-4 flex cursor-pointer items-start gap-3')}
+          >
+            <input
+              type="checkbox"
+              className="checkbox checkbox-sm mt-0.5 shrink-0 border-[color-mix(in_srgb,var(--leve-header-text)_20%,transparent)] [--chkbg:var(--leve-header-accent)]"
+              checked={syncAfterImport}
+              onChange={e => setSyncAfterImport(e.target.checked)}
+              aria-describedby="sync-after-import-hint"
+            />
+            <span className="text-sm leading-snug text-[var(--leve-header-text)]">
+              <span className={leveSettingsStrongTextClass}>Enviar ao Supabase após importar</span>
+              <span
+                id="sync-after-import-hint"
+                className="mt-0.5 block text-[var(--leve-header-text-muted)]"
+              >
+                Opcional: só aplica se o Supabase estiver configurado. Útil para alinhar a nuvem com
+                o backup restaurado; desmarque se quiser manter apenas cópia local.
+              </span>
+            </span>
+          </label>
+        ) : null}
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            type="button"
+            className={cn(leveViewPrimaryBtnClass, 'gap-2')}
             onClick={handleExport}
-            disabled={busy !== null}
+            disabled={isBusy}
           >
             <Download className="h-4 w-4" aria-hidden />
             {busy === 'export' ? 'Exportando…' : 'Exportar backup local'}
@@ -196,7 +425,7 @@ export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImpo
             type="button"
             className={cn(leveViewOutlineBtnClass, 'gap-2')}
             onClick={handleImportClick}
-            disabled={busy !== null}
+            disabled={isBusy}
           >
             <Upload className="h-4 w-4" aria-hidden />
             {busy === 'import' ? 'Importando…' : 'Importar backup local'}

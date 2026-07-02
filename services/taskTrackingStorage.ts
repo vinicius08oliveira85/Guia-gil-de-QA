@@ -1,5 +1,6 @@
 import type { JiraTask } from '../types';
 import { DEFAULT_SLA_RISK_WINDOW_HOURS } from '../utils/jiraFilasMetrics';
+import { scheduleLocalFolderSync } from '../utils/localFolderSyncScheduler';
 import { logger } from '../utils/logger';
 
 /** Chaves de persistência do Acompanhamento de Tarefas (Filas Jira). */
@@ -176,6 +177,7 @@ export function writeTaskTrackingSnapshot(snapshot: TaskTrackingSnapshot): void 
 
   writeLocalItem(FILAS_TASKS_STORAGE_KEY, JSON.stringify(snapshot.tasks));
   writeLocalItem(FILAS_SLA_RISK_WINDOW_STORAGE_KEY, String(snapshot.slaRiskWindowHours));
+  scheduleLocalFolderSync();
 }
 
 /** Lê a seleção persistida do assistente de importação das filas. */

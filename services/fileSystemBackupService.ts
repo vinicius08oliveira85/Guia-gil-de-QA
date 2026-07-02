@@ -28,6 +28,27 @@ function isAbortError(error: unknown): boolean {
 }
 
 /**
+ * Grava uma string JSON em um FileSystemFileHandle (compartilhado entre export manual e pasta fixa).
+ */
+export async function writeJsonStringToFileHandle(
+  handle: FileSystemFileHandle,
+  jsonString: string
+): Promise<void> {
+  const writable = await handle.createWritable();
+  try {
+    await writable.write(jsonString);
+    await writable.close();
+  } catch (error) {
+    try {
+      await writable.close();
+    } catch {
+      /* ignore */
+    }
+    throw error;
+  }
+}
+
+/**
  * Exporta o backup local para um caminho escolhido pelo usuário (File System Access API).
  * @returns `saved` após gravar, `cancelled` se o usuário fechou o diálogo, `unsupported` se a API não existir.
  */
@@ -54,18 +75,7 @@ export async function exportLocalBackupViaFileSystemAccess(): Promise<
   const backupData = await buildLocalBackupData();
   const jsonString = JSON.stringify(backupData, null, 2);
 
-  const writable = await handle.createWritable();
-  try {
-    await writable.write(jsonString);
-    await writable.close();
-  } catch (error) {
-    try {
-      await writable.close();
-    } catch {
-      /* ignore */
-    }
-    throw error;
-  }
+  await writeJsonStringToFileHandle(handle, jsonString);
 
   logger.info(
     `Backup local exportado (File System Access): ${backupData.projects.length} projeto(s)`,

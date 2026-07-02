@@ -3,6 +3,7 @@ import { normalizeProjectBusinessRules } from '../utils/businessRuleDefaults';
 import {
   DB_NAME,
   DB_VERSION,
+  LOCAL_FOLDER_HANDLES_STORE,
   PHASE_NAMES,
   STORE_NAME,
   TEST_GENERATION_CACHE_STORE,
@@ -74,6 +75,9 @@ const openDB = (): Promise<IDBDatabase> => {
       }
       if (!dbInstance.objectStoreNames.contains(TEST_GENERATION_CACHE_STORE)) {
         dbInstance.createObjectStore(TEST_GENERATION_CACHE_STORE, { keyPath: 'taskId' });
+      }
+      if (!dbInstance.objectStoreNames.contains(LOCAL_FOLDER_HANDLES_STORE)) {
+        dbInstance.createObjectStore(LOCAL_FOLDER_HANDLES_STORE, { keyPath: 'id' });
       }
     };
   });
@@ -706,6 +710,59 @@ export const deleteProject = async (projectId: string): Promise<void> => {
     const store = transaction.objectStore(STORE_NAME);
     const request = store.delete(projectId);
 
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve();
+  });
+};
+
+/** Chave fixa do handle da pasta de backup automático no IndexedDB. */
+export const LOCAL_FOLDER_HANDLE_ID = 'backup';
+
+type StoredLocalFolderHandle = {
+  id: typeof LOCAL_FOLDER_HANDLE_ID;
+  handle: FileSystemDirectoryHandle;
+};
+
+/**
+ * Persiste o handle da pasta de backup automático no IndexedDB.
+ */
+export const saveLocalFolderDirectoryHandle = async (
+  handle: FileSystemDirectoryHandle
+): Promise<void> => {
+  const db = await openDB();
+  await new Promise<void>((resolve, reject) => {
+    const transaction = db.transaction(LOCAL_FOLDER_HANDLES_STORE, 'readwrite');
+    const store = transaction.objectStore(LOCAL_FOLDER_HANDLES_STORE);
+    const request = store.put({ id: LOCAL_FOLDER_HANDLE_ID, handle } satisfies StoredLocalFolderHandle);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve();
+  });
+};
+
+/**
+ * Recupera o handle da pasta de backup automático, se configurado.
+ */
+export const getLocalFolderDirectoryHandle = async (): Promise<FileSystemDirectoryHandle | null> => {
+  const db = await openDB();
+  const record = await new Promise<StoredLocalFolderHandle | undefined>((resolve, reject) => {
+    const transaction = db.transaction(LOCAL_FOLDER_HANDLES_STORE, 'readonly');
+    const store = transaction.objectStore(LOCAL_FOLDER_HANDLES_STORE);
+    const request = store.get(LOCAL_FOLDER_HANDLE_ID);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result as StoredLocalFolderHandle | undefined);
+  });
+  return record?.handle ?? null;
+};
+
+/**
+ * Remove o handle da pasta de backup automático do IndexedDB.
+ */
+export const clearLocalFolderDirectoryHandle = async (): Promise<void> => {
+  const db = await openDB();
+  await new Promise<void>((resolve, reject) => {
+    const transaction = db.transaction(LOCAL_FOLDER_HANDLES_STORE, 'readwrite');
+    const store = transaction.objectStore(LOCAL_FOLDER_HANDLES_STORE);
+    const request = store.delete(LOCAL_FOLDER_HANDLE_ID);
     request.onerror = () => reject(request.error);
     request.onsuccess = () => resolve();
   });
