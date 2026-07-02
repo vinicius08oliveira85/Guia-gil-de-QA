@@ -83,7 +83,7 @@ const buildProjectFingerprint = (project: Project): string =>
 
 /**
  * Hook que monitora mudanças no projeto e persiste automaticamente no IndexedDB.
- * A nuvem (Supabase) só é atualizada quando o usuário usa o botão Salvar / sincronização explícita.
+ * Backup na pasta fixa é disparado pelo scheduler após debounce.
  *
  * Mudanças críticas são persistidas localmente imediatamente; demais mudanças usam debounce.
  */

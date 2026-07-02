@@ -1,6 +1,6 @@
 import React, { useState, Suspense, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Link, Database, Settings as SettingsIcon, Key, HardDrive } from 'lucide-react';
+import { Link, Settings as SettingsIcon, Key, HardDrive } from 'lucide-react';
 import { BackButton } from '../common/BackButton';
 import { LocalDataManagement } from '../common/LocalDataManagement';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
@@ -42,10 +42,6 @@ const JiraSettingsTab = lazyLoadTab(
   () => import('./JiraSettingsTab').then(m => ({ default: m.JiraSettingsTab })),
   'JiraSettingsTab'
 );
-const SupabaseSettingsTab = lazyLoadTab(
-  () => import('./SupabaseSettingsTab').then(m => ({ default: m.SupabaseSettingsTab })),
-  'SupabaseSettingsTab'
-);
 const PreferencesTab = lazyLoadTab(
   () => import('./PreferencesTab').then(m => ({ default: m.PreferencesTab })),
   'PreferencesTab'
@@ -55,11 +51,10 @@ const GeminiApiKeysTab = lazyLoadTab(
   'GeminiApiKeysTab'
 );
 
-type TabType = 'jira' | 'supabase' | 'local-data' | 'api-keys' | 'preferences';
+type TabType = 'jira' | 'local-data' | 'api-keys' | 'preferences';
 
 const tabs: { id: TabType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'jira', label: 'Jira', icon: Link },
-  { id: 'supabase', label: 'Supabase', icon: Database },
   { id: 'local-data', label: 'Dados locais', icon: HardDrive },
   { id: 'api-keys', label: 'API Keys', icon: Key },
   { id: 'preferences', label: 'Preferências', icon: SettingsIcon },
@@ -176,14 +171,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 onProjectImported={onProjectImported}
                 onDirtyChange={setHasUnsavedChanges}
               />
-            </KeepAlivePanel>
-            <KeepAlivePanel
-              id="tab-panel-supabase"
-              labelledBy="tab-supabase"
-              active={activeTab === 'supabase'}
-              className={leveSettingsPanelClass}
-            >
-              <SupabaseSettingsTab />
             </KeepAlivePanel>
             <KeepAlivePanel
               id="tab-panel-local-data"

@@ -279,14 +279,14 @@ export const ExportPreferences: React.FC = () => {
               <div>
                 <label className="mb-2 block text-sm text-[var(--leve-header-text-muted)]">Destino</label>
                 <div className={cn(leveTaskModalTabsStripClass, 'w-fit max-w-full')}>
-                  {(['download', 'supabase'] as const).map(dest => (
+                  {(['download', 'local-folder'] as const).map(dest => (
                     <button
                       key={dest}
                       type="button"
                       onClick={() => handleScheduleChange({ destination: dest })}
                       className={leveViewFilterPillClass(preferences.schedule?.destination === dest)}
                     >
-                      {dest === 'download' ? 'Download' : 'Supabase'}
+                      {dest === 'download' ? 'Download' : 'Pasta local'}
                     </button>
                   ))}
                 </div>

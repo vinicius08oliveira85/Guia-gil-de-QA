@@ -14,6 +14,8 @@ async function jiraRequest<T>(
     apiRoot?: JiraApiRoot;
     urlMode?: JiraUrlMode;
     extraHeaders?: Record<string, string>;
+    /** 403/404 são logados em debug em vez de error (endpoints opcionais). */
+    quietHttpErrors?: boolean;
   } = {}
 ): Promise<T> {
   const timeout = options.timeout || 60000;
@@ -60,12 +62,15 @@ async function jiraRequest<T>(
 
     if (!response.ok) {
       let errorData: { error?: string };
+      const isQuietHttpError =
+        options.quietHttpErrors && (response.status === 403 || response.status === 404);
+      const logHttpError = isQuietHttpError ? logger.debug.bind(logger) : logger.error.bind(logger);
       try {
         errorData = await response.json();
-        logger.error('Erro do proxy', 'jiraService', errorData);
+        logHttpError('Erro do proxy', 'jiraService', errorData);
       } catch {
         const errorText = await response.text();
-        logger.error('Erro do proxy (texto)', 'jiraService', errorText);
+        logHttpError('Erro do proxy (texto)', 'jiraService', errorText);
         errorData = { error: errorText };
       }
       throw new Error(errorData.error || `Jira API Error (${response.status})`);
@@ -82,6 +87,18 @@ async function jiraRequest<T>(
         `Timeout: A requisição demorou mais de ${timeout / 1000} segundos. Verifique sua conexão ou tente novamente.`
       );
     }
+    if (options.quietHttpErrors && error instanceof Error) {
+      const msg = error.message.toLowerCase();
+      if (
+        msg.includes('403') ||
+        msg.includes('404') ||
+        msg.includes('forbidden') ||
+        msg.includes('not found')
+      ) {
+        logger.debug('Requisição Jira opcional falhou', 'jiraService', error);
+        throw error;
+      }
+    }
     logger.error('Erro na requisição', 'jiraService', error);
     throw error;
   }
@@ -96,7 +113,12 @@ export const jiraApiCall = async <T>(
 export const jiraAgileApiCall = async <T>(
   config: JiraConfig,
   endpoint: string,
-  options: { method?: string; body?: unknown; timeout?: number } = {}
+  options: {
+    method?: string;
+    body?: unknown;
+    timeout?: number;
+    quietHttpErrors?: boolean;
+  } = {}
 ): Promise<T> => jiraRequest<T>(config, endpoint, { ...options, apiRoot: 'agile/1.0' });
 
 export const jiraServiceDeskApiCall = async <T>(
@@ -117,7 +139,12 @@ export const jiraProformaApiCall = async <T>(
   config: JiraConfig,
   endpoint: string,
   options: { method?: string; body?: unknown; timeout?: number } = {}
-): Promise<T> => jiraRequest<T>(config, endpoint, { ...options, apiRoot: 'proforma/1' });
+): Promise<T> =>
+  jiraRequest<T>(config, endpoint, {
+    ...options,
+    apiRoot: 'proforma/1',
+    quietHttpErrors: true,
+  });
 
 const FORMS_API_HEADERS = { 'X-ExperimentalApi': 'opt-in' };
 
@@ -131,4 +158,5 @@ export const jiraFormsApiCall = async <T>(
     ...options,
     urlMode: 'atlassian',
     extraHeaders: FORMS_API_HEADERS,
+    quietHttpErrors: true,
   });

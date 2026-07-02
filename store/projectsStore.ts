@@ -6,15 +6,9 @@ import {
   addProject,
   updateProject as updateProjectInDatabase,
   deleteProject,
-  saveProjectToSupabaseOnly,
-  writeProjectToIndexedDBOnly,
 } from '../services/dbService';
-import { loadProjectsFromSupabase, isSupabaseAvailable } from '../services/supabaseService';
-import { clearSupabaseRemotePause } from '../services/supabaseCircuitBreaker';
-import { autoBackupBeforeOperation, createBackup } from '../services/backupService';
-import { migrateTestCases } from '../utils/testCaseMigration';
-import { cleanupTestCasesForProjects } from '../utils/testCaseCleanup';
-import { mergeProjectsList } from '../utils/projectMerge';
+import { saveProjectLocally as persistProjectLocally, syncLocalBackup as syncLocalBackupToFolder } from '../services/localSaveService';
+import { autoBackupBeforeOperation } from '../services/backupService';
 import { createProjectFromTemplate } from '../utils/projectTemplates';
 import { DEFAULT_BUSINESS_RULE_CATEGORY_PRESETS } from '../utils/businessRuleCategoryPresets';
 import { PHASE_NAMES } from '../utils/constants';
@@ -31,17 +25,11 @@ interface ProjectsState {
   selectedProjectId: string | null;
   isLoading: boolean;
   error: Error | null;
-  /** true quando a última tentativa de carregar do Supabase falhou (proxy/DB indisponível) */
-  supabaseLoadFailed: boolean;
-  /** Mensagem de erro retornada pelo proxy/Supabase (ex.: "Supabase não configurado") */
-  supabaseLoadError: string | null;
-  /** false = último save foi só local (Supabase indisponível); null = ainda não houve save nesta sessão */
-  lastSaveToSupabase: boolean | null;
 
   // Actions
   loadProjects: () => Promise<void>;
-  syncProjectsFromSupabase: () => Promise<void>;
-  saveProjectToSupabase: (projectId: string) => Promise<void>;
+  syncLocalBackup: () => Promise<void>;
+  saveProjectLocally: (projectId: string) => Promise<void>;
   createProject: (name: string, description: string, templateId?: string) => Promise<Project>;
   updateProject: (
     project: Project,
@@ -67,321 +55,59 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
   selectedProjectId: null,
   isLoading: false,
   error: null,
-  supabaseLoadFailed: false,
-  supabaseLoadError: null,
-  lastSaveToSupabase: null,
 
   loadProjects: async () => {
-    set({ isLoading: true, error: null, supabaseLoadFailed: false, supabaseLoadError: null });
+    set({ isLoading: true, error: null });
     try {
-      // Fase 1 (rápida): carregar só do IndexedDB para a UI abrir logo
-      let indexedDBProjects: Project[] = [];
-      try {
-        logger.debug('Carregando projetos do IndexedDB...', 'ProjectsStore');
-        indexedDBProjects = await loadProjectsFromIndexedDB();
-        if (indexedDBProjects.length === 0 && isSupabaseAvailable()) {
-          logger.debug(
-            `Projetos carregados do IndexedDB: 0 (Supabase disponível; merge em seguida pode trazer projetos da nuvem)`,
-            'ProjectsStore'
-          );
-        } else {
-          logger.info(
-            `Projetos carregados do IndexedDB: ${indexedDBProjects.length}`,
-            'ProjectsStore'
-          );
-        }
-      } catch (error) {
-        logger.error('Erro ao carregar do IndexedDB', 'ProjectsStore', error);
-        set({
-          projects: [],
-          isLoading: false,
-          error: error instanceof Error ? error : new Error('Erro ao carregar projetos'),
-          supabaseLoadFailed: false,
-          supabaseLoadError: null,
-        });
-        return;
-      }
-
+      logger.debug('Carregando projetos do IndexedDB...', 'ProjectsStore');
+      const indexedDBProjects = await loadProjectsFromIndexedDB();
+      logger.info(
+        `Projetos carregados do IndexedDB: ${indexedDBProjects.length}`,
+        'ProjectsStore'
+      );
       set({
         projects: indexedDBProjects,
         isLoading: false,
         error: null,
-        supabaseLoadFailed: false,
-        supabaseLoadError: null,
       });
-
-      // Fase 2 (background): Supabase em background; ao terminar, merge e atualiza o store
-      if (!isSupabaseAvailable()) return;
-
-      loadProjectsFromSupabase()
-        .then(async result => {
-          const currentProjects = get().projects;
-          const supabaseProjects = result.projects;
-          let finalProjects: Project[];
-
-          if (supabaseProjects.length > 0 && currentProjects.length > 0) {
-            try {
-              const projectsToBackup = currentProjects.filter(p =>
-                supabaseProjects.some(sp => sp.id === p.id)
-              );
-              if (projectsToBackup.length > 0) {
-                await Promise.all(
-                  projectsToBackup.map(project =>
-                    createBackup(
-                      project,
-                      'MERGE',
-                      'Backup automático antes de merge Supabase/IndexedDB'
-                    ).catch(err =>
-                      logger.warn(
-                        `Erro ao criar backup antes de merge para ${project.id}`,
-                        'ProjectsStore',
-                        err
-                      )
-                    )
-                  )
-                );
-              }
-            } catch {
-              logger.warn('Erro ao criar backups antes de merge (continuando)', 'ProjectsStore');
-            }
-            const migratedSupabaseProjects = supabaseProjects.map(project => ({
-              ...project,
-              businessRules: project.businessRules ?? [],
-              tasks: (project.tasks || []).map(task => ({
-                ...task,
-                testCases: migrateTestCases(task.testCases || []),
-              })),
-            }));
-            finalProjects = cleanupTestCasesForProjects(
-              mergeProjectsList(currentProjects, migratedSupabaseProjects)
-            );
-            logger.info(
-              `Projetos atualizados com merge Supabase: ${finalProjects.length} (${supabaseProjects.length} do Supabase + ${currentProjects.length} do cache)`,
-              'ProjectsStore'
-            );
-          } else if (supabaseProjects.length > 0) {
-            const migratedSupabaseProjects = supabaseProjects.map(project => ({
-              ...project,
-              businessRules: project.businessRules ?? [],
-              tasks: (project.tasks || []).map(task => ({
-                ...task,
-                testCases: migrateTestCases(task.testCases || []),
-              })),
-            }));
-            finalProjects = cleanupTestCasesForProjects(migratedSupabaseProjects);
-            logger.info(
-              `Projetos atualizados do Supabase: ${finalProjects.length}`,
-              'ProjectsStore'
-            );
-          } else {
-            finalProjects = currentProjects;
-          }
-
-          set({
-            projects: finalProjects,
-            supabaseLoadFailed: result.loadFailed,
-            supabaseLoadError: result.errorMessage ?? null,
-          });
-          if (result.loadFailed && result.errorMessage) {
-            toast(result.errorMessage, { duration: 5000, id: 'supabase-sync-degraded' });
-          }
-        })
-        .catch(err => {
-          logger.warn('Erro ao sincronizar Supabase em background', 'ProjectsStore', err);
-          set({
-            supabaseLoadFailed: true,
-            supabaseLoadError: err instanceof Error ? err.message : String(err),
-          });
-        });
     } catch (error) {
-      const errorObj = error instanceof Error ? error : new Error('Erro ao carregar projetos');
-      logger.error('Erro ao carregar projetos', 'ProjectsStore', errorObj);
+      logger.error('Erro ao carregar do IndexedDB', 'ProjectsStore', error);
       set({
-        error: errorObj,
+        projects: [],
         isLoading: false,
-        supabaseLoadFailed: false,
-        supabaseLoadError: null,
+        error: error instanceof Error ? error : new Error('Erro ao carregar projetos'),
       });
     }
   },
 
-  syncProjectsFromSupabase: async () => {
-    try {
-      clearSupabaseRemotePause();
-      logger.debug('Sincronizando projetos do Supabase...', 'ProjectsStore');
-      const result = await loadProjectsFromSupabase();
-      if (result.loadFailed) {
-        set({
-          supabaseLoadFailed: true,
-          supabaseLoadError: result.errorMessage ?? null,
-        });
-        if (result.errorMessage) {
-          toast(result.errorMessage, { duration: 5000, id: 'supabase-sync-degraded' });
-        }
-        logger.warn(
-          'Sincronização manual: Supabase indisponível — dados locais preservados',
-          'ProjectsStore',
-          result.errorMessage
-        );
-        return;
-      }
-      const { projects: supabaseProjects } = result;
-
-      // Migrar TestCases dos projetos do Supabase
-      const migratedSupabaseProjects = supabaseProjects.map(project => ({
-        ...project,
-        businessRules: project.businessRules ?? [],
-        tasks: (project.tasks || []).map(task => ({
-          ...task,
-          testCases: migrateTestCases(task.testCases || []),
-        })),
-      }));
-
-      const state = get();
-      const currentProjects = state.projects;
-      const supabaseIds = new Set(migratedSupabaseProjects.map(p => p.id));
-      const localOnly = currentProjects.filter(p => !supabaseIds.has(p.id));
-      const finalProjects = [...localOnly, ...migratedSupabaseProjects];
-      const cleanedProjects = cleanupTestCasesForProjects(finalProjects);
-
-      // Backup antes de substituir (proteção contra perda de dados)
-      try {
-        const projectsToBackup = currentProjects.filter(p =>
-          migratedSupabaseProjects.some(sp => sp.id === p.id)
-        );
-        if (projectsToBackup.length > 0) {
-          logger.debug(
-            `Criando backups antes de sync para ${projectsToBackup.length} projetos`,
-            'ProjectsStore'
-          );
-          await Promise.all(
-            projectsToBackup.map(project =>
-              createBackup(
-                project,
-                'SYNC',
-                'Backup automático antes de sincronização Supabase'
-              ).catch(err => {
-                logger.warn(
-                  `Erro ao criar backup antes de sync para ${project.id}`,
-                  'ProjectsStore',
-                  err
-                );
-              })
-            )
-          );
-        }
-      } catch (error) {
-        logger.warn('Erro ao criar backups antes de sync (continuando)', 'ProjectsStore', error);
-      }
-
-      // Persistir lista final no IndexedDB (Supabase como fonte da verdade para ids no remoto)
-      await Promise.all(
-        cleanedProjects.map(project =>
-          writeProjectToIndexedDBOnly(project).catch(err => {
-            logger.warn(
-              `Erro ao persistir projeto ${project.id} no IndexedDB após sync`,
-              'ProjectsStore',
-              err
-            );
-          })
-        )
-      );
-
-      set({
-        projects: cleanedProjects,
-        supabaseLoadFailed: false,
-        supabaseLoadError: null,
-      });
-      logger.info(
-        `Projetos sincronizados do Supabase (fonte da verdade): ${cleanedProjects.length} (${migratedSupabaseProjects.length} do Supabase + ${localOnly.length} só locais)`,
-        'ProjectsStore'
-      );
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      // Log mais detalhado para erros CORS ou timeout
-      if (errorMessage.includes('CORS') || errorMessage.includes('cors')) {
-        logger.warn(
-          'Erro CORS ao sincronizar projetos do Supabase. Configure VITE_SUPABASE_PROXY_URL.',
-          'ProjectsStore',
-          error
-        );
-      } else if (errorMessage.includes('Timeout') || errorMessage.includes('timeout')) {
-        logger.warn(
-          'Timeout ao sincronizar projetos do Supabase. Usando cache local.',
-          'ProjectsStore',
-          error
-        );
-      } else {
-        logger.warn('Erro ao sincronizar projetos do Supabase', 'ProjectsStore', error);
-      }
-      // Não atualizar estado em caso de erro - manter projetos do IndexedDB
+  syncLocalBackup: async () => {
+    const result = await syncLocalBackupToFolder();
+    if (result === 'saved') {
+      toast.success('Backup sincronizado na pasta local.');
+      return;
+    }
+    if (result === 'no_folder') {
+      toast('Configure uma pasta em Configurações → Dados locais.', { icon: 'ℹ️' });
+      return;
+    }
+    if (result === 'permission_denied') {
+      toast.error('Permissão negada para gravar na pasta. Reautorize em Dados locais.');
+      return;
+    }
+    if (result === 'unsupported') {
+      toast.error('Seu navegador não suporta pasta fixa. Use Chrome ou Edge.');
     }
   },
 
-  saveProjectToSupabase: async (projectId: string) => {
+  saveProjectLocally: async (projectId: string) => {
     const state = get();
     const project = state.projects.find(p => p.id === projectId);
-
     if (!project) {
       throw new Error('Projeto não encontrado');
     }
-
-    if (!isSupabaseAvailable()) {
-      throw new Error('Supabase não está disponível. Configure VITE_SUPABASE_PROXY_URL.');
-    }
-
-    try {
-      logger.debug(`Salvando projeto "${project.name}" no Supabase...`, 'ProjectsStore');
-      await saveProjectToSupabaseOnly(project);
-      await writeProjectToIndexedDBOnly(project).catch(err => {
-        logger.warn(`Erro ao atualizar IndexedDB após salvar no Supabase`, 'ProjectsStore', err);
-      });
-      set({ lastSaveToSupabase: true });
-      logger.debug(`Projeto "${project.name}" salvo no Supabase`, 'ProjectsStore');
-    } catch (error) {
-      const errorObj =
-        error instanceof Error ? error : new Error('Erro ao salvar projeto no Supabase');
-      const errorMessage = errorObj.message.toLowerCase();
-
-      // Verificar se é erro de rede - não logar como error se for
-      const isNetworkErr =
-        errorMessage.includes('timeout') ||
-        errorMessage.includes('connection reset') ||
-        errorMessage.includes('err_timed_out') ||
-        errorMessage.includes('err_connection_reset') ||
-        errorMessage.includes('err_name_not_resolved') ||
-        errorMessage.includes('failed to fetch') ||
-        errorMessage.includes('network');
-
-      // Tratamento específico para erro 413 (Payload Too Large) ou mensagem de projeto muito grande
-      if (
-        errorMessage.includes('413') ||
-        errorMessage.includes('payload muito grande') ||
-        errorMessage.includes('content too large') ||
-        errorMessage.includes('muito grande')
-      ) {
-        logger.debug(
-          `Projeto "${project.name}" muito grande para Supabase. Salvo apenas localmente.`,
-          'ProjectsStore'
-        );
-        // Não lançar erro para 413 - apenas logar aviso
-        // O projeto já está salvo localmente
-        return;
-      }
-
-      // Se for erro de rede, não lançar erro (evita loop) - apenas logar debug
-      if (isNetworkErr) {
-        logger.debug(
-          'Erro de rede ao salvar projeto no Supabase. Projeto salvo apenas localmente.',
-          'ProjectsStore',
-          errorObj
-        );
-        return; // Não lançar erro para evitar loop
-      }
-
-      logger.warn('Erro ao salvar projeto no Supabase', 'ProjectsStore', errorObj);
-      throw errorObj;
-    }
+    logger.debug(`Salvando projeto "${project.name}" localmente...`, 'ProjectsStore');
+    await persistProjectLocally(project);
+    logger.debug(`Projeto "${project.name}" salvo localmente`, 'ProjectsStore');
   },
 
   createProject: async (name: string, description: string, templateId?: string) => {
@@ -411,10 +137,9 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         };
       }
 
-      const result = await addProject(newProject);
+      await addProject(newProject);
       set(state => ({
         projects: [...state.projects, newProject],
-        lastSaveToSupabase: result.savedToSupabase,
       }));
 
       addAuditLog({
@@ -536,17 +261,11 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         }
       }
 
-      const syncRemote = options?.syncRemote === true;
-      const result = await updateProjectInDatabase(finalProject, {
-        syncRemote,
+      await updateProjectInDatabase(finalProject, {
+        syncRemote: options?.syncRemote === true,
       });
       set(state => ({
         projects: state.projects.map(p => (p.id === finalProject.id ? finalProject : p)),
-        lastSaveToSupabase: syncRemote
-          ? result.savedToSupabase
-          : isSupabaseAvailable()
-            ? false
-            : state.lastSaveToSupabase,
       }));
 
       if (oldProject && !options?.silent) {
@@ -696,7 +415,6 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
             projects: inList
               ? s.projects.map(p => (p.id === project.id ? project : p))
               : [...s.projects, project],
-            lastSaveToSupabase: result.savedToSupabase,
           };
         });
         addAuditLog({
@@ -706,10 +424,9 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
           entityName: project.name,
         });
       } else {
-        const result = await addProject(project);
+        await addProject(project);
         set(s => ({
           projects: [...s.projects, project],
-          lastSaveToSupabase: result.savedToSupabase,
         }));
         addAuditLog({
           action: 'CREATE',

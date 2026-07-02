@@ -2,13 +2,10 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useProjectsStore } from '../../store/projectsStore';
 import { Project } from '../../types';
 import * as dbService from '../../services/dbService';
-import * as supabaseService from '../../services/supabaseService';
-import toast from 'react-hot-toast';
 
-// Evita fetch real e retries de loadProjectsFromSupabase durante os testes (Node/jsdom).
-vi.mock('../../services/supabaseService', () => ({
-  loadProjectsFromSupabase: vi.fn(() => Promise.resolve({ projects: [], loadFailed: false })),
-  isSupabaseAvailable: vi.fn(() => false),
+vi.mock('../../services/localSaveService', () => ({
+  saveProjectLocally: vi.fn(),
+  syncLocalBackup: vi.fn(),
 }));
 
 // Mock do dbService
@@ -43,20 +40,11 @@ describe('useProjectsStore', () => {
     vi.mocked(generalAnalysisService.getGeneralIAAnalysisSnapshotHash).mockImplementation(
       () => 'snapshot-default'
     );
-    vi.mocked(supabaseService.isSupabaseAvailable).mockReturnValue(false);
-    vi.mocked(supabaseService.loadProjectsFromSupabase).mockResolvedValue({
-      projects: [],
-      loadFailed: false,
-    });
-    // Reset store antes de cada teste
     useProjectsStore.setState({
       projects: [],
       selectedProjectId: null,
       isLoading: false,
       error: null,
-      supabaseLoadFailed: false,
-      supabaseLoadError: null,
-      lastSaveToSupabase: null,
     });
   });
 
@@ -94,46 +82,6 @@ describe('useProjectsStore', () => {
       expect(state.projects).toEqual([]);
       expect(state.isLoading).toBe(false);
       expect(state.error).toBeInstanceOf(Error);
-    });
-
-    it('deve manter dados locais e expor erro quando Supabase falha (local-first)', async () => {
-      const mockProjects: Project[] = [
-        {
-          id: 'proj-local',
-          name: 'Local',
-          description: '',
-          documents: [],
-          businessRules: [],
-          tasks: [],
-          phases: [],
-        },
-      ];
-      const msg =
-        'O banco de dados está iniciando (plano gratuito). Seus dados locais estão seguros e disponíveis. A sincronização ocorrerá automaticamente em instantes.';
-
-      vi.mocked(dbService.loadProjectsFromIndexedDB).mockResolvedValue(mockProjects);
-      vi.mocked(supabaseService.isSupabaseAvailable).mockReturnValue(true);
-      vi.mocked(supabaseService.loadProjectsFromSupabase).mockResolvedValue({
-        projects: [],
-        loadFailed: true,
-        errorMessage: msg,
-      });
-
-      await useProjectsStore.getState().loadProjects();
-      await vi.waitFor(
-        () => {
-          expect(useProjectsStore.getState().supabaseLoadFailed).toBe(true);
-        },
-        { timeout: 3000 }
-      );
-
-      const state = useProjectsStore.getState();
-      expect(state.projects).toEqual(mockProjects);
-      expect(state.supabaseLoadError).toBe(msg);
-      expect(vi.mocked(toast)).toHaveBeenCalledWith(
-        msg,
-        expect.objectContaining({ id: 'supabase-sync-degraded' })
-      );
     });
   });
 

@@ -29,7 +29,6 @@ import { LandingPage } from './pages/LandingPage';
 import { ProjectViewPage } from './pages/ProjectViewPage';
 import { JiraSolusView } from './components/jiraSolus/JiraSolusView';
 import { LANDING_SECTIONS } from './components/landing/landingSections';
-import { isSupabaseAvailable } from './services/supabaseService';
 import { ProjectsDashboardSkeleton } from './components/projectsDashboard/ProjectsDashboardSkeleton';
 import { useAriaLive } from './hooks/useAriaLive';
 import { cn } from './utils/cn';
@@ -44,21 +43,8 @@ const SettingsView = lazyWithRetry(() =>
   import('./components/settings/SettingsView').then(m => ({ default: m.SettingsView }))
 );
 
-let bootstrapSupabaseWarningLogged = false;
-
 const AppContent: React.FC = () => {
   useTheme();
-
-  useEffect(() => {
-    if (bootstrapSupabaseWarningLogged) return;
-    if (!isSupabaseAvailable()) {
-      bootstrapSupabaseWarningLogged = true;
-      logger.warn(
-        'Supabase não configurado; apenas IndexedDB será usado. Configure VITE_SUPABASE_PROXY_URL ou VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY.',
-        'App'
-      );
-    }
-  }, []);
 
   useEffect(() => {
     const run = () => {
@@ -262,15 +248,7 @@ const AppContent: React.FC = () => {
       try {
         await updateProject(updatedProject);
         if (shouldShowToast) {
-          const { lastSaveToSupabase } = useProjectsStore.getState();
-          if (lastSaveToSupabase) {
-            handleSuccess('Projeto atualizado com sucesso!', { id: 'toast-project-updated' });
-          } else {
-            handleSuccess(
-              'Projeto salvo apenas neste dispositivo (não foi possível sincronizar com a nuvem).',
-              { id: 'toast-project-local-only' }
-            );
-          }
+          handleSuccess('Projeto atualizado com sucesso!', { id: 'toast-project-updated' });
         }
       } catch (error) {
         const errorMessage =

@@ -23,12 +23,10 @@ import { Breadcrumbs } from './common/Breadcrumbs';
 import type { BreadcrumbItem } from './common/Breadcrumbs';
 import { ConfirmDialog } from './common/ConfirmDialog';
 import { useProjectsStore } from '../store/projectsStore';
-import { isSupabaseAvailable } from '../services/supabaseService';
 import { useAutoSave } from '../hooks/useAutoSave';
-import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import toast from 'react-hot-toast';
 import { Spinner } from './common/Spinner';
-import { Trash2, CheckCircle2, AlertTriangle, CloudOff, Layers, PanelRight } from 'lucide-react';
+import { Trash2, CheckCircle2, AlertTriangle, Layers, PanelRight, RefreshCw } from 'lucide-react';
 import { logger } from '../utils/logger';
 import { Button } from './common/Button';
 import { cn } from '../utils/cn';
@@ -108,16 +106,14 @@ export const ProjectView: React.FC<{
   const [isPrinting, setIsPrinting] = useState(false);
   const [showDeleteProjectConfirm, setShowDeleteProjectConfirm] = useState(false);
   const [isDeletingProject, setIsDeletingProject] = useState(false);
-  const [isSavingToSupabase, setIsSavingToSupabase] = useState(false);
+  const [isSavingLocally, setIsSavingLocally] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const saveProjectToSupabase = useProjectsStore(s => s.saveProjectToSupabase);
-  const lastSaveToSupabase = useProjectsStore(s => s.lastSaveToSupabase);
+  const saveProjectLocally = useProjectsStore(s => s.saveProjectLocally);
+  const syncLocalBackup = useProjectsStore(s => s.syncLocalBackup);
   const projects = useProjectsStore(s => s.projects);
   const storeLoading = useProjectsStore(s => s.isLoading);
   const selectProject = useProjectsStore(s => s.selectProject);
   const storeProject = useProjectsStore(s => s.projects.find(p => p.id === project.id));
-  const supabaseAvailable = isSupabaseAvailable();
-  const isOnline = useOnlineStatus();
 
   // Projeto mais recente do store (mesmo id do prop); fallback ao prop se ainda não estiver na lista
   const currentProject = storeProject ?? project;
@@ -143,7 +139,7 @@ export const ProjectView: React.FC<{
   const onUpdateProjectRef = useRef(onUpdateProject);
 
 
-  // Auto-save: IndexedDB automático; Supabase apenas pelo botão Salvar (ou sync manual)
+  // Auto-save: IndexedDB automático; pasta local pelo botão Sincronizar ou em Dados locais
   useAutoSave({
     project: currentProject,
     debounceMs: 300,
@@ -225,58 +221,35 @@ export const ProjectView: React.FC<{
     setIsPrinting(true);
   };
 
-  const handleSaveToSupabase = async () => {
-    if (!supabaseAvailable) {
-      toast.error('Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.');
-      return;
-    }
-
-    setIsSavingToSupabase(true);
+  const handleSaveLocally = async () => {
+    setIsSavingLocally(true);
     setSaveStatus('saving');
     try {
-      await saveProjectToSupabase(currentProject.id);
+      await saveProjectLocally(currentProject.id);
       setSaveStatus('saved');
-      toast.success(`Projeto "${currentProject.name}" salvo no Supabase com sucesso!`);
-      // Resetar status após 2 segundos
-      setTimeout(() => {
-        if (saveStatus === 'saved') {
-          setSaveStatus('idle');
-        }
-      }, 2000);
+      toast.success(`Projeto "${currentProject.name}" salvo localmente!`);
+      setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (error) {
       setSaveStatus('error');
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      toast.error(`Erro ao salvar no Supabase: ${errorMessage}`);
-      // Resetar status de erro após 3 segundos
-      setTimeout(() => {
-        if (saveStatus === 'error') {
-          setSaveStatus('idle');
-        }
-      }, 3000);
+      toast.error(`Erro ao salvar localmente: ${errorMessage}`);
+      setTimeout(() => setSaveStatus('idle'), 3000);
     } finally {
-      setIsSavingToSupabase(false);
+      setIsSavingLocally(false);
     }
   };
 
-  // Toast quando um salvamento esperado na nuvem ficou apenas local (transição true -> false)
-  const prevLastSaveToSupabaseRef = useRef<boolean | null>(null);
-  useEffect(() => {
-    if (lastSaveToSupabase === false && prevLastSaveToSupabaseRef.current === true) {
-      toast('Salvo localmente (Supabase indisponível)', {
-        icon: <AlertTriangle className="text-warning" size={20} aria-hidden />,
-        duration: 4000,
-      });
+  const handleSyncLocalBackup = async () => {
+    setIsSavingLocally(true);
+    try {
+      await syncLocalBackup();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Erro ao sincronizar pasta local');
+    } finally {
+      setIsSavingLocally(false);
     }
-    prevLastSaveToSupabaseRef.current = lastSaveToSupabase;
-  }, [lastSaveToSupabase]);
+  };
 
-  // Monitorar mudanças no projeto para atualizar status de salvamento
-  useEffect(() => {
-    if (supabaseAvailable && saveStatus === 'saved') {
-      // Quando projeto muda, resetar status para indicar que precisa salvar novamente
-      setSaveStatus('idle');
-    }
-  }, [currentProject, supabaseAvailable]);
 
   // Deep link pontual (ex.: vindo de outra tela)
   useEffect(() => {
@@ -542,59 +515,73 @@ export const ProjectView: React.FC<{
               {/* Toolbar de ações do projeto — agrupadas em uma única barra coesa */}
               <div className={projectChromeToolbarClass} role="toolbar" aria-label="Ações do projeto">
                 {/* Status de salvamento */}
-                {(supabaseAvailable || lastSaveToSupabase === false) && (
-                  <div
-                    className={projectChromeToolbarStatusWrapClass}
-                    role="status"
-                    aria-live="polite"
-                    aria-atomic="true"
-                  >
-                    {saveStatus === 'saving' && (
-                      <>
-                        <Spinner size="sm" />
-                        <span className="text-info hidden sm:inline">Salvando...</span>
-                      </>
-                    )}
-                    {saveStatus === 'saved' && (
-                      <>
-                        <CheckCircle2
-                          className={cn(
-                            'h-3.5 w-3.5 shrink-0',
-                            lastSaveToSupabase === false ? 'text-warning' : 'text-success'
-                          )}
-                          aria-hidden
-                        />
-                        <span
-                          className={cn(
-                            'hidden sm:inline',
-                            lastSaveToSupabase === false ? 'text-warning' : 'text-success'
-                          )}
-                        >
-                          {lastSaveToSupabase === false ? 'Salvo localmente' : 'Salvo'}
-                        </span>
-                      </>
-                    )}
-                    {saveStatus === 'error' && (
-                      <>
-                        <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-error" aria-hidden />
-                        <span className="hidden text-error sm:inline">Erro ao salvar</span>
-                      </>
-                    )}
-                    {saveStatus === 'idle' && !supabaseAvailable && lastSaveToSupabase === false && (
-                      <>
-                        <CloudOff className="h-3.5 w-3.5 shrink-0 text-warning" aria-hidden />
-                        <span className="hidden text-warning sm:inline">Local</span>
-                      </>
-                    )}
-                    {saveStatus === 'idle' && supabaseAvailable && lastSaveToSupabase === false && (
-                      <span className={cn('hidden font-sans sm:inline', projectChromeToolbarStatusClass)}>
-                        Salvo localmente
-                      </span>
-                    )}
-                  </div>
-                )}
+                <div
+                  className={projectChromeToolbarStatusWrapClass}
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
+                  {saveStatus === 'saving' && (
+                    <>
+                      <Spinner size="sm" />
+                      <span className="text-info hidden sm:inline">Salvando...</span>
+                    </>
+                  )}
+                  {saveStatus === 'saved' && (
+                    <>
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" aria-hidden />
+                      <span className="hidden text-success sm:inline">Salvo</span>
+                    </>
+                  )}
+                  {saveStatus === 'error' && (
+                    <>
+                      <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-error" aria-hidden />
+                      <span className="hidden text-error sm:inline">Erro ao salvar</span>
+                    </>
+                  )}
+                </div>
 
                 <div className={projectChromeToolbarDividerClass} aria-hidden />
+                <button
+                  type="button"
+                  onClick={handleSaveLocally}
+                  disabled={isSavingLocally}
+                  className={projectChromeSyncBtnClass}
+                  aria-label="Salvar projeto localmente"
+                >
+                  {isSavingLocally && saveStatus === 'saving' ? (
+                    <>
+                      <Spinner size="sm" />
+                      <span className="hidden sm:inline">Salvando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                      <span className="hidden sm:inline">Salvar</span>
+                    </>
+                  )}
+                </button>
+
+                <div className={projectChromeToolbarDividerClass} aria-hidden />
+                <button
+                  type="button"
+                  onClick={handleSyncLocalBackup}
+                  disabled={isSavingLocally}
+                  className={projectChromeSyncBtnClass}
+                  aria-label="Sincronizar backup na pasta local"
+                >
+                  {isSavingLocally && saveStatus !== 'saving' ? (
+                    <>
+                      <Spinner size="sm" />
+                      <span className="hidden sm:inline">Sincronizando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                      <span className="hidden sm:inline">Sincronizar</span>
+                    </>
+                  )}
+                </button>
                 <button
                   type="button"
                   onClick={toggleNotepadDock}
@@ -617,36 +604,6 @@ export const ProjectView: React.FC<{
                   </span>
                 </button>
 
-                {/* Botão Sincronizar — só quando há supabase E salvamento pendente */}
-                {supabaseAvailable && lastSaveToSupabase === false && saveStatus === 'idle' && (
-                  <>
-                    <div className={projectChromeToolbarDividerClass} aria-hidden />
-                    <button
-                      type="button"
-                      onClick={handleSaveToSupabase}
-                      disabled={isSavingToSupabase || !isOnline}
-                      className={projectChromeSyncBtnClass}
-                      aria-label="Sincronizar projeto com a nuvem"
-                      title={
-                        !isOnline
-                          ? 'É necessário estar online para sincronizar com a nuvem.'
-                          : undefined
-                      }
-                    >
-                      {isSavingToSupabase ? (
-                        <>
-                          <Spinner size="sm" />
-                          <span className="hidden sm:inline">Salvando...</span>
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                          <span className="hidden sm:inline">Sincronizar</span>
-                        </>
-                      )}
-                    </button>
-                  </>
-                )}
 
                 {/* Separador + Excluir */}
                 {onDeleteProject && (

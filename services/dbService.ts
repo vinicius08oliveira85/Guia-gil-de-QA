@@ -8,12 +8,6 @@ import {
   STORE_NAME,
   TEST_GENERATION_CACHE_STORE,
 } from '../utils/constants';
-import {
-  isSupabaseAvailable,
-  saveProjectToSupabase,
-  loadProjectsFromSupabase,
-  deleteProjectFromSupabase,
-} from './supabaseService';
 import { autoBackupBeforeOperation } from './backupService';
 import { migrateTestCases } from '../utils/testCaseMigration';
 import { logger } from '../utils/logger';
@@ -152,97 +146,10 @@ export const getProjectById = async (projectId: string): Promise<Project | null>
 };
 
 /**
- * Carrega todos os projetos (IndexedDB + Supabase).
- * Local-first: qualquer falha crítica no merge com a nuvem retorna somente os dados do IndexedDB.
+ * Carrega todos os projetos do IndexedDB (armazenamento local).
  */
 export const getAllProjects = async (): Promise<Project[]> => {
-  let indexedDBProjects: Project[] = [];
-  try {
-    indexedDBProjects = await loadProjectsFromIndexedDB();
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    const stack = error instanceof Error ? error.stack : undefined;
-    logger.error(
-      'Erro crítico ao ler IndexedDB em getAllProjects; não há fallback sem dados locais',
-      'dbService',
-      { message, stack, error }
-    );
-    throw error;
-  }
-
-  if (!isSupabaseAvailable()) {
-    return indexedDBProjects;
-  }
-
-  try {
-    const {
-      projects: supabaseProjects,
-      loadFailed,
-      errorMessage,
-    } = await loadProjectsFromSupabase();
-
-    if (loadFailed) {
-      logger.warn(
-        'Supabase indisponível (local-first); usando apenas dados do IndexedDB',
-        'dbService',
-        errorMessage ? { errorMessage } : undefined
-      );
-      return indexedDBProjects;
-    }
-
-    try {
-      const migratedSupabaseProjects = supabaseProjects.map(project =>
-        normalizeProjectBusinessRules({
-          ...project,
-          businessRules: project.businessRules ?? [],
-          tasks: (project.tasks || []).map(task => ({
-            ...task,
-            testCases: migrateTestCases(task.testCases || []),
-          })),
-        })
-      );
-
-      const projectsMap = new Map<string, Project>();
-      indexedDBProjects.forEach(project => {
-        projectsMap.set(project.id, project);
-      });
-      migratedSupabaseProjects.forEach(project => {
-        projectsMap.set(project.id, project);
-      });
-
-      const mergedProjects = Array.from(projectsMap.values());
-      const cleanedProjects = cleanupTestCasesForProjects(mergedProjects);
-
-      if (supabaseProjects.length === 0 && indexedDBProjects.length > 0) {
-        logger.info(`Usando projetos do cache local: ${indexedDBProjects.length}`, 'dbService');
-      } else if (supabaseProjects.length > 0) {
-        logger.info(
-          `${cleanedProjects.length} projetos carregados (${supabaseProjects.length} do Supabase + ${indexedDBProjects.length} do cache local)`,
-          'dbService'
-        );
-      }
-
-      return cleanedProjects.map(p => withAcyclicTaskParents(p, { silent: true }));
-    } catch (mergeError) {
-      const message = mergeError instanceof Error ? mergeError.message : String(mergeError);
-      const stack = mergeError instanceof Error ? mergeError.stack : undefined;
-      logger.error(
-        'Erro crítico no merge/processamento dos dados do Supabase em getAllProjects; retornando apenas IndexedDB',
-        'dbService',
-        { message, stack, phase: 'merge-cleanup', error: mergeError }
-      );
-      return indexedDBProjects;
-    }
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    const stack = error instanceof Error ? error.stack : undefined;
-    logger.error(
-      'Erro crítico ao integrar Supabase em getAllProjects; retornando apenas IndexedDB (fallback total)',
-      'dbService',
-      { message, stack, phase: 'supabase-load-or-merge', error }
-    );
-    return indexedDBProjects;
-  }
+  return loadProjectsFromIndexedDB();
 };
 
 export const addProject = async (project: Project): Promise<SaveResult> => {
@@ -262,22 +169,16 @@ export const addProject = async (project: Project): Promise<SaveResult> => {
   return { savedToSupabase: false };
 };
 
-// Rastrear últimos erros de rede por projeto para evitar tentativas repetidas
-const recentNetworkErrors = new Map<string, number>();
-const networkErrorCooldownMs = 5000; // 5 segundos de cooldown após erro de rede (reduzido para ser mais responsivo)
-
 /**
- * Persiste o projeto no IndexedDB.
- * @param options.syncRemote - Se true, também envia ao Supabase (salvamento explícito). O padrão é só local.
+ * Persiste o projeto no IndexedDB (armazenamento local).
  */
 export const updateProject = async (
   project: Project,
-  options?: { syncRemote?: boolean }
+  _options?: { syncRemote?: boolean }
 ): Promise<SaveResult> => {
   const cleanedProject = withAcyclicTaskParents(
     cleanupTestCasesForNonTaskTypesSync(normalizeProjectBusinessRules(project))
   );
-  const syncRemote = options?.syncRemote === true;
 
   const totalStrategies = cleanedProject.tasks.reduce(
     (sum, task) => sum + (task.testStrategy?.length || 0),
@@ -295,112 +196,7 @@ export const updateProject = async (
     );
   }
 
-  if (!syncRemote) {
-    const db = await openDB();
-    await new Promise<void>((resolve, reject) => {
-      const transaction = db.transaction(STORE_NAME, 'readwrite');
-      const store = transaction.objectStore(STORE_NAME);
-      const request = store.put(cleanedProject);
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve();
-    });
-    return { savedToSupabase: false };
-  }
-
-  const lastNetworkError = recentNetworkErrors.get(cleanedProject.id);
-  const now = Date.now();
-  const shouldSkipSupabase = lastNetworkError && now - lastNetworkError < networkErrorCooldownMs;
-
-  if (isSupabaseAvailable()) {
-    if (shouldSkipSupabase) {
-      logger.debug(
-        `Projeto "${cleanedProject.name}" em cooldown, salvando localmente primeiro e tentando Supabase em background`,
-        'dbService'
-      );
-      const db = await openDB();
-      await new Promise<void>((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, 'readwrite');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.put(cleanedProject);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve();
-      });
-      saveProjectToSupabase(cleanedProject)
-        .then(() => {
-          recentNetworkErrors.delete(cleanedProject.id);
-          logger.debug(
-            `Projeto "${cleanedProject.name}" salvo no Supabase após cooldown`,
-            'dbService'
-          );
-        })
-        .catch(error => {
-          const errorMessage =
-            error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
-          const isNetworkErr =
-            errorMessage.includes('timeout') ||
-            errorMessage.includes('connection reset') ||
-            errorMessage.includes('err_timed_out') ||
-            errorMessage.includes('err_connection_reset') ||
-            errorMessage.includes('err_name_not_resolved') ||
-            errorMessage.includes('failed to fetch') ||
-            errorMessage.includes('network');
-          if (isNetworkErr) {
-            recentNetworkErrors.set(cleanedProject.id, Date.now());
-          }
-        });
-      return { savedToSupabase: false };
-    }
-
-    try {
-      await saveProjectToSupabase(cleanedProject);
-      recentNetworkErrors.delete(cleanedProject.id);
-      logger.debug(`Projeto "${cleanedProject.name}" salvo no Supabase`, 'dbService');
-      const db = await openDB();
-      await new Promise<void>((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, 'readwrite');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.put(cleanedProject);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve();
-      });
-      return { savedToSupabase: true };
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
-      const isNetworkErr =
-        errorMessage.includes('timeout') ||
-        errorMessage.includes('connection reset') ||
-        errorMessage.includes('err_timed_out') ||
-        errorMessage.includes('err_connection_reset') ||
-        errorMessage.includes('err_name_not_resolved') ||
-        errorMessage.includes('failed to fetch') ||
-        errorMessage.includes('network');
-      if (isNetworkErr) {
-        recentNetworkErrors.set(cleanedProject.id, now);
-        logger.debug(
-          'Erro de rede ao salvar no Supabase, usando apenas IndexedDB (cooldown ativado)',
-          'dbService'
-        );
-      } else {
-        const isLocalOnlyOrTooBig =
-          errorMessage.includes('salvo apenas localmente') || errorMessage.includes('muito grande');
-        if (isLocalOnlyOrTooBig) {
-          logger.debug('Erro ao salvar no Supabase, usando apenas IndexedDB', 'dbService', error);
-        } else {
-          logger.warn('Erro ao salvar no Supabase, usando apenas IndexedDB', 'dbService', error);
-        }
-      }
-    }
-  }
-
-  const db = await openDB();
-  await new Promise<void>((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, 'readwrite');
-    const store = transaction.objectStore(STORE_NAME);
-    const request = store.put(cleanedProject);
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve();
-  });
+  await writeProjectToIndexedDBOnly(cleanedProject);
   return { savedToSupabase: false };
 };
 
@@ -555,14 +351,11 @@ export type ImportBackupResult = {
 
 /**
  * Importa projetos de um arquivo JSON para o IndexedDB (sobrescreve id existente via put).
- * Aplica migrateTestCases e cleanup via writeProjectToIndexedDBOnly.
- * @param options.syncToSupabase — Se true e o Supabase estiver disponível, tenta enviar cada projeto importado após gravar localmente.
  */
 export const importProjectsFromBackup = async (
   file: File,
-  options?: { syncToSupabase?: boolean }
+  _options?: { syncToSupabase?: boolean }
 ): Promise<ImportBackupResult> => {
-  const trySyncRemote = options?.syncToSupabase === true && isSupabaseAvailable();
 
   let text: string;
   try {
@@ -583,8 +376,6 @@ export const importProjectsFromBackup = async (
   const rawProjects = extractProjectsArray(parsed);
   let imported = 0;
   let skipped = 0;
-  let supabaseSynced = 0;
-  let supabaseSyncFailed = 0;
   let taskTrackingTasksRestored = 0;
 
   const taskTrackingRaw =
@@ -609,19 +400,6 @@ export const importProjectsFromBackup = async (
     try {
       await writeProjectToIndexedDBOnly(normalized);
       imported++;
-      if (trySyncRemote) {
-        try {
-          await saveProjectToSupabase(normalized);
-          supabaseSynced++;
-        } catch (syncError) {
-          supabaseSyncFailed++;
-          logger.warn(
-            `Projeto "${normalized.id}" importado localmente, mas falhou o envio ao Supabase`,
-            'dbService',
-            syncError
-          );
-        }
-      }
     } catch (error) {
       skipped++;
       logger.warn(`Falha ao importar projeto "${normalized.id}" do backup`, 'dbService', error);
@@ -632,23 +410,15 @@ export const importProjectsFromBackup = async (
     `Importação de backup concluída: ${imported} projeto(s) gravados, ${skipped} ignorado(s)` +
       (taskTrackingTasksRestored > 0
         ? `; acompanhamento: ${taskTrackingTasksRestored} tarefa(s)`
-        : '') +
-      (trySyncRemote ? `; Supabase: ${supabaseSynced} ok, ${supabaseSyncFailed} falha(s)` : ''),
+        : ''),
     'dbService'
   );
-  return { imported, skipped, supabaseSynced, supabaseSyncFailed, taskTrackingTasksRestored };
+  return { imported, skipped, supabaseSynced: 0, supabaseSyncFailed: 0, taskTrackingTasksRestored };
 };
 
-/**
- * Salva um projeto apenas no Supabase (sem salvar no IndexedDB)
- * Usado para salvamento manual pelo usuário
- */
+/** @deprecated Use writeProjectToIndexedDBOnly — mantido para compatibilidade de testes. */
 export const saveProjectToSupabaseOnly = async (project: Project): Promise<void> => {
-  if (!isSupabaseAvailable()) {
-    throw new Error('Supabase não está disponível. Configure VITE_SUPABASE_PROXY_URL.');
-  }
-
-  await saveProjectToSupabase(project);
+  await writeProjectToIndexedDBOnly(project);
 };
 
 export const deleteProject = async (projectId: string): Promise<void> => {
@@ -684,26 +454,6 @@ export const deleteProject = async (projectId: string): Promise<void> => {
     // Continuar com delete mesmo se backup falhar
   }
 
-  // Tentar Supabase primeiro se disponível
-  if (isSupabaseAvailable()) {
-    try {
-      await deleteProjectFromSupabase(projectId);
-      // Também deletar do IndexedDB
-      const db = await openDB();
-      return new Promise((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, 'readwrite');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.delete(projectId);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve();
-      });
-    } catch (error) {
-      logger.warn('Erro ao deletar do Supabase, usando apenas IndexedDB', 'dbService', error);
-      // Continuar para fallback IndexedDB
-    }
-  }
-
-  // Fallback para IndexedDB
   const db = await openDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readwrite');

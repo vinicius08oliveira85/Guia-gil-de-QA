@@ -6,9 +6,11 @@ import {
   isSupabaseRemotePaused,
   pauseSupabaseRemoteAfterTransientFailure,
 } from './supabaseCircuitBreaker';
+import { isSupabaseFeatureEnabled } from '../utils/featureFlags';
 
 const supabaseProxyUrl = (import.meta.env.VITE_SUPABASE_PROXY_URL || '').trim();
-const forceLocalOnly = import.meta.env.VITE_LOCAL_ONLY === 'true';
+const forceLocalOnly =
+  import.meta.env.VITE_LOCAL_ONLY === 'true' || !isSupabaseFeatureEnabled();
 
 const supabaseUrl =
   import.meta.env.VITE_SUPABASE_URL ||

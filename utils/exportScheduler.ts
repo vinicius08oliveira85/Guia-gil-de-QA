@@ -6,7 +6,7 @@ import {
   generateProjectReport,
   downloadFile,
 } from './exportService';
-import { saveProjectToSupabase } from '../services/supabaseService';
+import { writeBackupToFolder } from '../services/localFolderBackupService';
 import { createNotification } from './notificationService';
 import { getNotificationPreferences } from './preferencesService';
 import { logger } from './logger';
@@ -53,6 +53,24 @@ const executeScheduledExport = async (schedule: ExportSchedule): Promise<void> =
       return;
     }
 
+    if (schedule.destination === 'local-folder') {
+      await writeBackupToFolder();
+      lastRunDate = new Date().toDateString();
+      if (schedule.notifyOnComplete) {
+        const notificationPrefs = getNotificationPreferences();
+        if (notificationPrefs.taskCompleted) {
+          createNotification({
+            type: 'task_completed',
+            title: 'Backup automático concluído',
+            message: `Backup na pasta local atualizado (${projects.length} projeto(s)).`,
+            projectId: projects[0]?.id || '',
+            projectName: projects[0]?.name || 'Todos os Projetos',
+          });
+        }
+      }
+      return;
+    }
+
     // Export all projects
     for (const project of projects) {
       let exportContent: string;
@@ -81,10 +99,6 @@ const executeScheduledExport = async (schedule: ExportSchedule): Promise<void> =
 
       if (schedule.destination === 'download') {
         downloadFile(exportContent, filename, mimeType);
-      } else if (schedule.destination === 'supabase') {
-        // For Supabase, we could save the export as a document or in a separate table
-        // For now, we'll just save the project itself
-        await saveProjectToSupabase(project);
       }
     }
 

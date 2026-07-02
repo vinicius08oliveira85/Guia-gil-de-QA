@@ -45,10 +45,10 @@ export function useJiraSync(project: Project | null, onUpdateProject: OnUpdatePr
 
         try {
           await saveProject(projectToSync, { silent: true });
-          logger.debug('Projeto salvo no Supabase antes de sincronizar', 'useJiraSync');
+          logger.debug('Projeto persistido localmente antes de sincronizar', 'useJiraSync');
         } catch (error) {
           logger.warn(
-            'Erro ao salvar projeto no Supabase antes de sincronizar (continuando mesmo assim)',
+            'Erro ao salvar projeto localmente antes de sincronizar (continuando mesmo assim)',
             'useJiraSync',
             { error }
           );

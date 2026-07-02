@@ -11,7 +11,7 @@ import {
   extractEpicLink,
   extractJiraComments,
 } from './mappers';
-import { loadTestStatusesByJiraKeys } from '../supabaseService';
+import { loadTestStatusesByJiraKeys } from '../localTestStatusService';
 import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
 import { logger } from '../../utils/logger';
 import { normalizeTasksParentIdsAcyclic } from '../../utils/taskParentCycle';

@@ -13,7 +13,7 @@ import {
   mergeComments,
   jiraIssueToTaskFormData,
 } from './mappers';
-import { loadTestStatusesByJiraKeys } from '../supabaseService';
+import { loadTestStatusesByJiraKeys } from '../localTestStatusService';
 import { mergeTestCases } from '../../utils/testCaseMerge';
 import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
 import { isValidJiraKey } from '../../utils/jiraFieldMapper';

@@ -27,10 +27,6 @@ const JiraSettingsTab = lazyLoadTab(
   () => import('./JiraSettingsTab').then(m => ({ default: m.JiraSettingsTab })),
   'JiraSettingsTab'
 );
-const SupabaseSettingsTab = lazyLoadTab(
-  () => import('./SupabaseSettingsTab').then(m => ({ default: m.SupabaseSettingsTab })),
-  'SupabaseSettingsTab'
-);
 const PreferencesTab = lazyLoadTab(
   () => import('./PreferencesTab').then(m => ({ default: m.PreferencesTab })),
   'PreferencesTab'
@@ -46,7 +42,7 @@ interface SettingsModalProps {
   onProjectImported?: (project: Project) => void;
 }
 
-type TabType = 'jira' | 'supabase' | 'preferences' | 'api-keys';
+type TabType = 'jira' | 'preferences' | 'api-keys';
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
@@ -57,7 +53,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const tabs: { id: TabType; label: string; icon: string }[] = [
     { id: 'jira', label: 'Jira', icon: '🔗' },
-    { id: 'supabase', label: 'Supabase', icon: '💾' },
     { id: 'api-keys', label: 'API Keys', icon: '🔑' },
     { id: 'preferences', label: 'Preferências', icon: '⚙️' },
   ];
@@ -92,9 +87,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               lazy={false}
             >
               <JiraSettingsTab onProjectImported={onProjectImported} />
-            </KeepAlivePanel>
-            <KeepAlivePanel id="settings-modal-panel-supabase" active={activeTab === 'supabase'}>
-              <SupabaseSettingsTab />
             </KeepAlivePanel>
             <KeepAlivePanel id="settings-modal-panel-api-keys" active={activeTab === 'api-keys'}>
               <GeminiApiKeysTab />

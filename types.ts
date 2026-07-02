@@ -680,7 +680,7 @@ export interface ExportSchedule {
   includeMetrics: boolean;
   includeTasks: boolean;
   includeTestCases: boolean;
-  destination: 'download' | 'supabase';
+  destination: 'download' | 'local-folder';
   notifyOnComplete: boolean;
 }
 

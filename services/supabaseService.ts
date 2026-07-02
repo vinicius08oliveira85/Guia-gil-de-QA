@@ -7,6 +7,8 @@ import {
   isSupabaseRemotePaused,
   pauseSupabaseRemoteAfterTransientFailure,
 } from './supabaseCircuitBreaker';
+import { isSupabaseFeatureEnabled } from '../utils/featureFlags';
+import { loadTestStatusesByJiraKeys as loadTestStatusesFromLocal } from './localTestStatusService';
 
 const supabaseProxyUrl = (import.meta.env.VITE_SUPABASE_PROXY_URL || '').trim();
 const forceLocalOnly = import.meta.env.VITE_LOCAL_ONLY === 'true';
@@ -1190,7 +1192,7 @@ export const diagnoseSupabaseConfig = (): {
 };
 
 export const isSupabaseAvailable = (): boolean => {
-  if (forceLocalOnly) return false;
+  if (forceLocalOnly || !isSupabaseFeatureEnabled()) return false;
   return Boolean(supabaseProxyUrl) || supabase !== null;
 };
 
@@ -1211,6 +1213,10 @@ const isValidJiraKey = (key: string): boolean => {
 export const loadTestStatusesByJiraKeys = async (
   jiraKeys: string[]
 ): Promise<Map<string, TestCase[]>> => {
+  if (!isSupabaseAvailable()) {
+    return loadTestStatusesFromLocal(jiraKeys);
+  }
+
   const result = new Map<string, TestCase[]>();
 
   // Filtrar apenas chaves Jira válidas

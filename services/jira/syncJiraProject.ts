@@ -14,7 +14,7 @@ import {
   extractJiraComments,
   mergeComments,
 } from './mappers';
-import { loadTestStatusesByJiraKeys } from '../supabaseService';
+import { loadTestStatusesByJiraKeys } from '../localTestStatusService';
 import { mergeTestCases } from '../../utils/testCaseMerge';
 import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
 import { getJiraStatusColor } from '../../utils/jiraStatusColors';
@@ -39,7 +39,7 @@ export const syncJiraProject = async (
   );
   logger.info(`Tarefas existentes no projeto: ${project.tasks.length}`, 'jiraService');
 
-  // Buscar status dos testes salvos no Supabase para todas as chaves Jira
+  // Buscar status dos testes salvos localmente para todas as chaves Jira
   const jiraKeys = jiraIssues.map(issue => issue.key).filter(Boolean) as string[];
   const savedTestStatuses = await loadTestStatusesByJiraKeys(jiraKeys);
 

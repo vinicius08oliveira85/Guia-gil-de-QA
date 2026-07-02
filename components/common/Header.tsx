@@ -15,13 +15,14 @@ import {
   Loader2,
   ChevronLeft,
   LayoutGrid,
+  Save,
+  RefreshCw,
 } from 'lucide-react';
 import { Project } from '../../types';
 import { Modal } from './Modal';
 import { useProjectsStore } from '../../store/projectsStore';
 import { useTaskTrackingHeaderStore } from '../../store/taskTrackingHeaderStore';
 import { useJiraSync } from '../../hooks/useJiraSync';
-import { isSupabaseAvailable } from '../../services/supabaseService';
 import toast from 'react-hot-toast';
 import {
   NavigationMenuDrawer,
@@ -62,16 +63,16 @@ export const Header: React.FC<HeaderProps> = ({
   brandSubtitle,
 }) => {
   const [isSaving, setIsSaving] = useState(false);
-  const [isSyncingSupabase, setIsSyncingSupabase] = useState(false);
+  const [isSyncingLocal, setIsSyncingLocal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const mobileMenuPanelRef = useRef<HTMLDivElement>(null);
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
   const headerRef = useRef<HTMLElement>(null);
   const mobileMenuDomId = useId().replace(/:/g, '');
 
-  const saveProjectToSupabase = useProjectsStore(s => s.saveProjectToSupabase);
+  const saveProjectLocally = useProjectsStore(s => s.saveProjectLocally);
   const getSelectedProject = useProjectsStore(s => s.getSelectedProject);
-  const syncProjectsFromSupabase = useProjectsStore(s => s.syncProjectsFromSupabase);
+  const syncLocalBackup = useProjectsStore(s => s.syncLocalBackup);
   const updateProject = useProjectsStore(s => s.updateProject);
   const selectProject = useProjectsStore(s => s.selectProject);
   const selectedProjectId = useProjectsStore(s => s.selectedProjectId);
@@ -158,55 +159,27 @@ export const Header: React.FC<HeaderProps> = ({
     const proj = getSelectedProject();
     if (!proj) return;
 
-    if (!isSupabaseAvailable()) {
-      toast.error('Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.');
-      return;
-    }
-
     setIsSaving(true);
     try {
-      await saveProjectToSupabase(proj.id);
-      toast.success(`Projeto "${proj.name}" salvo com sucesso!`);
+      await saveProjectLocally(proj.id);
+      toast.success(`Projeto "${proj.name}" salvo localmente!`);
     } catch {
-      toast.error('Erro ao salvar projeto.');
+      toast.error('Erro ao salvar projeto localmente.');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleSyncSupabase = async () => {
-    if (!isSupabaseAvailable()) {
-      toast.error('Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.');
-      return;
-    }
-
-    setIsSyncingSupabase(true);
+  const handleSyncLocal = async () => {
+    setIsSyncingLocal(true);
     try {
-      await syncProjectsFromSupabase();
-      toast.success('Projetos sincronizados do Supabase com sucesso!');
+      await syncLocalBackup();
     } catch {
-      toast.error('Erro ao sincronizar projetos do Supabase.');
+      toast.error('Erro ao sincronizar backup na pasta local.');
     } finally {
-      setIsSyncingSupabase(false);
+      setIsSyncingLocal(false);
     }
   };
-
-  const supabaseBoltIcon = (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="flex-shrink-0"
-      aria-hidden
-    >
-      <path
-        d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.203 12.424l-.401.562a1.04 1.04 0 0 0 .836 1.659H12v8.959a.396.396 0 0 0 .724.229l9.075-12.476.401-.562a1.04 1.04 0 0 0-.838-1.66Z"
-        fill="var(--chart-1)"
-      />
-    </svg>
-  );
 
   const mobileDrawerItems = useMemo((): NavigationMenuItem[] => {
     if (!onLogoClick) return [];
@@ -228,11 +201,11 @@ export const Header: React.FC<HeaderProps> = ({
     }
     if (showDashboardActions) {
       items.push({
-        id: 'sync-supabase',
-        label: isSyncingSupabase ? 'Sincronizando…' : 'Sincronizar com a nuvem',
-        icon: supabaseBoltIcon,
+        id: 'sync-local',
+        label: isSyncingLocal ? 'Sincronizando…' : 'Sincronizar pasta local',
+        icon: <RefreshCw className="h-5 w-5" aria-hidden />,
         onClick: () => {
-          void handleSyncSupabase();
+          void handleSyncLocal();
         },
       });
     }
@@ -242,8 +215,8 @@ export const Header: React.FC<HeaderProps> = ({
     goToProjectsList,
     showDashboardActions,
     onOpenCreateModal,
-    isSyncingSupabase,
-    handleSyncSupabase,
+    isSyncingLocal,
+    handleSyncLocal,
   ]);
 
   /** Volta para a tela anterior conforme a rota atual (Menu ou Projetos). */
@@ -375,13 +348,13 @@ export const Header: React.FC<HeaderProps> = ({
               aria-hidden
             />
           ) : (
-            supabaseBoltIcon
+            <Save className="h-[18px] w-[18px] flex-shrink-0 text-[var(--chart-1)]" aria-hidden />
           )
         }
         label={isSaving ? 'Salvando...' : 'Salvar'}
         onClick={handleSave}
         disabled={isSaving}
-        ariaLabel="Salvar"
+        ariaLabel="Salvar localmente"
         isExpanded={false}
       />
     </>
@@ -493,16 +466,12 @@ export const Header: React.FC<HeaderProps> = ({
                 )}
                 <button
                   type="button"
-                  onClick={() => void handleSyncSupabase()}
-                  disabled={isSyncingSupabase || !isSupabaseAvailable()}
+                  onClick={() => void handleSyncLocal()}
+                  disabled={isSyncingLocal}
                   className={headerNeuToolbarPillSecondaryClass}
-                  title={
-                    !isSupabaseAvailable()
-                      ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.'
-                      : undefined
-                  }
+                  aria-label="Sincronizar backup na pasta local"
                 >
-                  {isSyncingSupabase ? (
+                  {isSyncingLocal ? (
                     <span className="inline-flex items-center gap-1.5">
                       <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden />
                       Sincronizando…

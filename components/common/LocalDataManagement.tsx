@@ -18,7 +18,6 @@ import {
   writeBackupToFolder,
   type LocalFolderBackupPrefs,
 } from '../../services/localFolderBackupService';
-import { isSupabaseAvailable } from '../../services/supabaseService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import {
   leveSettingsCheckboxPanelClass,
@@ -50,14 +49,13 @@ function formatSyncTimestamp(iso: string | null): string | null {
 }
 
 /**
- * Backup/import manual do IndexedDB — saída de emergência se a nuvem falhar.
+ * Backup/import manual do IndexedDB.
  */
 export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImportComplete }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<'export' | 'import' | 'folder-pick' | 'folder-save' | null>(
     null
   );
-  const [syncAfterImport, setSyncAfterImport] = useState(false);
   const [folderPrefs, setFolderPrefs] = useState<LocalFolderBackupPrefs>({
     autoSyncEnabled: isLocalFolderAutoSyncEnabled(),
     folderLabel: null,
@@ -67,7 +65,6 @@ export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImpo
   });
   const { handleError, handleSuccess, handleWarning } = useErrorHandler();
 
-  const supabaseAvailable = isSupabaseAvailable();
   const folderSupported = isLocalFolderBackupSupported();
 
   const refreshFolderPrefs = useCallback(async () => {
@@ -85,9 +82,7 @@ export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImpo
   }, [refreshFolderPrefs]);
 
   const runImportFromFile = async (file: File) => {
-    const result = await importProjectsFromBackup(file, {
-      syncToSupabase: syncAfterImport,
-    });
+    const result = await importProjectsFromBackup(file);
     const hasProjects = result.imported > 0;
     const hasTaskTracking = result.taskTrackingTasksRestored > 0;
 
@@ -106,17 +101,6 @@ export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImpo
       );
     }
     let msg = `${parts.join('; ')}.`;
-
-    if (syncAfterImport && hasProjects) {
-      if (result.supabaseSynced > 0) {
-        msg += ` ${result.supabaseSynced} enviado(s) ao Supabase.`;
-      }
-      if (result.supabaseSyncFailed > 0) {
-        handleWarning(
-          `${result.supabaseSyncFailed} projeto(s) não foram enviados ao Supabase (dados locais foram salvos).`
-        );
-      }
-    }
     handleSuccess(msg);
     await onImportComplete?.();
   };
@@ -386,30 +370,6 @@ export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImpo
           filas Jira, projeto/fila selecionados e janela de SLA. A importação substitui projetos com
           o mesmo ID e restaura o acompanhamento salvo no arquivo.
         </p>
-
-        {supabaseAvailable ? (
-          <label
-            className={cn(leveSettingsCheckboxPanelClass, 'mt-4 flex cursor-pointer items-start gap-3')}
-          >
-            <input
-              type="checkbox"
-              className="checkbox checkbox-sm mt-0.5 shrink-0 border-[color-mix(in_srgb,var(--leve-header-text)_20%,transparent)] [--chkbg:var(--leve-header-accent)]"
-              checked={syncAfterImport}
-              onChange={e => setSyncAfterImport(e.target.checked)}
-              aria-describedby="sync-after-import-hint"
-            />
-            <span className="text-sm leading-snug text-[var(--leve-header-text)]">
-              <span className={leveSettingsStrongTextClass}>Enviar ao Supabase após importar</span>
-              <span
-                id="sync-after-import-hint"
-                className="mt-0.5 block text-[var(--leve-header-text-muted)]"
-              >
-                Opcional: só aplica se o Supabase estiver configurado. Útil para alinhar a nuvem com
-                o backup restaurado; desmarque se quiser manter apenas cópia local.
-              </span>
-            </span>
-          </label>
-        ) : null}
 
         <div className="mt-4 flex flex-wrap gap-2">
           <button

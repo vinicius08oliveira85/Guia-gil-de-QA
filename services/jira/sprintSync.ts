@@ -98,7 +98,7 @@ export async function fetchProjectSprintCatalog(
         }>(
           config,
           `board/${board.id}/sprint?state=active,future,closed&maxResults=100`,
-          { timeout: 30000 }
+          { timeout: 30000, quietHttpErrors: true }
         );
         for (const s of sprintResponse.values ?? []) {
           if (s?.id != null && s?.name) {

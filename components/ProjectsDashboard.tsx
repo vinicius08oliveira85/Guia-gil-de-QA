@@ -9,7 +9,11 @@ import { ProjectCard } from './common/ProjectCard';
 import { useErrorHandler } from '../hooks/useErrorHandler';
 import { useProjectsStore } from '../store/projectsStore';
 import { EmptyState } from './common/EmptyState';
-import { isSupabaseAvailable } from '../services/supabaseService';
+import {
+  getLocalFolderBackupPrefs,
+  getLocalFolderBackupPrefsSync,
+  LOCAL_FOLDER_CONFIG_UPDATED_EVENT,
+} from '../services/localFolderBackupService';
 import { CreateProjectModal } from './CreateProjectModal';
 import { cn } from '../utils/cn';
 import {
@@ -26,7 +30,7 @@ import {
   moveProjectIdInOrder,
 } from '../utils/projectListOrder';
 import { ProjectsDashboardHeader } from './projectsDashboard/ProjectsDashboardHeader';
-import { WorkspaceDaisyStats } from './projectsDashboard/WorkspaceDaisyStats';
+import { WorkspaceDaisyStats, type LocalBackupStatStatus } from './projectsDashboard/WorkspaceDaisyStats';
 import { GlobalEfficiencyMetric } from './projectsDashboard/GlobalEfficiencyMetric';
 import { NewProjectCard } from './projectsDashboard/NewProjectCard';
 import { ProjectsDashboardSidebar } from './projectsDashboard/ProjectsDashboardSidebar';
@@ -47,11 +51,6 @@ import {
   projectsDashboardPageClass,
   projectsDashboardProjectGridClass,
   projectsDashboardStatsRegionClass,
-  projectsDashboardSyncAlertBtnClass,
-  projectsDashboardSyncAlertClass,
-  projectsDashboardSyncDismissClass,
-  projectsDashboardSyncAlertMutedClass,
-  projectsDashboardSyncAlertTitleClass,
 } from './projectsDashboard/projectsDashboardUi';
 
 type QuickFilter = 'all' | 'withBugs' | 'needsAttention';
@@ -68,8 +67,7 @@ export const ProjectsDashboard: React.FC<{
   const navigate = useNavigate();
   const [isCreating, setIsCreating] = useState(false);
   const [isCreateSubmitting, setIsCreateSubmitting] = useState(false);
-  const [retryCooldownUntil, setRetryCooldownUntil] = useState<number | null>(null);
-  const [syncBannerDismissed, setSyncBannerDismissed] = useState(false);
+  const [localBackupStatus, setLocalBackupStatus] = useState<LocalBackupStatStatus>('unconfigured');
   const [sortBy, setSortBy] = useLocalStorage<'name' | 'updatedAt'>('projectsSortBy', 'name');
   const [manualOrder, setManualOrder] = useLocalStorage<string[]>('projectsManualOrder', []);
   const [quickFilter, setQuickFilter] = useState<QuickFilter>('all');
@@ -79,9 +77,39 @@ export const ProjectsDashboard: React.FC<{
   // Esquema API removido - removido showSchemaModal
 
   const { handleError, handleSuccess } = useErrorHandler();
-  const { supabaseLoadFailed, supabaseLoadError, loadProjects, isLoading, lastSaveToSupabase } =
-    useProjectsStore();
+  const { isLoading } = useProjectsStore();
   const { announce } = useAriaLive();
+
+  const refreshLocalBackupStatus = useCallback(async () => {
+    const prefs = await getLocalFolderBackupPrefs();
+    if (!prefs.hasConfiguredFolder) {
+      setLocalBackupStatus('unconfigured');
+      return;
+    }
+    if (prefs.lastSyncError) {
+      setLocalBackupStatus('pending');
+      return;
+    }
+    setLocalBackupStatus(prefs.lastSyncAt ? 'ok' : 'pending');
+  }, []);
+
+  useEffect(() => {
+    void refreshLocalBackupStatus();
+    const onUpdated = () => {
+      const syncPrefs = getLocalFolderBackupPrefsSync();
+      if (!syncPrefs.folderLabel) {
+        setLocalBackupStatus('unconfigured');
+        return;
+      }
+      if (syncPrefs.lastSyncError) {
+        setLocalBackupStatus('pending');
+        return;
+      }
+      setLocalBackupStatus(syncPrefs.lastSyncAt ? 'ok' : 'pending');
+    };
+    window.addEventListener(LOCAL_FOLDER_CONFIG_UPDATED_EVENT, onUpdated);
+    return () => window.removeEventListener(LOCAL_FOLDER_CONFIG_UPDATED_EVENT, onUpdated);
+  }, [refreshLocalBackupStatus]);
 
   // Função para navegar para uma tarefa específica
   const handleNavigateToTask = useCallback(
@@ -103,26 +131,6 @@ export const ProjectsDashboard: React.FC<{
     };
   }, []);
 
-  // Quando a sincronização concluir com sucesso, limpar o "dismiss" do banner para que ele volte a aparecer se falhar de novo
-  React.useEffect(() => {
-    if (!supabaseLoadFailed) setSyncBannerDismissed(false);
-  }, [supabaseLoadFailed, isLoading]);
-
-  /** Erros que merecem destaque vermelho: 5xx, timeout e cold start (mensagem local-first). */
-  const isSyncServerError = Boolean(
-    supabaseLoadError &&
-      (/\b(500|502|503|504|522|Erro HTTP)\b/i.test(supabaseLoadError) ||
-        /timeout|expirou|demorou demais|cold start|plano gratuito|banco de dados está iniciando|service unavailable|indisponível/i.test(
-          supabaseLoadError
-        ))
-  );
-  const retryButtonDisabled =
-    isLoading || (retryCooldownUntil != null && Date.now() < retryCooldownUntil);
-
-  const handleRetrySync = useCallback(() => {
-    setRetryCooldownUntil(Date.now() + 2500);
-    loadProjects();
-  }, [loadProjects]);
 
   const handleSortByChange = useCallback(
     (value: 'name' | 'updatedAt') => {
@@ -263,9 +271,7 @@ export const ProjectsDashboard: React.FC<{
                   projectCount={projects.length}
                   testSuccessPercent={workspaceTestMetrics.testSuccessPercent}
                   taskDonePercent={taskDonePercentGlobal}
-                  lastSaveToSupabase={lastSaveToSupabase}
-                  supabaseAvailable={isSupabaseAvailable()}
-                  supabaseLoadFailed={supabaseLoadFailed}
+                  localBackupStatus={localBackupStatus}
                 />
                 <GlobalEfficiencyMetric
                   className="col-span-2 sm:col-span-4 lg:col-span-1"
@@ -287,46 +293,6 @@ export const ProjectsDashboard: React.FC<{
               />
             )}
           </div>
-
-          {/* Com projetos no workspace: banner não depende do filtro (evita sumir quando o filtro zera a lista) */}
-          {supabaseLoadFailed && projects.length > 0 && !syncBannerDismissed && (
-            <div
-              className={projectsDashboardSyncAlertClass(isSyncServerError ? 'error' : 'warning')}
-              role="alert"
-            >
-              <div className="flex flex-col gap-1 min-w-0">
-                {supabaseLoadError ? (
-                  <>
-                    <span className={projectsDashboardSyncAlertTitleClass}>Sincronização indisponível:</span>
-                    <span className="break-words">{supabaseLoadError}</span>
-                  </>
-                ) : (
-                  <span>Sincronização com a nuvem indisponível no momento.</span>
-                )}
-                <span className={projectsDashboardSyncAlertMutedClass}>
-                  Seus projetos locais continuam disponíveis. Tente novamente mais tarde ou
-                  verifique em Configurações.
-                </span>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setSyncBannerDismissed(true)}
-                  className={projectsDashboardSyncDismissClass}
-                >
-                  Dispensar
-                </button>
-                <button
-                  type="button"
-                  onClick={handleRetrySync}
-                  disabled={retryButtonDisabled}
-                  className={projectsDashboardSyncAlertBtnClass(isSyncServerError ? 'error' : 'warning')}
-                >
-                  {retryButtonDisabled ? 'Aguarde…' : 'Tentar novamente'}
-                </button>
-              </div>
-            </div>
-          )}
 
           <CreateProjectModal
             isOpen={isCreating}
@@ -373,49 +339,6 @@ export const ProjectsDashboard: React.FC<{
               </div>
             ) : (
               <>
-                {/* Sem projetos no workspace: aviso de sync aqui (com lista vazia não há banner no topo) */}
-                {supabaseLoadFailed && projects.length === 0 && (
-                  <div
-                    className={projectsDashboardSyncAlertClass(isSyncServerError ? 'error' : 'warning')}
-                    role="alert"
-                  >
-                    <div className="flex flex-col gap-1 min-w-0">
-                      {supabaseLoadError ? (
-                        <>
-                          <span className={projectsDashboardSyncAlertTitleClass}>Sincronização indisponível:</span>
-                          <span className="break-words">{supabaseLoadError}</span>
-                        </>
-                      ) : (
-                        <span>
-                          Sincronização com a nuvem indisponível no momento. Se você já tinha
-                          projetos, tente novamente ou verifique a conexão.
-                        </span>
-                      )}
-                      <span className={projectsDashboardSyncAlertMutedClass}>
-                        Seus projetos locais continuam disponíveis. Tente novamente mais tarde ou
-                        verifique em Configurações.
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleRetrySync}
-                      disabled={retryButtonDisabled}
-                      className={projectsDashboardSyncAlertBtnClass(isSyncServerError ? 'error' : 'warning')}
-                    >
-                      {retryButtonDisabled ? (
-                        <>
-                          <Loader2
-                            className="w-3.5 h-3.5 animate-spin inline-block mr-1"
-                            aria-hidden
-                          />
-                          {isLoading ? 'Carregando…' : 'Aguarde…'}
-                        </>
-                      ) : (
-                        'Tentar novamente'
-                      )}
-                    </button>
-                  </div>
-                )}
                 {projects.length === 0 ? (
                   <div className={cn(projectsDashboardMessagePanelClass, 'sm:p-8')}>
                     <EmptyState
