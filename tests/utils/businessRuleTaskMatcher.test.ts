@@ -5,6 +5,7 @@ import {
   matchTasksForBusinessRule,
   getSuggestedTaskIdsFromMatches,
   resolveBusinessRuleSearchTerms,
+  resolveLinkedTasksForDossier,
   suggestKeywordsFromRuleTitle,
   phraseMatchesTaskText,
   significantTokensFromPhrase,
@@ -101,16 +102,46 @@ describe('businessRuleTaskMatcher', () => {
     expect(matches.some(m => m.taskId === 'GDPI-1')).toBe(false);
   });
 
-  it('getSuggestedTaskIdsFromMatches ignora confiança baixa', () => {
+  it('getSuggestedTaskIdsFromMatches ignora confiança baixa e média por padrão', () => {
+    const tasks = [
+      task('GDPI-1', 'Mapa de Internação'),
+      task('GDPI-2', 'Mapa de Internação secundário', 'mapa internacao extra'),
+      task('GDPI-3', 'Outro'),
+    ];
+    const matches = matchTasksForBusinessRule(tasks, 'RN-X', ['Mapa de Internação']);
+    const suggested = getSuggestedTaskIdsFromMatches(matches);
+    expect(suggested.every(id => matches.find(m => m.taskId === id)?.confidence === 'alta')).toBe(
+      true
+    );
+    expect(suggested).toContain('GDPI-1');
+  });
+
+  it('getSuggestedTaskIdsFromMatches aceita confiança mínima configurável', () => {
     const matches = matchTasksForBusinessRule(
       [task('GDPI-1', 'Mapa de Internação'), task('GDPI-2', 'Outro')],
       'RN-X',
       ['Mapa de Internação']
     );
-    const suggested = getSuggestedTaskIdsFromMatches(matches);
-    expect(suggested).toContain('GDPI-1');
-    expect(suggested.every(id => matches.find(m => m.taskId === id)?.confidence !== 'baixa')).toBe(
+    const suggestedMedia = getSuggestedTaskIdsFromMatches(matches, 'media');
+    expect(suggestedMedia).toContain('GDPI-1');
+    expect(suggestedMedia.every(id => matches.find(m => m.taskId === id)?.confidence !== 'baixa')).toBe(
       true
     );
+  });
+
+  it('resolveLinkedTasksForDossier mantém match forte e aplica limite máximo', () => {
+    const tasks = [
+      task('GDPI-1', 'Cirurgias Eletivas - painel'),
+      ...Array.from({ length: 28 }, (_, i) => task(`GDPI-${i + 2}`, 'Outro módulo')),
+    ];
+    const rule = {
+      title: 'RN-Cirurgias Eletivas',
+      searchKeywords: ['Cirurgias Eletivas'],
+      linkedTaskIds: tasks.map(t => t.id),
+    };
+    const { tasks: included, excludedTaskIds } = resolveLinkedTasksForDossier(tasks, rule);
+    expect(included.map(t => t.id)).toContain('GDPI-1');
+    expect(included.length).toBeLessThanOrEqual(25);
+    expect(excludedTaskIds.length).toBeGreaterThan(0);
   });
 });

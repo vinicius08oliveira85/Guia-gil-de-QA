@@ -8,6 +8,7 @@ import type {
 import { MAX_BUSINESS_RULE_ANALYSIS_HISTORY } from '../../utils/businessRuleDefaults';
 import { hashBusinessRuleTaskSnapshot } from '../../utils/businessRuleTaskSnapshot';
 import { getTasksForBusinessRule } from '../../utils/businessRuleTaskLinking';
+import { resolveLinkedTasksForDossier } from '../../utils/businessRuleTaskMatcher';
 import { logger } from '../../utils/logger';
 import { callGeminiWithRetry, type GeminiContentPart } from './geminiApiWrapper';
 import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
@@ -209,24 +210,36 @@ function buildPrompt(
   project: Project,
   tasks: JiraTask[],
   mode: 'generate' | 'refresh',
-  previousAnalysis?: BusinessRuleAnalysis
+  previousAnalysis?: BusinessRuleAnalysis,
+  excludedTaskIds: string[] = []
 ): string {
   const tasksContext = buildTasksContext(tasks);
+  const scopeTerms = (rule.searchKeywords ?? []).length > 0
+    ? rule.searchKeywords!.join(', ')
+    : rule.title;
+  const excludedNote =
+    excludedTaskIds.length > 0
+      ? `\nNOTA: ${excludedTaskIds.length} task(s) vinculada(s) foram EXCLUÍDA(s) por baixa relevância ao escopo (${excludedTaskIds.slice(0, 8).join(', ')}${excludedTaskIds.length > 8 ? '…' : ''}). NÃO as mencione no dossiê.\n`
+      : '';
+
   const base = `Você é um analista de negócios e QA sênior. Produza um dossiê técnico em português do Brasil.
 
 REGRA DE NEGÓCIO: ${rule.title}
+ESCOPO (somente este tema): ${scopeTerms}
 PALAVRAS-CHAVE: ${(rule.searchKeywords ?? []).join(', ') || rule.title}
 PROJETO: ${project.name}
-
+${excludedNote}
 INSTRUÇÕES GERAIS:
-- Use APENAS evidências das tasks listadas e dos prints (se houver).
+- Trate o dossiê EXCLUSIVAMENTE sobre o ESCOPO acima. Não misture módulos, painéis ou funcionalidades de outros domínios (ex.: Painel NCI, Internação geral, Mapa de Internação) salvo se a task listada tratar diretamente do escopo.
+- Use APENAS evidências das tasks listadas abaixo e dos prints (se houver).
+- Se uma task citar vários módulos, extraia só o que for relevante ao ESCOPO; ignore o restante.
 - Não invente integrações ou comportamentos sem evidência nas tasks.
 - Marque incertezas como [A CONFIRMAR].
 - Cite tasks como [TASK-ID] no texto quando relevante.
 - Detalhe componentes de UI, validações, fluxos e integrações quando houver evidência.
-- asWas: estado anterior inferido das tasks mais antigas ou entregas concluídas (parágrafos detalhados).
-- asIs: estado atual consolidado (parágrafos detalhados).
-- toBe: evolução prevista com base em tasks abertas ou gaps (parágrafos detalhados).
+- asWas: estado anterior inferido das tasks mais antigas ou entregas concluídas (parágrafos detalhados) — apenas sobre o ESCOPO.
+- asIs: estado atual consolidado (parágrafos detalhados) — apenas sobre o ESCOPO.
+- toBe: evolução prevista com base em tasks abertas ou gaps (parágrafos detalhados) — apenas sobre o ESCOPO.
 
 FICHAS TÉCNICAS POR TASK (seção principal — obrigatória):
 - Gere UMA ficha em taskSheets para CADA task listada em TASKS RELACIONADAS.
@@ -281,6 +294,22 @@ export interface GenerateDossierResult {
   rule: BusinessRule;
 }
 
+export interface GenerateDossierOptions {
+  /** Ignora análise anterior ao reanalisar (geração limpa). */
+  regenerateFromScratch?: boolean;
+}
+
+function resolveDossierTasks(project: Project, rule: BusinessRule): {
+  tasks: JiraTask[];
+  excludedTaskIds: string[];
+} {
+  const linked = getTasksForBusinessRule(project, rule);
+  if (linked.length === 0) {
+    return { tasks: [], excludedTaskIds: [] };
+  }
+  return resolveLinkedTasksForDossier(project.tasks, rule);
+}
+
 /**
  * Gera dossiê inicial para uma regra de negócio.
  */
@@ -288,17 +317,22 @@ export async function generateBusinessRuleDossier(
   project: Project,
   rule: BusinessRule
 ): Promise<GenerateDossierResult> {
-  const tasks = getTasksForBusinessRule(project, rule);
+  const { tasks, excludedTaskIds } = resolveDossierTasks(project, rule);
   if (tasks.length === 0) {
-    throw new Error('Selecione ao menos uma task relacionada antes de gerar o dossiê.');
+    throw new Error(
+      excludedTaskIds.length > 0
+        ? 'Nenhuma task vinculada atingiu relevância mínima para o dossiê. Revise a seleção ou as palavras-chave.'
+        : 'Selecione ao menos uma task relacionada antes de gerar o dossiê.'
+    );
   }
 
   logger.info('Gerando dossiê de regra de negócio', 'businessRuleDossierService', {
     ruleId: rule.id,
     taskCount: tasks.length,
+    excludedTaskCount: excludedTaskIds.length,
   });
 
-  const prompt = buildPrompt(rule, project, tasks, 'generate');
+  const prompt = buildPrompt(rule, project, tasks, 'generate', undefined, excludedTaskIds);
   const payload = await callDossierAi(prompt, rule.screenshots ?? []);
   const version = 1;
   const generatedAt = new Date().toISOString();
@@ -339,23 +373,40 @@ export async function generateBusinessRuleDossier(
 export async function refreshBusinessRuleDossier(
   project: Project,
   rule: BusinessRule,
-  _changedTaskIds?: string[]
+  _changedTaskIds?: string[],
+  options?: GenerateDossierOptions
 ): Promise<GenerateDossierResult> {
   if (!rule.analysis) {
     return generateBusinessRuleDossier(project, rule);
   }
 
-  const tasks = getTasksForBusinessRule(project, rule);
+  const { tasks, excludedTaskIds } = resolveDossierTasks(project, rule);
   if (tasks.length === 0) {
-    throw new Error('Nenhuma task vinculada para reanalisar o dossiê.');
+    throw new Error(
+      excludedTaskIds.length > 0
+        ? 'Nenhuma task vinculada atingiu relevância mínima para reanalisar o dossiê.'
+        : 'Nenhuma task vinculada para reanalisar o dossiê.'
+    );
   }
+
+  const usePrevious = !options?.regenerateFromScratch;
 
   logger.info('Reanalisando dossiê de regra de negócio', 'businessRuleDossierService', {
     ruleId: rule.id,
     version: rule.analysis.version,
+    taskCount: tasks.length,
+    excludedTaskCount: excludedTaskIds.length,
+    regenerateFromScratch: !usePrevious,
   });
 
-  const prompt = buildPrompt(rule, project, tasks, 'refresh', rule.analysis);
+  const prompt = buildPrompt(
+    rule,
+    project,
+    tasks,
+    usePrevious ? 'refresh' : 'generate',
+    usePrevious ? rule.analysis : undefined,
+    excludedTaskIds
+  );
   const payload = await callDossierAi(prompt, rule.screenshots ?? []);
   const generatedAt = new Date().toISOString();
   const version = rule.analysis.version + 1;

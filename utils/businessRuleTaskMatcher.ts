@@ -1,4 +1,4 @@
-import type { JiraTask } from '../types';
+import type { BusinessRule, JiraTask } from '../types';
 
 export type BusinessRuleMatchConfidence = 'alta' | 'media' | 'baixa';
 
@@ -10,6 +10,15 @@ export interface BusinessRuleTaskMatch {
 }
 
 const DEFAULT_MAX_MATCHES = 30;
+
+/** Score mínimo (confiança média) para incluir task no dossiê gerado pela IA. */
+export const DOSSIER_MIN_TASK_SCORE = 40;
+
+/** Limite de tasks enviadas ao prompt do dossiê (evita contexto excessivo). */
+export const DOSSIER_MAX_TASKS = 25;
+
+/** Confiança mínima para auto-seleção de tasks no formulário. */
+export const DOSSIER_AUTO_SUGGEST_MIN_CONFIDENCE: BusinessRuleMatchConfidence = 'alta';
 
 const PT_STOPWORDS = new Set([
   'de',
@@ -225,11 +234,81 @@ function includeParentTasks(tasks: JiraTask[], matchedIds: Set<string>): void {
   }
 }
 
-/** IDs de tasks sugeridas para seleção automática (confiança alta ou média). */
+/** IDs de tasks sugeridas para seleção automática (padrão: só confiança alta). */
 export function getSuggestedTaskIdsFromMatches(
-  matches: BusinessRuleTaskMatch[]
+  matches: BusinessRuleTaskMatch[],
+  minConfidence: BusinessRuleMatchConfidence = DOSSIER_AUTO_SUGGEST_MIN_CONFIDENCE
 ): string[] {
-  return matches.filter(m => m.confidence !== 'baixa').map(m => m.taskId);
+  const rank: Record<BusinessRuleMatchConfidence, number> = {
+    alta: 3,
+    media: 2,
+    baixa: 1,
+  };
+  const minRank = rank[minConfidence];
+  return matches.filter(m => rank[m.confidence] >= minRank).map(m => m.taskId);
+}
+
+/** Pontuação das tasks vinculadas à regra (mantém ordem de linkedTaskIds). */
+export function scoreLinkedTasksForRule(
+  tasks: JiraTask[],
+  rule: Pick<BusinessRule, 'title' | 'searchKeywords' | 'linkedTaskIds'>
+): BusinessRuleTaskMatch[] {
+  const linkedIds = rule.linkedTaskIds ?? [];
+  if (linkedIds.length === 0) return [];
+
+  const matches = matchTasksForBusinessRule(tasks, rule.title, rule.searchKeywords, 500);
+  const byId = new Map(matches.map(m => [m.taskId, m]));
+
+  return linkedIds.map(taskId => {
+    const found = byId.get(taskId);
+    if (found) return found;
+    return {
+      taskId,
+      score: 0,
+      confidence: 'baixa' as const,
+      matchedTerms: [],
+    };
+  });
+}
+
+export interface ResolveLinkedTasksForDossierResult {
+  tasks: JiraTask[];
+  excludedTaskIds: string[];
+}
+
+/**
+ * Filtra tasks vinculadas antes de gerar/reanalisar dossiê.
+ * Exclui matches fracos (score abaixo do mínimo) e aplica limite máximo.
+ * Tasks sem match de keyword (vínculo manual) são mantidas se couber no limite.
+ */
+export function resolveLinkedTasksForDossier(
+  tasks: JiraTask[],
+  rule: Pick<BusinessRule, 'title' | 'searchKeywords' | 'linkedTaskIds'>
+): ResolveLinkedTasksForDossierResult {
+  const byId = new Map(tasks.map(t => [t.id, t]));
+  const scored = scoreLinkedTasksForRule(tasks, rule)
+    .map(m => ({ ...m, task: byId.get(m.taskId) }))
+    .filter((m): m is BusinessRuleTaskMatch & { task: JiraTask } => m.task != null)
+    .sort((a, b) => b.score - a.score);
+
+  const included: JiraTask[] = [];
+  const excludedTaskIds: string[] = [];
+
+  for (const { task, score, matchedTerms } of scored) {
+    if (included.length >= DOSSIER_MAX_TASKS) {
+      excludedTaskIds.push(task.id);
+      continue;
+    }
+
+    const isManualLink = score === 0 && matchedTerms.length === 0;
+    if (isManualLink || score >= DOSSIER_MIN_TASK_SCORE) {
+      included.push(task);
+    } else {
+      excludedTaskIds.push(task.id);
+    }
+  }
+
+  return { tasks: included, excludedTaskIds };
 }
 
 /**
