@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useJiraImage } from '../../hooks/useJiraImage';
+import { modalOverlayZClass } from '../../utils/layerZIndex';
 
 export interface GalleryImage {
   src: string;
@@ -67,10 +69,13 @@ export const JiraGallery: React.FC<JiraGalleryProps> = ({
 
   const currentImage = images[currentIndex];
 
-  return (
+  const overlay = (
     <div
-      className="neu-allow-backdrop-blur fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in"
+      className={`neu-allow-backdrop-blur fixed inset-0 flex items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in ${modalOverlayZClass}`}
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Galeria de imagens do Jira"
     >
       <button
         onClick={onClose}
@@ -107,4 +112,6 @@ export const JiraGallery: React.FC<JiraGalleryProps> = ({
       </button>
     </div>
   );
+
+  return createPortal(overlay, document.body);
 };

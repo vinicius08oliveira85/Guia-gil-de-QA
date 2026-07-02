@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useId, useLayoutEffect, useRef, useState
 import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { LAYER_Z_INDEX } from '../../utils/layerZIndex';
 import { appMenuItemClass, appMenuPanelClass, neuSelectTriggerClass } from './viewUi';
 
 export type NeuSelectOption = {
@@ -119,7 +120,7 @@ export const NeuSelect: React.FC<NeuSelectProps> = ({
           top: menuPosition.top,
           left: menuPosition.left,
           width: menuPosition.width,
-          zIndex: 10000,
+          zIndex: LAYER_Z_INDEX.modalPopover,
         }}
         onMouseDown={e => e.stopPropagation()}
       >

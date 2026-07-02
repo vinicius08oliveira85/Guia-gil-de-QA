@@ -7,6 +7,7 @@ import {
   useLocation,
 } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { LAYER_Z_INDEX } from './utils/layerZIndex';
 import { Project } from './types';
 import { Header } from './components/common/Header';
 import { OfflineBanner } from './components/common/OfflineBanner';
@@ -350,6 +351,7 @@ const AppContent: React.FC = () => {
       <div id="aria-live-region" className="sr-only" aria-live="polite" aria-atomic="true" />
       <Toaster
         position={isMobile ? 'top-center' : 'top-right'}
+        containerStyle={{ zIndex: LAYER_Z_INDEX.toast }}
         toastOptions={{
           duration: 4000,
           style: {

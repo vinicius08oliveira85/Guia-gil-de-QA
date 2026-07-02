@@ -2,6 +2,7 @@ import React, { useEffect, useId, useRef } from 'react';
 import { X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { cn } from '../../utils/cn';
+import { modalOverlayZClass } from '../../utils/layerZIndex';
 import {
   leveModalBodyClass,
   leveModalCloseButtonClass,
@@ -152,11 +153,13 @@ export const Modal: React.FC<ModalProps> = ({
       className={
         isFull
           ? cn(
-              'neu-overlay fixed inset-0 z-[9999] flex items-stretch justify-stretch p-0 transition-opacity duration-200',
+              'neu-overlay fixed inset-0 flex items-stretch justify-stretch p-0 transition-opacity duration-200',
+              modalOverlayZClass,
               leveModalOverlayClass
             )
           : cn(
-              'neu-overlay fixed inset-0 z-[9999] flex animate-in fade-in items-end justify-center p-0 duration-200 sm:items-center sm:p-3 md:p-5',
+              'neu-overlay fixed inset-0 flex animate-in fade-in items-end justify-center p-0 duration-200 sm:items-center sm:p-3 md:p-5',
+              modalOverlayZClass,
               leveModalOverlayClass
             )
       }

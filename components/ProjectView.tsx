@@ -1,4 +1,5 @@
 import React, { useState, useEffect, Suspense, useRef, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Project, TestCase } from '../types';
 import { useProjectMetrics } from '../hooks/useProjectMetrics';
 import { PrintableReport } from './PrintableReport';
@@ -114,6 +115,12 @@ export const ProjectView: React.FC<{
   const storeLoading = useProjectsStore(s => s.isLoading);
   const selectProject = useProjectsStore(s => s.selectProject);
   const storeProject = useProjectsStore(s => s.projects.find(p => p.id === project.id));
+  const navigate = useNavigate();
+
+  const goToProjectsList = useCallback(() => {
+    selectProject(null);
+    navigate('/projects');
+  }, [selectProject, navigate]);
 
   // Projeto mais recente do store (mesmo id do prop); fallback ao prop se ainda não estiver na lista
   const currentProject = storeProject ?? project;
@@ -175,8 +182,8 @@ export const ProjectView: React.FC<{
     if (projectMissingNotifiedRef.current) return;
     projectMissingNotifiedRef.current = true;
     toast.error('Projeto não encontrado ou foi removido. Voltando para a listagem de projetos.');
-    selectProject(null);
-  }, [storeLoading, projects, project.id, selectProject]);
+    goToProjectsList();
+  }, [storeLoading, projects, project.id, goToProjectsList]);
 
   useEffect(() => {
     // Update project state only if the calculated phases have changed
@@ -435,7 +442,7 @@ export const ProjectView: React.FC<{
   );
 
   const breadcrumbItems = useMemo((): BreadcrumbItem[] => {
-    const items: BreadcrumbItem[] = [{ label: 'Projetos', onClick: () => selectProject(null) }];
+    const items: BreadcrumbItem[] = [{ label: 'Projetos', onClick: goToProjectsList }];
 
     const onlyProjectHome =
       isProjectFixedTabId(activeTab) && activeTab === 'dashboard' && !breadcrumbTaskId;
@@ -479,7 +486,7 @@ export const ProjectView: React.FC<{
 
     return items;
   }, [
-    selectProject,
+    goToProjectsList,
     currentProject.name,
     currentProject.tasks,
     activeTab,

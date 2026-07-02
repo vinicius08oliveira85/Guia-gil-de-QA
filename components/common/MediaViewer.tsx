@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { FilePreview, PDFPreview } from './FilePreview';
 import { PDFViewer } from './PDFViewer';
 import { VideoViewer } from './VideoViewer';
 import { AudioViewer } from './AudioViewer';
 import { MediaType } from '../../services/jiraMediaService';
+import { cn } from '../../utils/cn';
 import { X, Download, ExternalLink } from 'lucide-react';
+import { modalOverlayZClass } from '../../utils/layerZIndex';
 
 interface MediaViewerProps {
   /** ID do anexo no Jira */
@@ -49,10 +52,16 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
     window.open(url, '_blank');
   };
 
-  return (
+  const overlay = (
     <div
-      className="neu-allow-backdrop-blur fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in"
+      className={cn(
+        'neu-allow-backdrop-blur fixed inset-0 flex items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in',
+        modalOverlayZClass
+      )}
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Visualizar mídia: ${filename}`}
     >
       <button
         onClick={onClose}
@@ -158,4 +167,6 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
       </div>
     </div>
   );
+
+  return createPortal(overlay, document.body);
 };

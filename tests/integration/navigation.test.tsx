@@ -184,6 +184,27 @@ describe('Testes de Navegação', () => {
       expect(breadcrumbs).toBeInTheDocument();
       expect(within(breadcrumbs).getByRole('button', { name: 'Projetos' })).toBeInTheDocument();
     });
+
+    it('deve navegar para o dashboard ao clicar em Projetos no breadcrumb', async () => {
+      const user = userEvent.setup();
+      const project = createMockProject();
+      await seedAndLoadApp([project]);
+      simulateNavigation('project', project.id);
+
+      await waitFor(() => {
+        expect(screen.getByText(project.name)).toBeInTheDocument();
+      });
+
+      const breadcrumbs = await screen.findByRole('navigation', {
+        name: /trilha de navegação|breadcrumb/i,
+      });
+      await user.click(within(breadcrumbs).getByRole('button', { name: 'Projetos' }));
+
+      await waitFor(() => {
+        expect(useProjectsStore.getState().selectedProjectId).toBeNull();
+        expect(window.location.pathname).toBe('/projects');
+      });
+    });
   });
 
   describe('1.4 Edge Cases de Navegação', () => {

@@ -14,6 +14,10 @@
     --app-header-h: 4.5rem;
     /** Topo → abaixo do header global (incl. safe-area); atualizado pelo `Header` via ResizeObserver */
     --app-header-sticky-offset: 4.5rem;
+    /** Pilha de modais / popovers / toasts (ver utils/layerZIndex.ts) */
+    --z-modal-overlay: 9999;
+    --z-modal-popover: 10000;
+    --z-toast: 10100;
     /**
      * Ritmo vertical da aba Tarefas e painéis densos alinhados.
      * Ajuste aqui para propagar em todo o escopo que use `gap-tasks-panel*` / `mb-tasks-panel*`.
@@ -4792,6 +4796,11 @@
   .neu-overlay {
     background: color-mix(in srgb, var(--leve-header-text) 22%, transparent) !important;
     backdrop-filter: blur(4px);
+  }
+
+  /* Toasts (react-hot-toast) acima de qualquer modal/overlay */
+  [data-rht-toaster] {
+    z-index: var(--z-toast) !important;
   }
 
   /**

@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { Toaster } from 'react-hot-toast';
+import { LAYER_Z_INDEX } from '../../utils/layerZIndex';
 import { useProjectsStore } from '../../store/projectsStore';
 import { Project } from '../../types';
 
@@ -33,7 +34,7 @@ const TestWrapper: React.FC<TestWrapperProps> = ({
   return (
     <>
       {children}
-      <Toaster />
+      <Toaster containerStyle={{ zIndex: LAYER_Z_INDEX.toast }} />
     </>
   );
 };

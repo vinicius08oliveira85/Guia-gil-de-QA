@@ -1,7 +1,9 @@
 import React, { useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Project } from '../../types';
 import { useSearch, type SearchResult } from '../../hooks/useSearch';
 import { cn } from '../../utils/cn';
+import { modalOverlayZClass } from '../../utils/layerZIndex';
 
 interface AdvancedSearchProps {
   projects: Project[];
@@ -78,8 +80,16 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
     );
   }, [searchQuery, searchResults]);
 
-  return (
-    <div className="neu-overlay fixed inset-0 z-50 flex items-start justify-center p-4 pt-20">
+  const overlay = (
+    <div
+      className={cn(
+        'neu-overlay fixed inset-0 flex items-start justify-center p-4 pt-20',
+        modalOverlayZClass
+      )}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Busca avançada"
+    >
       <div
         className={cn(
           'mica w-full max-w-3xl overflow-hidden rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)]',
@@ -201,4 +211,6 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
       </div>
     </div>
   );
+
+  return createPortal(overlay, document.body);
 };

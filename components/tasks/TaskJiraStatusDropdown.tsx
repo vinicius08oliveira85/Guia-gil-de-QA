@@ -7,6 +7,7 @@ import {
   getJiraStatusLozengeStyles,
 } from '../../utils/jiraStatusColors';
 import { cn } from '../../utils/cn';
+import { LAYER_Z_INDEX } from '../../utils/layerZIndex';
 import {
   taskCardBadgePillShape,
   taskCardBadgePillTypography,
@@ -204,7 +205,7 @@ export const TaskJiraStatusDropdown: React.FC<TaskJiraStatusDropdownProps> = ({
           top: menuPosition.top,
           left: menuPosition.left,
           width: menuPosition.width,
-          zIndex: 10000,
+          zIndex: LAYER_Z_INDEX.modalPopover,
         }}
         onMouseDown={e => e.stopPropagation()}
         onClick={e => e.stopPropagation()}
