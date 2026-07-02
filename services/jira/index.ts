@@ -53,3 +53,10 @@ export { importJiraProject, addNewJiraTasks } from './importSync';
 export { syncJiraProject } from './syncJiraProject';
 export { jiraIssueToTask } from './issueToTask';
 export type { JiraIssueToTaskOptions } from './issueToTask';
+
+export {
+  fetchIssueAttachedForms,
+  formatJiraFormAnswerValue,
+  hasAttachedFormsContent,
+} from './attachedForms';
+export type { JiraAttachedForm, JiraFormAnswer } from './attachedForms';

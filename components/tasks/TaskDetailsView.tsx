@@ -31,6 +31,7 @@ import {
   TaskSummaryCommentsSection,
   JiraFilasExtraFieldsGrid,
 } from './JiraFilasSummarySections';
+import { TaskAttachedFormsSection } from './TaskAttachedFormsSection';
 import { TaskLinksView } from './TaskLinksView';
 import { getTaskDependents } from '../../utils/dependencyService';
 import { getLinkedBusinessRuleIdsForTask } from '../../utils/businessRuleTaskLinking';
@@ -532,6 +533,8 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
             )}
           </div>
         </section>
+
+        <TaskAttachedFormsSection task={task} />
 
         {(hideTestFeatures ||
           onAddComment ||

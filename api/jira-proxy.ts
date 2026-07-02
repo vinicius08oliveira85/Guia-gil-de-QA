@@ -16,6 +16,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     body,
     isBinary = false,
     apiRoot = 'api/3',
+    urlMode = 'rest',
   } = req.body;
 
   if (!url || !email || !apiToken || !endpoint) {
@@ -38,7 +39,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     const normalizedEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
     const jiraUrl = isAttachment
       ? `${baseUrl}/${normalizedEndpoint}`
-      : `${baseUrl}/rest/${apiRoot}/${normalizedEndpoint}`;
+      : urlMode === 'site'
+        ? `${baseUrl}/${normalizedEndpoint}`
+        : `${baseUrl}/rest/${apiRoot}/${normalizedEndpoint}`;
 
     // Headers apropriados para binário ou JSON
     const headers: Record<string, string> = {

@@ -1,12 +1,19 @@
 import type { JiraConfig } from './types';
 import { logger } from '../../utils/logger';
 
-type JiraApiRoot = 'api/3' | 'agile/1.0' | 'servicedeskapi';
+type JiraApiRoot = 'api/3' | 'agile/1.0' | 'servicedeskapi' | 'proforma/1';
+type JiraUrlMode = 'rest' | 'site';
 
 async function jiraRequest<T>(
   config: JiraConfig,
   endpoint: string,
-  options: { method?: string; body?: unknown; timeout?: number; apiRoot?: JiraApiRoot } = {}
+  options: {
+    method?: string;
+    body?: unknown;
+    timeout?: number;
+    apiRoot?: JiraApiRoot;
+    urlMode?: JiraUrlMode;
+  } = {}
 ): Promise<T> {
   const timeout = options.timeout || 60000;
   const apiRoot = options.apiRoot ?? 'api/3';
@@ -21,6 +28,7 @@ async function jiraRequest<T>(
       apiToken: config.apiToken,
       endpoint,
       apiRoot,
+      urlMode: options.urlMode ?? 'rest',
       method: options.method || 'GET',
       body: options.body
         ? typeof options.body === 'string'
@@ -94,3 +102,17 @@ export const jiraServiceDeskApiCall = async <T>(
   endpoint: string,
   options: { method?: string; body?: unknown; timeout?: number } = {}
 ): Promise<T> => jiraRequest<T>(config, endpoint, { ...options, apiRoot: 'servicedeskapi' });
+
+/** Chamadas fora de `/rest/*` (ex.: `/_edge/tenant_info`, `/jira/forms/...`). */
+export const jiraSitePathCall = async <T>(
+  config: JiraConfig,
+  path: string,
+  options: { method?: string; body?: unknown; timeout?: number } = {}
+): Promise<T> => jiraRequest<T>(config, path, { ...options, urlMode: 'site' });
+
+/** API Proforma (Data Center / instâncias legadas). */
+export const jiraProformaApiCall = async <T>(
+  config: JiraConfig,
+  endpoint: string,
+  options: { method?: string; body?: unknown; timeout?: number } = {}
+): Promise<T> => jiraRequest<T>(config, endpoint, { ...options, apiRoot: 'proforma/1' });
