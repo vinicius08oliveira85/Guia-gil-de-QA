@@ -1,6 +1,6 @@
 import React, { useState, Suspense, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Link, Settings as SettingsIcon, Key, HardDrive } from 'lucide-react';
+import { Link, Settings as SettingsIcon, Key, HardDrive, ScrollText } from 'lucide-react';
 import { BackButton } from '../common/BackButton';
 import { LocalDataManagement } from '../common/LocalDataManagement';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
@@ -50,13 +50,18 @@ const GeminiApiKeysTab = lazyLoadTab(
   () => import('./GeminiApiKeysTab').then(m => ({ default: m.GeminiApiKeysTab })),
   'GeminiApiKeysTab'
 );
+const LogsTab = lazyLoadTab(
+  () => import('./LogsTab').then(m => ({ default: m.LogsTab })),
+  'LogsTab'
+);
 
-type TabType = 'jira' | 'local-data' | 'api-keys' | 'preferences';
+type TabType = 'jira' | 'local-data' | 'api-keys' | 'preferences' | 'logs';
 
 const tabs: { id: TabType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'jira', label: 'Jira', icon: Link },
   { id: 'local-data', label: 'Dados locais', icon: HardDrive },
   { id: 'api-keys', label: 'API Keys', icon: Key },
+  { id: 'logs', label: 'Logs', icon: ScrollText },
   { id: 'preferences', label: 'Preferências', icon: SettingsIcon },
 ];
 
@@ -187,6 +192,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               className={leveSettingsPanelClass}
             >
               <GeminiApiKeysTab onDirtyChange={setHasUnsavedChanges} />
+            </KeepAlivePanel>
+            <KeepAlivePanel
+              id="tab-panel-logs"
+              labelledBy="tab-logs"
+              active={activeTab === 'logs'}
+              className={leveSettingsPanelClass}
+            >
+              <LogsTab />
             </KeepAlivePanel>
             <KeepAlivePanel
               id="tab-panel-preferences"

@@ -8,6 +8,10 @@ import { retryWithBackoff } from '../../utils/retry';
 import { geminiRateLimiter } from '../../utils/rateLimiter';
 import { logger } from '../../utils/logger';
 import { geminiApiKeyManager } from './geminiApiKeyManager';
+import {
+  extractTokenCountFromResponse,
+  recordGeminiKeyUsage,
+} from './geminiUsageTracker';
 import { GEMINI_API_VERSION, getGeminiModelFallbackChain } from './geminiConstants';
 
 export type GeminiAppError = Error & { code?: string; status?: number; retryAfter?: number };
@@ -341,7 +345,7 @@ const GEMINI_HTTP_MAX_RETRIES = 3;
 export async function callGeminiWithRetry(
   params: GeminiGenerateContentParams
 ): Promise<GeminiResponse> {
-  const maxKeyRetries = 1; // Apenas uma API key (sem fallbacks)
+  const maxKeyRetries = Math.max(1, geminiApiKeyManager.getTotalKeyCount());
   let lastError: unknown;
   const modelChain = getGeminiModelFallbackChain(params.model);
 
@@ -362,46 +366,48 @@ export async function callGeminiWithRetry(
     return error;
   };
 
-  for (let modelIndex = 0; modelIndex < modelChain.length; modelIndex++) {
-    const modelId = modelChain[modelIndex];
-    const isAlternateModel = modelIndex > 0;
-    /** Alternativos: 1 tentativa — em 429/503 passamos logo ao próximo modelo da cadeia. */
-    const effectiveMaxRetries = isAlternateModel ? 1 : GEMINI_HTTP_MAX_RETRIES;
+  for (let keyAttempt = 0; keyAttempt < maxKeyRetries; keyAttempt++) {
+    const keyEntry = geminiApiKeyManager.getCurrentKeyEntry();
 
-    for (let keyAttempt = 0; keyAttempt < maxKeyRetries; keyAttempt++) {
-      const apiKey = geminiApiKeyManager.getCurrentKey();
-
-      if (!apiKey) {
-        if (geminiApiKeyManager.hasConfiguredKeySource()) {
-          throw buildGeminiError(
-            'Chave do Gemini configurada, mas indisponível no momento (carregamento, estado temporário ou quota marcada). Recarregue a página ou verifique Configurações > API Keys.',
-            'GEMINI_KEY_UNAVAILABLE',
-            503
-          );
-        }
+    if (!keyEntry) {
+      if (geminiApiKeyManager.hasConfiguredKeySource()) {
         throw buildGeminiError(
-          'Nenhuma API key do Gemini disponível. Configure em Configurações > API Keys.',
-          'GEMINI_NO_KEY',
-          401
+          'Chave(s) do Gemini configurada(s), mas indisponível(eis) no momento (quota ou estado temporário). Recarregue a página ou verifique Configurações > API Keys.',
+          'GEMINI_KEY_UNAVAILABLE',
+          503
         );
       }
+      throw buildGeminiError(
+        'Nenhuma API key do Gemini disponível. Configure em Configurações > API Keys.',
+        'GEMINI_NO_KEY',
+        401
+      );
+    }
 
-      const ai = new GoogleGenAI({ apiKey, apiVersion: GEMINI_API_VERSION });
+    const { key: apiKey, id: keyId, name: keyName } = keyEntry;
+    const ai = new GoogleGenAI({ apiKey, apiVersion: GEMINI_API_VERSION });
+    lastError = undefined;
+
+    for (let modelIndex = 0; modelIndex < modelChain.length; modelIndex++) {
+      const modelId = modelChain[modelIndex];
+      const isAlternateModel = modelIndex > 0;
+      const effectiveMaxRetries = isAlternateModel ? 1 : GEMINI_HTTP_MAX_RETRIES;
 
       try {
-        return await retryWithBackoff(
+        const response = await retryWithBackoff(
           async () => {
             await geminiRateLimiter.acquire();
 
             logger.debug('Chamando API Gemini', 'callGeminiWithRetry', {
               model: modelId,
               keyAttempt: keyAttempt + 1,
+              keyName,
               modelIndex: modelIndex + 1,
               modelsInChain: modelChain.length,
             });
 
             try {
-              const response = await ai.models.generateContent({
+              const apiResponse = await ai.models.generateContent({
                 model: modelId,
                 contents: normalizeGeminiContents(params.contents),
                 config: params.config,
@@ -409,11 +415,14 @@ export async function callGeminiWithRetry(
 
               logger.debug('Resposta recebida da API Gemini', 'callGeminiWithRetry', {
                 model: modelId,
-                textLength: response.text?.length || 0,
+                keyName,
+                textLength: apiResponse.text?.length || 0,
               });
 
-              const text = response.text ?? '';
-              return { text };
+              const text = apiResponse.text ?? '';
+              const tokens = extractTokenCountFromResponse(apiResponse);
+              recordGeminiKeyUsage(keyId, { success: true, tokens });
+              return { text, raw: apiResponse };
             } catch (error) {
               const status = extractHttpStatus(error);
               const retryInfo = extractRetryInfo(error);
@@ -429,14 +438,13 @@ export async function callGeminiWithRetry(
 
               if (status !== 429 && isInvalidApiKeyError(error)) {
                 logger.warn(
-                  'Chave de API inválida ou sem permissão detectada, invalidando chave',
+                  'Chave de API inválida ou sem permissão detectada',
                   'callGeminiWithRetry',
-                  { keyAttempt: keyAttempt + 1, status }
+                  { keyAttempt: keyAttempt + 1, keyName, status }
                 );
-                geminiApiKeyManager.markCurrentKeyAsExhausted();
                 throw buildGeminiError(
-                  'API key do Gemini inválida ou sem permissão. Atualize as credenciais em Configurações > API Keys.',
-                  'GEMINI_KEYS_INVALID',
+                  'API key do Gemini inválida ou sem permissão.',
+                  'GEMINI_KEY_INVALID_ATTEMPT',
                   status ?? 403
                 );
               }
@@ -465,11 +473,6 @@ export async function callGeminiWithRetry(
             maxDelay: isAlternateModel ? 12_000 : 60_000,
             maxTotalTimeout: isAlternateModel ? 35_000 : 90_000,
             useJitter: true,
-            /**
-             * 404/429 em qualquer modelo: falha imediata → avança para o próximo da cadeia.
-             * Sem 429 não esperamos 60s de backoff dentro do mesmo modelo.
-             * 503/5xx fazem retry com backoff dentro do modelo.
-             */
             isRetryable: err => {
               const st = extractHttpStatus(err);
               if (st === 404 || st === 429) {
@@ -488,6 +491,7 @@ export async function callGeminiWithRetry(
                   attempt,
                   delay,
                   keyAttempt: keyAttempt + 1,
+                  keyName,
                   model: modelId,
                   status: retryInfo.status,
                 }
@@ -495,26 +499,63 @@ export async function callGeminiWithRetry(
             },
           }
         );
+
+        return { text: response.text };
       } catch (error) {
         lastError = error;
+
+        const hasNextModel = modelIndex < modelChain.length - 1;
+        if (hasNextModel && lastErrorWarrantsAlternateGeminiModel(lastError, modelIndex)) {
+          logger.warn(
+            `Falha no modelo Gemini "${modelId}" com chave "${keyName}"; tentando próximo modelo.`,
+            'callGeminiWithRetry',
+            { status: extractHttpStatus(lastError), nextModel: modelChain[modelIndex + 1] }
+          );
+          continue;
+        }
         break;
       }
     }
 
-    const hasNextModel = modelIndex < modelChain.length - 1;
-    if (hasNextModel && lastErrorWarrantsAlternateGeminiModel(lastError, modelIndex)) {
-      logger.warn(
-        `Falha no modelo Gemini "${modelId}"; tentando o próximo da cadeia.`,
-        'callGeminiWithRetry',
-        { status: extractHttpStatus(lastError), nextModel: modelChain[modelIndex + 1] }
-      );
-      continue;
+    const status = extractHttpStatus(lastError);
+    const errorMessage = getErrorMessage(lastError);
+    const rateLimited = status === 429 || isGeminiRateLimitOrQuotaError(lastError);
+    const invalidKey =
+      (lastError as GeminiAppError)?.code === 'GEMINI_KEY_INVALID_ATTEMPT' ||
+      status === 403 ||
+      (status === 401 && isInvalidApiKeyError(lastError));
+
+    if (rateLimited || invalidKey) {
+      recordGeminiKeyUsage(keyId, {
+        rateLimited,
+        errorMessage,
+      });
+      geminiApiKeyManager.markCurrentKeyAsExhausted();
+
+      const hasMoreKeys = keyAttempt < maxKeyRetries - 1 && geminiApiKeyManager.getEnabledKeyCount() > 0;
+      if (hasMoreKeys) {
+        logger.info(
+          `Alternando para próxima API key do Gemini após falha em "${keyName}".`,
+          'callGeminiWithRetry',
+          { status, rateLimited, invalidKey }
+        );
+        continue;
+      }
     }
+
     break;
   }
 
   const status = extractHttpStatus(lastError);
   const stats = geminiApiKeyManager.getStats();
+
+  if (lastError instanceof Error && (lastError as GeminiAppError).code === 'GEMINI_KEY_INVALID_ATTEMPT') {
+    throw buildGeminiError(
+      `Todas as ${stats.totalKeys} API key(s) do Gemini estão inválidas ou sem permissões. Verifique em Configurações > API Keys.`,
+      'GEMINI_KEYS_INVALID',
+      status ?? 403
+    );
+  }
 
   if (lastError instanceof Error && (lastError as GeminiAppError).code) {
     throw lastError;
@@ -531,7 +572,7 @@ export async function callGeminiWithRetry(
   if (status === 429) {
     const retryInfo = extractRetryInfo(lastError);
     throw buildGeminiError(
-      'Muitas requisições ao Gemini ou limite temporário atingido. Aguarde alguns minutos e tente novamente. Se persistir, verifique o plano em Google AI Studio.',
+      'Muitas requisições ao Gemini ou limite temporário atingido em todas as chaves configuradas. Aguarde alguns minutos ou adicione outra chave em Configurações > API Keys.',
       'GEMINI_RATE_LIMITED',
       429,
       retryInfo.retryAfter

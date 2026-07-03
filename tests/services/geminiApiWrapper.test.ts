@@ -25,21 +25,32 @@ vi.mock('../../utils/rateLimiter', () => ({
 
 vi.mock('../../services/ai/geminiApiKeyManager', () => {
   const getCurrentKey = vi.fn();
+  const getCurrentKeyEntry = vi.fn();
   const markCurrentKeyAsExhausted = vi.fn();
   const getStats = vi.fn();
   const getExhaustedKeysInfo = vi.fn();
   const hasConfiguredKeySource = vi.fn();
+  const getTotalKeyCount = vi.fn();
+  const getEnabledKeyCount = vi.fn();
 
   return {
     geminiApiKeyManager: {
       getCurrentKey,
+      getCurrentKeyEntry,
       markCurrentKeyAsExhausted,
       getStats,
       getExhaustedKeysInfo,
       hasConfiguredKeySource,
+      getTotalKeyCount,
+      getEnabledKeyCount,
     },
   };
 });
+
+vi.mock('../../services/ai/geminiUsageTracker', () => ({
+  recordGeminiKeyUsage: vi.fn(),
+  extractTokenCountFromResponse: vi.fn(() => 0),
+}));
 
 vi.mock('../../utils/retry', () => ({
   retryWithBackoff: async (fn: () => Promise<unknown>) => fn(),
@@ -78,6 +89,14 @@ describe('callGeminiWithRetry', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(geminiApiKeyManager.getCurrentKey).mockReturnValue('test-key');
+    vi.mocked(geminiApiKeyManager.getCurrentKeyEntry).mockReturnValue({
+      id: 'key-1',
+      name: 'Test',
+      key: 'test-key',
+      exhausted: false,
+    });
+    vi.mocked(geminiApiKeyManager.getTotalKeyCount).mockReturnValue(1);
+    vi.mocked(geminiApiKeyManager.getEnabledKeyCount).mockReturnValue(1);
     vi.mocked(geminiApiKeyManager.hasConfiguredKeySource).mockReturnValue(true);
     vi.mocked(geminiApiKeyManager.getStats).mockReturnValue({
       totalKeys: 1,
@@ -100,7 +119,7 @@ describe('callGeminiWithRetry', () => {
 
     // Uma chamada por modelo da cadeia (sem retry dentro do mesmo modelo)
     expect(generateContentMock.mock.calls.length).toBe(3); // 2.0-flash + 2.5-flash-lite + 2.0-flash-lite
-    expect(geminiApiKeyManager.markCurrentKeyAsExhausted).not.toHaveBeenCalled();
+    expect(geminiApiKeyManager.markCurrentKeyAsExhausted).toHaveBeenCalledOnce();
   });
 
   it('429 genérico: não retenta no mesmo modelo; retorna GEMINI_RATE_LIMITED', async () => {
@@ -111,10 +130,46 @@ describe('callGeminiWithRetry', () => {
     ).rejects.toMatchObject({ code: 'GEMINI_RATE_LIMITED', status: 429 });
 
     expect(generateContentMock.mock.calls.length).toBe(3);
-    expect(geminiApiKeyManager.markCurrentKeyAsExhausted).not.toHaveBeenCalled();
+    expect(geminiApiKeyManager.markCurrentKeyAsExhausted).toHaveBeenCalledOnce();
+  });
+
+  it('429 com segunda chave disponível: marca esgotada e tenta fallback de key', async () => {
+    vi.mocked(geminiApiKeyManager.getTotalKeyCount).mockReturnValue(2);
+    vi.mocked(geminiApiKeyManager.getEnabledKeyCount)
+      .mockReturnValueOnce(2)
+      .mockReturnValueOnce(1);
+
+    vi.mocked(geminiApiKeyManager.getCurrentKeyEntry)
+      .mockReturnValueOnce({
+        id: 'key-1',
+        name: 'Primeira',
+        key: 'key-one',
+        exhausted: false,
+      })
+      .mockReturnValueOnce({
+        id: 'key-2',
+        name: 'Segunda',
+        key: 'key-two',
+        exhausted: false,
+      });
+
+    generateContentMock
+      .mockRejectedValueOnce({ status: 429, message: 'quota exceeded' })
+      .mockRejectedValueOnce({ status: 429, message: 'quota exceeded' })
+      .mockRejectedValueOnce({ status: 429, message: 'quota exceeded' })
+      .mockResolvedValueOnce({ text: 'ok-second-key' });
+
+    const result = await callGeminiWithRetry({
+      model: 'gemini-2.0-flash',
+      contents: 'conteudo de teste',
+    });
+
+    expect(result.text).toBe('ok-second-key');
+    expect(geminiApiKeyManager.markCurrentKeyAsExhausted).toHaveBeenCalledOnce();
   });
 
   it('sem chave e sem fonte configurada: GEMINI_NO_KEY', async () => {
+    vi.mocked(geminiApiKeyManager.getCurrentKeyEntry).mockReturnValue(null);
     vi.mocked(geminiApiKeyManager.getCurrentKey).mockReturnValue(null);
     vi.mocked(geminiApiKeyManager.hasConfiguredKeySource).mockReturnValue(false);
 
@@ -126,6 +181,7 @@ describe('callGeminiWithRetry', () => {
   });
 
   it('sem chave disponível mas com fonte configurada: GEMINI_KEY_UNAVAILABLE', async () => {
+    vi.mocked(geminiApiKeyManager.getCurrentKeyEntry).mockReturnValue(null);
     vi.mocked(geminiApiKeyManager.getCurrentKey).mockReturnValue(null);
     vi.mocked(geminiApiKeyManager.hasConfiguredKeySource).mockReturnValue(true);
 

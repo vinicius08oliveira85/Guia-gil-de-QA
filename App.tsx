@@ -26,6 +26,7 @@ import { useIsMobile } from './hooks/useIsMobile';
 import { useTheme } from './hooks/useTheme';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 import { logger } from './utils/logger';
+import { registerAppLogGlobalHandlers } from './utils/appLogStore';
 import { LandingPage } from './pages/LandingPage';
 import { ProjectViewPage } from './pages/ProjectViewPage';
 import { JiraSolusView } from './components/jiraSolus/JiraSolusView';
@@ -46,6 +47,10 @@ const SettingsView = lazyWithRetry(() =>
 
 const AppContent: React.FC = () => {
   useTheme();
+
+  useEffect(() => {
+    registerAppLogGlobalHandlers();
+  }, []);
 
   useEffect(() => {
     const run = () => {

@@ -32,7 +32,7 @@ import {
 import { logger } from '../../utils/logger';
 import { parseAiJsonText } from '../../utils/aiJsonParse';
 import { retryWithBackoff } from '../../utils/retry';
-import { getGeminiConfig } from '../geminiConfigService';
+import { hasGeminiConfig } from '../geminiConfigService';
 
 const API_KEY = import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY;
 
@@ -52,8 +52,7 @@ function appendOpenAiImageSummary(ctx: TaskAiContext): TaskAiContext {
 const hasAnyAIKey = () => {
   const openaiKey = import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY;
   const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
-  const geminiUiKey = getGeminiConfig()?.apiKey?.trim();
-  return !!(openaiKey || geminiKey || geminiUiKey);
+  return !!(openaiKey || geminiKey || hasGeminiConfig());
 };
 
 let openai: OpenAI | null = null;

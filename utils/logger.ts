@@ -3,6 +3,8 @@
  * Substitui console.log/error/warn por logging estruturado
  */
 
+import { appendAppLog, type AppLogLevel } from './appLogStore';
+
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 interface LogEntry {
@@ -59,6 +61,15 @@ class Logger {
     }
   }
 
+  /**
+   * Log de sucesso (toast / operação concluída)
+   */
+  success(message: string, context?: string, data?: unknown): void {
+    this.persist('success', message, context, data);
+    const prefix = context ? `[${context}]` : '';
+    console.info(`${prefix} ${message}`, data ?? '');
+  }
+
   private log(level: LogLevel, message: string, context?: string, data?: unknown): void {
     const normalizedContext = context?.toLowerCase() || '';
     if (
@@ -89,6 +100,16 @@ class Logger {
 
     const prefix = context ? `[${context}]` : '';
     logMethod(`${prefix} ${message}`, data ? { data, timestamp: entry.timestamp } : entry);
+
+    this.persist(level, message, context, data);
+  }
+
+  private persist(level: AppLogLevel, message: string, context?: string, data?: unknown): void {
+    try {
+      appendAppLog({ level, message, context, data, source: 'logger' });
+    } catch {
+      // Nunca falhar a operação principal por erro de log
+    }
   }
 }
 

@@ -1,3 +1,4 @@
+import { appendAppLog } from './appLogStore';
 import { logger } from './logger';
 
 const STORAGE_KEY = 'qa_audit_logs';
@@ -39,6 +40,20 @@ export const addAuditLog = (
     }
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
+
+    appendAppLog({
+      level: 'info',
+      message: `${entry.action} ${entry.entityType}: ${entry.entityName}`,
+      context: 'AuditLog',
+      source: 'audit',
+      data: {
+        action: entry.action,
+        entityType: entry.entityType,
+        entityId: entry.entityId,
+        origin: logEntry.origin,
+        backupId: entry.backupId,
+      },
+    });
   } catch (error) {
     logger.error('Error saving audit log', 'auditLog', error);
   }

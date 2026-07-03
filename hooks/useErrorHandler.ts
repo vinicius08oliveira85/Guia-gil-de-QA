@@ -91,7 +91,7 @@ export const useErrorHandler = () => {
    * @param message - Mensagem de sucesso
    */
   const handleSuccess = useCallback((message: string, options?: { id?: string }) => {
-    logger.info(message, 'Success');
+    logger.success(message, 'Success');
     toast.success(message, {
       duration: 3000,
       position: 'top-right',
@@ -105,7 +105,7 @@ export const useErrorHandler = () => {
    * @param message - Mensagem de aviso
    */
   const handleWarning = useCallback((message: string) => {
-    logger.warn(message, 'Warning');
+    logger.warn(message, 'Toast');
     toast(message, {
       icon: '⚠️',
       duration: 4000,
@@ -119,7 +119,7 @@ export const useErrorHandler = () => {
    * @param message - Mensagem informativa
    */
   const handleInfo = useCallback((message: string) => {
-    logger.info(message, 'Info');
+    logger.info(message, 'Toast');
     toast(message, {
       icon: 'ℹ️',
       duration: 3000,

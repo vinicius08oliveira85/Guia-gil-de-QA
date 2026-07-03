@@ -4,9 +4,11 @@
  */
 
 import { logger } from '../../utils/logger';
-import { getGeminiConfig } from '../geminiConfigService';
+import { getGeminiKeysConfig, GEMINI_ENV_KEY_ID } from '../geminiConfigService';
 
-interface ApiKeyStatus {
+export interface ManagedApiKey {
+  id: string;
+  name: string;
   key: string;
   exhausted: boolean;
   exhaustedAt?: number;
@@ -16,36 +18,43 @@ interface ApiKeyStatus {
  * Classe para gerenciar múltiplas API keys do Gemini com fallback automático
  */
 export class GeminiApiKeyManager {
-  private keys: ApiKeyStatus[] = [];
+  private keys: ManagedApiKey[] = [];
   private currentKeyIndex: number = 0;
   private readonly resetIntervalMs: number = 24 * 60 * 60 * 1000; // 24 horas
 
   constructor() {
     this.initializeKeys();
-    // Resetar keys esgotadas periodicamente
-    setInterval(() => this.resetExhaustedKeys(), this.resetIntervalMs);
+    if (typeof window !== 'undefined') {
+      setInterval(() => this.resetExhaustedKeys(), this.resetIntervalMs);
+    }
   }
 
   /**
-   * Inicializa as API keys a partir de localStorage, variáveis de ambiente e fallback hardcoded
-   * Prioridade: localStorage > variáveis de ambiente
+   * Inicializa as API keys a partir de localStorage e variáveis de ambiente.
+   * Prioridade: localStorage (múltiplas) > variáveis de ambiente (uma).
    */
   private initializeKeys(): void {
     try {
-      // 1. Tentar ler do localStorage primeiro (prioridade)
-      const savedConfig = getGeminiConfig();
-      const storedKey = savedConfig?.apiKey?.trim();
-      if (storedKey) {
-        this.keys = [{ key: storedKey, exhausted: false }];
-        logger.info('API key do Gemini carregada via localStorage', 'GeminiApiKeyManager');
+      const config = getGeminiKeysConfig();
+      const enabledKeys = config.keys.filter(k => k.enabled && k.apiKey.trim().length > 0);
+
+      if (enabledKeys.length > 0) {
+        this.keys = enabledKeys.map(entry => ({
+          id: entry.id,
+          name: entry.name,
+          key: entry.apiKey.trim(),
+          exhausted: false,
+        }));
+        logger.info(
+          `${this.keys.length} API key(s) do Gemini carregada(s) via localStorage`,
+          'GeminiApiKeyManager'
+        );
         return;
       }
     } catch (error) {
-      // Se houver erro ao acessar localStorage, continuar com fallback
       logger.warn('Erro ao acessar localStorage, usando fallback', 'GeminiApiKeyManager', error);
     }
 
-    // 2. Fallback para variáveis de ambiente
     const primaryKey = (
       import.meta.env.VITE_GEMINI_API_KEY ||
       import.meta.env.GEMINI_API_KEY ||
@@ -53,20 +62,26 @@ export class GeminiApiKeyManager {
     ).trim();
 
     if (primaryKey) {
-      this.keys = [{ key: primaryKey, exhausted: false }];
+      this.keys = [
+        {
+          id: GEMINI_ENV_KEY_ID,
+          name: 'Ambiente (VITE_GEMINI_API_KEY)',
+          key: primaryKey,
+          exhausted: false,
+        },
+      ];
       logger.info('API key do Gemini carregada via ambiente', 'GeminiApiKeyManager');
       return;
     }
 
+    this.keys = [];
     logger.warn('Nenhuma API key do Gemini configurada', 'GeminiApiKeyManager');
   }
 
-  /**
-   * Recarrega as API keys (útil quando configuração muda)
-   */
   reloadKeys(): void {
     const previousKeyCount = this.keys.length;
     this.initializeKeys();
+    this.currentKeyIndex = 0;
 
     if (this.keys.length !== previousKeyCount) {
       logger.info(
@@ -76,15 +91,10 @@ export class GeminiApiKeyManager {
     }
   }
 
-  /**
-   * Indica se existe chave configurada em localStorage ou em variáveis de ambiente,
-   * independentemente do estado "esgotada" no runtime.
-   */
   hasConfiguredKeySource(): boolean {
     try {
-      const cfg = getGeminiConfig();
-      const k = cfg?.apiKey;
-      if (typeof k === 'string' && k.trim().length > 0) {
+      const config = getGeminiKeysConfig();
+      if (config.keys.some(k => k.enabled && k.apiKey.trim().length > 0)) {
         return true;
       }
     } catch {
@@ -98,44 +108,39 @@ export class GeminiApiKeyManager {
     return envKey.length > 0;
   }
 
-  /**
-   * Obtém a API key atual (não esgotada)
-   * @returns API key atual ou null se todas estiverem esgotadas
-   */
-  getCurrentKey(): string | null {
-    // Se ainda não carregou nenhuma fonte (ex.: módulo avaliado cedo ou chave salva depois), re-sincroniza
-    if (this.keys.length === 0) {
-      this.reloadKeys();
-    }
-
-    // Encontrar primeira key não esgotada
-    const availableKey = this.keys.find(k => !k.exhausted);
-
-    if (availableKey) {
-      this.currentKeyIndex = this.keys.indexOf(availableKey);
-      return availableKey.key;
-    }
-
-    // Se todas estiverem esgotadas, tentar resetar e reavaliar
-    logger.warn('Todas as API keys estão esgotadas', 'GeminiApiKeyManager');
-    this.resetExhaustedKeys();
-
-    const refreshedKey = this.keys.find(k => !k.exhausted);
-    if (refreshedKey) {
-      this.currentKeyIndex = this.keys.indexOf(refreshedKey);
-      return refreshedKey.key;
-    }
-
-    return null;
+  getEnabledKeyCount(): number {
+    if (this.keys.length === 0) this.reloadKeys();
+    return this.keys.filter(k => !k.exhausted).length;
   }
 
-  /**
-   * Marca a API key atual como esgotada (quota excedida)
-   */
+  getTotalKeyCount(): number {
+    if (this.keys.length === 0) this.reloadKeys();
+    return this.keys.length;
+  }
+
+  getManagedKeys(): ReadonlyArray<ManagedApiKey> {
+    if (this.keys.length === 0) this.reloadKeys();
+    return this.keys;
+  }
+
+  getCurrentKeyEntry(): ManagedApiKey | null {
+    if (this.keys.length === 0) this.reloadKeys();
+    const available = this.keys.find(k => !k.exhausted);
+    if (!available) return null;
+    this.currentKeyIndex = this.keys.indexOf(available);
+    return available;
+  }
+
+  getCurrentKey(): string | null {
+    return this.getCurrentKeyEntry()?.key ?? null;
+  }
+
+  getCurrentKeyId(): string | null {
+    return this.getCurrentKeyEntry()?.id ?? null;
+  }
+
   markCurrentKeyAsExhausted(): void {
-    if (this.keys.length === 0) {
-      return;
-    }
+    if (this.keys.length === 0) return;
 
     const currentKey = this.keys[this.currentKeyIndex];
     if (currentKey && !currentKey.exhausted) {
@@ -143,14 +148,13 @@ export class GeminiApiKeyManager {
       currentKey.exhaustedAt = Date.now();
 
       logger.warn('API key do Gemini marcada como esgotada', 'GeminiApiKeyManager', {
+        keyId: currentKey.id,
+        keyName: currentKey.name,
         keyIndex: this.currentKeyIndex,
       });
     }
   }
 
-  /**
-   * Reseta o estado de keys esgotadas (chamado periodicamente)
-   */
   private resetExhaustedKeys(): void {
     const now = Date.now();
     let resetCount = 0;
@@ -158,8 +162,6 @@ export class GeminiApiKeyManager {
     for (const keyStatus of this.keys) {
       if (keyStatus.exhausted && keyStatus.exhaustedAt) {
         const timeSinceExhausted = now - keyStatus.exhaustedAt;
-
-        // Resetar se passou mais de 24 horas
         if (timeSinceExhausted >= this.resetIntervalMs) {
           keyStatus.exhausted = false;
           keyStatus.exhaustedAt = undefined;
@@ -176,20 +178,19 @@ export class GeminiApiKeyManager {
     }
   }
 
-  /**
-   * Obtém estatísticas do gerenciador
-   */
   getStats(): {
     totalKeys: number;
     availableKeys: number;
     exhaustedKeys: number;
     currentKeyIndex: number;
+    currentKeyId?: string;
+    currentKeyName?: string;
     nextResetInMs?: number;
   } {
     const available = this.keys.filter(k => !k.exhausted).length;
     const exhausted = this.keys.filter(k => k.exhausted).length;
+    const current = this.keys[this.currentKeyIndex];
 
-    // Calcular tempo até próximo reset (24h após a key mais antiga esgotada)
     let nextResetInMs: number | undefined;
     const now = Date.now();
     for (const keyStatus of this.keys) {
@@ -206,14 +207,15 @@ export class GeminiApiKeyManager {
       availableKeys: available,
       exhaustedKeys: exhausted,
       currentKeyIndex: this.currentKeyIndex,
+      currentKeyId: current?.id,
+      currentKeyName: current?.name,
       nextResetInMs,
     };
   }
 
-  /**
-   * Obtém informações sobre keys esgotadas e quando podem ser reutilizadas
-   */
   getExhaustedKeysInfo(): Array<{
+    keyId: string;
+    keyName: string;
     keyIndex: number;
     exhaustedAt: number;
     canBeReusedAt: number;
@@ -221,6 +223,8 @@ export class GeminiApiKeyManager {
   }> {
     const now = Date.now();
     const info: Array<{
+      keyId: string;
+      keyName: string;
       keyIndex: number;
       exhaustedAt: number;
       canBeReusedAt: number;
@@ -230,13 +234,13 @@ export class GeminiApiKeyManager {
     this.keys.forEach((keyStatus, index) => {
       if (keyStatus.exhausted && keyStatus.exhaustedAt) {
         const canBeReusedAt = keyStatus.exhaustedAt + this.resetIntervalMs;
-        const timeUntilReuseMs = Math.max(0, canBeReusedAt - now);
-
         info.push({
+          keyId: keyStatus.id,
+          keyName: keyStatus.name,
           keyIndex: index,
           exhaustedAt: keyStatus.exhaustedAt,
           canBeReusedAt,
-          timeUntilReuseMs,
+          timeUntilReuseMs: Math.max(0, canBeReusedAt - now),
         });
       }
     });
@@ -245,8 +249,25 @@ export class GeminiApiKeyManager {
   }
 
   /**
-   * Reseta o gerenciador (útil para testes)
+   * Reativa manualmente uma chave marcada como esgotada (sem esperar 24h).
    */
+  reactivateKey(keyId: string): boolean {
+    const key = this.keys.find(k => k.id === keyId);
+    if (!key || !key.exhausted) {
+      return false;
+    }
+
+    key.exhausted = false;
+    key.exhaustedAt = undefined;
+
+    logger.info('API key do Gemini reativada manualmente', 'GeminiApiKeyManager', {
+      keyId: key.id,
+      keyName: key.name,
+    });
+
+    return true;
+  }
+
   reset(): void {
     this.keys.forEach(k => {
       k.exhausted = false;
@@ -256,7 +277,4 @@ export class GeminiApiKeyManager {
   }
 }
 
-/**
- * Instância global do gerenciador de API keys
- */
 export const geminiApiKeyManager = new GeminiApiKeyManager();

@@ -2,7 +2,7 @@ import { AIService } from './aiServiceInterface';
 import { GeminiService } from './geminiService';
 import { OpenAIService, isOpenAIEnvApiKeyConfigured } from './openaiService';
 import { logger } from '../../utils/logger';
-import { getGeminiConfig } from '../geminiConfigService';
+import { getGeminiKeysConfig } from '../geminiConfigService';
 import { isGeminiRateLimitOrQuotaError } from './geminiApiWrapper';
 
 export { isOpenAIEnvApiKeyConfigured, isGeminiRateLimitOrQuotaError };
@@ -22,7 +22,7 @@ let currentProvider: AIProvider | null = null;
  * 4. Padrão: Gemini (a chave efetiva nas chamadas vem do `geminiApiKeyManager`: localStorage depois env).
  */
 export const resolveConfiguredAIProvider = (): AIProvider => {
-  const geminiUiKey = getGeminiConfig()?.apiKey?.trim() ?? '';
+  const geminiUiKey = getGeminiKeysConfig().keys.some(k => k.enabled && k.apiKey.trim());
   if (geminiUiKey) {
     return 'gemini';
   }
