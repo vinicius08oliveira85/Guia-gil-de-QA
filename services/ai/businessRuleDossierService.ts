@@ -7,6 +7,9 @@ import { resolveLinkedTasksForDossier } from '../../utils/businessRuleTaskMatche
 import { logger } from '../../utils/logger';
 import { buildDossierMarkdown } from '../../utils/businessRuleDossierMarkdown';
 import { runDossierAiPipeline } from './businessRuleDossierAiPipeline';
+import type { DossierAiProgress } from '../../utils/businessRuleDossierProgress';
+
+export type { DossierAiProgress };
 
 function pushAnalysisHistory(rule: BusinessRule): BusinessRuleAnalysis[] {
   if (!rule.analysis) return rule.analysisHistory ?? [];
@@ -17,8 +20,6 @@ function pushAnalysisHistory(rule: BusinessRule): BusinessRuleAnalysis[] {
 export interface GenerateDossierResult {
   rule: BusinessRule;
 }
-
-export type { DossierAiProgress } from '../../utils/businessRuleDossierProgress';
 
 export interface GenerateDossierOptions {
   /** Ignora análise anterior ao reanalisar (geração limpa). */

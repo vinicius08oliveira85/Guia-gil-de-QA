@@ -2,16 +2,26 @@
 export const LANDING_SECTIONS = {
   projects: {
     title: 'Projetos',
-    description: 'Acesse e gerencie seus projetos, tarefas e casos de teste.',
+    description: 'Gerencie projetos, tarefas, casos de teste e dossiês de regras de negócio.',
+    badge: 'Principal',
   },
   jiraSolus: {
-    title: 'Acompanhamento de Tarefas',
+    title: 'Acompanhamento',
     description:
-      'Acompanhe o andamento das tarefas com status, SLA e indicadores de progresso em tempo real.',
+      'Acompanhe tarefas com status, SLA e indicadores de progresso (Jira × Solus).',
+  },
+  settings: {
+    title: 'Configurações',
+    description: 'Jira, Gemini, pasta local e preferências do app.',
   },
 } as const;
 
 export const APP_BRAND = {
   title: 'QA Agile Guide',
   subtitle: 'Gestão de QA ágil, métricas e automação',
+  tagline:
+    'Projetos, casos de teste, dossiês de regras e acompanhamento Jira × Solus em um só lugar.',
 } as const;
+
+/** Versão exibida no rodapé da home (alinhar ao package.json quando possível). */
+export const APP_VERSION = '0.0.0';

@@ -1,7 +1,8 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
 import { Project } from '../types';
 import { useProjectsStore } from '../store/projectsStore';
+import { recordLastOpenedProject } from '../utils/landingRecentProjects';
 import { lazyWithRetry } from '../utils/lazyWithRetry';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
 import { ProjectsDashboardSkeleton } from '../components/projectsDashboard/ProjectsDashboardSkeleton';
@@ -25,6 +26,12 @@ export const ProjectViewPage: React.FC<ProjectViewPageProps> = ({
   const { id } = useParams<{ id: string }>();
   const isLoading = useProjectsStore(s => s.isLoading);
   const project = useProjectsStore(s => s.projects.find(p => p.id === id));
+
+  useEffect(() => {
+    if (id && project) {
+      recordLastOpenedProject(id);
+    }
+  }, [id, project]);
 
   if (isLoading) {
     return <ProjectsDashboardSkeleton />;
