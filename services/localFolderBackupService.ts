@@ -29,7 +29,7 @@ export type WriteBackupToFolderResult =
   | 'cancelled';
 
 export type PickBackupFolderResult =
-  | { status: 'picked'; folderLabel: string }
+  | { status: 'picked'; folderLabel: string; existingBackup: boolean }
   | { status: 'cancelled' }
   | { status: 'unsupported' };
 
@@ -37,6 +37,7 @@ export interface LocalFolderBackupPrefs {
   autoSyncEnabled: boolean;
   folderLabel: string | null;
   lastSyncAt: string | null;
+  lastRestoreAt: string | null;
   lastSyncError: string | null;
   hasConfiguredFolder: boolean;
 }
@@ -126,6 +127,7 @@ export function getLocalFolderBackupPrefsSync(): Omit<
     autoSyncEnabled: isLocalFolderAutoSyncEnabled(),
     folderLabel: getConfiguredFolderLabel(),
     lastSyncAt: getLocalFolderLastSyncAt(),
+    lastRestoreAt: readStorageItem('qa_local_folder_last_restore_at'),
     lastSyncError: getLocalFolderLastSyncError(),
   };
 }
@@ -178,8 +180,16 @@ export async function pickBackupFolder(): Promise<PickBackupFolderResult> {
   setLocalFolderLastSyncError(null);
   dispatchConfigUpdated();
 
+  let existingBackup = false;
+  try {
+    await handle.getFileHandle(LOCAL_FOLDER_BACKUP_FILENAME);
+    existingBackup = true;
+  } catch {
+    existingBackup = false;
+  }
+
   logger.info(`Pasta de backup configurada: ${handle.name}`, 'localFolderBackup');
-  return { status: 'picked', folderLabel: handle.name };
+  return { status: 'picked', folderLabel: handle.name, existingBackup };
 }
 
 /**

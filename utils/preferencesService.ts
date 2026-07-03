@@ -5,7 +5,13 @@ import {
   ExportPreferences,
 } from '../types';
 import { logger } from './logger';
-import { scheduleLocalFolderSync } from './localFolderSyncScheduler';
+import { flushLocalFolderSync } from './localFolderSyncScheduler';
+
+function syncFolderBackupAfterConfigChange(): void {
+  void flushLocalFolderSync({ force: true }).catch(() => {
+    /* pasta não configurada ou permissão negada */
+  });
+}
 
 const STORAGE_KEY = 'qa_user_preferences';
 
@@ -77,7 +83,7 @@ export const savePreferences = (preferences: PreferencesUpdate): void => {
       export: { ...current.export, ...preferences.export },
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    scheduleLocalFolderSync();
+    syncFolderBackupAfterConfigChange();
     // Dispatch event to notify components
     window.dispatchEvent(new CustomEvent('preferences-updated', { detail: updated }));
   } catch (error) {
@@ -88,7 +94,7 @@ export const savePreferences = (preferences: PreferencesUpdate): void => {
 export const resetPreferences = (): void => {
   try {
     localStorage.removeItem(STORAGE_KEY);
-    scheduleLocalFolderSync();
+    syncFolderBackupAfterConfigChange();
     window.dispatchEvent(new CustomEvent('preferences-updated', { detail: defaultPreferences }));
   } catch (error) {
     logger.error('Error resetting preferences', 'preferencesService', error);

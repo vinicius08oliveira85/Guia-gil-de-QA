@@ -60,23 +60,28 @@ async function jiraRequest<T>(
 
     logger.debug('Resposta do proxy', 'jiraService', { status: response.status, ok: response.ok });
 
+    const responseText = await response.text();
+
     if (!response.ok) {
       let errorData: { error?: string };
       const isQuietHttpError =
         options.quietHttpErrors && (response.status === 403 || response.status === 404);
       const logHttpError = isQuietHttpError ? logger.debug.bind(logger) : logger.error.bind(logger);
       try {
-        errorData = await response.json();
+        errorData = JSON.parse(responseText) as { error?: string };
         logHttpError('Erro do proxy', 'jiraService', errorData);
       } catch {
-        const errorText = await response.text();
-        logHttpError('Erro do proxy (texto)', 'jiraService', errorText);
-        errorData = { error: errorText };
+        logHttpError('Erro do proxy (texto)', 'jiraService', responseText);
+        errorData = { error: responseText || `Jira API Error (${response.status})` };
       }
       throw new Error(errorData.error || `Jira API Error (${response.status})`);
     }
 
-    const data = await response.json();
+    if (!responseText.trim()) {
+      return undefined as T;
+    }
+
+    const data = JSON.parse(responseText) as T;
     logger.debug('Dados recebidos do proxy', 'jiraService', data);
     return data;
   } catch (error) {

@@ -2,14 +2,20 @@ import type { JiraConfig } from './types';
 import { JIRA_CONFIG_KEY, JIRA_LAST_URL_KEY } from './types';
 import { jiraApiCall } from './api';
 import { logger } from '../../utils/logger';
-import { scheduleLocalFolderSync } from '../../utils/localFolderSyncScheduler';
+import { flushLocalFolderSync } from '../../utils/localFolderSyncScheduler';
+
+function syncFolderBackupAfterConfigChange(): void {
+  void flushLocalFolderSync({ force: true }).catch(() => {
+    /* pasta não configurada ou permissão negada */
+  });
+}
 
 export const saveJiraConfig = (config: JiraConfig): void => {
   localStorage.setItem(JIRA_CONFIG_KEY, JSON.stringify(config));
   if (config.url?.trim()) {
     localStorage.setItem(JIRA_LAST_URL_KEY, config.url.trim());
   }
-  scheduleLocalFolderSync();
+  syncFolderBackupAfterConfigChange();
 };
 
 export const getJiraConfig = (): JiraConfig | null => {
@@ -30,7 +36,7 @@ export const setJiraLastUrl = (url: string): void => {
 
 export const deleteJiraConfig = (): void => {
   localStorage.removeItem(JIRA_CONFIG_KEY);
-  scheduleLocalFolderSync();
+  syncFolderBackupAfterConfigChange();
 };
 
 export const testJiraConnection = async (config: JiraConfig): Promise<boolean> => {

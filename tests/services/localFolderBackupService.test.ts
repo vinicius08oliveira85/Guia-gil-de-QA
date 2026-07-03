@@ -72,6 +72,7 @@ describe('localFolderBackupService', () => {
   beforeEach(() => {
     vi.mocked(buildLocalBackupData).mockResolvedValue(mockEnvelope);
     vi.mocked(getLocalFolderDirectoryHandle).mockResolvedValue(null);
+    mockDirHandle.getFileHandle.mockReset();
     localStorage.clear();
   });
 
@@ -104,12 +105,24 @@ describe('localFolderBackupService', () => {
 
     it('persiste handle e label ao escolher pasta', async () => {
       vi.stubGlobal('showDirectoryPicker', vi.fn().mockResolvedValue(mockDirHandle));
+      mockDirHandle.getFileHandle.mockRejectedValue(new DOMException('NotFound', 'NotFoundError'));
       await expect(pickBackupFolder()).resolves.toEqual({
         status: 'picked',
         folderLabel: 'MeusBackups',
+        existingBackup: false,
       });
       expect(saveLocalFolderDirectoryHandle).toHaveBeenCalledWith(mockDirHandle);
       expect(getConfiguredFolderLabel()).toBe('MeusBackups');
+    });
+
+    it('indica existingBackup quando arquivo canônico já existe', async () => {
+      vi.stubGlobal('showDirectoryPicker', vi.fn().mockResolvedValue(mockDirHandle));
+      mockDirHandle.getFileHandle.mockResolvedValue({ name: LOCAL_FOLDER_BACKUP_FILENAME });
+      await expect(pickBackupFolder()).resolves.toEqual({
+        status: 'picked',
+        folderLabel: 'MeusBackups',
+        existingBackup: true,
+      });
     });
   });
 

@@ -37,6 +37,16 @@ import { cn } from './utils/cn';
 import { GlobalSearchDialog } from './components/common/GlobalSearchDialog';
 import { LoadingSkeleton } from './components/common/LoadingSkeleton';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { ConfirmDialog } from './components/common/ConfirmDialog';
+import { isLocalFolderBackupSupported } from './services/localFolderBackupService';
+import {
+  formatBackupSummaryForPrompt,
+  formatRestoreResultMessage,
+  restoreFromConfiguredFolder,
+  setFolderRestorePromptDismissed,
+  shouldOfferFolderRestoreOnStartup,
+  type BackupFileSummary,
+} from './services/localFolderRestoreService';
 
 const ProjectsDashboard = lazyWithRetry(() =>
   import('./components/ProjectsDashboard').then(m => ({ default: m.ProjectsDashboard }))
@@ -92,7 +102,7 @@ const AppContent: React.FC = () => {
   } = useProjectsStore();
 
   const [showSearch, setShowSearch] = React.useState(false);
-  const { handleError, handleSuccess } = useErrorHandler();
+  const { handleError, handleSuccess, handleWarning } = useErrorHandler();
   const { searchQuery, setSearchQuery, debouncedSearchQuery, searchResults } = useSearch(projects);
   const { announce } = useAriaLive();
   const navigate = useNavigate();
@@ -101,6 +111,65 @@ const AppContent: React.FC = () => {
   const ariaNavReady = useRef(false);
   const prevSelectedProjectId = useRef<string | null | undefined>(undefined);
   const isSettings = location.pathname === '/settings';
+
+  const folderRestoreCheckedRef = useRef(false);
+  const [folderRestorePrompt, setFolderRestorePrompt] = React.useState<{
+    folderLabel: string;
+    summary: BackupFileSummary;
+  } | null>(null);
+  const [folderRestoreLoading, setFolderRestoreLoading] = React.useState(false);
+
+  useEffect(() => {
+    if (isLoading) return;
+    if (folderRestoreCheckedRef.current) return;
+    if (!isLocalFolderBackupSupported()) return;
+    folderRestoreCheckedRef.current = true;
+
+    void (async () => {
+      const offer = await shouldOfferFolderRestoreOnStartup();
+      if (offer.offer) {
+        setFolderRestorePrompt({
+          folderLabel: offer.folderLabel,
+          summary: offer.summary,
+        });
+      }
+    })();
+  }, [isLoading]);
+
+  const handleConfirmFolderRestore = useCallback(async () => {
+    setFolderRestoreLoading(true);
+    try {
+      const outcome = await restoreFromConfiguredFolder();
+      if (outcome.status === 'success') {
+        await loadProjects();
+        handleSuccess(formatRestoreResultMessage(outcome.result));
+        setFolderRestorePrompt(null);
+        return;
+      }
+      if (outcome.status === 'no_permission') {
+        handleWarning(
+          'Permissão da pasta expirou. Abra Configurações → Dados locais → Salvar agora para reautorizar.'
+        );
+        setFolderRestorePrompt(null);
+        return;
+      }
+      if (outcome.status === 'empty_backup') {
+        handleWarning('O arquivo de backup na pasta não contém dados válidos.');
+        setFolderRestorePrompt(null);
+        return;
+      }
+      handleError(new Error('Não foi possível restaurar o backup da pasta.'), 'Restaurar da pasta');
+    } catch (error) {
+      handleError(error, 'Restaurar da pasta');
+    } finally {
+      setFolderRestoreLoading(false);
+    }
+  }, [loadProjects, handleSuccess, handleWarning, handleError]);
+
+  const handleDismissFolderRestore = useCallback(() => {
+    setFolderRestorePromptDismissed();
+    setFolderRestorePrompt(null);
+  }, []);
 
   useEffect(() => {
     if (isLoading) return;
@@ -478,6 +547,23 @@ const AppContent: React.FC = () => {
           </Routes>
         )}
       </main>
+      <ConfirmDialog
+        isOpen={folderRestorePrompt !== null}
+        onClose={handleDismissFolderRestore}
+        onConfirm={() => {
+          void handleConfirmFolderRestore();
+        }}
+        title="Restaurar backup da pasta?"
+        message={
+          folderRestorePrompt
+            ? `Foi encontrado um backup em "${folderRestorePrompt.folderLabel}" com ${formatBackupSummaryForPrompt(folderRestorePrompt.summary)}. Deseja restaurar esses dados neste dispositivo?`
+            : ''
+        }
+        confirmText="Restaurar"
+        cancelText="Agora não"
+        variant="info"
+        isLoading={folderRestoreLoading}
+      />
       <KeyboardShortcutsHelp />
     </div>
   );
