@@ -6,9 +6,9 @@ import { ProjectsDashboardHeader } from '../../../components/projectsDashboard/P
 describe('ProjectsDashboardHeader', () => {
   const baseProps = {
     projectCount: 2,
-    sortBy: 'name' as const,
-    onSortByChange: vi.fn(),
     lastActivityText: 'há cerca de 1 hora',
+    searchQuery: '',
+    onSearchQueryChange: vi.fn(),
   };
 
   beforeEach(() => {
@@ -17,46 +17,28 @@ describe('ProjectsDashboardHeader', () => {
 
   it('expõe região nomeada pelo título para leitores de tela', () => {
     render(<ProjectsDashboardHeader {...baseProps} />);
-    expect(screen.getByRole('region', { name: /Projetos \(Testes\)/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1, name: /Projetos \(Testes\)/i })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: /Projetos/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: /Projetos/i })).toBeInTheDocument();
   });
 
-  it('agrupa meta do workspace com rótulo acessível', () => {
+  it('não exibe ordenação nem botão de novo projeto', () => {
     render(<ProjectsDashboardHeader {...baseProps} />);
-    expect(
-      screen.getByRole('group', { name: /Atividade e ordenação do workspace/i })
-    ).toBeInTheDocument();
-  });
-
-  it('exibe ordenação quando há mais de um projeto', () => {
-    render(<ProjectsDashboardHeader {...baseProps} projectCount={2} />);
-    expect(screen.getByLabelText(/Ordenar projetos por/i)).toBeInTheDocument();
-  });
-
-  it('não exibe ordenação com um único projeto', () => {
-    render(<ProjectsDashboardHeader {...baseProps} projectCount={1} />);
     expect(screen.queryByLabelText(/Ordenar projetos por/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Criar novo projeto/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: /Ações do workspace/i })).not.toBeInTheDocument();
   });
 
-  it('chama onSortByChange ao alterar o select', async () => {
-    const user = userEvent.setup();
-    const onSortByChange = vi.fn();
-    render(<ProjectsDashboardHeader {...baseProps} onSortByChange={onSortByChange} />);
-    await user.selectOptions(screen.getByLabelText(/Ordenar projetos por/i), 'updatedAt');
-    expect(onSortByChange).toHaveBeenCalledWith('updatedAt');
-  });
-
-  it('exibe última atividade quando informada', () => {
+  it('exibe meta compacta com última atividade', () => {
     render(<ProjectsDashboardHeader {...baseProps} lastActivityText="há 2 dias" />);
-    expect(screen.getByText(/Última atividade:/i)).toBeInTheDocument();
-    expect(screen.getByText(/há 2 dias/i)).toBeInTheDocument();
+    expect(screen.getByText(/2 projetos/i)).toBeInTheDocument();
+    expect(screen.getByText(/última atividade há 2 dias/i)).toBeInTheDocument();
   });
 
-  it('dispara evento global ao acionar busca', async () => {
+  it('dispara evento global ao acionar busca global', async () => {
     const user = userEvent.setup();
     const spy = vi.spyOn(window, 'dispatchEvent');
     render(<ProjectsDashboardHeader {...baseProps} />);
-    await user.click(screen.getByRole('button', { name: /Abrir busca/i }));
+    await user.click(screen.getByRole('button', { name: /Abrir busca global/i }));
     expect(spy).toHaveBeenCalled();
     const evt = spy.mock.calls.find(c => c[0] instanceof CustomEvent)?.[0] as
       | CustomEvent
@@ -65,17 +47,16 @@ describe('ProjectsDashboardHeader', () => {
     spy.mockRestore();
   });
 
-  it('ordem de foco: busca antes do select', async () => {
+  it('filtra projetos pelo campo de busca local', async () => {
     const user = userEvent.setup();
-    render(<ProjectsDashboardHeader {...baseProps} />);
-    await user.tab();
-    expect(screen.getByRole('button', { name: /Abrir busca/i })).toHaveFocus();
-    await user.tab();
-    expect(screen.getByLabelText(/Ordenar projetos por/i)).toHaveFocus();
+    const onSearchQueryChange = vi.fn();
+    render(<ProjectsDashboardHeader {...baseProps} onSearchQueryChange={onSearchQueryChange} />);
+    await user.type(screen.getByLabelText(/Filtrar projetos por nome/i), 'abc');
+    expect(onSearchQueryChange).toHaveBeenCalled();
   });
 
   it('não exibe última atividade quando não informada', () => {
     render(<ProjectsDashboardHeader {...baseProps} lastActivityText={null} />);
-    expect(screen.queryByText(/Última atividade:/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/última atividade/i)).not.toBeInTheDocument();
   });
 });

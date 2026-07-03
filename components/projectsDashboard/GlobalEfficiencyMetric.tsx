@@ -15,6 +15,7 @@ export interface GlobalEfficiencyMetricProps {
   executedCount?: number;
   totalCount?: number;
   className?: string;
+  onClick?: () => void;
 }
 
 export const GlobalEfficiencyMetric: React.FC<GlobalEfficiencyMetricProps> = ({
@@ -22,15 +23,15 @@ export const GlobalEfficiencyMetric: React.FC<GlobalEfficiencyMetricProps> = ({
   executedCount,
   totalCount,
   className,
+  onClick,
 }) => {
   const clamped = Math.min(100, Math.max(0, percent));
+  const label = `Eficiência global de execução: ${clamped}%`;
+  const title =
+    'Percentual de casos de teste já executados no workspace. Clique para ver projetos com alertas de execução.';
 
-  return (
-    <div
-      className={cn(workspaceDaisyStatCardClass, 'gap-2', className)}
-      role="group"
-      aria-label={`Eficiência global de execução: ${clamped}%`}
-    >
+  const body = (
+    <>
       <div className="flex w-full items-center justify-center gap-1.5">
         <Gauge
           className="h-3.5 w-3.5 shrink-0 text-[var(--workspace-stat-accent)] sm:h-4 sm:w-4"
@@ -46,9 +47,36 @@ export const GlobalEfficiencyMetric: React.FC<GlobalEfficiencyMetricProps> = ({
       </RadialProgress>
       {totalCount != null && totalCount > 0 && executedCount != null && (
         <p className="font-sans text-[10px] leading-tight text-[var(--workspace-stat-text)] opacity-80 sm:text-[11px]">
-          {formatWorkspaceStatCount(executedCount)}/{formatWorkspaceStatCount(totalCount)} casos executados
+          {formatWorkspaceStatCount(executedCount)}/{formatWorkspaceStatCount(totalCount)} casos
+          executados
         </p>
       )}
+    </>
+  );
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        className={cn(
+          workspaceDaisyStatCardClass,
+          'gap-2 cursor-pointer transition-[transform,box-shadow] hover:-translate-y-0.5',
+          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-stat-accent)]',
+          'motion-reduce:transform-none',
+          className
+        )}
+        onClick={onClick}
+        title={title}
+        aria-label={title}
+      >
+        {body}
+      </button>
+    );
+  }
+
+  return (
+    <div className={cn(workspaceDaisyStatCardClass, 'gap-2', className)} role="group" aria-label={label}>
+      {body}
     </div>
   );
 };

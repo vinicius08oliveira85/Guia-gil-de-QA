@@ -4,9 +4,16 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Project } from '../types';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { AlertTriangle, Bug, Loader2 } from 'lucide-react';
+import {
+  AlertTriangle,
+  Bug,
+  ChevronDown,
+  ClipboardCheck,
+  Gauge,
+  LayoutGrid,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { ProjectCard } from './common/ProjectCard';
-import { useErrorHandler } from '../hooks/useErrorHandler';
 import { useProjectsStore } from '../store/projectsStore';
 import { EmptyState } from './common/EmptyState';
 import {
@@ -24,13 +31,14 @@ import {
   projectNeedsAttention,
   computeProjectHealth,
 } from '../utils/workspaceAnalytics';
-import {
-  applyManualProjectOrder,
-  buildProjectOrderIds,
-  moveProjectIdInOrder,
-} from '../utils/projectListOrder';
+import { applyManualProjectOrder } from '../utils/projectListOrder';
+import { getLastOpenedProjectIds } from '../utils/landingRecentProjects';
 import { ProjectsDashboardHeader } from './projectsDashboard/ProjectsDashboardHeader';
-import { WorkspaceDaisyStats, type LocalBackupStatStatus } from './projectsDashboard/WorkspaceDaisyStats';
+import {
+  WorkspaceDaisyStats,
+  type LocalBackupStatStatus,
+  type WorkspaceStatKey,
+} from './projectsDashboard/WorkspaceDaisyStats';
 import { GlobalEfficiencyMetric } from './projectsDashboard/GlobalEfficiencyMetric';
 import { NewProjectCard } from './projectsDashboard/NewProjectCard';
 import { ProjectsDashboardSidebar } from './projectsDashboard/ProjectsDashboardSidebar';
@@ -43,6 +51,7 @@ import {
 } from './common/viewHeroChromeUi';
 import {
   projectsDashboardFilterPillClass,
+  projectsDashboardQuickFiltersCountClass,
   projectsDashboardQuickFiltersDividerClass,
   projectsDashboardQuickFiltersPillClass,
   projectsDashboardQuickFiltersToolbarClass,
@@ -51,13 +60,36 @@ import {
   projectsDashboardPageClass,
   projectsDashboardProjectGridClass,
   projectsDashboardStatsRegionClass,
+  projectsDashboardSummaryToggleClass,
 } from './projectsDashboard/projectsDashboardUi';
 
-type QuickFilter = 'all' | 'withBugs' | 'needsAttention';
+type QuickFilter = 'all' | 'withBugs' | 'needsAttention' | 'testAlerts';
 
-/** Projeto tem pelo menos 1 bug aberto. */
 function projectHasOpenBugs(project: Project): boolean {
   return computeProjectHealth(project).openBugs > 0;
+}
+
+function projectMatchesSearch(project: Project, query: string): boolean {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  if (project.name.toLowerCase().includes(q)) return true;
+  if (project.description?.toLowerCase().includes(q)) return true;
+  if (project.settings?.jiraProjectKey?.toLowerCase().includes(q)) return true;
+  if (project.tags?.some(tag => tag.toLowerCase().includes(q))) return true;
+  return false;
+}
+
+/** Ordena por último aberto; preenche com updatedAt/createdAt. */
+function sortProjectsByLastOpened(list: Project[], lastOpenedIds: string[]): Project[] {
+  const order = new Map(lastOpenedIds.map((id, index) => [id, index]));
+  return [...list].sort((a, b) => {
+    const ai = order.has(a.id) ? (order.get(a.id) as number) : Number.MAX_SAFE_INTEGER;
+    const bi = order.has(b.id) ? (order.get(b.id) as number) : Number.MAX_SAFE_INTEGER;
+    if (ai !== bi) return ai - bi;
+    const aDate = a.updatedAt || a.createdAt || '';
+    const bDate = b.updatedAt || b.createdAt || '';
+    return bDate.localeCompare(aDate);
+  });
 }
 
 export const ProjectsDashboard: React.FC<{
@@ -68,17 +100,16 @@ export const ProjectsDashboard: React.FC<{
   const [isCreating, setIsCreating] = useState(false);
   const [isCreateSubmitting, setIsCreateSubmitting] = useState(false);
   const [localBackupStatus, setLocalBackupStatus] = useState<LocalBackupStatStatus>('unconfigured');
-  const [sortBy, setSortBy] = useLocalStorage<'name' | 'updatedAt'>('projectsSortBy', 'name');
-  const [manualOrder, setManualOrder] = useLocalStorage<string[]>('projectsManualOrder', []);
+  const [manualOrder] = useLocalStorage<string[]>('projectsManualOrder', []);
   const [quickFilter, setQuickFilter] = useState<QuickFilter>('all');
-  // Visualização sempre em grade - removido viewMode
-  // Ordenação fixa por nome - removido sortBy
-  // Filtros removidos - removido selectedTags e showTagFilter
-  // Esquema API removido - removido showSchemaModal
+  const [searchQuery, setSearchQuery] = useState('');
+  const [summaryExpanded, setSummaryExpanded] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia('(min-width: 1024px)').matches : true
+  );
 
-  const { handleError, handleSuccess } = useErrorHandler();
   const { isLoading } = useProjectsStore();
   const { announce } = useAriaLive();
+  const listRef = useRef<HTMLDivElement>(null);
 
   const refreshLocalBackupStatus = useCallback(async () => {
     const prefs = await getLocalFolderBackupPrefs();
@@ -111,19 +142,22 @@ export const ProjectsDashboard: React.FC<{
     return () => window.removeEventListener(LOCAL_FOLDER_CONFIG_UPDATED_EVENT, onUpdated);
   }, [refreshLocalBackupStatus]);
 
-  // Função para navegar para uma tarefa específica
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const apply = () => setSummaryExpanded(mq.matches);
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, []);
+
   const handleNavigateToTask = useCallback(
     (projectId: string, taskId: string) => {
-      // Armazenar taskId no sessionStorage para ser lido pelo ProjectView
       sessionStorage.setItem('taskIdToFocus', taskId);
-      // Selecionar o projeto (isso abrirá o ProjectView)
       navigate(`/projects/${projectId}`);
     },
     [navigate]
   );
 
-  // Escutar eventos para abrir modal de criação
-  React.useEffect(() => {
+  useEffect(() => {
     const handleOpenModal = () => setIsCreating(true);
     window.addEventListener('open-create-project-modal', handleOpenModal);
     return () => {
@@ -131,50 +165,23 @@ export const ProjectsDashboard: React.FC<{
     };
   }, []);
 
-
-  const handleSortByChange = useCallback(
-    (value: 'name' | 'updatedAt') => {
-      setSortBy(value);
-    },
-    [setSortBy]
-  );
-
-  const sortProjectsList = useCallback((list: Project[]) => {
-    const copy = [...list];
-    if (sortBy === 'name') {
-      return copy.sort((a, b) => a.name.localeCompare(b.name));
-    }
-    return copy.sort((a, b) => {
-      const aDate = a.updatedAt || a.createdAt || '';
-      const bDate = b.updatedAt || b.createdAt || '';
-      return bDate.localeCompare(aDate);
-    });
-  }, [sortBy]);
+  const lastOpenedIds = useMemo(() => getLastOpenedProjectIds(), [projects]);
 
   const sortedProjects = useMemo(() => {
-    const list = sortProjectsList(projects);
+    const list = sortProjectsByLastOpened(projects, lastOpenedIds);
     return applyManualProjectOrder(list, manualOrder);
-  }, [projects, sortBy, manualOrder, sortProjectsList]);
-
-  /** Persiste reordenação do preview do browser (card na 2ª posição → 1ª). */
-  const previewCardOrderSeeded = useRef(false);
-  useEffect(() => {
-    if (previewCardOrderSeeded.current || manualOrder.length > 0 || projects.length < 2) return;
-
-    const base = sortProjectsList(projects);
-    const moved = base.find(p => p.name === 'Gestão de Pacientes Internados');
-    const fromIndex = moved ? base.findIndex(p => p.id === moved.id) : -1;
-    if (!moved || fromIndex !== 1) return;
-
-    previewCardOrderSeeded.current = true;
-    setManualOrder(moveProjectIdInOrder(buildProjectOrderIds(base), moved.id, 0));
-  }, [projects, manualOrder.length, sortProjectsList, setManualOrder]);
+  }, [projects, lastOpenedIds, manualOrder]);
 
   const filteredProjects = useMemo(() => {
-    if (quickFilter === 'withBugs') return sortedProjects.filter(projectHasOpenBugs);
-    if (quickFilter === 'needsAttention') return sortedProjects.filter(projectNeedsAttention);
-    return sortedProjects;
-  }, [sortedProjects, quickFilter]);
+    let list = sortedProjects.filter(p => projectMatchesSearch(p, searchQuery));
+    if (quickFilter === 'withBugs') list = list.filter(projectHasOpenBugs);
+    if (quickFilter === 'needsAttention') list = list.filter(projectNeedsAttention);
+    if (quickFilter === 'testAlerts') {
+      const alertIds = new Set(computeProjectsWithTestExecutionAlerts(projects).map(p => p.id));
+      list = list.filter(p => alertIds.has(p.id));
+    }
+    return list;
+  }, [sortedProjects, quickFilter, searchQuery, projects]);
 
   const filterAriaReady = useRef(false);
   const prevQuickFilter = useRef<QuickFilter | undefined>(undefined);
@@ -192,30 +199,10 @@ export const ProjectsDashboard: React.FC<{
       all: `Filtro de projetos: todos. ${countPhrase}`,
       withBugs: `Filtro de projetos: com bugs abertos. ${countPhrase}`,
       needsAttention: `Filtro de projetos: precisam de atenção. ${countPhrase}`,
+      testAlerts: `Filtro de projetos: alertas de execução de testes. ${countPhrase}`,
     };
     announce(map[quickFilter], 'polite');
   }, [quickFilter, filteredProjects.length, announce]);
-
-  const sortAriaReady = useRef(false);
-  const prevSortBy = useRef<'name' | 'updatedAt' | undefined>(undefined);
-  useEffect(() => {
-    if (projects.length <= 1) return;
-    if (!sortAriaReady.current) {
-      sortAriaReady.current = true;
-      prevSortBy.current = sortBy;
-      return;
-    }
-    if (prevSortBy.current === sortBy) return;
-    prevSortBy.current = sortBy;
-    const n = filteredProjects.length;
-    const countPhrase = `${n} ${n === 1 ? 'projeto' : 'projetos'} na lista.`;
-    announce(
-      sortBy === 'name'
-        ? `Ordenação: nome do projeto. ${countPhrase}`
-        : `Ordenação: última atualização. ${countPhrase}`,
-      'polite'
-    );
-  }, [sortBy, projects.length, filteredProjects.length, announce]);
 
   const lastActivity = useMemo(() => {
     if (projects.length === 0) return null;
@@ -248,6 +235,77 @@ export const ProjectsDashboard: React.FC<{
   const showWorkspaceAlerts =
     projectsNeedingAttention.length > 0 || projectsTestAlertList.length > 0;
 
+  const scrollToList = useCallback(() => {
+    listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
+
+  const handleStatClick = useCallback(
+    (key: WorkspaceStatKey) => {
+      if (key === 'backup') {
+        navigate('/settings');
+        return;
+      }
+      if (key === 'projects') {
+        setQuickFilter('all');
+        setSearchQuery('');
+        scrollToList();
+        return;
+      }
+      if (key === 'progress') {
+        if (projectsNeedingAttention.length > 0) {
+          setQuickFilter('needsAttention');
+        } else {
+          setQuickFilter('all');
+        }
+        scrollToList();
+        return;
+      }
+      if (key === 'success') {
+        if (projectsTestAlertList.length > 0) {
+          setQuickFilter('testAlerts');
+        } else {
+          setQuickFilter('all');
+        }
+        scrollToList();
+      }
+    },
+    [navigate, projectsNeedingAttention.length, projectsTestAlertList.length, scrollToList]
+  );
+
+  const handleEfficiencyClick = useCallback(() => {
+    if (projectsTestAlertList.length > 0) {
+      setQuickFilter('testAlerts');
+    } else {
+      setQuickFilter('all');
+    }
+    scrollToList();
+  }, [projectsTestAlertList.length, scrollToList]);
+
+  const statsBlock =
+    projects.length > 0 ? (
+      <div
+        className={cn(projectsDashboardStatsRegionClass, 'mb-0 mt-0')}
+        role="region"
+        aria-label="Resumo do workspace"
+      >
+        <WorkspaceDaisyStats
+          className="contents"
+          projectCount={projects.length}
+          testSuccessPercent={workspaceTestMetrics.testSuccessPercent}
+          taskDonePercent={taskDonePercentGlobal}
+          localBackupStatus={localBackupStatus}
+          onStatClick={handleStatClick}
+        />
+        <GlobalEfficiencyMetric
+          className="col-span-2 sm:col-span-4 lg:col-span-1"
+          percent={workspaceTestMetrics.executionEfficiencyPercent}
+          executedCount={workspaceTestMetrics.executedTestCases}
+          totalCount={workspaceTestMetrics.totalTestCases}
+          onClick={handleEfficiencyClick}
+        />
+      </div>
+    ) : null;
+
   return (
     <>
       <div className={projectsDashboardPageClass}>
@@ -255,41 +313,54 @@ export const ProjectsDashboard: React.FC<{
           <div className={cn(viewHeroChromeClass, 'gap-3 sm:gap-4')}>
             <ProjectsDashboardHeader
               projectCount={projects.length}
-              sortBy={sortBy}
-              onSortByChange={handleSortByChange}
               lastActivityText={lastActivityText}
+              searchQuery={searchQuery}
+              onSearchQueryChange={setSearchQuery}
             />
 
-            {projects.length > 0 && (
-              <div
-                className={cn(projectsDashboardStatsRegionClass, 'mb-0 mt-0')}
-                role="region"
-                aria-label="Resumo do workspace"
-              >
-                <WorkspaceDaisyStats
-                  className="contents"
-                  projectCount={projects.length}
-                  testSuccessPercent={workspaceTestMetrics.testSuccessPercent}
-                  taskDonePercent={taskDonePercentGlobal}
-                  localBackupStatus={localBackupStatus}
-                />
-                <GlobalEfficiencyMetric
-                  className="col-span-2 sm:col-span-4 lg:col-span-1"
-                  percent={workspaceTestMetrics.executionEfficiencyPercent}
-                  executedCount={workspaceTestMetrics.executedTestCases}
-                  totalCount={workspaceTestMetrics.totalTestCases}
-                />
+            {projects.length > 0 ? (
+              <div className="lg:contents">
+                <button
+                  type="button"
+                  className={projectsDashboardSummaryToggleClass(summaryExpanded)}
+                  aria-expanded={summaryExpanded}
+                  aria-controls="projects-dashboard-summary"
+                  onClick={() => setSummaryExpanded(open => !open)}
+                >
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className={viewHeroToolbarIconWrapClass} aria-hidden>
+                      <Gauge className={viewHeroToolbarIconClass} />
+                    </span>
+                    Resumo do workspace
+                  </span>
+                  <ChevronDown
+                    className={cn(
+                      'h-4 w-4 shrink-0 transition-transform',
+                      summaryExpanded && 'rotate-180'
+                    )}
+                    aria-hidden
+                  />
+                </button>
+                <div
+                  id="projects-dashboard-summary"
+                  className={summaryExpanded ? 'contents' : 'hidden lg:contents'}
+                >
+                  {statsBlock}
+                </div>
               </div>
-            )}
+            ) : null}
 
             {projects.length > 1 && (
               <ProjectQuickFiltersGroup
                 quickFilter={quickFilter}
                 setQuickFilter={setQuickFilter}
+                totalCount={projects.length}
                 showBugsFilter={projectsWithBugs.length > 0}
                 showAttentionFilter={projectsNeedingAttention.length > 0}
+                showTestAlertsFilter={projectsTestAlertList.length > 0}
                 bugsCount={projectsWithBugs.length}
                 attentionCount={projectsNeedingAttention.length}
+                testAlertsCount={projectsTestAlertList.length}
               />
             )}
           </div>
@@ -303,90 +374,115 @@ export const ProjectsDashboard: React.FC<{
             onCreateBusyChange={setIsCreateSubmitting}
           />
 
-          <div className={cn(projects.length > 0 && projectsDashboardMainGridClass)}>
+          <div ref={listRef} className={cn(projects.length > 0 && projectsDashboardMainGridClass)}>
             <div className="min-w-0">
-            {filteredProjects.length > 0 ? (
-              <div
-                className={projectsDashboardProjectGridClass}
-                role="list"
-                aria-label="Lista de projetos"
-              >
-                {filteredProjects.map((p, index) => (
-                  <div
-                    key={p.id}
-                    className="min-h-0"
-                    role="listitem"
-                    aria-posinset={index + 1}
-                    aria-setsize={filteredProjects.length + (quickFilter === 'all' ? 1 : 0)}
-                  >
-                    <ProjectCard
-                      project={p}
-                      className="h-full"
-                      onSelect={() => navigate(`/projects/${p.id}`)}
-                      onTaskClick={taskId => handleNavigateToTask(p.id, taskId)}
-                    />
-                  </div>
-                ))}
-                {quickFilter === 'all' && (
-                  <div role="listitem" className="min-h-0">
-                    <NewProjectCard
-                      onClick={() => setIsCreating(true)}
-                      disabled={isCreateSubmitting}
-                      className="h-full"
-                    />
-                  </div>
-                )}
-              </div>
-            ) : (
-              <>
-                {projects.length === 0 ? (
-                  <div className={cn(projectsDashboardMessagePanelClass, 'sm:p-8')}>
-                    <EmptyState
-                      icon="🚀"
-                      title="Nenhum projeto ainda"
-                      description="Crie um projeto para organizar tarefas, testes, documentos e métricas em um fluxo único."
-                      action={{
-                        label: 'Criar Primeiro Projeto',
-                        onClick: () => setIsCreating(true),
-                        variant: 'primary',
-                      }}
-                      tip="Você pode criar um projeto do zero, usar um template ou importar do Jira se estiver configurado."
-                    />
-                  </div>
-                ) : (
-                  <div className={projectsDashboardMessagePanelClass} role="status" aria-live="polite">
-                    <p className="mb-4 max-w-full mx-auto text-sm text-[var(--leve-header-text-muted)]">
-                      {quickFilter === 'withBugs'
-                        ? 'Nenhum projeto com bugs abertos corresponde a este filtro.'
-                        : 'Nenhum projeto corresponde a "Precisa de atenção" com os critérios atuais.'}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => setQuickFilter('all')}
-                      className={cn(projectsDashboardFilterPillClass(false), 'mx-auto')}
+              {isLoading && projects.length === 0 ? (
+                <div
+                  className={cn(projectsDashboardMessagePanelClass, 'sm:p-8')}
+                  role="status"
+                  aria-live="polite"
+                >
+                  <p className="text-sm font-medium text-[color-mix(in_srgb,var(--brand-text-strong)_78%,transparent)]">
+                    Carregando projetos…
+                  </p>
+                </div>
+              ) : filteredProjects.length > 0 ? (
+                <div
+                  className={projectsDashboardProjectGridClass}
+                  role="list"
+                  aria-label="Lista de projetos"
+                >
+                  {filteredProjects.map((p, index) => (
+                    <div
+                      key={p.id}
+                      className="min-h-0"
+                      role="listitem"
+                      aria-posinset={index + 1}
+                      aria-setsize={
+                        filteredProjects.length + (quickFilter === 'all' && !searchQuery.trim() ? 1 : 0)
+                      }
                     >
-                      Mostrar todos os projetos
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
+                      <ProjectCard
+                        project={p}
+                        className="h-full"
+                        onSelect={() => navigate(`/projects/${p.id}`)}
+                        onTaskClick={taskId => handleNavigateToTask(p.id, taskId)}
+                      />
+                    </div>
+                  ))}
+                  {quickFilter === 'all' && !searchQuery.trim() && (
+                    <div role="listitem" className="min-h-0">
+                      <NewProjectCard
+                        onClick={() => setIsCreating(true)}
+                        disabled={isCreateSubmitting}
+                        className="h-full"
+                      />
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  {projects.length === 0 ? (
+                    <div className={cn(projectsDashboardMessagePanelClass, 'sm:p-8')}>
+                      <EmptyState
+                        icon="🚀"
+                        title="Nenhum projeto ainda"
+                        description="Crie um projeto para organizar tarefas, testes, documentos e métricas em um fluxo único."
+                        action={{
+                          label: 'Criar Primeiro Projeto',
+                          onClick: () => setIsCreating(true),
+                          variant: 'primary',
+                        }}
+                        tip="Você pode criar um projeto do zero, usar um template ou importar do Jira se estiver configurado."
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className={projectsDashboardMessagePanelClass}
+                      role="status"
+                      aria-live="polite"
+                    >
+                      <p className="mb-4 mx-auto max-w-full text-sm font-medium text-[color-mix(in_srgb,var(--brand-text-strong)_78%,transparent)]">
+                        {searchQuery.trim()
+                          ? `Nenhum projeto corresponde a “${searchQuery.trim()}”.`
+                          : quickFilter === 'withBugs'
+                            ? 'Nenhum projeto com bugs abertos corresponde a este filtro.'
+                            : quickFilter === 'testAlerts'
+                              ? 'Nenhum projeto com alerta de execução de testes.'
+                              : 'Nenhum projeto corresponde a "Precisa de atenção" com os critérios atuais.'}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setQuickFilter('all');
+                          setSearchQuery('');
+                        }}
+                        className={cn(projectsDashboardFilterPillClass(false), 'mx-auto')}
+                      >
+                        Mostrar todos os projetos
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
 
             {projects.length > 0 && (
-              <ProjectsDashboardSidebar
-                className="mt-6 lg:mt-0"
-                projects={projects}
-                healthProjects={projectsNeedingAttention}
-                testExecutionAlertProjects={projectsTestAlertList}
-                taskWorkflowBuckets={taskWorkflowBuckets}
-                onSelectProject={id => navigate(`/projects/${id}`)}
-                listFilterNeedsAttention={quickFilter === 'needsAttention'}
-                onToggleListFilterNeedsAttention={() =>
-                  setQuickFilter(quickFilter === 'needsAttention' ? 'all' : 'needsAttention')
-                }
-                showAlerts={showWorkspaceAlerts}
-              />
+              <div className={cn(!summaryExpanded && 'hidden lg:block')}>
+                <ProjectsDashboardSidebar
+                  className="mt-6 lg:mt-0"
+                  projects={projects}
+                  healthProjects={projectsNeedingAttention}
+                  testExecutionAlertProjects={projectsTestAlertList}
+                  taskWorkflowBuckets={taskWorkflowBuckets}
+                  onSelectProject={id => navigate(`/projects/${id}`)}
+                  listFilterNeedsAttention={quickFilter === 'needsAttention'}
+                  onToggleListFilterNeedsAttention={() =>
+                    setQuickFilter(quickFilter === 'needsAttention' ? 'all' : 'needsAttention')
+                  }
+                  showAlerts={showWorkspaceAlerts}
+                />
+              </div>
             )}
           </div>
         </div>
@@ -395,69 +491,116 @@ export const ProjectsDashboard: React.FC<{
   );
 };
 
+function ProjectQuickFilterButton({
+  active,
+  label,
+  count,
+  icon: Icon,
+  onClick,
+  ariaLabel,
+}: {
+  active: boolean;
+  label: string;
+  count?: number;
+  icon: LucideIcon;
+  onClick: () => void;
+  ariaLabel: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={projectsDashboardQuickFiltersPillClass(active)}
+      aria-pressed={active}
+      aria-label={ariaLabel}
+    >
+      <span className={viewHeroToolbarIconWrapClass} aria-hidden>
+        <Icon className={viewHeroToolbarIconClass} />
+      </span>
+      <span>{label}</span>
+      {count != null ? (
+        <span className={projectsDashboardQuickFiltersCountClass(active)} aria-hidden>
+          {count}
+        </span>
+      ) : null}
+    </button>
+  );
+}
+
 function ProjectQuickFiltersGroup({
   quickFilter,
   setQuickFilter,
+  totalCount,
   showBugsFilter,
   showAttentionFilter,
+  showTestAlertsFilter,
   bugsCount,
   attentionCount,
+  testAlertsCount,
 }: {
   quickFilter: QuickFilter;
   setQuickFilter: React.Dispatch<React.SetStateAction<QuickFilter>>;
+  totalCount: number;
   showBugsFilter: boolean;
   showAttentionFilter: boolean;
+  showTestAlertsFilter: boolean;
   bugsCount: number;
   attentionCount: number;
+  testAlertsCount: number;
 }) {
-  const pillClass = (active: boolean) => projectsDashboardQuickFiltersPillClass(active);
-
   return (
     <div
       className={cn(projectsDashboardQuickFiltersToolbarClass, 'mb-0')}
       role="group"
       aria-label="Filtrar projetos"
     >
-      <button
-        type="button"
+      <ProjectQuickFilterButton
+        active={quickFilter === 'all'}
+        label="Todos"
+        count={totalCount}
+        icon={LayoutGrid}
         onClick={() => setQuickFilter('all')}
-        className={pillClass(quickFilter === 'all')}
-        aria-pressed={quickFilter === 'all'}
-      >
-        Todos
-      </button>
+        ariaLabel={`Todos os projetos (${totalCount})`}
+      />
       {showBugsFilter ? (
         <>
           <div className={projectsDashboardQuickFiltersDividerClass} aria-hidden />
-          <button
-            type="button"
+          <ProjectQuickFilterButton
+            active={quickFilter === 'withBugs'}
+            label="Com bugs"
+            count={bugsCount}
+            icon={Bug}
             onClick={() => setQuickFilter(quickFilter === 'withBugs' ? 'all' : 'withBugs')}
-            className={pillClass(quickFilter === 'withBugs')}
-            aria-pressed={quickFilter === 'withBugs'}
-          >
-            <span className={viewHeroToolbarIconWrapClass} aria-hidden>
-              <Bug className={viewHeroToolbarIconClass} />
-            </span>
-            Com bugs ({bugsCount})
-          </button>
+            ariaLabel={`Projetos com bugs abertos (${bugsCount})`}
+          />
         </>
       ) : null}
       {showAttentionFilter ? (
         <>
           <div className={projectsDashboardQuickFiltersDividerClass} aria-hidden />
-          <button
-            type="button"
+          <ProjectQuickFilterButton
+            active={quickFilter === 'needsAttention'}
+            label="Atenção"
+            count={attentionCount}
+            icon={AlertTriangle}
             onClick={() =>
               setQuickFilter(quickFilter === 'needsAttention' ? 'all' : 'needsAttention')
             }
-            className={pillClass(quickFilter === 'needsAttention')}
-            aria-pressed={quickFilter === 'needsAttention'}
-          >
-            <span className={viewHeroToolbarIconWrapClass} aria-hidden>
-              <AlertTriangle className={viewHeroToolbarIconClass} />
-            </span>
-            Atenção ({attentionCount})
-          </button>
+            ariaLabel={`Projetos que precisam de atenção (${attentionCount})`}
+          />
+        </>
+      ) : null}
+      {showTestAlertsFilter ? (
+        <>
+          <div className={projectsDashboardQuickFiltersDividerClass} aria-hidden />
+          <ProjectQuickFilterButton
+            active={quickFilter === 'testAlerts'}
+            label="Testes"
+            count={testAlertsCount}
+            icon={ClipboardCheck}
+            onClick={() => setQuickFilter(quickFilter === 'testAlerts' ? 'all' : 'testAlerts')}
+            ariaLabel={`Projetos com alertas de testes (${testAlertsCount})`}
+          />
         </>
       ) : null}
     </div>

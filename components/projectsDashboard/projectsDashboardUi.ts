@@ -28,8 +28,29 @@ export const projectsDashboardSearchBtnClass = cn(
   'projects-dash-neu-icon-btn shrink-0'
 );
 
+/** Campo de busca local — inset neumórfico (mesmo padrão do select / TasksView). */
+export const projectsDashboardSearchFieldClass = cn(
+  'projects-dash-neu-search-input',
+  'h-11 w-full rounded-full border-0 py-2 pl-10 pr-3 font-sans text-sm font-medium',
+  'max-md:h-10 max-md:pl-9 max-md:text-xs',
+  'text-[var(--workspace-panel-text)] placeholder:text-[var(--workspace-panel-text-muted)]',
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--workspace-panel-accent)_40%,transparent)]'
+);
+
+export const projectsDashboardSearchIconClass =
+  'pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--workspace-panel-text-muted)] opacity-80';
+
+/** Toggle mobile do resumo — pill elevado do hero (mesmo padrão dos filtros). */
+export function projectsDashboardSummaryToggleClass(expanded: boolean): string {
+  return cn(
+    expanded ? viewHeroToolbarBtnActiveClass : viewHeroToolbarBtnClass,
+    'lg:hidden w-full justify-between min-h-[44px] px-3 py-2.5 text-sm font-semibold',
+    'max-md:min-h-10'
+  );
+}
+
 export const projectsDashboardSelectClass = cn(
-  'projects-dash-neu-select select select-sm h-9 min-h-[44px] rounded-xl border-0',
+  'projects-dash-neu-select select select-sm h-9 min-h-[44px] rounded-full border-0',
   'bg-[var(--workspace-stat-bg)] py-1 pl-2 pr-8 text-xs font-medium text-[var(--workspace-stat-text)]',
   'focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--workspace-stat-accent)_35%,transparent)]',
   'max-md:min-h-8 max-md:h-8 sm:min-h-8 sm:h-8'
@@ -51,6 +72,16 @@ export function projectsDashboardQuickFiltersPillClass(active: boolean): string 
   return cn(
     active ? viewHeroToolbarBtnActiveClass : viewHeroToolbarBtnClass,
     'min-h-[44px] max-md:min-h-8 max-md:py-1 sm:min-h-0'
+  );
+}
+
+/** Badge numérico dos filtros (idle/active), padrão backlog / toolbar do hero. */
+export function projectsDashboardQuickFiltersCountClass(active: boolean): string {
+  return cn(
+    'dashboard-neu-filter-count',
+    'inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full px-1.5 py-0',
+    'font-sans text-[10px] font-bold tabular-nums leading-none',
+    active ? 'workspace-chrome-count-active' : 'workspace-chrome-count-idle'
   );
 }
 

@@ -4762,6 +4762,26 @@
     box-shadow: var(--workspace-panel-neu-inset) !important;
   }
 
+  .dashboard-hero-chrome .projects-dash-neu-search-input {
+    border: 1px solid color-mix(in srgb, var(--workspace-panel-border) 80%, transparent);
+    background: color-mix(in srgb, var(--workspace-panel-neu-dark) 18%, var(--workspace-panel-bg));
+    color: var(--workspace-panel-text);
+    box-shadow: var(--workspace-panel-neu-inset);
+  }
+
+  .dashboard-hero-chrome .projects-dash-neu-search-input::placeholder {
+    color: var(--workspace-panel-text-muted);
+    opacity: 0.85;
+  }
+
+  .dashboard-hero-chrome .projects-dash-neu-search-input:focus-visible {
+    outline: none;
+    border-color: color-mix(in srgb, var(--workspace-panel-accent) 45%, transparent);
+    box-shadow:
+      var(--workspace-panel-neu-inset),
+      0 0 0 2px color-mix(in srgb, var(--workspace-panel-accent) 35%, transparent);
+  }
+
   .dashboard-hero-chrome .workspace-stat-neu-track {
     background: color-mix(in srgb, var(--workspace-panel-neu-dark) 55%, var(--workspace-panel-bg));
     box-shadow: inset 2px 2px 4px var(--workspace-panel-neu-dark);
