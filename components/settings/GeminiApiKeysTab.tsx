@@ -18,6 +18,10 @@ import {
 } from '../../services/geminiConfigService';
 import { geminiApiKeyManager } from '../../services/ai/geminiApiKeyManager';
 import {
+  APP_STATE_RESTORED_EVENT,
+  reloadGeminiRuntime,
+} from '../../services/appStateRestoreService';
+import {
   GEMINI_USAGE_UPDATED_EVENT,
   getGeminiKeyUsage,
   resetGeminiKeyUsage,
@@ -82,12 +86,6 @@ function formatTimestamp(iso?: string): string {
   }
 }
 
-async function reloadGeminiRuntime(): Promise<void> {
-  geminiApiKeyManager.reloadKeys();
-  const { invalidateAIServiceCache } = await import('../../services/ai/aiServiceFactory');
-  invalidateAIServiceCache();
-}
-
 async function testGeminiKey(key: string): Promise<{ ok: boolean; message: string }> {
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`,
@@ -124,9 +122,14 @@ export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChang
 
   useEffect(() => {
     const onUsage = () => setUsageTick(t => t + 1);
+    const onAppStateRestored = () => refreshKeys();
     window.addEventListener(GEMINI_USAGE_UPDATED_EVENT, onUsage);
-    return () => window.removeEventListener(GEMINI_USAGE_UPDATED_EVENT, onUsage);
-  }, []);
+    window.addEventListener(APP_STATE_RESTORED_EVENT, onAppStateRestored);
+    return () => {
+      window.removeEventListener(GEMINI_USAGE_UPDATED_EVENT, onUsage);
+      window.removeEventListener(APP_STATE_RESTORED_EVENT, onAppStateRestored);
+    };
+  }, [refreshKeys]);
 
   const managerStats = useMemo(() => geminiApiKeyManager.getStats(), [keys, usageTick]);
   const exhaustedInfo = useMemo(() => geminiApiKeyManager.getExhaustedKeysInfo(), [keys, usageTick]);

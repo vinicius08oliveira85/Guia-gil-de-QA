@@ -54,6 +54,7 @@ describe('importProjectsFromBackup', () => {
     expect(result.supabaseSynced).toBe(0);
     expect(result.supabaseSyncFailed).toBe(0);
     expect(result.taskTrackingTasksRestored).toBe(0);
+    expect(result.appStateRestored).toBe(false);
     expect(supabaseService.saveProjectToSupabase).not.toHaveBeenCalled();
   });
 
@@ -135,6 +136,24 @@ describe('importProjectsFromBackup', () => {
         localStorage: {
           'qa_user_preferences': '{"export":{"defaultFormat":"markdown"}}',
           'tasks_filters_imp-6': '{"sortBy":"title"}',
+          jira_config: JSON.stringify({
+            url: 'https://jira.example.com',
+            email: 'qa@test.com',
+            apiToken: 'token1234567',
+          }),
+          gemini_api_keys: JSON.stringify({
+            version: 2,
+            keys: [
+              {
+                id: 'k1',
+                name: 'Principal',
+                apiKey: 'gemini-key-1234567',
+                priority: 0,
+                enabled: true,
+                createdAt: '2026-01-01T00:00:00.000Z',
+              },
+            ],
+          }),
         },
         sessionStorage: {
           'jira-solus-filas-project-key': 'GDPI',
@@ -146,8 +165,48 @@ describe('importProjectsFromBackup', () => {
     const result = await importProjectsFromBackup(file);
 
     expect(result.imported).toBe(1);
+    expect(result.appStateRestored).toBe(true);
+    expect(result.appStateSummary?.jiraConfig).toBe(true);
+    expect(result.appStateSummary?.geminiKeysCount).toBe(1);
     expect(localStorage.getItem('qa_user_preferences')).toContain('markdown');
     expect(localStorage.getItem('tasks_filters_imp-6')).toContain('title');
+    expect(localStorage.getItem('jira_config')).toContain('jira.example.com');
     expect(sessionStorage.getItem('jira-solus-filas-project-key')).toBe('GDPI');
+  });
+
+  it('importa apenas appState (configs) sem projetos', async () => {
+    const file = jsonFile({
+      projects: [],
+      appState: {
+        localStorage: {
+          jira_config: JSON.stringify({
+            url: 'https://jira.example.com',
+            email: 'qa@test.com',
+            apiToken: 'token1234567',
+          }),
+          gemini_api_keys: JSON.stringify({
+            version: 2,
+            keys: [
+              {
+                id: 'k1',
+                name: 'Principal',
+                apiKey: 'gemini-key-1234567',
+                priority: 0,
+                enabled: true,
+                createdAt: '2026-01-01T00:00:00.000Z',
+              },
+            ],
+          }),
+        },
+        sessionStorage: {},
+        testGenerationCache: [],
+      },
+    });
+
+    const result = await importProjectsFromBackup(file);
+
+    expect(result.imported).toBe(0);
+    expect(result.appStateRestored).toBe(true);
+    expect(localStorage.getItem('jira_config')).toContain('qa@test.com');
   });
 });

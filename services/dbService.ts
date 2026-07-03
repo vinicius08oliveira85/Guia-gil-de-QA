@@ -22,6 +22,11 @@ import {
   type FullAppStateBackup,
 } from './fullLocalBackupService';
 import {
+  applyRuntimeAfterAppStateRestore,
+  summarizeAppStateBackup,
+  type AppStateRestoreSummary,
+} from './appStateRestoreService';
+import {
   readTaskTrackingSnapshot,
   restoreTaskTrackingFromBackup,
   type TaskTrackingSnapshot,
@@ -356,6 +361,10 @@ export type ImportBackupResult = {
   supabaseSyncFailed: number;
   /** Quantidade de tarefas restauradas no Acompanhamento de Tarefas (0 se ausente no arquivo). */
   taskTrackingTasksRestored: number;
+  /** Indica se appState (configs, credenciais, preferências) foi restaurado (backup v3+). */
+  appStateRestored: boolean;
+  /** Resumo do appState restaurado; presente quando appStateRestored é true. */
+  appStateSummary?: AppStateRestoreSummary;
 };
 
 /**
@@ -403,8 +412,15 @@ export const importProjectsFromBackup = async (
     parsed && typeof parsed === 'object' && !Array.isArray(parsed)
       ? (parsed as { appState?: FullAppStateBackup }).appState
       : undefined;
+
+  let appStateRestored = false;
+  let appStateSummary: AppStateRestoreSummary | undefined;
+
   if (appStateRaw) {
+    appStateSummary = summarizeAppStateBackup(appStateRaw);
     await restoreFullAppStateBackup(appStateRaw);
+    await applyRuntimeAfterAppStateRestore(appStateSummary);
+    appStateRestored = true;
   }
 
   for (let i = 0; i < rawProjects.length; i++) {
@@ -427,10 +443,19 @@ export const importProjectsFromBackup = async (
     `Importação de backup concluída: ${imported} projeto(s) gravados, ${skipped} ignorado(s)` +
       (taskTrackingTasksRestored > 0
         ? `; acompanhamento: ${taskTrackingTasksRestored} tarefa(s)`
-        : ''),
+        : '') +
+      (appStateRestored ? '; appState restaurado' : ''),
     'dbService'
   );
-  return { imported, skipped, supabaseSynced: 0, supabaseSyncFailed: 0, taskTrackingTasksRestored };
+  return {
+    imported,
+    skipped,
+    supabaseSynced: 0,
+    supabaseSyncFailed: 0,
+    taskTrackingTasksRestored,
+    appStateRestored,
+    appStateSummary,
+  };
 };
 
 /** @deprecated Use writeProjectToIndexedDBOnly — mantido para compatibilidade de testes. */

@@ -2,6 +2,8 @@
  * Serviço para gerenciar múltiplas API Keys do Gemini (nome + chave + prioridade).
  */
 
+import { scheduleLocalFolderSync } from '../utils/localFolderSyncScheduler';
+
 const LEGACY_STORAGE_KEY = 'gemini_api_key';
 const KEYS_STORAGE_KEY = 'gemini_api_keys';
 
@@ -107,6 +109,7 @@ export const saveGeminiKeysConfig = (config: GeminiKeysConfig): void => {
     KEYS_STORAGE_KEY,
     JSON.stringify({ version: 2, keys: assignPrioritiesInOrder(config.keys) })
   );
+  scheduleLocalFolderSync();
 };
 
 /**

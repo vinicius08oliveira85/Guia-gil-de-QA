@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Download, FolderOpen, HardDrive, RefreshCw, Upload } from 'lucide-react';
 import { exportProjectsToBackup, importProjectsFromBackup } from '../../services/dbService';
+import { formatAppStateRestoreMessage } from '../../services/appStateRestoreService';
 import {
   exportLocalBackupViaFileSystemAccess,
   isFileSystemAccessBackupSupported,
@@ -85,8 +86,9 @@ export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImpo
     const result = await importProjectsFromBackup(file);
     const hasProjects = result.imported > 0;
     const hasTaskTracking = result.taskTrackingTasksRestored > 0;
+    const hasAppState = result.appStateRestored;
 
-    if (!hasProjects && !hasTaskTracking) {
+    if (!hasProjects && !hasTaskTracking && !hasAppState) {
       handleWarning('Nenhum dado válido foi importado. Verifique o formato do arquivo.');
       return;
     }
@@ -100,8 +102,11 @@ export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImpo
         `acompanhamento de tarefas restaurado (${result.taskTrackingTasksRestored} tarefa(s))`
       );
     }
-    let msg = `${parts.join('; ')}.`;
-    handleSuccess(msg);
+    if (hasAppState && result.appStateSummary) {
+      const configMsg = formatAppStateRestoreMessage(result.appStateSummary);
+      if (configMsg) parts.push(configMsg.replace(/\.$/, ''));
+    }
+    handleSuccess(`${parts.join('; ')}.`);
     await onImportComplete?.();
   };
 
@@ -316,8 +321,8 @@ export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImpo
               id="auto-sync-folder-hint"
               className="mt-0.5 block text-[var(--leve-header-text-muted)]"
             >
-              Após mudanças nos projetos ou no Acompanhamento de Tarefas, o backup é regravado na
-              pasta em até cerca de 1 minuto.
+              Após mudanças nos projetos, no Acompanhamento de Tarefas ou nas configurações (Jira,
+              chaves Gemini, preferências), o backup é regravado na pasta em até cerca de 1 minuto.
             </span>
           </span>
         </label>
@@ -368,9 +373,11 @@ export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImpo
         <p className={cn(leveSettingsMutedTextClass, 'mt-1')}>
           Em navegadores compatíveis (Chrome, Edge), você escolhe onde salvar ou de qual arquivo
           carregar o JSON; nos demais, o navegador usa download e seletor de arquivo padrão. O backup
-          inclui todos os projetos (IndexedDB) e o Acompanhamento de Tarefas — tarefas importadas das
-          filas Jira, projeto/fila selecionados e janela de SLA. A importação substitui projetos com
-          o mesmo ID e restaura o acompanhamento salvo no arquivo.
+          inclui projetos (IndexedDB), Acompanhamento de Tarefas, credenciais Jira, chaves Gemini,
+          preferências, filtros, workspace e cache de IA. A importação substitui projetos com o mesmo
+          ID e restaura configurações salvas no arquivo (formato v3). Backups antigos sem{' '}
+          <code className="font-mono text-xs">appState</code> não trazem credenciais — exporte
+          novamente para incluí-las.
         </p>
 
         <div className="mt-4 flex flex-wrap gap-2">

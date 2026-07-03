@@ -36,6 +36,7 @@ import {
 } from '../common/projectCardUi';
 import { Input } from '../common/Input';
 import { logger } from '../../utils/logger';
+import { APP_STATE_RESTORED_EVENT } from '../../services/appStateRestoreService';
 import { cn } from '../../utils/cn';
 import toast from 'react-hot-toast';
 import { AppSelect } from '../common/AppSelect';
@@ -93,6 +94,19 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
         setConfig(prev => ({ ...prev, url: lastUrl }));
       }
     }
+  }, []);
+
+  useEffect(() => {
+    const onAppStateRestored = () => {
+      const savedConfig = getJiraConfig();
+      if (savedConfig) {
+        setConfig(savedConfig);
+        setIsConnected(true);
+        loadJiraProjects(savedConfig);
+      }
+    };
+    window.addEventListener(APP_STATE_RESTORED_EVENT, onAppStateRestored);
+    return () => window.removeEventListener(APP_STATE_RESTORED_EVENT, onAppStateRestored);
   }, []);
 
   const loadJiraProjects = async (jiraConfig: JiraConfig, useCache: boolean = true) => {

@@ -49,7 +49,7 @@ export interface FullAppStateBackup {
   testGenerationCache: PersistedCacheEntry[];
 }
 
-function shouldBackupLocalStorageKey(key: string): boolean {
+export function shouldBackupLocalStorageKey(key: string): boolean {
   if (key.startsWith('jira-solus-filas-tasks')) return false;
   if (key.startsWith('jira-solus-filas-sla-risk')) return false;
   return BACKED_UP_LOCAL_STORAGE_PREFIXES.some(prefix => key.startsWith(prefix));
