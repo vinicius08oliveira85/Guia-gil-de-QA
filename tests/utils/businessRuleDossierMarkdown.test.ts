@@ -46,8 +46,8 @@ describe('businessRuleDossierMarkdown', () => {
 
     expect(md).toContain('## Funcionalidades');
     expect(md).toContain('### Mapa de Internação');
-    expect(md).toContain('**O que foi implementado:**');
-    expect(md).toContain('**Resultado esperado:**');
+    expect(md).toContain('#### O que foi implementado');
+    expect(md).toContain('#### Resultado esperado');
   });
 
   it('buildDossierMarkdown renderiza ficha técnica por task', () => {
@@ -68,13 +68,15 @@ describe('businessRuleDossierMarkdown', () => {
     });
 
     expect(md).toContain('## Fichas técnicas por task');
-    expect(md).toContain('### Ficha Técnica da Task: GDPI-134');
-    expect(md).toContain('**Identificação (Jira):** GDPI-134');
-    expect(md).toContain('**O que foi feito e implementado:**');
-    expect(md).toContain('**Como era antes (Legado):**');
-    expect(md).toContain('**Como ficou agora (Melhoria):**');
-    expect(md).toContain('**O que a função faz:**');
-    expect(md).toContain('**Sistemas/Módulos integrados:**');
-    expect(md).toContain('**Resultado esperado:**');
+    expect(md).toContain('### GDPI-134 — Alta e Motivo da Alta');
+    expect(md).toContain('Identificação Jira: **GDPI-134**');
+    expect(md).toContain('#### O que foi implementado');
+    expect(md).toContain('#### Legado vs melhoria');
+    expect(md).toContain('**Antes (legado):**');
+    expect(md).toContain('**Depois (melhoria):**');
+    expect(md).toContain('#### Função e integrações');
+    expect(md).toContain('**Função:**');
+    expect(md).toContain('**Sistemas / módulos:**');
+    expect(md).toContain('#### Resultado esperado');
   });
 });

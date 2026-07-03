@@ -2,13 +2,14 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import { ImagePlus, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { BusinessRuleScreenshot } from '../../types';
+import { MAX_BUSINESS_RULE_SCREENSHOTS } from '../../utils/businessRuleDefaults';
 import { cn } from '../../utils/cn';
 import {
   tasksPanelFormFieldLabelClass,
   tasksPanelFormMutedClass,
 } from '../tasks/tasksPanelNeuStyles';
 
-const MAX_SCREENSHOTS = 5;
+const MAX_SCREENSHOTS = MAX_BUSINESS_RULE_SCREENSHOTS;
 const MAX_BYTES = 2 * 1024 * 1024;
 
 export interface BusinessRuleScreenshotUploadProps {
@@ -84,7 +85,7 @@ function imageFilesFromClipboard(data: DataTransfer | null): File[] {
 }
 
 /**
- * Upload de prints para enriquecer a análise do dossiê (máx. 5 imagens, 2MB cada).
+ * Upload de prints para enriquecer a análise do dossiê (até 20 imagens, 2MB cada).
  * Suporta seleção de arquivo e colar imagem (Ctrl+V).
  */
 export const BusinessRuleScreenshotUpload: React.FC<BusinessRuleScreenshotUploadProps> = ({

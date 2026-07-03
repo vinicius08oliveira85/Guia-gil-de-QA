@@ -1,8 +1,10 @@
 import React, { useCallback } from 'react';
 import { ChevronDown, Pencil, RefreshCw, Trash2 } from 'lucide-react';
 import type { BusinessRule } from '../../types';
+import type { DossierAiProgress } from '../../utils/businessRuleDossierProgress';
 import { isLegacyBusinessRule } from '../../utils/businessRuleDefaults';
 import { SafeMarkdown } from '../common/SafeMarkdown';
+import { BusinessRuleDossierProgressBanner } from './BusinessRuleDossierProgressBanner';
 import {
   businessRulesCardActionLabelClass,
   businessRulesCardBodyClass,
@@ -10,12 +12,21 @@ import {
   businessRulesCardClass,
   businessRulesCardDeleteBtnClass,
   businessRulesCardEditBtnClass,
+  businessRulesCardKeywordsPanelClass,
   businessRulesCardLabelClass,
+  businessRulesCardSectionClass,
   businessRulesCardSummaryActionsClass,
   businessRulesCardSummaryClass,
   businessRulesCardSummaryHeaderClass,
   businessRulesCardTitleClass,
   businessRulesCategoryBadgeClass,
+  businessRulesDossierContentClass,
+  businessRulesDossierProseClass,
+  businessRulesHistoryPanelClass,
+  businessRulesHistorySummaryClass,
+  businessRulesKeywordChipClass,
+  businessRulesKeywordsListClass,
+  businessRulesLegacyBannerClass,
 } from './businessRulesNeuUi';
 
 export interface BusinessRuleDossierCardProps {
@@ -23,6 +34,7 @@ export interface BusinessRuleDossierCardProps {
   isExpanded?: boolean;
   onExpandedChange?: (open: boolean) => void;
   isAnalyzing?: boolean;
+  analyzingProgress?: DossierAiProgress | null;
   onEdit: (rule: BusinessRule) => void;
   onDelete: (ruleId: string) => void;
   onReanalyze: (rule: BusinessRule) => void;
@@ -42,6 +54,7 @@ export const BusinessRuleDossierCard: React.FC<BusinessRuleDossierCardProps> = (
   isExpanded = false,
   onExpandedChange,
   isAnalyzing = false,
+  analyzingProgress = null,
   onEdit,
   onDelete,
   onReanalyze,
@@ -49,6 +62,9 @@ export const BusinessRuleDossierCard: React.FC<BusinessRuleDossierCardProps> = (
 }) => {
   const legacy = isLegacyBusinessRule(rule);
   const outdated = rule.isOutdated && !isAnalyzing;
+  const keywordsSectionId = `br-keywords-${rule.id}`;
+  const dossierSectionId = `br-dossier-${rule.id}`;
+  const historySectionId = `br-history-${rule.id}`;
 
   const handleToggle = useCallback(
     (e: React.SyntheticEvent<HTMLDetailsElement>) => {
@@ -134,51 +150,101 @@ export const BusinessRuleDossierCard: React.FC<BusinessRuleDossierCardProps> = (
         </summary>
 
         <div className={businessRulesCardBodyClass}>
+          {isAnalyzing && analyzingProgress ? (
+            <BusinessRuleDossierProgressBanner progress={analyzingProgress} className="mb-3" />
+          ) : null}
+
           {rule.searchKeywords && rule.searchKeywords.length > 0 ? (
-            <div className="mb-3">
-              <p className={businessRulesCardLabelClass}>Palavras-chave</p>
-              <p className="text-sm text-base-content/80">{rule.searchKeywords.join(', ')}</p>
-            </div>
+            <section
+              className={businessRulesCardSectionClass}
+              aria-labelledby={keywordsSectionId}
+            >
+              <h4 id={keywordsSectionId} className={businessRulesCardLabelClass}>
+                Palavras-chave
+              </h4>
+              <div className={businessRulesCardKeywordsPanelClass}>
+                <ul className={businessRulesKeywordsListClass} role="list">
+                  {rule.searchKeywords.map(keyword => (
+                    <li key={keyword}>
+                      <span className={businessRulesKeywordChipClass}>{keyword}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </section>
           ) : null}
 
           {legacy && !rule.analysis ? (
-            <div className="mb-3 rounded-lg border border-warning/30 bg-warning/5 p-3 text-sm">
-              Regra legada com descrição manual. Converta para dossiê IA para análise automática.
-              <button
-                type="button"
-                className="btn btn-ghost btn-xs ml-2"
-                onClick={() => onConvertLegacy(rule)}
-              >
-                Converter
-              </button>
-            </div>
+            <section className={businessRulesCardSectionClass} aria-live="polite">
+              <div className={businessRulesLegacyBannerClass}>
+                <p>
+                  Regra legada com descrição manual. Converta para dossiê IA para análise
+                  automática.
+                </p>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-xs mt-2"
+                  onClick={() => onConvertLegacy(rule)}
+                >
+                  Converter para dossiê
+                </button>
+              </div>
+            </section>
           ) : null}
 
           {rule.analysis ? (
-            <div>
-              <p className={businessRulesCardLabelClass}>Dossiê</p>
-              <SafeMarkdown source={rule.analysis.markdown} className="prose prose-sm max-w-none" />
-            </div>
+            <section className={businessRulesCardSectionClass} aria-labelledby={dossierSectionId}>
+              <h4 id={dossierSectionId} className={businessRulesCardLabelClass}>
+                Conteúdo do dossiê
+              </h4>
+              <div className={businessRulesDossierContentClass}>
+                <SafeMarkdown
+                  source={rule.analysis.markdown}
+                  className={businessRulesDossierProseClass}
+                />
+              </div>
+            </section>
           ) : rule.description?.trim() ? (
-            <div>
-              <p className={businessRulesCardLabelClass}>Descrição legada</p>
-              <SafeMarkdown source={rule.description} className="prose prose-sm max-w-none" />
-            </div>
+            <section className={businessRulesCardSectionClass} aria-labelledby={dossierSectionId}>
+              <h4 id={dossierSectionId} className={businessRulesCardLabelClass}>
+                Descrição legada
+              </h4>
+              <div className={businessRulesDossierContentClass}>
+                <SafeMarkdown source={rule.description} className={businessRulesDossierProseClass} />
+              </div>
+            </section>
           ) : (
-            <p className="text-sm text-base-content/60">Sem análise gerada.</p>
+            <p className="text-sm italic text-[var(--leve-header-text-muted)]">
+              Sem análise gerada.
+            </p>
           )}
 
           {(rule.analysisHistory?.length ?? 0) > 0 ? (
-            <details className="mt-3">
-              <summary className="cursor-pointer text-sm font-medium">Histórico de versões</summary>
-              <ul className="mt-2 space-y-2 text-xs text-base-content/70" role="list">
-                {rule.analysisHistory!.map(h => (
-                  <li key={`${h.version}-${h.generatedAt}`}>
-                    v{h.version} — {new Date(h.generatedAt).toLocaleString('pt-BR')}
-                  </li>
-                ))}
-              </ul>
-            </details>
+            <section className={businessRulesCardSectionClass} aria-labelledby={historySectionId}>
+              <details className="group/history">
+                <summary className={businessRulesHistorySummaryClass} id={historySectionId}>
+                  Histórico de versões ({rule.analysisHistory!.length})
+                </summary>
+                <div className={`${businessRulesHistoryPanelClass} mt-2`}>
+                  <ul className="space-y-1.5" role="list">
+                    {rule.analysisHistory!.map(h => (
+                      <li
+                        key={`${h.version}-${h.generatedAt}`}
+                        className="flex flex-wrap items-baseline gap-x-2 text-xs leading-relaxed"
+                      >
+                        <span className="font-semibold text-[var(--leve-header-text)]">
+                          v{h.version}
+                        </span>
+                        <span aria-hidden>·</span>
+                        <time dateTime={h.generatedAt}>
+                          {new Date(h.generatedAt).toLocaleString('pt-BR')}
+                        </time>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </details>
+            </section>
           ) : null}
         </div>
       </details>

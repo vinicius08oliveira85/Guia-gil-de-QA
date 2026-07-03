@@ -10,7 +10,7 @@ import {
   parseBusinessRulesImportJson,
 } from '../../utils/businessRulesImport';
 import { removeBusinessRuleFromProject } from '../../utils/businessRuleTaskLinking';
-import { refreshBusinessRuleDossier } from '../../services/ai/businessRuleDossierService';
+import { refreshBusinessRuleDossier, type DossierAiProgress } from '../../services/ai/businessRuleDossierService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { Modal } from '../common/Modal';
 import { ConfirmDialog } from '../common/ConfirmDialog';
@@ -59,6 +59,9 @@ export const BusinessRulesManager: React.FC<{
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [sortBy, setSortBy] = useState<BusinessRuleSortKey>('created_desc');
   const [localAnalyzing, setLocalAnalyzing] = useState<Set<string>>(new Set());
+  const [analyzingProgressByRule, setAnalyzingProgressByRule] = useState<
+    Map<string, DossierAiProgress>
+  >(() => new Map());
   const [expandedRuleIds, setExpandedRuleIds] = useState<Set<string>>(() => new Set());
 
   const importInputRef = useRef<HTMLInputElement>(null);
@@ -124,8 +127,17 @@ export const BusinessRulesManager: React.FC<{
       return;
     }
     setLocalAnalyzing(prev => new Set(prev).add(rule.id));
+    setExpandedRuleIds(prev => new Set(prev).add(rule.id));
     try {
-      const { rule: updated } = await refreshBusinessRuleDossier(project, rule);
+      const { rule: updated } = await refreshBusinessRuleDossier(project, rule, undefined, {
+        onProgress: progress => {
+          setAnalyzingProgressByRule(prev => {
+            const next = new Map(prev);
+            next.set(rule.id, progress);
+            return next;
+          });
+        },
+      });
       onUpdateProject({
         ...project,
         businessRules: project.businessRules.map(r => (r.id === updated.id ? updated : r)),
@@ -136,6 +148,11 @@ export const BusinessRulesManager: React.FC<{
     } finally {
       setLocalAnalyzing(prev => {
         const next = new Set(prev);
+        next.delete(rule.id);
+        return next;
+      });
+      setAnalyzingProgressByRule(prev => {
+        const next = new Map(prev);
         next.delete(rule.id);
         return next;
       });
@@ -347,6 +364,7 @@ export const BusinessRulesManager: React.FC<{
                     isExpanded={expandedRuleIds.has(rule.id)}
                     onExpandedChange={open => handleRuleExpandedChange(rule.id, open)}
                     isAnalyzing={analyzingSet.has(rule.id)}
+                    analyzingProgress={analyzingProgressByRule.get(rule.id) ?? null}
                     onEdit={openEdit}
                     onDelete={setDeleteId}
                     onReanalyze={rule => void handleReanalyze(rule)}

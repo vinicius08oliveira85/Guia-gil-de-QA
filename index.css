@@ -1739,6 +1739,136 @@
     background: color-mix(in srgb, var(--br-neu-dark) 12%, var(--br-neu-bg)) !important;
   }
 
+  .business-rules-view-scope .business-rules-dossier-content .business-rules-dossier-prose {
+    font-size: 0.75rem;
+    line-height: 1.55;
+  }
+
+  .business-rules-view-scope .business-rules-dossier-content .business-rules-dossier-prose h1 {
+    margin: 0 0 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--br-neu-dark) 55%, transparent);
+    font-family: var(--font-heading, inherit);
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    color: var(--br-neu-text);
+  }
+
+  .business-rules-view-scope .business-rules-dossier-content .business-rules-dossier-prose h2 {
+    margin: 1.25rem 0 0.5rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid color-mix(in srgb, var(--br-neu-dark) 45%, transparent);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    line-height: 1.45;
+    text-transform: uppercase;
+    color: var(--br-neu-text-muted);
+  }
+
+  .business-rules-view-scope .business-rules-dossier-content .business-rules-dossier-prose h2:first-of-type {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+
+  /* Ficha técnica / blocos por task ou funcionalidade */
+  .business-rules-view-scope .business-rules-dossier-content .business-rules-dossier-prose h3 {
+    margin: 1.1rem 0 0.55rem;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid color-mix(in srgb, var(--br-neu-dark) 50%, transparent);
+    border-left: 3px solid color-mix(in srgb, var(--br-neu-accent) 55%, transparent);
+    border-radius: var(--leve-header-radius);
+    background: color-mix(in srgb, var(--br-neu-dark) 20%, var(--br-neu-bg));
+    font-size: 0.8125rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--br-neu-text);
+  }
+
+  .business-rules-view-scope .business-rules-dossier-content .business-rules-dossier-prose h4 {
+    margin: 0.85rem 0 0.35rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1.45;
+    text-transform: uppercase;
+    color: var(--br-neu-text-muted);
+  }
+
+  .business-rules-view-scope .business-rules-dossier-content .business-rules-dossier-prose p {
+    margin: 0.35rem 0 0.65rem !important;
+    font-size: 0.75rem !important;
+    line-height: 1.55 !important;
+    color: var(--br-neu-text);
+  }
+
+  /* Rótulos em negrito sozinhos (dossiês legados) */
+  .business-rules-view-scope
+    .business-rules-dossier-content
+    .business-rules-dossier-prose
+    p:has(> strong:only-child) {
+    margin-top: 0.75rem !important;
+    margin-bottom: 0.2rem !important;
+    font-size: 0.625rem !important;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--br-neu-text-muted);
+  }
+
+  .business-rules-view-scope
+    .business-rules-dossier-content
+    .business-rules-dossier-prose
+    p:has(> strong:only-child)
+    + p {
+    margin-top: 0.15rem !important;
+    padding-left: 0.15rem;
+  }
+
+  .business-rules-view-scope .business-rules-dossier-content .business-rules-dossier-prose ul,
+  .business-rules-view-scope .business-rules-dossier-content .business-rules-dossier-prose ol {
+    margin: 0.35rem 0 0.75rem !important;
+    padding-left: 1.1rem !important;
+  }
+
+  .business-rules-view-scope .business-rules-dossier-content .business-rules-dossier-prose li {
+    margin: 0.25rem 0 !important;
+    font-size: 0.75rem !important;
+    line-height: 1.55 !important;
+  }
+
+  .business-rules-view-scope .business-rules-dossier-content .business-rules-dossier-prose hr {
+    margin: 1.35rem 0;
+    border: none;
+    border-top: 1px dashed color-mix(in srgb, var(--br-neu-dark) 50%, transparent);
+  }
+
+  .business-rules-view-scope .business-rules-dossier-content .business-rules-dossier-prose blockquote {
+    margin: 0.5rem 0 0.75rem;
+    padding: 0.5rem 0.7rem;
+    border-left: 3px solid color-mix(in srgb, var(--br-neu-accent) 55%, transparent);
+    background: color-mix(in srgb, var(--br-neu-dark) 18%, var(--br-neu-bg));
+    border-radius: 0 var(--leve-header-radius) var(--leve-header-radius) 0;
+    font-size: 0.75rem;
+    color: var(--br-neu-text-muted);
+  }
+
+  .business-rules-view-scope .business-rules-dossier-content .business-rules-dossier-prose table {
+    margin: 0.65rem 0 0.85rem;
+    width: 100%;
+    font-size: 0.6875rem;
+    line-height: 1.45;
+  }
+
+  .business-rules-view-scope .business-rules-dossier-content .business-rules-dossier-prose th,
+  .business-rules-view-scope .business-rules-dossier-content .business-rules-dossier-prose td {
+    padding: 0.35rem 0.45rem;
+    border: 1px solid color-mix(in srgb, var(--br-neu-dark) 45%, transparent);
+  }
+
   .business-rules-view-scope .business-rules-neu-inset {
     border: 1px solid color-mix(in srgb, var(--br-neu-dark) 60%, transparent) !important;
     background: color-mix(in srgb, var(--br-neu-dark) 24%, var(--br-neu-bg)) !important;

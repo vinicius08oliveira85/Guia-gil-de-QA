@@ -3,6 +3,9 @@ import type { BusinessRule, Project } from '../types';
 export const DEFAULT_BUSINESS_RULE_CATEGORY = 'Geral';
 export const MAX_BUSINESS_RULE_ANALYSIS_HISTORY = 5;
 
+/** Máximo de prints por regra enviados à IA na análise do dossiê. */
+export const MAX_BUSINESS_RULE_SCREENSHOTS = 20;
+
 /** Entrada ao hidratar JSON legado ou parcial. */
 export type BusinessRuleInput = Partial<BusinessRule> &
   Pick<BusinessRule, 'id' | 'title' | 'createdAt'>;

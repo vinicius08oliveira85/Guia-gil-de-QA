@@ -41,12 +41,29 @@ export const businessRulesCardChevronClass =
   'business-rules-card-chevron h-5 w-5 shrink-0 text-[var(--leve-header-text-muted)] transition-transform duration-200 group-open:rotate-180';
 
 export const businessRulesCardBodyClass = cn(
-  'business-rules-card-body space-y-4 border-t border-[color-mix(in_srgb,var(--leve-neu-light)_38%,transparent)] px-4 py-4 sm:px-5',
-  'max-md:space-y-3 max-md:px-3 max-md:py-3'
+  'business-rules-card-body space-y-5 border-t border-[color-mix(in_srgb,var(--leve-neu-light)_38%,transparent)] px-4 py-4 sm:px-5 sm:py-5',
+  'max-md:space-y-4 max-md:px-3 max-md:py-3'
 );
 
-export const businessRulesCardLabelClass = cn(
-  'business-rules-card-label mb-2 text-[10px] font-bold uppercase tracking-widest text-[var(--leve-header-text-muted)]'
+/** Bloco semântico dentro do corpo do card (palavras-chave, dossiê, histórico). */
+export const businessRulesCardSectionClass = cn(
+  'business-rules-card-section space-y-2.5'
+);
+
+export const businessRulesCardKeywordsPanelClass = cn(
+  'business-rules-neu-inset rounded-[var(--leve-header-radius)] px-3 py-2.5 sm:px-4 sm:py-3'
+);
+
+export const businessRulesKeywordsListClass = 'flex flex-wrap gap-1.5';
+
+export const businessRulesKeywordChipClass = cn(
+  'business-rules-neu-chip inline-flex max-w-full items-center rounded-full px-2.5 py-0.5',
+  'text-xs font-medium leading-snug text-[var(--leve-header-text)]'
+);
+
+export const businessRulesLegacyBannerClass = cn(
+  'rounded-[var(--leve-header-radius)] border border-warning/35 bg-warning/8 px-4 py-3',
+  'text-sm leading-relaxed text-[var(--leve-header-text)]'
 );
 
 /** Painel de descrição — inset profundo. */
@@ -59,6 +76,34 @@ export const businessRulesCardInsetClass = cn(
   'prose-h2:mb-3 prose-h2:border-b prose-h2:border-[color-mix(in_srgb,var(--leve-neu-light)_38%,transparent)] prose-h2:pb-2',
   'prose-h3:mb-2 prose-h3:border-b prose-h3:border-[color-mix(in_srgb,var(--leve-neu-light)_38%,transparent)] prose-h3:pb-1.5',
   'prose-ul:list-disc prose-ul:pl-6 prose-ol:list-decimal prose-ol:pl-6'
+);
+
+export const businessRulesDossierContentClass = cn(
+  businessRulesCardInsetClass,
+  'business-rules-dossier-content px-3 py-3 sm:px-4 sm:py-4'
+);
+
+export const businessRulesDossierProseClass = cn(
+  'business-rules-dossier-prose max-w-none text-xs leading-relaxed',
+  'text-[var(--leve-header-text)]',
+  '[&_p]:!my-2 [&_p]:text-xs [&_p]:leading-relaxed',
+  '[&_strong]:font-semibold [&_strong]:text-[var(--leve-header-text)]',
+  '[&_ul]:!my-2.5 [&_ol]:!my-2.5 [&_li]:text-xs [&_li]:leading-relaxed [&_li]:!my-1',
+  '[&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4'
+);
+
+export const businessRulesHistoryPanelClass = cn(
+  'business-rules-neu-inset rounded-[var(--leve-header-radius)] px-3 py-2.5',
+  'text-sm text-[var(--leve-header-text-muted)]'
+);
+
+export const businessRulesHistorySummaryClass = cn(
+  'cursor-pointer text-xs font-bold uppercase tracking-widest text-[var(--leve-header-text-muted)]',
+  'hover:text-[var(--leve-header-text)]'
+);
+
+export const businessRulesCardLabelClass = cn(
+  'business-rules-card-label mb-2 text-[10px] font-bold uppercase tracking-widest text-[var(--leve-header-text-muted)]'
 );
 
 export const businessRulesCardEmptyDescClass = cn(

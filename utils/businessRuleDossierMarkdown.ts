@@ -13,29 +13,34 @@ const STATUS_LABELS: Record<NonNullable<BusinessRuleFunctionalityItem['implement
 
 function renderTaskSheet(sheet: BusinessRuleTaskSheet): string[] {
   const title = sheet.taskTitle.trim();
-  const heading = title
-    ? `### Ficha Técnica da Task: ${sheet.taskId} — "${title}"`
-    : `### Ficha Técnica da Task: ${sheet.taskId}`;
+  const header = title ? `${sheet.taskId} — ${title}` : sheet.taskId;
 
   return [
-    heading,
+    `### ${header}`,
     '',
-    `**Identificação (Jira):** ${sheet.taskId}`,
+    `Identificação Jira: **${sheet.taskId}**`,
     '',
-    '**O que foi feito e implementado:**',
+    '#### O que foi implementado',
+    '',
     sheet.implemented.trim(),
     '',
-    '**O que foi substituído / Melhorado:**',
+    '#### Legado vs melhoria',
     '',
-    `- **Como era antes (Legado):** ${sheet.legacyBefore.trim()}`,
-    `- **Como ficou agora (Melhoria):** ${sheet.improvedAfter.trim()}`,
+    '**Antes (legado):**',
     '',
-    '**Funcionalidade e Integrações:**',
+    sheet.legacyBefore.trim(),
     '',
-    `- **O que a função faz:** ${sheet.purpose.trim()}`,
-    `- **Sistemas/Módulos integrados:** ${sheet.integratedSystems.trim()}`,
+    '**Depois (melhoria):**',
     '',
-    '**Resultado esperado:**',
+    sheet.improvedAfter.trim(),
+    '',
+    '#### Função e integrações',
+    '',
+    `- **Função:** ${sheet.purpose.trim()}`,
+    `- **Sistemas / módulos:** ${sheet.integratedSystems.trim()}`,
+    '',
+    '#### Resultado esperado',
+    '',
     sheet.expectedResult.trim(),
     '',
     '---',
@@ -53,11 +58,11 @@ function renderFunctionality(f: BusinessRuleFunctionalityItem): string[] {
     lines.push(`**Status:** ${STATUS_LABELS[f.implementationStatus]}`);
   }
   if (f.description.trim()) {
-    lines.push('', `**Resumo:** ${f.description.trim()}`);
+    lines.push('', f.description.trim());
   }
 
-  lines.push('', '**O que foi implementado:**', f.implemented.trim(), '');
-  lines.push('**Resultado esperado:**', f.expectedResult.trim(), '');
+  lines.push('', '#### O que foi implementado', '', f.implemented.trim(), '');
+  lines.push('#### Resultado esperado', '', f.expectedResult.trim(), '');
 
   return lines;
 }

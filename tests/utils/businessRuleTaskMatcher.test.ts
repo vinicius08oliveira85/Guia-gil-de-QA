@@ -132,7 +132,7 @@ describe('businessRuleTaskMatcher', () => {
   it('resolveLinkedTasksForDossier mantém match forte e aplica limite máximo', () => {
     const tasks = [
       task('GDPI-1', 'Cirurgias Eletivas - painel'),
-      ...Array.from({ length: 28 }, (_, i) => task(`GDPI-${i + 2}`, 'Outro módulo')),
+      ...Array.from({ length: 210 }, (_, i) => task(`GDPI-${i + 2}`, 'Outro módulo')),
     ];
     const rule = {
       title: 'RN-Cirurgias Eletivas',
@@ -141,7 +141,7 @@ describe('businessRuleTaskMatcher', () => {
     };
     const { tasks: included, excludedTaskIds } = resolveLinkedTasksForDossier(tasks, rule);
     expect(included.map(t => t.id)).toContain('GDPI-1');
-    expect(included.length).toBeLessThanOrEqual(25);
+    expect(included.length).toBeLessThanOrEqual(200);
     expect(excludedTaskIds.length).toBeGreaterThan(0);
   });
 });

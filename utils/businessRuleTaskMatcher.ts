@@ -9,13 +9,14 @@ export interface BusinessRuleTaskMatch {
   matchedTerms: string[];
 }
 
-const DEFAULT_MAX_MATCHES = 30;
+/** Máximo de tasks sugeridas na busca por palavras-chave no formulário. */
+export const DOSSIER_SUGGESTION_MAX_MATCHES = 200;
 
 /** Score mínimo (confiança média) para incluir task no dossiê gerado pela IA. */
 export const DOSSIER_MIN_TASK_SCORE = 40;
 
-/** Limite de tasks enviadas ao prompt do dossiê (evita contexto excessivo). */
-export const DOSSIER_MAX_TASKS = 25;
+/** Limite de tasks enviadas ao prompt do dossiê. */
+export const DOSSIER_MAX_TASKS = 200;
 
 /** Confiança mínima para auto-seleção de tasks no formulário. */
 export const DOSSIER_AUTO_SUGGEST_MIN_CONFIDENCE: BusinessRuleMatchConfidence = 'alta';
@@ -318,7 +319,7 @@ export function matchTasksForBusinessRule(
   tasks: JiraTask[],
   title: string,
   searchKeywords?: string[],
-  maxMatches = DEFAULT_MAX_MATCHES
+  maxMatches = DOSSIER_SUGGESTION_MAX_MATCHES
 ): BusinessRuleTaskMatch[] {
   const phrases = resolveBusinessRuleSearchTerms(title, searchKeywords);
   if (phrases.length === 0 || tasks.length === 0) return [];

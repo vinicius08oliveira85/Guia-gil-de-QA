@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Loader2, Save, Sparkles } from 'lucide-react';
 import type { BusinessRule, BusinessRuleScreenshot, Project } from '../../types';
 import {
   DOSSIER_MAX_TASKS,
@@ -12,11 +12,15 @@ import {
   suggestKeywordsFromRuleTitle,
 } from '../../utils/businessRuleTaskMatcher';
 import { applyBusinessRuleTaskLinks } from '../../utils/businessRuleTaskLinking';
+import { saveBusinessRuleMetadata } from '../../utils/businessRuleFormHelpers';
+import { DOSSIER_AI_BATCH_THRESHOLD } from '../../utils/businessRuleDossierBatch';
 import {
   generateBusinessRuleDossier,
   refreshBusinessRuleDossier,
+  type DossierAiProgress,
 } from '../../services/ai/businessRuleDossierService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
+import { BusinessRuleDossierProgressBanner } from './BusinessRuleDossierProgressBanner';
 import {
   tasksPanelFormFieldLabelClass,
   tasksPanelFormFooterClass,
@@ -65,7 +69,9 @@ export const BusinessRuleDossierForm: React.FC<BusinessRuleDossierFormProps> = (
     editingRule?.linkedTaskIds ?? []
   );
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSavingMetadata, setIsSavingMetadata] = useState(false);
   const [regenerateFromScratch, setRegenerateFromScratch] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState<DossierAiProgress | null>(null);
 
   const searchKeywords = useMemo(
     () => parseKeywordsFromInput(keywordsInput),
@@ -127,10 +133,45 @@ export const BusinessRuleDossierForm: React.FC<BusinessRuleDossierFormProps> = (
   const canGenerate =
     title.trim().length > 0 && searchKeywords.length > 0 && dossierPreview.tasks.length > 0;
 
+  const canSaveMetadata = title.trim().length > 0;
+  const isBusy = isGenerating || isSavingMetadata;
+
+  const handleSaveMetadata = async () => {
+    if (!canSaveMetadata) return;
+
+    setIsSavingMetadata(true);
+    try {
+      const { project: nextProject, markedOutdated } = saveBusinessRuleMetadata(project, editingRule, {
+        title,
+        searchKeywords,
+        linkedTaskIds: selectedTaskIds,
+        screenshots,
+      });
+
+      await onSaved(nextProject);
+
+      if (markedOutdated) {
+        handleSuccess(
+          'Alterações salvas. O dossiê foi marcado como desatualizado — use Reanalisar com IA quando quiser incorporar as mudanças.'
+        );
+      } else if (editingRule?.analysis) {
+        handleSuccess('Alterações salvas sem reanalisar o dossiê.');
+      } else {
+        handleSuccess('Regra salva. Adicione tasks e gere a análise com IA quando estiver pronto.');
+      }
+      onClose();
+    } catch (error) {
+      handleError(error, 'Salvar regra de negócio');
+    } finally {
+      setIsSavingMetadata(false);
+    }
+  };
+
   const handleGenerate = async () => {
     if (!canGenerate) return;
 
     setIsGenerating(true);
+    setGenerationProgress(null);
     try {
       const now = new Date().toISOString();
       const t = title.trim();
@@ -148,14 +189,17 @@ export const BusinessRuleDossierForm: React.FC<BusinessRuleDossierFormProps> = (
       const linkedProject = applyBusinessRuleTaskLinks(project, rule.id, selectedTaskIds);
       rule = { ...rule, linkedTaskIds: selectedTaskIds, screenshots, searchKeywords };
 
+      const dossierOptions = { onProgress: setGenerationProgress };
+
       const result =
         editingRule?.analysis && !regenerateFromScratch
-          ? await refreshBusinessRuleDossier(linkedProject, rule)
+          ? await refreshBusinessRuleDossier(linkedProject, rule, undefined, dossierOptions)
           : editingRule?.analysis && regenerateFromScratch
             ? await refreshBusinessRuleDossier(linkedProject, rule, undefined, {
                 regenerateFromScratch: true,
+                ...dossierOptions,
               })
-            : await generateBusinessRuleDossier(linkedProject, rule);
+            : await generateBusinessRuleDossier(linkedProject, rule, dossierOptions);
 
       const rules = linkedProject.businessRules.some(r => r.id === result.rule.id)
         ? linkedProject.businessRules.map(r => (r.id === result.rule.id ? result.rule : r))
@@ -180,11 +224,16 @@ export const BusinessRuleDossierForm: React.FC<BusinessRuleDossierFormProps> = (
       handleError(error, 'Gerar dossiê de regra de negócio');
     } finally {
       setIsGenerating(false);
+      setGenerationProgress(null);
     }
   };
 
   return (
     <div className="space-y-4">
+      {generationProgress ? (
+        <BusinessRuleDossierProgressBanner progress={generationProgress} />
+      ) : null}
+
       <div>
         <label htmlFor="br-dossier-title" className={tasksPanelFormFieldLabelClass}>
           Nome da regra
@@ -225,7 +274,7 @@ export const BusinessRuleDossierForm: React.FC<BusinessRuleDossierFormProps> = (
       <BusinessRuleScreenshotUpload
         screenshots={screenshots}
         onChange={setScreenshots}
-        disabled={isGenerating}
+        disabled={isBusy}
       />
 
       <div>
@@ -237,7 +286,7 @@ export const BusinessRuleDossierForm: React.FC<BusinessRuleDossierFormProps> = (
                 type="button"
                 className="btn btn-xs btn-ghost"
                 onClick={applyHighConfidenceSuggestions}
-                disabled={isGenerating}
+                disabled={isBusy}
               >
                 Selecionar sugestões (alta confiança)
               </button>
@@ -246,7 +295,7 @@ export const BusinessRuleDossierForm: React.FC<BusinessRuleDossierFormProps> = (
                   type="button"
                   className="btn btn-xs btn-ghost"
                   onClick={clearSelection}
-                  disabled={isGenerating}
+                  disabled={isBusy}
                 >
                   Limpar seleção
                 </button>
@@ -262,6 +311,13 @@ export const BusinessRuleDossierForm: React.FC<BusinessRuleDossierFormProps> = (
             {dossierPreview.excludedTaskIds.length > 0
               ? ` · ${dossierPreview.excludedTaskIds.length} será(ão) ignorada(s) por baixa relevância`
               : ''}
+          </p>
+        ) : null}
+
+        {dossierPreview.tasks.length > DOSSIER_AI_BATCH_THRESHOLD ? (
+          <p className="mb-2 text-xs text-info">
+            {dossierPreview.tasks.length} tasks relevantes — a IA processará em lotes (fichas técnicas
+            + síntese final). Pode levar alguns minutos.
           </p>
         ) : null}
 
@@ -357,19 +413,26 @@ export const BusinessRuleDossierForm: React.FC<BusinessRuleDossierFormProps> = (
       </div>
 
       {editingRule?.analysis ? (
-        <label className="flex cursor-pointer items-start gap-2 text-sm text-base-content/80">
-          <input
-            type="checkbox"
-            className="checkbox checkbox-sm checkbox-primary mt-0.5"
-            checked={regenerateFromScratch}
-            onChange={e => setRegenerateFromScratch(e.target.checked)}
-            disabled={isGenerating}
-          />
-          <span>
-            Gerar do zero (ignorar análise anterior v{editingRule.analysis.version}) — use se o
-            dossiê misturou temas de outros módulos.
-          </span>
-        </label>
+        <>
+          <p className="text-xs text-base-content/65">
+            Por padrão, a reanálise <strong>complementa</strong> o dossiê existente (tasks, prints e
+            palavras-chave novos). Use &quot;Salvar alterações&quot; para gravar metadados sem chamar
+            a IA.
+          </p>
+          <label className="flex cursor-pointer items-start gap-2 text-sm text-base-content/80">
+            <input
+              type="checkbox"
+              className="checkbox checkbox-sm checkbox-primary mt-0.5"
+              checked={regenerateFromScratch}
+              onChange={e => setRegenerateFromScratch(e.target.checked)}
+              disabled={isBusy}
+            />
+            <span>
+              Gerar do zero (ignorar análise anterior v{editingRule.analysis.version}) — use se o
+              dossiê misturou temas de outros módulos.
+            </span>
+          </label>
+        </>
       ) : null}
 
       <div className={tasksPanelFormFooterClass}>
@@ -377,15 +440,31 @@ export const BusinessRuleDossierForm: React.FC<BusinessRuleDossierFormProps> = (
           type="button"
           className={tasksPanelFormCancelBtnClass}
           onClick={onClose}
-          disabled={isGenerating}
+          disabled={isBusy}
         >
           Cancelar
         </button>
+        {editingRule ? (
+          <button
+            type="button"
+            className="btn btn-ghost gap-2"
+            onClick={() => void handleSaveMetadata()}
+            disabled={!canSaveMetadata || isBusy}
+            aria-label="Salvar alterações sem reanalisar"
+          >
+            {isSavingMetadata ? (
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+            ) : (
+              <Save className="h-4 w-4" aria-hidden />
+            )}
+            Salvar alterações
+          </button>
+        ) : null}
         <button
           type="button"
           className={tasksPanelFormSaveBtnClass}
           onClick={() => void handleGenerate()}
-          disabled={!canGenerate || isGenerating}
+          disabled={!canGenerate || isBusy}
         >
           {isGenerating ? (
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
@@ -393,8 +472,12 @@ export const BusinessRuleDossierForm: React.FC<BusinessRuleDossierFormProps> = (
             <Sparkles className="h-4 w-4" aria-hidden />
           )}
           {editingRule?.analysis && !regenerateFromScratch
-            ? 'Reanalisar com IA'
-            : 'Gerar análise com IA'}
+            ? generationProgress
+              ? 'Reanalisando…'
+              : 'Reanalisar com IA'
+            : generationProgress
+              ? 'Gerando…'
+              : 'Gerar análise com IA'}
         </button>
       </div>
     </div>
