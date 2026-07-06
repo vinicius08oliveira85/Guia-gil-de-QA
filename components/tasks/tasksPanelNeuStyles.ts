@@ -441,20 +441,28 @@ export const projectChromeTabsDividerClass = cn(
 );
 
 export const projectChromeTabsNavClass = cn(
-  'workspace-chrome-inset no-scrollbar flex min-w-0 flex-1 flex-nowrap gap-1 overflow-x-auto scroll-smooth snap-x snap-mandatory p-1',
-  'max-md:gap-0.5 max-md:p-0.5'
+  'project-chrome-tabs-nav workspace-chrome-inset no-scrollbar flex min-w-0 flex-1 flex-nowrap gap-1.5 overflow-x-auto scroll-smooth snap-x snap-mandatory p-1.5',
+  '[scroll-padding-inline:0.375rem]',
+  'max-md:gap-1 max-md:p-1'
+);
+
+const projectChromeFixedTabBaseClass = cn(
+  'project-chrome-fixed-tab inline-flex shrink-0 snap-start items-center justify-center whitespace-nowrap',
+  'min-h-[2rem] px-3 py-1.5',
+  'max-md:min-h-7 max-md:px-2.5 max-md:py-1 max-md:text-[11px]',
+  'font-sans text-sm leading-none'
 );
 
 export const projectChromeTabActiveClass = cn(
-  'workspace-chrome-tab-active inline-flex min-h-[2.25rem] shrink-0 snap-start items-center whitespace-nowrap px-3 py-2 sm:min-h-0',
-  'max-md:min-h-7 max-md:px-2 max-md:py-0.5 max-md:text-[11px]',
-  'font-sans text-sm font-semibold'
+  'workspace-chrome-tab-active',
+  projectChromeFixedTabBaseClass,
+  'font-semibold'
 );
 
 export const projectChromeTabIdleClass = cn(
-  'workspace-chrome-tab-idle inline-flex min-h-[2.25rem] shrink-0 snap-start items-center whitespace-nowrap px-3 py-2 sm:min-h-0',
-  'max-md:min-h-7 max-md:px-2 max-md:py-0.5 max-md:text-[11px]',
-  'font-sans text-sm font-medium'
+  'workspace-chrome-tab-idle',
+  projectChromeFixedTabBaseClass,
+  'font-medium'
 );
 
 /** Aba dinâmica de tarefa no workspace (estilo console). */
@@ -524,9 +532,9 @@ export const projectChromeToolbarStatusWrapClass =
 /* ── Cabeçalho da aba Tarefas (título + subtítulo) ───────────── */
 
 export const tasksViewPageHeaderShellClass = cn(
-  'project-chrome-neu-shell tasks-panel-dark-surface tasks-view-header-neu-shell',
-  'mb-3 flex flex-col gap-4 rounded-[var(--leve-header-radius)] px-3 py-3 font-sans sm:mb-4 sm:gap-5 sm:px-4 sm:py-4',
-  'max-md:mb-2 max-md:gap-2 max-md:px-2.5 max-md:py-2'
+  'tasks-view-header-shell view-hero-header-shell',
+  'flex flex-col gap-3 font-sans sm:gap-4',
+  'max-md:gap-2'
 );
 
 export const tasksViewHeaderActionsClass = cn(
@@ -537,17 +545,19 @@ export const tasksViewHeaderActionsClass = cn(
 export const tasksViewHeaderPrimaryCtaClass = 'tasks-view-header-primary-cta';
 
 export const tasksViewPageTitleClass = cn(
-  'font-sans text-2xl font-bold tracking-tight text-[var(--workspace-panel-text)] sm:text-[1.65rem]',
+  'app-brand-title font-sans text-2xl font-bold tracking-tight text-[var(--brand-text-strong)] sm:text-[1.65rem]',
   'max-md:text-xl'
 );
 
 export const tasksViewPageJiraBadgeClass = cn(
-  'workspace-chrome-badge inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5',
+  'project-tab-jira-badge tasks-view-jira-badge inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5',
   'font-sans text-xs font-bold'
 );
 
-export const tasksViewPageSubtitleClass =
-  'font-sans text-sm text-[var(--workspace-panel-text-muted)]';
+export const tasksViewPageSubtitleClass = cn(
+  'max-w-2xl font-sans text-sm leading-relaxed text-[color-mix(in_srgb,var(--brand-text-strong)_78%,transparent)]',
+  'max-md:text-xs max-md:leading-snug'
+);
 
 /* ── Backlog (filtros + lista) ───────────────────────────────── */
 

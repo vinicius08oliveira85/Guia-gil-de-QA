@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
 import { HelpTooltip } from './HelpTooltip';
+import {
+  neuBrandTextMutedClass,
+  neuBrandTextStrongClass,
+  neuLegacySurfacePanelClass,
+} from './neuUi';
+import { cn } from '../../utils/cn';
 
 interface ContextualHelpProps {
   title: string;
@@ -10,7 +16,7 @@ interface ContextualHelpProps {
 }
 
 const InfoIcon = ({ className }: { className?: string }) => (
-  <svg className={className || 'w-4 h-4'} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className={className || 'h-4 w-4'} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -38,7 +44,11 @@ export const ContextualHelp: React.FC<ContextualHelpProps> = ({
       <HelpTooltip content={content} placement={placement}>
         <button
           type="button"
-          className="inline-flex items-center gap-1 text-text-secondary hover:text-accent transition-colors"
+          className={cn(
+            'inline-flex items-center gap-1 transition-colors',
+            neuBrandTextMutedClass,
+            'hover:text-[var(--leve-header-accent)]'
+          )}
           aria-label={title}
         >
           {icon || <InfoIcon />}
@@ -49,14 +59,20 @@ export const ContextualHelp: React.FC<ContextualHelpProps> = ({
 
   if (variant === 'banner') {
     return (
-      <div className="rounded-lg border border-accent/30 bg-accent/10 p-4">
+      <div
+        className={cn(
+          neuLegacySurfacePanelClass,
+          'border border-[color-mix(in_srgb,var(--leve-header-accent)_28%,transparent)]',
+          'bg-[color-mix(in_srgb,var(--leve-header-accent)_8%,var(--leve-neu-bg))]'
+        )}
+      >
         <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 mt-0.5">
-            {icon || <InfoIcon className="w-5 h-5 text-accent" />}
+          <div className="mt-0.5 shrink-0 text-[var(--leve-header-accent)]">
+            {icon || <InfoIcon className="h-5 w-5" />}
           </div>
-          <div className="flex-1 min-w-0">
-            <h4 className="text-sm font-semibold text-text-primary mb-1">{title}</h4>
-            <div className="text-sm text-text-secondary">
+          <div className="min-w-0 flex-1">
+            <h4 className={cn('mb-1 text-sm font-semibold', neuBrandTextStrongClass)}>{title}</h4>
+            <div className={cn('text-sm', neuBrandTextMutedClass)}>
               {typeof content === 'string' ? <p>{content}</p> : content}
             </div>
           </div>
@@ -65,24 +81,27 @@ export const ContextualHelp: React.FC<ContextualHelpProps> = ({
     );
   }
 
-  // inline variant
   return (
     <div className="inline-flex items-start gap-2">
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex-shrink-0 mt-0.5 text-text-secondary hover:text-accent transition-colors"
+        className={cn(
+          'mt-0.5 shrink-0 transition-colors',
+          neuBrandTextMutedClass,
+          'hover:text-[var(--leve-header-accent)]'
+        )}
         aria-label={title}
         aria-expanded={isExpanded}
       >
         {icon || <InfoIcon />}
       </button>
-      {isExpanded && (
-        <div className="flex-1 rounded-lg border border-surface-border bg-surface p-3 text-sm text-text-secondary">
-          <h4 className="font-semibold text-text-primary mb-1">{title}</h4>
+      {isExpanded ? (
+        <div className={cn(neuLegacySurfacePanelClass, 'flex-1 text-sm', neuBrandTextMutedClass)}>
+          <h4 className={cn('mb-1 font-semibold', neuBrandTextStrongClass)}>{title}</h4>
           {typeof content === 'string' ? <p>{content}</p> : content}
         </div>
-      )}
+      ) : null}
     </div>
   );
 };

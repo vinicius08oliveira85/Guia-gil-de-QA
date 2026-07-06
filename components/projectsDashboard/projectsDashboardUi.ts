@@ -1,11 +1,5 @@
 import { cn } from '../../utils/cn';
 import { appDarkSidebarPanelClass, workspaceSurfaceLightClass } from '../common/appPageNeuUi';
-import {
-  viewHeroToolbarBtnActiveClass,
-  viewHeroToolbarBtnClass,
-  viewHeroToolbarClass,
-  viewHeroToolbarDividerClass,
-} from '../common/viewHeroChromeUi';
 
 /**
  * Fundo e escopo da página Meus Projetos — tema CLARO (identidade LandingPage /
@@ -13,15 +7,48 @@ import {
  * claros em index.css, isolando a mudança das demais telas autenticadas.
  */
 export const projectsDashboardPageClass = cn(
-  'app-page projects-dash-page',
+  'app-page projects-dash-page projects-dashboard-page-shell',
   workspaceSurfaceLightClass,
   'animate-fade-in min-h-[calc(100vh-4rem)] font-body'
 );
 
-/** Badge "Workspace" e chips do cabeçalho */
+/** Container centralizado — alinhado à LandingPage (max-w ~88rem). */
+export const projectsDashboardContentClass = cn(
+  'projects-dashboard-content relative z-[1] mx-auto w-full max-w-[88rem]'
+);
+
+/**
+ * Faixa hero Meus Projetos — painel claro neumórfico (sem dashboard-hero-chrome escuro).
+ */
+export const projectsDashboardHeroShellClass = cn(
+  'projects-dashboard-hero-shell w-full'
+);
+
+export const projectsDashboardHeroChromeClass = cn(
+  'projects-dashboard-hero-chrome',
+  'rounded-[var(--project-card-radius)] px-3 py-3 sm:px-5 sm:py-5',
+  'flex flex-col gap-4 sm:gap-5 max-md:gap-2 max-md:px-2 max-md:py-2',
+  'font-sans'
+);
+
+/** Eyebrow do workspace — pill claro (padrão LandingPage). */
+export const projectsDashboardEyebrowClass = 'projects-dashboard-eyebrow';
+
+/** Cabeçalho de seção (grade de projetos). */
+export const projectsDashboardSectionLabelClass = cn(
+  'projects-dashboard-section-label font-sans text-xs font-bold uppercase tracking-wider',
+  'text-[var(--brand-text-strong)]'
+);
+
+export const projectsDashboardSectionDescClass = cn(
+  'projects-dashboard-section-desc font-sans text-sm font-medium',
+  'text-[color-mix(in_srgb,var(--brand-text-strong)_78%,transparent)]'
+);
+
+/** Badge contador no título */
 export const projectsDashboardHeaderBadgeClass = cn(
-  'projects-dash-neu-badge shrink-0 px-2.5 py-0.5',
-  'text-[10px] font-bold uppercase tracking-widest'
+  'projects-dashboard-count-badge shrink-0 px-2 py-0.5',
+  'text-[10px] font-bold uppercase tracking-widest tabular-nums'
 );
 
 export const projectsDashboardSearchBtnClass = cn(
@@ -33,19 +60,19 @@ export const projectsDashboardSearchFieldClass = cn(
   'projects-dash-neu-search-input',
   'h-11 w-full rounded-full border-0 py-2 pl-10 pr-3 font-sans text-sm font-medium',
   'max-md:h-10 max-md:pl-9 max-md:text-xs',
-  'text-[var(--workspace-panel-text)] placeholder:text-[var(--workspace-panel-text-muted)]',
-  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--workspace-panel-accent)_40%,transparent)]'
+  'text-[var(--brand-text-strong)] placeholder:text-[color-mix(in_srgb,var(--brand-text-strong)_62%,transparent)]',
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--project-card-accent)_40%,transparent)]'
 );
 
 export const projectsDashboardSearchIconClass =
-  'pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--workspace-panel-text-muted)] opacity-80';
+  'pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color-mix(in_srgb,var(--brand-text-strong)_62%,transparent)]';
 
-/** Toggle mobile do resumo — pill elevado do hero (mesmo padrão dos filtros). */
+/** Toggle mobile do resumo — mesmo padrão dos filtros rápidos. */
 export function projectsDashboardSummaryToggleClass(expanded: boolean): string {
   return cn(
-    expanded ? viewHeroToolbarBtnActiveClass : viewHeroToolbarBtnClass,
-    'lg:hidden w-full justify-between min-h-[44px] px-3 py-2.5 text-sm font-semibold',
-    'max-md:min-h-10'
+    'projects-dash-quick-filters-pill w-full justify-between',
+    expanded && 'projects-dash-quick-filters-pill--active',
+    'lg:hidden min-h-[44px] px-3 py-2.5 text-sm font-semibold max-md:min-h-10'
   );
 }
 
@@ -56,36 +83,39 @@ export const projectsDashboardSelectClass = cn(
   'max-md:min-h-8 max-md:h-8 sm:min-h-8 sm:h-8'
 );
 
-/** Pílulas de filtro rápido (Todos / Com bugs / Atenção) — modelo Filtrar/Exportar */
+/** Pílulas de filtro rápido (empty state / ações auxiliares). */
 export function projectsDashboardFilterPillClass(active: boolean): string {
-  return active ? viewHeroToolbarBtnActiveClass : viewHeroToolbarBtnClass;
+  return cn(
+    'projects-dash-filter-pill',
+    active && 'projects-dash-filter-pill-active'
+  );
 }
 
-/** Grupo de filtros rápidos — trilho inset + pills elevados individuais */
+/**
+ * Grupo de filtros rápidos — trilho inset + pills (tema claro, aba ativa roxa/laranja via tokens).
+ */
 export const projectsDashboardQuickFiltersToolbarClass = cn(
-  viewHeroToolbarClass,
-  'mb-4 w-full sm:w-auto',
-  'max-md:mb-2'
+  'projects-dash-quick-filters-toolbar',
+  'mb-4 w-full sm:w-auto max-md:mb-2'
 );
 
 export function projectsDashboardQuickFiltersPillClass(active: boolean): string {
   return cn(
-    active ? viewHeroToolbarBtnActiveClass : viewHeroToolbarBtnClass,
+    'projects-dash-quick-filters-pill',
+    active && 'projects-dash-quick-filters-pill--active',
     'min-h-[44px] max-md:min-h-8 max-md:py-1 sm:min-h-0'
   );
 }
 
-/** Badge numérico dos filtros (idle/active), padrão backlog / toolbar do hero. */
+/** Badge numérico dos filtros — contador no pill laranja (creme) ou pill escuro (muted). */
 export function projectsDashboardQuickFiltersCountClass(active: boolean): string {
   return cn(
-    'dashboard-neu-filter-count',
-    'inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full px-1.5 py-0',
-    'font-sans text-[10px] font-bold tabular-nums leading-none',
-    active ? 'workspace-chrome-count-active' : 'workspace-chrome-count-idle'
+    'projects-dash-quick-filters-count',
+    active
+      ? 'projects-dash-quick-filters-count--active'
+      : 'projects-dash-quick-filters-count--idle'
   );
 }
-
-export const projectsDashboardQuickFiltersDividerClass = viewHeroToolbarDividerClass;
 
 /** Painéis vazios / mensagens na grade — relevo elevado (evitar bg-surface plano). */
 export const projectsDashboardMessagePanelClass = cn(
@@ -118,11 +148,19 @@ export const projectsDashboardSyncAlertMutedClass =
 
 export const projectsDashboardSyncAlertTitleClass = 'font-medium';
 
-/** Faixa de KPIs (WorkspaceDaisyStats + Eficiência) */
+/** Faixa de KPIs (WorkspaceDaisyStats + Eficiência) — layout bento. */
 export const projectsDashboardStatsRegionClass = cn(
-  'mb-4 mt-4 grid grid-cols-2 gap-2.5 sm:mt-5 sm:grid-cols-4 sm:gap-3 lg:grid-cols-[repeat(4,minmax(0,1fr))_minmax(12rem,1.35fr)] lg:items-stretch',
+  'projects-dashboard-stats-bento mb-0 mt-0 grid grid-cols-2 gap-2.5 sm:gap-3',
+  'sm:grid-cols-4 lg:grid-cols-[repeat(4,minmax(0,1fr))_minmax(11rem,1.35fr)] lg:items-stretch',
   'max-md:mb-2 max-md:mt-2 max-md:gap-2'
 );
+
+export const projectsDashboardGlobalEfficiencyGridClass = cn(
+  'col-span-2 sm:col-span-4 lg:col-span-1 lg:row-span-2'
+);
+
+/** Ícone circular nos KPIs */
+export const projectsDashboardStatIconPlateClass = 'projects-dashboard-stat-icon-plate';
 
 /** Grade principal + sidebar */
 export const projectsDashboardMainGridClass = cn(

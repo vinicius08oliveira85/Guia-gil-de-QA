@@ -68,7 +68,7 @@ export const NotepadPageTabs: React.FC<NotepadPageTabsProps> = ({
         return (
           <div
             key={page.id}
-            className={cn(isActive ? notepadPageTabActiveClass : notepadPageTabClass, 'mr-0.5')}
+            className={cn(isActive ? notepadPageTabActiveClass : notepadPageTabClass)}
             role="presentation"
           >
             {isRenaming ? (

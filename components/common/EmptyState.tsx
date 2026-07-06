@@ -2,6 +2,8 @@ import React from 'react';
 import { HelpTooltip } from './HelpTooltip';
 import { Button } from './Button';
 import { motion } from 'framer-motion';
+import { neuBrandTextMutedClass, neuInsetTileClass } from './neuUi';
+import { cn } from '../../utils/cn';
 
 interface EmptyStateProps {
   icon?: string | React.ReactNode;
@@ -132,13 +134,18 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       {/* Dica única */}
       {tip && (
         <motion.div
-          className="mb-6 max-w-md rounded-[var(--rounded-box)] border border-primary/30 bg-primary/10 p-4"
+          className={cn(
+            'mb-6 max-w-md',
+            neuInsetTileClass,
+            'border border-[color-mix(in_srgb,var(--leve-header-accent)_28%,transparent)]',
+            'bg-[color-mix(in_srgb,var(--leve-header-accent)_8%,var(--leve-neu-bg))]'
+          )}
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.4 }}
         >
-          <p className="text-sm text-base-content leading-relaxed">
-            💡 <strong>Dica:</strong> {tip}
+          <p className={cn('text-sm leading-relaxed', neuBrandTextMutedClass)}>
+            <strong>Dica:</strong> {tip}
           </p>
         </motion.div>
       )}

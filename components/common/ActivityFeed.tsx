@@ -5,6 +5,8 @@ import { formatRelativeTime } from '../../utils/dateUtils';
 import { Badge } from './Badge';
 import ActivityItem, { EnrichedAuditLog } from './ActivityItem'; // Importa o novo componente e tipo
 import { PlusIcon, EditIcon, TrashIcon, InfoIcon } from './Icons';
+import { neuBrandTextMutedClass } from './neuUi';
+import { cn } from '../../utils/cn';
 
 interface ActivityFeedProps {
   project: Project;
@@ -125,7 +127,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ project, limit = 20 
           ))}
         </div>
       ) : (
-        <div className="text-center py-8 text-text-secondary">Nenhuma atividade recente</div>
+        <div className={cn('py-8 text-center', neuBrandTextMutedClass)}>Nenhuma atividade recente</div>
       )}
     </div>
   );

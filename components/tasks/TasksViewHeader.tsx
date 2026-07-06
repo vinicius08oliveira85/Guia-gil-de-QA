@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Filter, ChevronDown } from 'lucide-react';
+import { Plus, Filter, ChevronDown, ClipboardList } from 'lucide-react';
 import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
 import { cn } from '../../utils/cn';
 import { appMenuItemClass, appMenuPanelClass } from '../common/viewUi';
@@ -23,6 +23,7 @@ import {
   tasksViewPageSubtitleClass,
   tasksViewPageTitleClass,
 } from './tasksPanelNeuStyles';
+import { tasksViewEyebrowClass } from './tasksViewNeuUi';
 
 export interface TasksViewHeaderProps {
   jiraProjectKey?: string;
@@ -54,7 +55,11 @@ export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
     <header className={tasksViewPageHeaderShellClass}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
-          <div className="mb-1.5 flex flex-wrap items-center gap-2">
+          <p className={tasksViewEyebrowClass}>
+            <ClipboardList className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            Projeto · Tarefas & Testes
+          </p>
+          <div className="mb-1.5 mt-2 flex flex-wrap items-center gap-2 sm:mt-2.5">
             <h1 className={tasksViewPageTitleClass}>Tarefas & Casos de Teste</h1>
             {jiraProjectKey ? (
               <span className={tasksViewPageJiraBadgeClass}>Jira: {jiraProjectKey}</span>

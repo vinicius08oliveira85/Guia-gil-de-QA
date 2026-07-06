@@ -57,6 +57,25 @@ export const headerNeuChipIdleClass = cn(
 export const headerNeuTrackSeparatorClass =
   'app-header-neu-track-separator mx-0.5 h-5 w-px shrink-0';
 
+/** Separador vertical antes do slot fixo de Salvar. */
+export const headerNeuSaveSlotSeparatorClass =
+  'app-header-save-slot-separator mx-0.5 h-5 w-px shrink-0 self-center bg-[color-mix(in_srgb,var(--project-card-neu-light)_22%,transparent)]';
+
+/** Slot fixo do botão Jira — penúltimo à direita, imediatamente antes de Salvar. */
+export const headerNeuJiraSlotClass = cn(
+  'app-header-jira-slot flex shrink-0 items-center'
+);
+
+/** Grupo fixo Jira + Salvar no canto direito do header. */
+export const headerNeuTrailingActionsClass = cn(
+  'app-header-trailing-actions flex shrink-0 items-center gap-1.5'
+);
+
+/** Slot fixo do botão Salvar — sempre o último item à direita no header. */
+export const headerNeuSaveSlotClass = cn(
+  'app-header-save-slot flex shrink-0 items-center'
+);
+
 /** Pill «Projetos» — mesma base das ações da toolbar. */
 export const headerNeuNavPillClass = cn(
   headerNeuToolbarPillBaseClass,

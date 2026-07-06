@@ -42,7 +42,7 @@ export const Modal: React.FC<ModalProps> = ({
   onClose,
   title,
   children,
-  size = 'md',
+  size = '2xl',
   footer,
   maxHeight,
   triggerRef,
@@ -129,16 +129,16 @@ export const Modal: React.FC<ModalProps> = ({
   const isFull = size === 'full';
 
   const sizeClasses: Record<NonNullable<ModalProps['size']>, string> = {
-    sm: 'max-w-full sm:max-w-sm',
-    md: 'max-w-full sm:max-w-md',
-    lg: 'max-w-full sm:max-w-lg',
-    xl: 'max-w-full sm:max-w-xl sm:min-w-[min(20rem,90vw)]',
-    '2xl': 'max-w-full sm:max-w-2xl sm:min-w-[min(24rem,90vw)]',
-    '3xl': 'max-w-full sm:max-w-3xl sm:min-w-[min(28rem,90vw)]',
-    '4xl': 'max-w-full sm:max-w-4xl sm:min-w-[min(32rem,90vw)]',
-    '5xl': 'max-w-full sm:max-w-5xl sm:min-w-[min(36rem,90vw)]',
-    '6xl': 'max-w-full sm:max-w-6xl sm:min-w-[min(40rem,90vw)]',
-    '7xl': 'max-w-full sm:max-w-7xl sm:min-w-[min(44rem,90vw)]',
+    sm: 'max-w-full sm:max-w-[min(30rem,92vw)]',
+    md: 'max-w-full sm:max-w-[min(42rem,92vw)]',
+    lg: 'max-w-full sm:max-w-[min(52rem,94vw)]',
+    xl: 'max-w-full sm:max-w-[min(60rem,94vw)]',
+    '2xl': 'max-w-full sm:max-w-[min(68rem,94vw)]',
+    '3xl': 'max-w-full sm:max-w-[min(76rem,95vw)]',
+    '4xl': 'max-w-full sm:max-w-[min(84rem,95vw)]',
+    '5xl': 'max-w-full sm:max-w-[min(90rem,96vw)]',
+    '6xl': 'max-w-full sm:max-w-[min(96rem,96vw)]',
+    '7xl': 'max-w-full sm:max-w-[min(100rem,97vw)]',
     full: 'max-w-none h-screen max-h-full w-full rounded-none',
   };
 
@@ -158,7 +158,7 @@ export const Modal: React.FC<ModalProps> = ({
               leveModalOverlayClass
             )
           : cn(
-              'neu-overlay fixed inset-0 flex animate-in fade-in items-end justify-center p-0 duration-200 sm:items-center sm:p-3 md:p-5',
+              'neu-overlay fixed inset-0 flex animate-in fade-in items-end justify-center p-0 duration-200 sm:items-center sm:p-3 md:p-4',
               modalOverlayZClass,
               leveModalOverlayClass
             )

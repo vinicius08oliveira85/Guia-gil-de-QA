@@ -1,14 +1,9 @@
 import { cn } from '../../utils/cn';
 import { workspaceSurfaceLightClass } from '../common/appPageNeuUi';
+import { projectTabContentClass, projectTabPageShellClass } from '../common/projectTabNeuUi';
 import {
-  viewHeroChromeClass,
   viewHeroFilterChipClass,
-  viewHeroHeaderShellClass,
-  viewHeroJiraBadgeClass,
   viewHeroMobileActionBtnClass,
-  viewHeroMutedClass,
-  viewHeroSubtitleClass,
-  viewHeroTitleClass,
   viewHeroToolbarBtnActiveClass,
   viewHeroToolbarBtnClass,
   viewHeroToolbarClass,
@@ -31,16 +26,54 @@ import {
  */
 export const dashboardNeuScopeClass = cn(
   'dashboard-neu-scope',
+  projectTabPageShellClass,
+  'dashboard-project-page-shell',
   'app-neu-scope',
-  workspaceSurfaceLightClass
+  workspaceSurfaceLightClass,
+  'w-full min-w-0 max-w-none space-y-3 sm:space-y-4 max-md:space-y-2'
 );
 
-export const dashboardHeroChromeClass = viewHeroChromeClass;
-export const dashboardHeroHeaderShellClass = viewHeroHeaderShellClass;
-export const dashboardHeroTitleClass = viewHeroTitleClass;
-export const dashboardHeroJiraBadgeClass = viewHeroJiraBadgeClass;
-export const dashboardHeroSubtitleClass = viewHeroSubtitleClass;
-export const dashboardHeroMutedClass = viewHeroMutedClass;
+/** Container centralizado — alinhado às demais abas do projeto. */
+export const dashboardContentClass = projectTabContentClass;
+
+/** Shell externo do hero (gradiente + painel elevado). */
+export const dashboardHeroShellClass = 'dashboard-project-hero-shell w-full';
+
+/**
+ * Faixa hero do dashboard do projeto — tema CLARO (sem dashboard-hero-chrome escuro).
+ */
+export const dashboardHeroChromeClass = cn(
+  'dashboard-project-hero-chrome',
+  'rounded-[var(--project-card-radius)] px-3 py-3 sm:px-5 sm:py-5',
+  'flex flex-col gap-4 sm:gap-5 max-md:gap-2 max-md:px-2 max-md:py-2',
+  'font-sans'
+);
+
+/** Eyebrow acima do título do dashboard. */
+export const dashboardEyebrowClass = 'dashboard-project-eyebrow';
+
+export const dashboardHeroHeaderShellClass = cn(
+  'view-hero-header-shell flex flex-col gap-3 font-sans sm:gap-4',
+  'max-md:gap-2'
+);
+
+export const dashboardHeroTitleClass = cn(
+  'app-brand-title font-sans text-2xl font-bold tracking-tight text-[var(--brand-text-strong)] sm:text-[1.65rem]',
+  'max-md:text-xl'
+);
+
+export const dashboardHeroJiraBadgeClass = cn(
+  'dashboard-project-jira-badge inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5',
+  'font-sans text-xs font-bold'
+);
+
+export const dashboardHeroSubtitleClass = cn(
+  'max-w-2xl font-sans text-sm leading-relaxed text-[color-mix(in_srgb,var(--brand-text-strong)_78%,transparent)]',
+  'max-md:text-xs max-md:leading-snug'
+);
+
+export const dashboardHeroMutedClass =
+  'font-sans text-[color-mix(in_srgb,var(--brand-text-strong)_62%,transparent)]';
 export const dashboardHeroFilterChipClass = viewHeroFilterChipClass;
 export const dashboardFilterToolbarClass = viewHeroToolbarClass;
 export const dashboardFilterToolbarDividerClass = viewHeroToolbarDividerClass;
@@ -50,6 +83,28 @@ export const dashboardFilterIconWrapClass = viewHeroToolbarIconWrapClass;
 export const dashboardFilterIconClass = viewHeroToolbarIconClass;
 export const dashboardFilterCountClass = viewHeroToolbarCountClass;
 export const dashboardHeroMobileActionBtnClass = viewHeroMobileActionBtnClass;
+
+/** Placa circular nos KPIs do hero. */
+export const dashboardKpiIconPlateClass = 'dashboard-project-kpi-icon-plate';
+
+/** Grade bento dos cards de insight (ProjectDashboard). */
+export const dashboardInsightsBentoGridClass = cn(
+  'dashboard-insights-bento grid w-full grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 lg:gap-4',
+  'lg:auto-rows-[minmax(11rem,auto)]'
+);
+
+export const dashboardInsightCardFeaturedGridClass = 'lg:row-span-2';
+
+/** Cabeçalho da seção de insights. */
+export const dashboardInsightsSectionLabelClass = cn(
+  'dashboard-insights-section-label font-sans text-xs font-bold uppercase tracking-wider',
+  'text-[var(--brand-text-strong)]'
+);
+
+export const dashboardInsightsSectionDescClass = cn(
+  'dashboard-insights-section-desc font-sans text-sm font-medium',
+  'text-[color-mix(in_srgb,var(--brand-text-strong)_78%,transparent)]'
+);
 
 /** Poço inset do donut «Taxa de aprovação». */
 export const dashboardDonutWellClass = cn(

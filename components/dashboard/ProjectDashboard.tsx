@@ -25,7 +25,7 @@ import {
   countBugsWithReopenLinks,
   defectCreatedPerWeekSeries,
 } from './projectDashboardHelpers';
-import { dashboardDonutWellClass, dashboardInsightWellClass } from './dashboardNeuUi';
+import { dashboardDonutWellClass, dashboardInsightWellClass, dashboardInsightsBentoGridClass, dashboardInsightCardFeaturedGridClass } from './dashboardNeuUi';
 
 const LABEL_CLASS = projectDashboardInsightMutedClass;
 const VALUE_STRONG_CLASS = projectDashboardInsightTextClass;
@@ -259,7 +259,7 @@ type InsightCardProps = {
 
 function InsightCard({ title, subtitle, children, className, hint }: InsightCardProps) {
   const card = (
-    <article className={cn(projectDashboardInsightCardClass, className)}>
+    <article className={cn(projectDashboardInsightCardClass, 'dashboard-insight-bento-card', className)}>
       <header className={projectDashboardInsightHeaderClass}>
         <h3 className={projectDashboardInsightTitleClass}>{title}</h3>
         {subtitle ? <p className={projectDashboardInsightSubtitleClass}>{subtitle}</p> : null}
@@ -298,14 +298,14 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
     if (isLoading) {
       return (
         <div
-          className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3"
+          className={cn(dashboardInsightsBentoGridClass, 'aria-busy')}
           aria-busy="true"
           aria-label="Carregando indicadores do dashboard"
         >
           {Array.from({ length: 9 }).map((_, i) => (
             <div
               key={i}
-              className={cn(projectDashboardInsightCardClass, 'h-36 animate-pulse opacity-80')}
+              className={cn(projectDashboardInsightCardClass, 'dashboard-insight-bento-card h-36 animate-pulse opacity-80')}
               aria-hidden
             />
           ))}
@@ -329,12 +329,13 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
 
     return (
       <section
-        className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3"
+        className={dashboardInsightsBentoGridClass}
         aria-label="Indicadores de qualidade e execução"
       >
         <InsightCard
           title="Cobertura de testes"
           subtitle="Tarefas com ao menos um caso de teste vinculado"
+          className="dashboard-insight-bento-card--coverage"
           hint={
             <span>
               {m.tasksWithTestCases} de {m.totalTasks} tarefas tipo &quot;Tarefa&quot; têm casos de
@@ -371,6 +372,7 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
         <InsightCard
           title="Taxa de aprovação"
           subtitle="Estabilidade entre casos já executados"
+          className={cn('dashboard-insight-bento-card--pass-rate', dashboardInsightCardFeaturedGridClass)}
         >
           <div className="flex w-full items-center justify-center">
             <PassRateRing percent={m.testPassRate} tooltip={passTooltip} />

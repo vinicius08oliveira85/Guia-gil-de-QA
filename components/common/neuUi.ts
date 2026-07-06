@@ -26,6 +26,9 @@ export const neuListItemClass = 'app-menu-item';
 export const neuListItemActiveClass = 'app-menu-item-active';
 export const neuListPanelMenuClass = 'app-menu-panel';
 
+/** Linha elevada em painéis claros (feed, histórico, atividade). */
+export const appNeuListRowClass = 'app-neu-list-row';
+
 /** Substitui combinações legadas base-* + border-base-* */
 export const neuLegacyPanelClass = neuSurfaceClass;
 export const neuLegacyInsetClass = neuSurfaceInsetClass;
@@ -109,22 +112,40 @@ export const neuTimelineCardIdleClass = neuBrandBorderClass;
 export const neuTimelineIconIdleClass =
   'rounded-lg bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))] text-base-content/60';
 
-/** Trilho segmentado — inset; chips raised; ativo inset (padrão ProjectCard / modais). */
-export const neuSegmentedTrackClass = cn(
-  neuSurfaceInsetClass,
-  'flex w-full flex-wrap gap-1.5 overflow-x-auto rounded-full p-1.5'
+/** Trilho segmentado — inset claro/escuro conforme `--workspace-panel-*`. */
+export const appSegmentedTrackClass = cn(
+  'workspace-chrome-inset no-scrollbar flex flex-wrap gap-1 overflow-x-auto rounded-full p-1',
+  'max-md:gap-0.5 max-md:p-0.5'
 );
+
+export const appSegmentedTabBaseClass =
+  'inline-flex min-h-[2.25rem] shrink-0 snap-start items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 font-sans text-sm transition-[box-shadow,color,background-color] duration-200 sm:min-h-0 max-md:min-h-7 max-md:px-2 max-md:py-0.5 max-md:text-[11px]';
+
+/** Aba/botão segmentado — ativo: pill + texto claro; inativo: texto muted sem fundo. */
+export function appSegmentedTabClass(active: boolean): string {
+  return cn(
+    appSegmentedTabBaseClass,
+    active
+      ? cn('workspace-chrome-tab-active font-semibold')
+      : cn('workspace-chrome-tab-idle font-medium')
+  );
+}
+
+/** Contador em abas segmentadas (backlog, filtros, badges). */
+export function appSegmentedTabCountClass(active: boolean): string {
+  return cn(
+    'inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center px-1.5 font-sans text-[10px] font-bold tabular-nums leading-none',
+    active ? 'workspace-chrome-count-active' : 'workspace-chrome-count-idle'
+  );
+}
+
+/** Trilho segmentado — inset; delega para appSegmentedTrackClass. */
+export const neuSegmentedTrackClass = cn(appSegmentedTrackClass, 'sm:gap-1.5 sm:p-1.5');
 
 export const neuSegmentedTabBaseClass =
   'inline-flex min-h-[2.25rem] shrink-0 snap-start items-center gap-2 px-3 py-2 font-sans text-xs font-semibold transition-[box-shadow,color] sm:min-h-0 sm:text-sm';
 
-export const neuSegmentedTabClass = (active: boolean) =>
-  cn(
-    neuSegmentedTabBaseClass,
-    active
-      ? cn(neuPillActiveClass, 'text-[var(--leve-header-text)]')
-      : cn(neuPillClass, 'text-[var(--leve-header-text-muted)] hover:text-[var(--leve-header-text)]')
-  );
+export const neuSegmentedTabClass = (active: boolean) => appSegmentedTabClass(active);
 
 export const neuSegmentedTabBadgeActiveClass = cn(
   'task-details-neu-tab-count inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full border-0',
@@ -140,14 +161,5 @@ export const neuSegmentedTabBadgeIdleClass = cn(
   '!text-[var(--leve-header-text-muted)] leve-neu-pill'
 );
 
-/** Chip de filtro compacto (KPIs, preferências) — raised / ativo inset. */
-export const neuFilterPillClass = (active: boolean) =>
-  cn(
-    'inline-flex shrink-0 items-center whitespace-nowrap rounded-full px-3 py-1.5 font-sans text-xs transition-[box-shadow,color]',
-    active
-      ? cn(neuPillActiveClass, 'font-semibold text-[var(--leve-header-text)]')
-      : cn(
-          neuPillClass,
-          'font-medium text-[var(--leve-header-text-muted)] hover:text-[var(--leve-header-text)]'
-        )
-  );
+/** Chip de filtro compacto — mesmo padrão das abas do ProjectView. */
+export const neuFilterPillClass = (active: boolean) => appSegmentedTabClass(active);

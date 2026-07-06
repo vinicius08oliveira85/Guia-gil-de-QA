@@ -3,6 +3,7 @@ import { ListChecks, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { RadialProgress } from '../common/RadialProgress';
+import { dashboardKpiIconPlateClass } from './dashboardNeuUi';
 import {
   formatWorkspaceStatCount,
   glassIndicatorBadgeClass,
@@ -111,7 +112,7 @@ function SmallIndicatorCard({ item }: { item: SmallIndicatorItem }) {
     <div
       className={cn(
         glassIndicatorCardClass,
-        'min-h-[4rem] gap-1.5 sm:min-h-[4.25rem] sm:gap-2',
+        'dashboard-project-kpi-card min-h-[4.5rem] gap-1.5 sm:min-h-[4.75rem] sm:gap-2',
         interactiveClasses,
         activeClasses
       )}
@@ -134,29 +135,36 @@ function SmallIndicatorCard({ item }: { item: SmallIndicatorItem }) {
           : undefined
       }
     >
-      <div className="flex w-full items-center justify-center gap-1.5">
-        <Icon
-          className={cn(inactive ? glassIndicatorIconMutedClass : glassIndicatorIconClass)}
-          strokeWidth={1.75}
-          aria-hidden
-        />
-        <span className={glassIndicatorLabelClass}>{item.label}</span>
-      </div>
-
-      <div className="flex items-center justify-center gap-1.5">
-        <span className={inactive ? glassIndicatorValueMutedClass : glassIndicatorValueClass}>
-          {displayValue}
+      <div className="flex w-full items-center gap-2">
+        <span className={dashboardKpiIconPlateClass} aria-hidden>
+          <Icon
+            className={cn(
+              'h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4',
+              inactive ? glassIndicatorIconMutedClass : glassIndicatorIconClass
+            )}
+            strokeWidth={1.75}
+            aria-hidden
+          />
         </span>
-        {item.trend ? <TrendIndicator trend={item.trend} /> : null}
+        <span className={cn(glassIndicatorLabelClass, 'text-left')}>{item.label}</span>
       </div>
 
-      {hasProgress ? (
-        <div className="flex justify-center">
-          <MiniRingProgress value={item.progressValue!} />
+      <div className="mt-auto flex w-full flex-col items-start gap-0.5">
+        <div className="flex items-center gap-1.5">
+          <span className={inactive ? glassIndicatorValueMutedClass : glassIndicatorValueClass}>
+            {displayValue}
+          </span>
+          {item.trend ? <TrendIndicator trend={item.trend} /> : null}
         </div>
-      ) : null}
 
-      <span className={glassIndicatorModifierClass}>{item.modifier}</span>
+        {hasProgress ? (
+          <div className="mt-0.5">
+            <MiniRingProgress value={item.progressValue!} />
+          </div>
+        ) : null}
+
+        <span className={cn(glassIndicatorModifierClass, 'text-left')}>{item.modifier}</span>
+      </div>
     </div>
   );
 }

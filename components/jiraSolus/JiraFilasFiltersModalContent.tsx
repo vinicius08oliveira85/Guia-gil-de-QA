@@ -1,7 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import type { JiraTask } from '../../types';
 import type { SlaBucket } from '../../utils/jiraFilasMetrics';
+import { getTaskAssigneeLabel, getTaskStatusLabel } from '../../utils/taskDisplayLabels';
 import {
   tasksPanelActiveFiltersClearClass,
   tasksPanelFiltersModalChipClass,
@@ -39,15 +39,7 @@ export function countActiveJiraFilasFilters(filters: JiraFilasLocalFilters): num
   );
 }
 
-/** Texto de status exibido no card (status real do Jira quando disponível). */
-export function getTaskStatusLabel(task: JiraTask): string {
-  return task.jiraStatus?.trim() || task.status;
-}
-
-/** Responsável exibido (Jira assignee ou fallback local). */
-export function getTaskAssigneeLabel(task: JiraTask): string {
-  return (task.jiraAssignee?.displayName ?? task.assignee ?? '').trim() || 'Sem responsável';
-}
+export { getTaskAssigneeLabel, getTaskStatusLabel };
 
 interface FilterChipProps {
   label: string;

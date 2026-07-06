@@ -16,12 +16,22 @@ export interface TaskTrackingJiraAction {
   title?: string;
 }
 
+/** Ação "Salvar" do Acompanhamento — persistência manual das filas Jira. */
+export interface TaskTrackingSaveAction {
+  onSave: () => void | Promise<void>;
+  isSaving: boolean;
+}
+
 interface TaskTrackingHeaderState {
   jiraAction: TaskTrackingJiraAction | null;
   setJiraAction: (action: TaskTrackingJiraAction | null) => void;
+  saveAction: TaskTrackingSaveAction | null;
+  setSaveAction: (action: TaskTrackingSaveAction | null) => void;
 }
 
 export const useTaskTrackingHeaderStore = create<TaskTrackingHeaderState>(set => ({
   jiraAction: null,
   setJiraAction: action => set({ jiraAction: action }),
+  saveAction: null,
+  setSaveAction: action => set({ saveAction: action }),
 }));

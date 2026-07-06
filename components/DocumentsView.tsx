@@ -16,24 +16,16 @@ import { FileImportModal } from './common/FileImportModal';
 import { FileViewer } from './common/FileViewer';
 import { DocumentStatsCards } from './documents/DocumentStatsCards';
 import { DocumentCard } from './documents/DocumentCard';
-import { Search, Upload, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Search, Upload, FileText, CheckCircle2, AlertCircle, FolderOpen } from 'lucide-react';
 import { cn } from '../utils/cn';
-import { documentCardGrid, projectViewPanel, projectViewShell } from './common/viewUi';
-import {
-  viewHeroChromeClass,
-  viewHeroHeaderShellClass,
-  viewHeroJiraBadgeClass,
-  viewHeroPrimaryBtnClass,
-  viewHeroSubtitleClass,
-  viewHeroTitleClass,
-} from './common/viewHeroChromeUi';
+import { documentCardGrid } from './common/viewUi';
+import { viewHeroPrimaryBtnClass } from './common/viewHeroChromeUi';
 import { documentsCardListPanelClass } from './documents/documentsCardNeuUi';
 import {
   documentsEyebrowClass,
   documentsFilterPillClass,
   documentsFilterPillsGroupClass,
   documentsFilterRowClass,
-  documentsFiltersPanelClass,
   documentsModalBodyClass,
   documentsModalMutedTextClass,
   documentsModalPreviewInsetClass,
@@ -50,8 +42,24 @@ import {
   documentsSummaryStatsClass,
   documentsSummaryStatStrongClass,
   documentsSummaryStripClass,
-  documentsViewScopeClass,
 } from './documents/documentsNeuUi';
+import {
+  documentsViewContentClass,
+  documentsViewEyebrowClass,
+  documentsViewHeroChromeClass,
+  documentsViewHeroShellClass,
+  documentsViewListPanelClass,
+  documentsViewPageShellClass,
+  documentsViewPanelClass,
+  documentsViewSectionDescClass,
+  documentsViewSectionHeaderClass,
+  documentsViewSectionLabelClass,
+} from './documents/documentsViewNeuUi';
+import {
+  projectTabHeroJiraBadgeClass,
+  projectTabHeroSubtitleClass,
+  projectTabHeroTitleClass,
+} from './common/projectTabNeuUi';
 
 interface DocumentWithMetadata extends ProjectDocument {
   uploadedAt?: string;
@@ -304,50 +312,64 @@ export const DocumentsView: React.FC<{
 
   return (
     <div
-      className={cn(projectViewShell, documentsViewScopeClass)}
+      className={documentsViewPageShellClass}
       role="main"
       aria-label="Documentos do projeto"
     >
-      <div className={viewHeroChromeClass}>
-        <header className={viewHeroHeaderShellClass}>
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-            <div className="min-w-0">
-              <div className="mb-1 flex flex-wrap items-center gap-2">
-                <h1 id="documents-section-heading" className={viewHeroTitleClass}>
-                  Documentos
-                </h1>
-                {jiraProjectKey ? (
-                  <span className={viewHeroJiraBadgeClass}>Jira: {jiraProjectKey}</span>
-                ) : null}
+      <div className={documentsViewContentClass}>
+        <div className={documentsViewHeroShellClass}>
+          <div className={documentsViewHeroChromeClass}>
+            <header className="flex flex-col gap-3 font-sans sm:gap-4 max-md:gap-2">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div className="min-w-0">
+                  <p className={documentsViewEyebrowClass}>
+                    <FolderOpen className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                    Projeto · Documentos
+                  </p>
+                  <div className="mb-1.5 mt-2 flex flex-wrap items-center gap-2 sm:mt-2.5">
+                    <h1 id="documents-section-heading" className={projectTabHeroTitleClass}>
+                      Documentos
+                    </h1>
+                    {jiraProjectKey ? (
+                      <span className={projectTabHeroJiraBadgeClass}>Jira: {jiraProjectKey}</span>
+                    ) : null}
+                  </div>
+                  <p className={projectTabHeroSubtitleClass}>{documentsDescription}</p>
+                </div>
+                <label className={cn(viewHeroPrimaryBtnClass, 'mt-1 shrink-0 cursor-pointer lg:mt-0')}>
+                  <Upload className="h-4 w-4 shrink-0" aria-hidden />
+                  Carregar
+                  <input
+                    ref={uploadInputRef}
+                    type="file"
+                    accept=".txt,.md,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.json,.csv,.xml,.jpg,.jpeg,.png,.gif,.webp,.svg"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    aria-label="Carregar documento"
+                  />
+                </label>
               </div>
-              <p className={viewHeroSubtitleClass}>{documentsDescription}</p>
-            </div>
-            <label className={cn(viewHeroPrimaryBtnClass, 'shrink-0 cursor-pointer')}>
-              <Upload className="h-4 w-4 shrink-0" aria-hidden />
-              Carregar
-              <input
-                ref={uploadInputRef}
-                type="file"
-                accept=".txt,.md,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.json,.csv,.xml,.jpg,.jpeg,.png,.gif,.webp,.svg"
-                onChange={handleFileUpload}
-                className="hidden"
-                aria-label="Carregar documento"
+            </header>
+
+            <section aria-label="Indicadores de documentos por categoria">
+              <DocumentStatsCards
+                categoryCounts={stats.categoryCounts}
+                totalDocuments={stats.total}
+                selectedCategory={selectedCategory}
+                onCategorySelect={setSelectedCategory}
               />
-            </label>
+            </section>
           </div>
-        </header>
+        </div>
 
-        <section aria-label="Indicadores de documentos por categoria">
-          <DocumentStatsCards
-            categoryCounts={stats.categoryCounts}
-            totalDocuments={stats.total}
-            selectedCategory={selectedCategory}
-            onCategorySelect={setSelectedCategory}
-          />
-        </section>
-      </div>
+        <div className={documentsViewSectionHeaderClass}>
+          <h2 className={documentsViewSectionLabelClass}>Explorar documentos</h2>
+          <p className={documentsViewSectionDescClass}>
+            Filtre por categoria, busque por nome ou conteúdo e acompanhe o resumo de análises.
+          </p>
+        </div>
 
-      <section className={documentsFiltersPanelClass} aria-label="Filtros e busca de documentos">
+        <section className={documentsViewPanelClass} aria-label="Filtros e busca de documentos">
         {stats.total > 0 ? (
           <div className={documentsSummaryStripClass}>
             <span className={documentsEyebrowClass}>Resumo</span>
@@ -454,7 +476,14 @@ export const DocumentsView: React.FC<{
         ) : null}
       </section>
 
-      <section className={projectViewPanel}>
+        <div className={documentsViewSectionHeaderClass}>
+          <h2 className={documentsViewSectionLabelClass}>Biblioteca de documentos</h2>
+          <p className={documentsViewSectionDescClass}>
+            Visualize, gere tarefas a partir do conteúdo e gerencie análises por documento.
+          </p>
+        </div>
+
+        <section className={documentsViewListPanelClass} aria-label="Lista de documentos">
         <div className="flex flex-col gap-3">
         {filteredDocuments.length > 0 ? (
           <div
@@ -519,7 +548,8 @@ export const DocumentsView: React.FC<{
           />
         )}
         </div>
-      </section>
+        </section>
+      </div>
 
       {/* Modal de Importação */}
       <FileImportModal

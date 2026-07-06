@@ -13,17 +13,7 @@ import { removeBusinessRuleFromProject } from '../../utils/businessRuleTaskLinki
 import { refreshBusinessRuleDossier, type DossierAiProgress } from '../../services/ai/businessRuleDossierService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { Modal } from '../common/Modal';
-import { ConfirmDialog } from '../common/ConfirmDialog';
 import {
-  viewHeroChromeClass,
-  viewHeroHeaderShellClass,
-  viewHeroJiraBadgeClass,
-  viewHeroSubtitleClass,
-  viewHeroTitleClass,
-} from '../common/viewHeroChromeUi';
-import { businessRulesListPanelClass, businessRulesViewScopeClass } from './businessRulesNeuUi';
-import {
-  tasksPanelCardClass,
   tasksViewHeaderFilterIconClass,
   tasksViewHeaderIconWrapClass,
   tasksViewHeaderPrimaryBtnClass,
@@ -36,7 +26,23 @@ import {
   tasksPanelFormInputClass,
   tasksPanelFormSelectClass,
 } from '../tasks/tasksPanelNeuStyles';
-import { projectViewShell } from '../common/viewUi';
+import {
+  businessRulesViewContentClass,
+  businessRulesViewEyebrowClass,
+  businessRulesViewHeaderShellClass,
+  businessRulesViewHeroChromeClass,
+  businessRulesViewHeroJiraBadgeClass,
+  businessRulesViewHeroShellClass,
+  businessRulesViewHeroSubtitleClass,
+  businessRulesViewHeroTitleClass,
+  businessRulesViewListPanelClass,
+  businessRulesViewPageShellClass,
+  businessRulesViewPanelClass,
+  businessRulesViewSectionDescClass,
+  businessRulesViewSectionHeaderClass,
+  businessRulesViewSectionLabelClass,
+} from './businessRulesViewNeuUi';
+import { businessRulesListPanelClass } from './businessRulesNeuUi';
 import { cn } from '../../utils/cn';
 import { EmptyState } from '../common/EmptyState';
 import { BusinessRuleDossierForm } from './BusinessRuleDossierForm';
@@ -183,84 +189,93 @@ export const BusinessRulesManager: React.FC<{
   return (
     <>
       <div
-        className={cn(projectViewShell, businessRulesViewScopeClass)}
+        className={businessRulesViewPageShellClass}
         role="main"
         aria-label="Regras de negócio do projeto"
       >
-        <div className={viewHeroChromeClass}>
-          <header className={viewHeroHeaderShellClass}>
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-              <div className="min-w-0">
-                <div className="mb-1.5 flex flex-wrap items-center gap-2">
-                  <h1
-                    id="business-rules-heading"
-                    className={cn(viewHeroTitleClass, 'inline-flex items-center gap-2')}
-                  >
-                    <Scale
-                      className="h-7 w-7 shrink-0 text-[var(--workspace-panel-accent)]"
-                      aria-hidden
+        <div className={businessRulesViewContentClass}>
+          <div className={businessRulesViewHeroShellClass}>
+            <div className={businessRulesViewHeroChromeClass}>
+              <header className={businessRulesViewHeaderShellClass}>
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="min-w-0">
+                    <p className={businessRulesViewEyebrowClass}>
+                      <Scale className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                      Projeto · Regras de negócio
+                    </p>
+                    <div className="mb-1.5 mt-2 flex flex-wrap items-center gap-2 sm:mt-2.5">
+                      <h1 id="business-rules-heading" className={businessRulesViewHeroTitleClass}>
+                        Regras de negócio
+                      </h1>
+                      {jiraProjectKey ? (
+                        <span className={businessRulesViewHeroJiraBadgeClass}>
+                          Jira: {jiraProjectKey}
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className={cn(businessRulesViewHeroSubtitleClass, 'max-w-3xl')}>
+                      Defina o nome da regra e as palavras-chave (separadas por vírgula). A IA busca
+                      as tasks relacionadas e gera o dossiê: como era, como está e como será.
+                    </p>
+                  </div>
+                  <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+                    <input
+                      ref={importInputRef}
+                      type="file"
+                      accept="application/json,.json"
+                      className="hidden"
+                      aria-label="Importar regras de negócio de arquivo JSON"
+                      onChange={handleImportFile}
                     />
-                    Regras de negócio
-                  </h1>
-                  {jiraProjectKey ? (
-                    <span className={viewHeroJiraBadgeClass}>Jira: {jiraProjectKey}</span>
-                  ) : null}
+                    <div
+                      className={cn(tasksViewHeaderSecondaryToolbarClass, 'w-full sm:w-auto')}
+                      role="group"
+                      aria-label="Importar e exportar regras"
+                    >
+                      <button
+                        type="button"
+                        className={tasksViewHeaderSecondaryBtnClass}
+                        onClick={() => importInputRef.current?.click()}
+                      >
+                        <span className={tasksViewHeaderIconWrapClass} aria-hidden>
+                          <Upload className={tasksViewHeaderFilterIconClass} />
+                        </span>
+                        <span className="hidden md:inline">Importar JSON</span>
+                      </button>
+                      <div className={tasksViewHeaderSecondaryToolbarDividerClass} aria-hidden />
+                      <button
+                        type="button"
+                        className={tasksViewHeaderSecondaryBtnClass}
+                        onClick={handleExportJson}
+                      >
+                        <span className={tasksViewHeaderIconWrapClass} aria-hidden>
+                          <Download className={tasksViewHeaderFilterIconClass} />
+                        </span>
+                        <span className="hidden md:inline">Exportar JSON</span>
+                      </button>
+                    </div>
+                    <button
+                      type="button"
+                      className={cn(tasksViewHeaderPrimaryBtnClass, 'w-full sm:w-auto')}
+                      onClick={openCreate}
+                    >
+                      <Plus className="h-4 w-4 shrink-0" aria-hidden />
+                      Nova regra
+                    </button>
+                  </div>
                 </div>
-                <p className={cn(viewHeroSubtitleClass, 'max-w-3xl')}>
-                  Defina o nome da regra e as palavras-chave (separadas por vírgula). A IA busca as
-                  tasks relacionadas e gera o dossiê: como era, como está e como será.
-                </p>
-              </div>
-              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-                <input
-                  ref={importInputRef}
-                  type="file"
-                  accept="application/json,.json"
-                  className="hidden"
-                  aria-label="Importar regras de negócio de arquivo JSON"
-                  onChange={handleImportFile}
-                />
-                <div
-                  className={cn(tasksViewHeaderSecondaryToolbarClass, 'w-full sm:w-auto')}
-                  role="group"
-                  aria-label="Importar e exportar regras"
-                >
-                  <button
-                    type="button"
-                    className={tasksViewHeaderSecondaryBtnClass}
-                    onClick={() => importInputRef.current?.click()}
-                  >
-                    <span className={tasksViewHeaderIconWrapClass} aria-hidden>
-                      <Upload className={tasksViewHeaderFilterIconClass} />
-                    </span>
-                    <span className="hidden md:inline">Importar JSON</span>
-                  </button>
-                  <div className={tasksViewHeaderSecondaryToolbarDividerClass} aria-hidden />
-                  <button
-                    type="button"
-                    className={tasksViewHeaderSecondaryBtnClass}
-                    onClick={handleExportJson}
-                  >
-                    <span className={tasksViewHeaderIconWrapClass} aria-hidden>
-                      <Download className={tasksViewHeaderFilterIconClass} />
-                    </span>
-                    <span className="hidden md:inline">Exportar JSON</span>
-                  </button>
-                </div>
-                <button
-                  type="button"
-                  className={cn(tasksViewHeaderPrimaryBtnClass, 'w-full sm:w-auto')}
-                  onClick={openCreate}
-                >
-                  <Plus className="h-4 w-4 shrink-0" aria-hidden />
-                  Nova regra
-                </button>
-              </div>
+              </header>
             </div>
-          </header>
-        </div>
+          </div>
 
-        <section className={tasksPanelCardClass} aria-label="Filtros de regras de negócio">
+          <div className={businessRulesViewSectionHeaderClass}>
+            <h2 className={businessRulesViewSectionLabelClass}>Explorar regras</h2>
+            <p className={businessRulesViewSectionDescClass}>
+              Busque por nome, filtre por status do dossiê e ordene a lista de regras.
+            </p>
+          </div>
+
+          <section className={businessRulesViewPanelClass} aria-label="Filtros de regras de negócio">
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
             <div className="min-w-[12rem] flex-1">
               <label htmlFor="br-search" className={tasksPanelFormFieldLabelClass}>
@@ -334,7 +349,14 @@ export const BusinessRulesManager: React.FC<{
           </div>
         </section>
 
-        <section className={businessRulesListPanelClass} aria-label="Lista de regras de negócio">
+          <div className={businessRulesViewSectionHeaderClass}>
+            <h2 className={businessRulesViewSectionLabelClass}>Dossiês de regras</h2>
+            <p className={businessRulesViewSectionDescClass}>
+              Expanda cada regra para ver o dossiê gerado pela IA, editar ou reanalisar.
+            </p>
+          </div>
+
+        <section className={cn(businessRulesViewListPanelClass, businessRulesListPanelClass)} aria-label="Lista de regras de negócio">
           {rules.length === 0 ? (
             <EmptyState
               title="Nenhuma regra cadastrada"
@@ -375,12 +397,14 @@ export const BusinessRulesManager: React.FC<{
             </ul>
           )}
         </section>
+        </div>
       </div>
 
       <Modal
         isOpen={formOpen}
         onClose={() => setFormOpen(false)}
         title={editingRule ? 'Editar regra de negócio' : 'Nova regra de negócio'}
+        size="3xl"
         panelClassName={tasksPanelNeuModalPanelClass}
         titleClassName={tasksPanelNeuModalTitleClass}
       >

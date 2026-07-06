@@ -1,10 +1,11 @@
 import { cn } from '../../utils/cn';
 import { projectViewPanel } from '../common/viewUi';
+import { notepadViewPanelClass } from './notepadViewNeuUi';
 
 /** Shell do Bloco de Notas — card neu com layout vertical estilo Notepad. */
 export const notepadShellClass = cn(
-  projectViewPanel,
-  'flex min-h-[min(72vh,640px)] flex-col overflow-hidden p-0'
+  notepadViewPanelClass,
+  'notepad-editor-shell'
 );
 
 /** Barra de menus horizontal (Arquivo, Editar, …). */
@@ -74,14 +75,14 @@ export const notepadDockResizeHandleClass = cn(
 
 /** Barra de abas internas do bloco de notas. */
 export const notepadPageTabsRowClass = cn(
-  'flex shrink-0 items-end gap-0 overflow-x-auto border-b border-[var(--workspace-panel-divider)]',
+  'flex shrink-0 items-end gap-1 overflow-x-auto border-b border-[var(--workspace-panel-divider)]',
   'bg-[color-mix(in_srgb,var(--workspace-panel-bg)_94%,var(--workspace-panel-neu-dark))]',
-  'px-1 pt-1'
+  'px-1.5 pt-1.5 [scroll-padding-inline:0.25rem]'
 );
 
 export const notepadPageTabClass = cn(
-  'group inline-flex max-w-[9rem] shrink-0 items-center gap-1 rounded-t-md border border-b-0 px-2 py-1',
-  'font-sans text-xs text-[var(--workspace-panel-text-muted)]',
+  'group inline-flex max-w-[9rem] shrink-0 items-center gap-1 rounded-t-md border border-b-0 px-3 py-1.5',
+  'font-sans text-xs leading-none text-[var(--workspace-panel-text-muted)]',
   'border-[var(--workspace-panel-divider)]',
   'hover:bg-[color-mix(in_srgb,var(--workspace-panel-accent)_8%,transparent)]'
 );

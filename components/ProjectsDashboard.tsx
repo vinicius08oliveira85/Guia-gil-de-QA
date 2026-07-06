@@ -44,15 +44,15 @@ import { NewProjectCard } from './projectsDashboard/NewProjectCard';
 import { ProjectsDashboardSidebar } from './projectsDashboard/ProjectsDashboardSidebar';
 import { useAriaLive } from '../hooks/useAriaLive';
 import { projectsListShell } from './common/viewUi';
-import { viewHeroChromeClass } from './common/viewHeroChromeUi';
-import {
-  viewHeroToolbarIconClass,
-  viewHeroToolbarIconWrapClass,
-} from './common/viewHeroChromeUi';
 import {
   projectsDashboardFilterPillClass,
+  projectsDashboardGlobalEfficiencyGridClass,
+  projectsDashboardHeroShellClass,
+  projectsDashboardSectionDescClass,
+  projectsDashboardSectionLabelClass,
+  projectsDashboardContentClass,
+  projectsDashboardHeroChromeClass,
   projectsDashboardQuickFiltersCountClass,
-  projectsDashboardQuickFiltersDividerClass,
   projectsDashboardQuickFiltersPillClass,
   projectsDashboardQuickFiltersToolbarClass,
   projectsDashboardMainGridClass,
@@ -297,7 +297,7 @@ export const ProjectsDashboard: React.FC<{
           onStatClick={handleStatClick}
         />
         <GlobalEfficiencyMetric
-          className="col-span-2 sm:col-span-4 lg:col-span-1"
+          className={projectsDashboardGlobalEfficiencyGridClass}
           percent={workspaceTestMetrics.executionEfficiencyPercent}
           executedCount={workspaceTestMetrics.executedTestCases}
           totalCount={workspaceTestMetrics.totalTestCases}
@@ -309,63 +309,64 @@ export const ProjectsDashboard: React.FC<{
   return (
     <>
       <div className={projectsDashboardPageClass}>
-        <div className={projectsListShell}>
-          <div className={cn(viewHeroChromeClass, 'gap-3 sm:gap-4')}>
-            <ProjectsDashboardHeader
-              projectCount={projects.length}
-              lastActivityText={lastActivityText}
-              searchQuery={searchQuery}
-              onSearchQueryChange={setSearchQuery}
-            />
+        <div className={projectsDashboardContentClass}>
+          <div className={projectsListShell}>
+            <div className={projectsDashboardHeroShellClass}>
+              <div className={cn(projectsDashboardHeroChromeClass, 'gap-3 sm:gap-4')}>
+                <ProjectsDashboardHeader
+                  projectCount={projects.length}
+                  lastActivityText={lastActivityText}
+                  searchQuery={searchQuery}
+                  onSearchQueryChange={setSearchQuery}
+                />
 
-            {projects.length > 0 ? (
-              <div className="lg:contents">
-                <button
-                  type="button"
-                  className={projectsDashboardSummaryToggleClass(summaryExpanded)}
-                  aria-expanded={summaryExpanded}
-                  aria-controls="projects-dashboard-summary"
-                  onClick={() => setSummaryExpanded(open => !open)}
-                >
-                  <span className="inline-flex items-center gap-1.5">
-                    <span className={viewHeroToolbarIconWrapClass} aria-hidden>
-                      <Gauge className={viewHeroToolbarIconClass} />
-                    </span>
-                    Resumo do workspace
-                  </span>
-                  <ChevronDown
-                    className={cn(
-                      'h-4 w-4 shrink-0 transition-transform',
-                      summaryExpanded && 'rotate-180'
-                    )}
-                    aria-hidden
+                {projects.length > 0 ? (
+                  <div className="lg:contents">
+                    <button
+                      type="button"
+                      className={projectsDashboardSummaryToggleClass(summaryExpanded)}
+                      aria-expanded={summaryExpanded}
+                      aria-controls="projects-dashboard-summary"
+                      onClick={() => setSummaryExpanded(open => !open)}
+                    >
+                      <span className="inline-flex items-center gap-1.5">
+                        <Gauge className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
+                        Resumo do workspace
+                      </span>
+                      <ChevronDown
+                        className={cn(
+                          'h-4 w-4 shrink-0 transition-transform',
+                          summaryExpanded && 'rotate-180'
+                        )}
+                        aria-hidden
+                      />
+                    </button>
+                    <div
+                      id="projects-dashboard-summary"
+                      className={summaryExpanded ? 'contents' : 'hidden lg:contents'}
+                    >
+                      {statsBlock}
+                    </div>
+                  </div>
+                ) : null}
+
+                {projects.length > 1 && (
+                  <ProjectQuickFiltersGroup
+                    quickFilter={quickFilter}
+                    setQuickFilter={setQuickFilter}
+                    totalCount={projects.length}
+                    showBugsFilter={projectsWithBugs.length > 0}
+                    showAttentionFilter={projectsNeedingAttention.length > 0}
+                    showTestAlertsFilter={projectsTestAlertList.length > 0}
+                    bugsCount={projectsWithBugs.length}
+                    attentionCount={projectsNeedingAttention.length}
+                    testAlertsCount={projectsTestAlertList.length}
                   />
-                </button>
-                <div
-                  id="projects-dashboard-summary"
-                  className={summaryExpanded ? 'contents' : 'hidden lg:contents'}
-                >
-                  {statsBlock}
-                </div>
+                )}
               </div>
-            ) : null}
+            </div>
 
-            {projects.length > 1 && (
-              <ProjectQuickFiltersGroup
-                quickFilter={quickFilter}
-                setQuickFilter={setQuickFilter}
-                totalCount={projects.length}
-                showBugsFilter={projectsWithBugs.length > 0}
-                showAttentionFilter={projectsNeedingAttention.length > 0}
-                showTestAlertsFilter={projectsTestAlertList.length > 0}
-                bugsCount={projectsWithBugs.length}
-                attentionCount={projectsNeedingAttention.length}
-                testAlertsCount={projectsTestAlertList.length}
-              />
-            )}
-          </div>
-
-          <CreateProjectModal
+            <CreateProjectModal
             isOpen={isCreating}
             onClose={() => setIsCreating(false)}
             onCreateProject={onCreateProject}
@@ -376,6 +377,19 @@ export const ProjectsDashboard: React.FC<{
 
           <div ref={listRef} className={cn(projects.length > 0 && projectsDashboardMainGridClass)}>
             <div className="min-w-0">
+              {projects.length > 0 && !isLoading ? (
+                <div className="mb-3 flex flex-col gap-0.5 border-b border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pb-3 sm:mb-4">
+                  <h2 className={projectsDashboardSectionLabelClass}>Seus projetos</h2>
+                  <p className={projectsDashboardSectionDescClass}>
+                    {filteredProjects.length}{' '}
+                    {filteredProjects.length === 1 ? 'projeto visível' : 'projetos visíveis'}
+                    {searchQuery.trim() || quickFilter !== 'all'
+                      ? ' com os filtros atuais'
+                      : ' no workspace'}
+                  </p>
+                </div>
+              ) : null}
+
               {isLoading && projects.length === 0 ? (
                 <div
                   className={cn(projectsDashboardMessagePanelClass, 'sm:p-8')}
@@ -486,6 +500,7 @@ export const ProjectsDashboard: React.FC<{
             )}
           </div>
         </div>
+        </div>
       </div>
     </>
   );
@@ -514,9 +529,7 @@ function ProjectQuickFilterButton({
       aria-pressed={active}
       aria-label={ariaLabel}
     >
-      <span className={viewHeroToolbarIconWrapClass} aria-hidden>
-        <Icon className={viewHeroToolbarIconClass} />
-      </span>
+      <Icon className="h-3.5 w-3.5 shrink-0 opacity-90" strokeWidth={2} aria-hidden />
       <span>{label}</span>
       {count != null ? (
         <span className={projectsDashboardQuickFiltersCountClass(active)} aria-hidden>
@@ -563,45 +576,36 @@ function ProjectQuickFiltersGroup({
         ariaLabel={`Todos os projetos (${totalCount})`}
       />
       {showBugsFilter ? (
-        <>
-          <div className={projectsDashboardQuickFiltersDividerClass} aria-hidden />
-          <ProjectQuickFilterButton
-            active={quickFilter === 'withBugs'}
-            label="Com bugs"
-            count={bugsCount}
-            icon={Bug}
-            onClick={() => setQuickFilter(quickFilter === 'withBugs' ? 'all' : 'withBugs')}
-            ariaLabel={`Projetos com bugs abertos (${bugsCount})`}
-          />
-        </>
+        <ProjectQuickFilterButton
+          active={quickFilter === 'withBugs'}
+          label="Com bugs"
+          count={bugsCount}
+          icon={Bug}
+          onClick={() => setQuickFilter(quickFilter === 'withBugs' ? 'all' : 'withBugs')}
+          ariaLabel={`Projetos com bugs abertos (${bugsCount})`}
+        />
       ) : null}
       {showAttentionFilter ? (
-        <>
-          <div className={projectsDashboardQuickFiltersDividerClass} aria-hidden />
-          <ProjectQuickFilterButton
-            active={quickFilter === 'needsAttention'}
-            label="Atenção"
-            count={attentionCount}
-            icon={AlertTriangle}
-            onClick={() =>
-              setQuickFilter(quickFilter === 'needsAttention' ? 'all' : 'needsAttention')
-            }
-            ariaLabel={`Projetos que precisam de atenção (${attentionCount})`}
-          />
-        </>
+        <ProjectQuickFilterButton
+          active={quickFilter === 'needsAttention'}
+          label="Atenção"
+          count={attentionCount}
+          icon={AlertTriangle}
+          onClick={() =>
+            setQuickFilter(quickFilter === 'needsAttention' ? 'all' : 'needsAttention')
+          }
+          ariaLabel={`Projetos que precisam de atenção (${attentionCount})`}
+        />
       ) : null}
       {showTestAlertsFilter ? (
-        <>
-          <div className={projectsDashboardQuickFiltersDividerClass} aria-hidden />
-          <ProjectQuickFilterButton
-            active={quickFilter === 'testAlerts'}
-            label="Testes"
-            count={testAlertsCount}
-            icon={ClipboardCheck}
-            onClick={() => setQuickFilter(quickFilter === 'testAlerts' ? 'all' : 'testAlerts')}
-            ariaLabel={`Projetos com alertas de testes (${testAlertsCount})`}
-          />
-        </>
+        <ProjectQuickFilterButton
+          active={quickFilter === 'testAlerts'}
+          label="Testes"
+          count={testAlertsCount}
+          icon={ClipboardCheck}
+          onClick={() => setQuickFilter(quickFilter === 'testAlerts' ? 'all' : 'testAlerts')}
+          ariaLabel={`Projetos com alertas de testes (${testAlertsCount})`}
+        />
       ) : null}
     </div>
   );

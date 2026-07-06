@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Download, Filter, List, Loader2, RefreshCw, Search, X } from 'lucide-react';
+import { Download, Filter, Inbox, List, Loader2, RefreshCw, Search, X } from 'lucide-react';
 import {
   getJiraConfig,
   getJiraProjects,
@@ -33,7 +33,6 @@ import {
 import { normalizeTasksParentIdsAcyclic } from '../../utils/taskParentCycle';
 import { logger } from '../../utils/logger';
 import { cn } from '../../utils/cn';
-import { EmptyState } from '../common/EmptyState';
 import { Spinner } from '../common/Spinner';
 import { AppSelect } from '../common/AppSelect';
 import { FileExportModal } from '../common/FileExportModal';
@@ -49,10 +48,6 @@ import {
   tasksPanelToolbarLabelClass,
   tasksPanelToolbarSelectClass,
   tasksPanelToolbarShellClass,
-  tasksViewPageHeaderShellClass,
-  tasksViewPageJiraBadgeClass,
-  tasksViewPageSubtitleClass,
-  tasksViewPageTitleClass,
 } from '../tasks/tasksPanelNeuStyles';
 import {
   getTaskComparator,
@@ -72,6 +67,17 @@ import {
   readJiraFilasLocalFilters,
   writeJiraFilasLocalFilters,
 } from '../../utils/jiraFilasLocalFiltersStorage';
+import {
+  jiraSolusEyebrowClass,
+  jiraSolusHeroChromeClass,
+  jiraSolusHeroJiraBadgeClass,
+  jiraSolusHeroShellClass,
+  jiraSolusHeroSubtitleClass,
+  jiraSolusHeroTitleClass,
+  jiraSolusSectionDescClass,
+  jiraSolusSectionHeaderClass,
+  jiraSolusSectionLabelClass,
+} from './jiraSolusViewNeuUi';
 import {
   jiraSolusFieldClass,
   jiraSolusFieldLabelClass,
@@ -892,38 +898,48 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
   ]);
 
   return (
-    <div className="space-y-5" role="region" aria-label="Filas do Jira">
-      <header className={tasksViewPageHeaderShellClass}>
-        <div className="min-w-0">
-          <div className="mb-1.5 flex flex-wrap items-center gap-2">
-            <h1 className={tasksViewPageTitleClass}>Filas do Jira</h1>
+    <div className="space-y-3 sm:space-y-4" role="region" aria-label="Filas do Jira">
+      <div className={jiraSolusHeroShellClass}>
+        <div className={jiraSolusHeroChromeClass}>
+          <p className={jiraSolusEyebrowClass}>
+            <Inbox className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            Acompanhamento · Filas (Jira)
+          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <h1 className={jiraSolusHeroTitleClass}>Filas do Jira</h1>
             {selectedProjectKeys.length > 0 ? (
-              <span className={tasksViewPageJiraBadgeClass}>
+              <span className={jiraSolusHeroJiraBadgeClass}>
                 {selectedProjectKeys.length === 1
                   ? `Jira: ${selectedProjectKeys[0]}`
                   : `Jira: ${selectedProjectKeys.length} projetos`}
               </span>
             ) : null}
             {selectedQueues.length > 0 ? (
-              <span className={tasksViewPageJiraBadgeClass}>
+              <span className={jiraSolusHeroJiraBadgeClass}>
                 {selectedQueueCategories.length} fila(s) · {selectedQueueStatuses.length} status ·{' '}
                 {selectedQueues.length} fila(s) JSM
               </span>
             ) : null}
             {hasActiveFilter ? (
-              <span className={tasksViewPageJiraBadgeClass}>Filtro: {activeFilterLabel}</span>
+              <span className={jiraSolusHeroJiraBadgeClass}>Filtro: {activeFilterLabel}</span>
             ) : null}
           </div>
-          <p className={cn(tasksViewPageSubtitleClass, 'max-w-2xl')}>
+          <p className={cn(jiraSolusHeroSubtitleClass, 'mt-1')}>
             Selecione projeto(s), fila e status do Jira Service Management para importar apenas as
             tarefas relevantes. O sistema atualiza automaticamente a cada 10 minutos (projetos e
             filas). Use <strong>Atualizar filas</strong> ou o botão <strong>Jira</strong> no topo
             para sincronizar manualmente. Também é possível importar uma issue pelo ID.
           </p>
         </div>
-      </header>
+      </div>
 
       <section className={cn(jiraSolusInnerPanelClass, 'space-y-4')} aria-label="Importação do Jira">
+        <header className={jiraSolusSectionHeaderClass}>
+          <h2 className={jiraSolusSectionLabelClass}>Importação Jira</h2>
+          <p className={jiraSolusSectionDescClass}>
+            Selecione projetos, filas e status JSM ou importe uma issue individual pelo ID.
+          </p>
+        </header>
         <JiraFilasImportSelector
           projects={jiraProjects}
           queues={jiraQueues}
@@ -1098,6 +1114,17 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
       </section>
 
       <section className={jiraSolusListShellClass} aria-label="Lista de tarefas importadas">
+        <header className={cn(jiraSolusSectionHeaderClass, 'mb-3 border-b-0 pb-0')}>
+          <h2 className={jiraSolusSectionLabelClass}>Lista de tarefas</h2>
+          <p className={jiraSolusSectionDescClass}>
+            {filteredTasks.length > 0
+              ? `${sortedTasks.length} tarefa${sortedTasks.length === 1 ? '' : 's'} visíve${sortedTasks.length === 1 ? 'l' : 'is'}`
+              : 'Nenhuma tarefa importada ainda'}
+            {sortedTasks.length !== tasks.length && tasks.length > 0
+              ? ` de ${tasks.length} importadas`
+              : ''}
+          </p>
+        </header>
         {isLoadingProjects && jiraProjects.length === 0 ? (
           <div className="flex justify-center py-12">
             <Spinner />

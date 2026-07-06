@@ -2,6 +2,8 @@ import React from 'react';
 import { formatRelativeTime } from '../../utils/dateUtils';
 import { Badge } from './Badge';
 import type { AuditLogEntry } from '../../utils/auditLog';
+import { appNeuListRowClass, neuBrandTextMutedClass, neuBrandTextStrongClass } from './neuUi';
+import { cn } from '../../utils/cn';
 
 export interface EnrichedAuditLog extends AuditLogEntry {
   taskTitle?: string;
@@ -60,7 +62,12 @@ const ActivityItem: React.FC<ActivityItemProps> = ({
 
   return (
     <div
-      className={`group relative p-4 bg-surface border border-surface-border border-l-4 ${getBorderColor(actionColor)} rounded-xl hover:shadow-md hover:border-primary/30 transition-all duration-200 overflow-hidden ${className || ''}`}
+      className={cn(
+        'group relative',
+        appNeuListRowClass,
+        getBorderColor(actionColor),
+        className
+      )}
       style={style}
     >
       <div className="flex items-start gap-4">
@@ -96,7 +103,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({
 
           {/* Contexto da Tarefa */}
           {activity.taskTitle && (
-            <div className="flex items-center gap-1.5 text-xs text-text-secondary">
+            <div className={cn('flex items-center gap-1.5 text-xs', neuBrandTextMutedClass)}>
               <svg
                 className="w-3.5 h-3.5 opacity-50"
                 fill="none"
@@ -121,7 +128,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({
 
           {/* Detalhes das Alterações */}
           {activity.changes && Object.keys(activity.changes).length > 0 && (
-            <div className="mt-2 rounded-md border border-[color-mix(in_srgb,var(--leve-neu-light)_30%,transparent)] bg-[color-mix(in_srgb,var(--leve-neu-dark)_6%,var(--leve-neu-bg))] p-2 text-xs text-text-secondary transition-colors group-hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))]">
+            <div className={cn('mt-2 rounded-md border border-[color-mix(in_srgb,var(--leve-neu-light)_30%,transparent)] bg-[color-mix(in_srgb,var(--leve-neu-dark)_6%,var(--leve-neu-bg))] p-2 text-xs transition-colors group-hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))]', neuBrandTextMutedClass)}>
               <span className="font-semibold opacity-80">Alterações: </span>
               <span className="opacity-90">
                 {Object.keys(activity.changes).slice(0, 3).join(', ')}

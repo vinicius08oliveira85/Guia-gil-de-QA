@@ -9,9 +9,9 @@ import {
   isLocalFolderBackupSupported,
 } from '../../services/localFolderBackupService';
 import {
-  landingAccentTextClass,
-  landingStatusChipIdleClass,
-  landingStatusChipOkClass,
+  landingNeuLinkBtnClass,
+  landingNeuStatusChipClass,
+  landingTextMutedClass,
   landingTextStrongClass,
 } from './landingNeuUi';
 import { cn } from '../../utils/cn';
@@ -27,21 +27,18 @@ interface StatusItem {
 function StatusChip({ item }: { item: StatusItem }) {
   return (
     <span
-      className={cn(
-        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold',
-        item.ok ? landingStatusChipOkClass : landingStatusChipIdleClass
-      )}
+      className={landingNeuStatusChipClass(item.ok)}
       title={item.detail ?? item.label}
       role="status"
       aria-label={`${item.label}: ${item.ok ? 'configurado' : 'não configurado'}`}
     >
       {item.ok ? (
-        <CheckCircle2
-          className={cn('h-3.5 w-3.5 shrink-0', landingAccentTextClass)}
+        <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" aria-hidden />
+      ) : (
+        <CircleDashed
+          className={cn('h-3.5 w-3.5 shrink-0', landingTextMutedClass)}
           aria-hidden
         />
-      ) : (
-        <CircleDashed className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden />
       )}
       <span className="inline-flex items-center gap-1">
         {item.icon}
@@ -54,7 +51,11 @@ function StatusChip({ item }: { item: StatusItem }) {
 /**
  * Indicadores discretos de integrações (Jira, Gemini, pasta local).
  */
-export const LandingIntegrationStatus = React.memo(() => {
+export interface LandingIntegrationStatusProps {
+  className?: string;
+}
+
+export const LandingIntegrationStatus = React.memo<LandingIntegrationStatusProps>(({ className }) => {
   const [folderConfigured, setFolderConfigured] = useState(false);
   const [folderLabel, setFolderLabel] = useState<string | null>(null);
 
@@ -107,9 +108,22 @@ export const LandingIntegrationStatus = React.memo(() => {
   const missing = items.filter(i => !i.ok).length;
 
   return (
-    <div className="flex w-full flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:justify-center">
+    <div
+      className={cn(
+        'landing-integration-status flex w-full flex-col items-center gap-2.5 sm:flex-row sm:flex-wrap sm:justify-center lg:justify-start',
+        className
+      )}
+    >
+      <span
+        className={cn(
+          'hidden text-[0.6875rem] font-bold uppercase tracking-wider sm:inline',
+          landingTextMutedClass
+        )}
+      >
+        Integrações
+      </span>
       <div
-        className="flex flex-wrap items-center justify-center gap-2"
+        className="flex flex-wrap items-center justify-center gap-2 lg:justify-start"
         role="list"
         aria-label="Status das integrações"
       >
@@ -122,16 +136,13 @@ export const LandingIntegrationStatus = React.memo(() => {
       {missing > 0 ? (
         <Link
           to="/settings"
-          className={cn(
-            'text-xs font-semibold underline-offset-2 hover:underline',
-            landingAccentTextClass,
-            'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--project-card-accent)]'
-          )}
+          className={landingNeuLinkBtnClass}
+          aria-label="Configurar integrações pendentes"
         >
           Configurar integrações
         </Link>
       ) : (
-        <span className={cn('text-xs font-medium', landingTextStrongClass)}>Tudo configurado</span>
+        <span className={cn('text-xs font-semibold', landingTextStrongClass)}>Tudo configurado</span>
       )}
     </div>
   );

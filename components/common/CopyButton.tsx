@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
+import { cn } from '../../utils/cn';
 
 interface CopyButtonProps {
   text: string;
@@ -21,8 +22,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
       setCopied(true);
       handleSuccess('Copiado para a área de transferência!');
       setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      // Fallback para navegadores antigos
+    } catch {
       const textArea = document.createElement('textarea');
       textArea.value = text;
       document.body.appendChild(textArea);
@@ -37,9 +37,17 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
 
   return (
     <button
+      type="button"
       onClick={handleCopy}
-      className={`inline-flex items-center gap-2 px-3 py-1 text-sm bg-surface border border-surface-border rounded hover:bg-surface-hover transition-colors ${className}`}
+      className={cn(
+        'leve-neu-pill inline-flex items-center gap-2 px-3 py-1 text-sm font-semibold',
+        'text-[var(--leve-header-text-muted)] transition-[box-shadow,color] duration-200',
+        'hover:text-[var(--leve-header-accent)]',
+        'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--leve-header-accent)]',
+        className
+      )}
       title={copied ? 'Copiado!' : 'Copiar'}
+      aria-label={copied ? 'Copiado' : label}
     >
       {copied ? '✓' : '📋'}
       <span>{copied ? 'Copiado!' : label}</span>

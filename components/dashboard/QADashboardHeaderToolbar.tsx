@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Download, Filter, ChevronDown, X } from 'lucide-react';
+import { Download, Filter, ChevronDown, X, BarChart3 } from 'lucide-react';
 import type { DashboardFilters } from './DashboardFiltersModal';
 import { cn } from '../../utils/cn';
 import {
+  dashboardEyebrowClass,
   dashboardFilterBtnActiveClass,
   dashboardFilterBtnClass,
   dashboardFilterCountClass,
@@ -61,10 +62,15 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
     <header className={dashboardHeroHeaderShellClass}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
-          <div className="mb-1.5 flex flex-wrap items-center gap-2">
+          <span className={dashboardEyebrowClass}>
+            <BarChart3 className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            Projeto · Indicadores
+          </span>
+
+          <div className="mb-1.5 mt-2.5 flex flex-wrap items-center gap-2 sm:mt-3">
             <h1 className={dashboardHeroTitleClass}>Dashboard</h1>
             {jiraProjectKey ? (
-              <span className={dashboardHeroJiraBadgeClass}>Jira: {jiraProjectKey}</span>
+              <span className={dashboardHeroJiraBadgeClass}>Jira · {jiraProjectKey}</span>
             ) : null}
           </div>
           <p className={dashboardHeroSubtitleClass}>

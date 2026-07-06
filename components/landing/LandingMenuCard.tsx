@@ -22,6 +22,7 @@ export interface LandingMenuCardProps {
   variant?: LandingMenuCardVariant;
   badge?: string;
   ctaLabel?: string;
+  className?: string;
 }
 
 /**
@@ -37,6 +38,7 @@ export const LandingMenuCard = React.memo<LandingMenuCardProps>(
     variant = 'secondary',
     badge,
     ctaLabel = 'Acessar',
+    className,
   }) => {
     const isPrimary = variant === 'primary';
 
@@ -46,9 +48,10 @@ export const LandingMenuCard = React.memo<LandingMenuCardProps>(
         aria-label={ariaLabel}
         className={cn(
           projectCardShellClass,
-          'block w-full cursor-pointer text-left no-underline',
-          isPrimary && 'shadow-[var(--project-card-neu-hover)] sm:col-span-2',
-          isPrimary ? 'p-7 sm:p-8' : 'p-5 sm:p-6'
+          'landing-menu-card flex h-full w-full cursor-pointer flex-col text-left no-underline',
+          isPrimary && 'landing-menu-card--primary shadow-[var(--project-card-neu-hover)]',
+          isPrimary ? 'p-6 sm:p-7 lg:min-h-[14rem]' : 'p-5 sm:p-6',
+          className
         )}
       >
         <div className={projectCardAccentBarClass} aria-hidden />
@@ -96,11 +99,17 @@ export const LandingMenuCard = React.memo<LandingMenuCardProps>(
           {description}
         </p>
 
-        <div className="relative mt-auto flex items-center justify-between gap-2 pt-5">
-          <span className="font-sans text-sm font-semibold uppercase text-[var(--project-card-text-subtle)] transition-colors duration-200 group-hover:text-[var(--project-card-accent)]">
+        <div className="relative mt-auto flex items-center justify-between gap-2 border-t border-[color-mix(in_srgb,var(--project-card-border)_65%,transparent)] pt-4 sm:pt-5">
+          <span className="font-sans text-sm font-semibold uppercase tracking-wide text-[var(--project-card-text-subtle)] transition-colors duration-200 group-hover:text-[var(--project-card-accent)]">
             {ctaLabel}
           </span>
-          <span className={cn(projectCardIconWrapClass, 'h-9 w-9 sm:h-10 sm:w-10')} aria-hidden>
+          <span
+            className={cn(
+              projectCardIconWrapClass,
+              'landing-menu-card__arrow h-9 w-9 sm:h-10 sm:w-10'
+            )}
+            aria-hidden
+          >
             <ArrowRight
               className="h-4 w-4 text-[var(--project-card-accent)] transition-transform duration-200 group-hover:translate-x-0.5"
               aria-hidden

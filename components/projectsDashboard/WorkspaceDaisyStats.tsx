@@ -8,6 +8,7 @@ import {
   workspaceDaisyStatLabelClass,
   workspaceDaisyStatValueClass,
 } from '../common/projectCardUi';
+import { projectsDashboardStatIconPlateClass } from './projectsDashboardUi';
 import { RadialProgress } from '../common/RadialProgress';
 
 export type LocalBackupStatStatus = 'ok' | 'pending' | 'unconfigured';
@@ -121,11 +122,13 @@ export const WorkspaceDaisyStats: React.FC<WorkspaceDaisyStatsProps> = ({
         const clickable = Boolean(onStatClick);
         const content = (
           <>
-            <div className="flex items-center gap-1.5">
-              {item.icon}
-              <span className={workspaceDaisyStatLabelClass}>{item.label}</span>
+            <div className="flex w-full items-center gap-2">
+              <span className={projectsDashboardStatIconPlateClass} aria-hidden>
+                {item.icon}
+              </span>
+              <span className={cn(workspaceDaisyStatLabelClass, 'text-left')}>{item.label}</span>
             </div>
-            <div className="mt-1 flex items-end justify-between gap-2">
+            <div className="mt-auto flex w-full items-end justify-between gap-2 pt-1">
               <span className={item.valueClass}>{item.value}</span>
               {item.progress !== undefined ? (
                 <RadialProgress
@@ -146,7 +149,7 @@ export const WorkspaceDaisyStats: React.FC<WorkspaceDaisyStatsProps> = ({
               type="button"
               className={cn(
                 workspaceDaisyStatCardClass,
-                'cursor-pointer text-left transition-[transform,box-shadow] hover:-translate-y-0.5',
+                'projects-dashboard-stat-card cursor-pointer text-left transition-[transform,box-shadow] hover:-translate-y-0.5',
                 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-stat-accent)]',
                 'motion-reduce:transform-none'
               )}
@@ -160,7 +163,7 @@ export const WorkspaceDaisyStats: React.FC<WorkspaceDaisyStatsProps> = ({
         }
 
         return (
-          <div key={item.key} className={workspaceDaisyStatCardClass} title={item.title}>
+          <div key={item.key} className={cn(workspaceDaisyStatCardClass, 'projects-dashboard-stat-card')} title={item.title}>
             {content}
           </div>
         );

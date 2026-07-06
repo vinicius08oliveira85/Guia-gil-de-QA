@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from './Modal';
 import { DEFAULT_SHORTCUTS } from '../../hooks/useKeyboardShortcuts';
+import {
+  modalNeuKbdClass,
+  modalNeuListClass,
+  modalNeuListRowClass,
+  modalNeuMutedTextClass,
+  modalNeuStrongTextClass,
+  modalNeuTipClass,
+} from './modalListNeuUi';
+import { cn } from '../../utils/cn';
 
 export const KeyboardShortcutsHelp: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,34 +36,31 @@ export const KeyboardShortcutsHelp: React.FC = () => {
   };
 
   return (
-    <>
-      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="Atalhos de Teclado">
-        <div className="space-y-4">
-          <p className="text-text-secondary text-sm mb-4">
-            Use estes atalhos para navegar mais rapidamente pela aplicação.
-          </p>
-          <div className="space-y-2">
-            {DEFAULT_SHORTCUTS.map((shortcut, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 bg-surface border border-surface-border rounded-lg"
-              >
-                <span className="text-text-primary">{shortcut.description}</span>
-                <kbd className="px-2 py-1 bg-black/20 border border-surface-border rounded text-sm font-mono text-text-primary">
-                  {formatKey(shortcut)}
-                </kbd>
+    <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="Atalhos de Teclado">
+      <div className="space-y-4">
+        <p className={cn('text-sm', modalNeuMutedTextClass)}>
+          Use estes atalhos para navegar mais rapidamente pela aplicação.
+        </p>
+        <ul className={modalNeuListClass} role="list">
+          {DEFAULT_SHORTCUTS.map((shortcut, index) => (
+            <li key={index}>
+              <div className={modalNeuListRowClass}>
+                <span className={cn('text-sm font-medium', modalNeuStrongTextClass)}>
+                  {shortcut.description}
+                </span>
+                <kbd className={modalNeuKbdClass}>{formatKey(shortcut)}</kbd>
               </div>
-            ))}
-          </div>
-          <div className="mt-4 p-3 bg-accent/10 border border-accent/30 rounded-lg">
-            <p className="text-sm text-text-secondary">
-              💡 <strong>Dica:</strong> Pressione{' '}
-              <kbd className="px-1 py-0.5 bg-black/20 rounded text-xs">Ctrl + ?</kbd> a qualquer
-              momento para ver esta ajuda.
-            </p>
-          </div>
+            </li>
+          ))}
+        </ul>
+        <div className={modalNeuTipClass}>
+          <p>
+            <strong>Dica:</strong> Pressione{' '}
+            <kbd className={cn(modalNeuKbdClass, 'mx-0.5')}>Ctrl + ?</kbd> a qualquer momento
+            para ver esta ajuda.
+          </p>
         </div>
-      </Modal>
-    </>
+      </div>
+    </Modal>
   );
 };

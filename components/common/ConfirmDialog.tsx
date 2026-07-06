@@ -38,7 +38,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   } as const;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={title} size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title={title} size="md">
       <div className="space-y-4">
         <p className={leveSettingsMutedTextClass}>{message}</p>
         <div className="flex justify-end gap-3 pt-4">

@@ -4,6 +4,8 @@ import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { formatDate } from '../../utils/dateUtils';
 import { getExportPreferences } from '../../utils/preferencesService';
+import { neuBrandTextMutedClass, neuBrandTextStrongClass, neuDividerClass } from './neuUi';
+import { cn } from '../../utils/cn';
 
 const convertToCSV = (data: any): string => {
   // Implementação básica de CSV
@@ -159,17 +161,22 @@ export const ExportReport: React.FC<ExportReportProps> = ({ project, onClose }) 
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-text-secondary mb-2">Formato</label>
+        <label className={cn('mb-2 block text-sm font-medium', neuBrandTextMutedClass)}>
+          Formato
+        </label>
         <div className="flex gap-2">
           {(['json', 'csv', 'markdown'] as const).map(fmt => (
             <button
               key={fmt}
+              type="button"
               onClick={() => setFormat(fmt)}
-              className={`px-4 py-2 rounded-md transition-colors ${
+              className={cn(
+                'leve-neu-pill px-4 py-2 text-sm font-semibold transition-[box-shadow,color] duration-200',
                 format === fmt
-                  ? 'bg-accent text-white'
-                  : 'bg-surface border border-surface-border text-text-secondary hover:bg-surface-hover'
-              }`}
+                  ? 'leve-neu-pill-active text-[var(--leve-header-text)]'
+                  : 'text-[var(--leve-header-text-muted)] hover:text-[var(--leve-header-accent)]'
+              )}
+              aria-pressed={format === fmt}
             >
               {fmt.toUpperCase()}
             </button>
@@ -178,37 +185,39 @@ export const ExportReport: React.FC<ExportReportProps> = ({ project, onClose }) 
       </div>
 
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-text-secondary mb-2">Incluir</label>
-        <label className="flex items-center gap-2 cursor-pointer">
+        <label className={cn('mb-2 block text-sm font-medium', neuBrandTextMutedClass)}>
+          Incluir
+        </label>
+        <label className="flex cursor-pointer items-center gap-2">
           <input
             type="checkbox"
             checked={includeMetrics}
             onChange={e => setIncludeMetrics(e.target.checked)}
-            className="w-4 h-4 rounded border-surface-border text-accent"
+            className="h-4 w-4 rounded border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] text-[var(--leve-header-accent)]"
           />
-          <span className="text-text-primary">Métricas</span>
+          <span className={neuBrandTextStrongClass}>Métricas</span>
         </label>
-        <label className="flex items-center gap-2 cursor-pointer">
+        <label className="flex cursor-pointer items-center gap-2">
           <input
             type="checkbox"
             checked={includeTasks}
             onChange={e => setIncludeTasks(e.target.checked)}
-            className="w-4 h-4 rounded border-surface-border text-accent"
+            className="h-4 w-4 rounded border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] text-[var(--leve-header-accent)]"
           />
-          <span className="text-text-primary">Tarefas</span>
+          <span className={neuBrandTextStrongClass}>Tarefas</span>
         </label>
-        <label className="flex items-center gap-2 cursor-pointer">
+        <label className="flex cursor-pointer items-center gap-2">
           <input
             type="checkbox"
             checked={includeTestCases}
             onChange={e => setIncludeTestCases(e.target.checked)}
-            className="w-4 h-4 rounded border-surface-border text-accent"
+            className="h-4 w-4 rounded border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] text-[var(--leve-header-accent)]"
           />
-          <span className="text-text-primary">Casos de Teste</span>
+          <span className={neuBrandTextStrongClass}>Casos de Teste</span>
         </label>
       </div>
 
-      <div className="flex gap-2 pt-4 border-t border-surface-border">
+      <div className={cn('flex gap-2 border-t pt-4', neuDividerClass)}>
         <button onClick={onClose} className="flex-1 btn btn-secondary">
           Cancelar
         </button>

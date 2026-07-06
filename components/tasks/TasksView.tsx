@@ -35,16 +35,13 @@ import {
 import { logger } from '../../utils/logger';
 import { cn } from '../../utils/cn';
 import {
-  tasksPanelCardClass,
-  tasksPanelListShellClass,
-  tasksPanelSectionDividerClass,
+  tasksPanelNeuModalPanelClass,
+  tasksPanelNeuModalTitleClass,
   tasksPanelSectionTitleClass,
   tasksPanelToolbarExportBtnClass,
   tasksPanelToolbarFieldClass,
   tasksPanelToolbarLabelClass,
   tasksPanelToolbarSelectClass,
-  tasksPanelNeuModalPanelClass,
-  tasksPanelNeuModalTitleClass,
   tasksPanelToolbarShellClass,
   tasksPanelBacklogSprintActiveBadgeClass,
   tasksPanelBacklogSprintCountClass,
@@ -85,7 +82,17 @@ import { FailedTestsReportModal } from './FailedTestsReportModal';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useTaskFilters } from '../../hooks/useTaskFilters';
 import { GlassIndicatorCards } from '../dashboard/GlassIndicatorCards';
-import { viewHeroChromeClass } from '../common/viewHeroChromeUi';
+import {
+  tasksViewContentClass,
+  tasksViewHeroChromeClass,
+  tasksViewHeroShellClass,
+  tasksViewListPanelClass,
+  tasksViewPageShellClass,
+  tasksViewPanelClass,
+  tasksViewPanelDividerClass,
+  tasksViewSectionDescClass,
+  tasksViewSectionLabelClass,
+} from './tasksViewNeuUi';
 import { getDisplayStatus } from '../../utils/taskHelpers';
 import { FileExportModal } from '../common/FileExportModal';
 import {
@@ -103,7 +110,6 @@ import {
 } from './tasksViewHelpers';
 import { testCaseLooksAutomated } from '../../utils/testCaseMigration';
 import { VirtualizedTaskRootList, shouldVirtualizeTaskRoots } from './VirtualizedTaskRootList';
-import { projectViewShell } from '../common/viewUi';
 import { leveViewOutlineBtnClass } from '../common/projectCardUi';
 import {
   applyBacklogSecondaryFilters,
@@ -2230,7 +2236,7 @@ export const TasksView: React.FC<{
   return (
     <>
       <div
-        className={projectViewShell}
+        className={tasksViewPageShellClass}
         role="main"
         aria-label={
           backlogOnly
@@ -2238,58 +2244,77 @@ export const TasksView: React.FC<{
             : 'Tarefas e casos de teste do projeto'
         }
       >
-        <TasksViewHeader
-          jiraProjectKey={jiraProjectKey}
-          onAddTask={() => openTaskFormForNew()}
-          onOpenFilters={() => setIsFiltersModalOpen(true)}
-          onAnalyze={handleGeneralIAAnalysis}
-          isRunningGeneralAnalysis={isRunningGeneralAnalysis}
-          analysisProgress={analysisProgress}
-          activeFiltersCount={activeFiltersCount}
-        />
+        <div className={tasksViewContentClass}>
+          <div className={tasksViewHeroShellClass}>
+            <div className={tasksViewHeroChromeClass}>
+              <TasksViewHeader
+                jiraProjectKey={jiraProjectKey}
+                onAddTask={() => openTaskFormForNew()}
+                onOpenFilters={() => setIsFiltersModalOpen(true)}
+                onAnalyze={handleGeneralIAAnalysis}
+                isRunningGeneralAnalysis={isRunningGeneralAnalysis}
+                analysisProgress={analysisProgress}
+                activeFiltersCount={activeFiltersCount}
+              />
 
-        {!backlogOnly ? (
-          <div className={viewHeroChromeClass}>
-            <section aria-label="Indicadores principais de tarefas">
-              <GlassIndicatorCards items={indicatorItems} columns={5} />
-            </section>
+              {!backlogOnly ? (
+                <section aria-label="Indicadores principais de tarefas">
+                  <GlassIndicatorCards items={indicatorItems} columns={5} />
+                </section>
+              ) : null}
+            </div>
           </div>
-        ) : null}
 
-        <section className={tasksPanelCardClass} aria-label="Filtros e busca de tarefas">
-          <TasksViewListModeToggle
-            mode={listModeProp}
-            onModeChange={onListModeChange ?? (() => undefined)}
-            backlogCount={backlogTaskCount}
-            totalCount={project.tasks.length}
-            backlogSortBy={backlogSortBy}
-            onBacklogSortChange={setBacklogSortBy}
-            backlogSprintFilter={backlogSprintFilter}
-            backlogSprintFilterOptions={backlogSprintFilterOptions}
-            onBacklogSprintFilterChange={setBacklogSprintFilter}
-            backlogItemFilter={backlogItemFilter}
-            onBacklogItemFilterChange={setBacklogItemFilter}
-            backlogTypeFilter={backlogTypeFilter}
-            onBacklogTypeFilterChange={setBacklogTypeFilter}
-            backlogPriorityFilter={backlogPriorityFilter}
-            onBacklogPriorityFilterChange={setBacklogPriorityFilter}
-            backlogStoryPointsFilter={backlogStoryPointsFilter}
-            onBacklogStoryPointsFilterChange={setBacklogStoryPointsFilter}
-            onClearBacklogSecondaryFilters={clearBacklogSecondaryFilters}
-            disabled={isRunningGeneralAnalysis || !onListModeChange}
-          />
+          <div className="flex flex-col gap-0.5 border-b border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pb-3">
+            <h2 className={tasksViewSectionLabelClass}>Explorar tarefas</h2>
+            <p className={tasksViewSectionDescClass}>
+              Alterne entre todas as tarefas e o backlog, filtre por sprint e busque por ID ou título.
+            </p>
+          </div>
 
-          <div className={tasksPanelSectionDividerClass}>
-            <TasksViewSearch
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              searchInputRef={searchInputRef}
+          <section className={tasksViewPanelClass} aria-label="Filtros e busca de tarefas">
+            <TasksViewListModeToggle
+              mode={listModeProp}
+              onModeChange={onListModeChange ?? (() => undefined)}
+              backlogCount={backlogTaskCount}
+              totalCount={project.tasks.length}
+              backlogSortBy={backlogSortBy}
+              onBacklogSortChange={setBacklogSortBy}
+              backlogSprintFilter={backlogSprintFilter}
+              backlogSprintFilterOptions={backlogSprintFilterOptions}
+              onBacklogSprintFilterChange={setBacklogSprintFilter}
+              backlogItemFilter={backlogItemFilter}
+              onBacklogItemFilterChange={setBacklogItemFilter}
+              backlogTypeFilter={backlogTypeFilter}
+              onBacklogTypeFilterChange={setBacklogTypeFilter}
+              backlogPriorityFilter={backlogPriorityFilter}
+              onBacklogPriorityFilterChange={setBacklogPriorityFilter}
+              backlogStoryPointsFilter={backlogStoryPointsFilter}
+              onBacklogStoryPointsFilterChange={setBacklogStoryPointsFilter}
+              onClearBacklogSecondaryFilters={clearBacklogSecondaryFilters}
+              disabled={isRunningGeneralAnalysis || !onListModeChange}
             />
-          </div>
-        </section>
 
-        <section className={tasksPanelListShellClass} aria-label="Lista de tarefas">
-          <div className="flex flex-col gap-3 sm:gap-4">
+            <div className={tasksViewPanelDividerClass}>
+              <TasksViewSearch
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchInputRef={searchInputRef}
+              />
+            </div>
+          </section>
+
+          <div className="flex flex-col gap-0.5 border-b border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pb-3 pt-1">
+            <h2 className={tasksViewSectionLabelClass}>Lista de tarefas</h2>
+            <p className={tasksViewSectionDescClass}>
+              {listModeProp === 'backlog'
+                ? 'Itens do backlog ordenados por prioridade e sprint.'
+                : 'Todas as tarefas do projeto com filtros, agrupamento e ações em lote.'}
+            </p>
+          </div>
+
+          <section className={tasksViewListPanelClass} aria-label="Lista de tarefas">
+            <div className="flex flex-col gap-3 sm:gap-4">
           <Modal
             isOpen={isFiltersModalOpen}
             onClose={() => setIsFiltersModalOpen(false)}
@@ -2694,6 +2719,7 @@ export const TasksView: React.FC<{
           </TasksViewList>
           </div>
         </section>
+        </div>
       </div>
 
       <FileExportModal

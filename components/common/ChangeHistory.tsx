@@ -3,6 +3,13 @@ import { Project } from '../../types';
 import { getAuditLogs } from '../../utils/auditLog';
 import { formatDateTime, formatRelativeTime } from '../../utils/dateUtils';
 import { Badge } from './Badge';
+import {
+  appNeuListRowClass,
+  neuBrandTextMutedClass,
+  neuBrandTextStrongClass,
+  neuDividerClass,
+} from './neuUi';
+import { cn } from '../../utils/cn';
 
 interface ChangeHistoryProps {
   project: Project;
@@ -47,18 +54,23 @@ export const ChangeHistory: React.FC<ChangeHistoryProps> = ({ project }) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-text-primary">Histórico de Mudanças</h3>
-        <div className="flex gap-2">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className={cn('text-lg font-semibold', neuBrandTextStrongClass)}>
+          Histórico de Mudanças
+        </h3>
+        <div className="flex flex-wrap gap-2">
           {(['all', 'CREATE', 'UPDATE', 'DELETE'] as const).map(action => (
             <button
               key={action}
+              type="button"
               onClick={() => setFilter(action)}
-              className={`px-3 py-1 rounded-md text-sm transition-colors ${
+              className={cn(
+                'leve-neu-pill px-3 py-1 text-sm font-semibold transition-[box-shadow,color] duration-200',
                 filter === action
-                  ? 'bg-accent text-white'
-                  : 'bg-surface border border-surface-border text-text-secondary hover:bg-surface-hover'
-              }`}
+                  ? 'leve-neu-pill-active text-[var(--leve-header-text)]'
+                  : 'text-[var(--leve-header-text-muted)] hover:text-[var(--leve-header-accent)]'
+              )}
+              aria-pressed={filter === action}
             >
               {action === 'all' ? 'Todos' : action}
             </button>
@@ -66,48 +78,52 @@ export const ChangeHistory: React.FC<ChangeHistoryProps> = ({ project }) => {
         </div>
       </div>
 
-      <div className="space-y-2 max-h-96 overflow-y-auto">
+      <div className="max-h-96 space-y-2 overflow-y-auto custom-scrollbar">
         {logs.length > 0 ? (
           logs.map((log, index) => (
-            <div
-              key={index}
-              className="p-4 bg-surface border border-surface-border rounded-lg hover:bg-surface-hover transition-colors"
-            >
-              <div className="flex items-start justify-between mb-2">
+            <div key={index} className={cn(appNeuListRowClass, 'flex-col items-stretch')}>
+              <div className="flex w-full items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">{getActionIcon(log.action)}</span>
+                  <span className="text-2xl" aria-hidden>
+                    {getActionIcon(log.action)}
+                  </span>
                   <div>
                     <div className="flex items-center gap-2">
                       <Badge variant={getActionColor(log.action)}>{log.action}</Badge>
-                      <span className="text-text-primary font-semibold">{log.entityName}</span>
+                      <span className={cn('font-semibold', neuBrandTextStrongClass)}>
+                        {log.entityName}
+                      </span>
                     </div>
-                    <div className="text-sm text-text-secondary mt-1">
+                    <div className={cn('mt-1 text-sm', neuBrandTextMutedClass)}>
                       {formatRelativeTime(log.timestamp)}
                     </div>
                   </div>
                 </div>
-                <span className="text-xs text-text-secondary">{formatDateTime(log.timestamp)}</span>
+                <span className={cn('text-xs', neuBrandTextMutedClass)}>
+                  {formatDateTime(log.timestamp)}
+                </span>
               </div>
 
-              {log.changes && Object.keys(log.changes).length > 0 && (
-                <div className="mt-3 pt-3 border-t border-surface-border">
-                  <div className="text-sm text-text-secondary mb-2">Mudanças:</div>
+              {log.changes && Object.keys(log.changes).length > 0 ? (
+                <div className={cn('mt-3 w-full border-t pt-3', neuDividerClass)}>
+                  <div className={cn('mb-2 text-sm', neuBrandTextMutedClass)}>Mudanças:</div>
                   <div className="space-y-1">
-                    {log.changes &&
-                      Object.entries(log.changes).map(([field, change]: [string, any]) => (
-                        <div key={field} className="text-sm">
-                          <span className="text-text-primary font-semibold">{field}:</span>
-                          <span className="text-red-400 line-through ml-2">{change.old}</span>
-                          <span className="text-green-400 ml-2">→ {change.new}</span>
-                        </div>
-                      ))}
+                    {Object.entries(log.changes).map(([field, change]: [string, { old?: string; new?: string }]) => (
+                      <div key={field} className="text-sm">
+                        <span className={cn('font-semibold', neuBrandTextStrongClass)}>{field}:</span>
+                        <span className="ml-2 text-red-400 line-through">{change.old}</span>
+                        <span className="ml-2 text-green-400">→ {change.new}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
           ))
         ) : (
-          <div className="text-center py-8 text-text-secondary">Nenhum histórico disponível</div>
+          <div className={cn('py-8 text-center', neuBrandTextMutedClass)}>
+            Nenhum histórico disponível
+          </div>
         )}
       </div>
     </div>

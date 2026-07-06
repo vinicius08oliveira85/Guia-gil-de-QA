@@ -10,8 +10,13 @@ import {
   readTaskTrackingSnapshot,
   TASK_TRACKING_RESTORED_EVENT,
 } from '../../services/taskTrackingStorage';
-import { projectsListShell } from '../common/viewUi';
 import { Breadcrumbs, type BreadcrumbItem } from '../common/Breadcrumbs';
+import {
+  jiraSolusChromeHeaderClass,
+  jiraSolusPanelsAreaClass,
+  jiraSolusViewContentClass,
+  jiraSolusViewPageShellClass,
+} from './jiraSolusViewNeuUi';
 import { JiraFilasPanel, type JiraFilasWorkspaceBridge } from './JiraFilasPanel';
 import { JiraFilasDashboardPanel } from './JiraFilasDashboardPanel';
 import { ProjectWorkspaceTabBar } from '../project/ProjectWorkspaceTabBar';
@@ -19,7 +24,6 @@ import { TaskWorkspacePanel } from '../tasks/TaskWorkspacePanel';
 import {
   projectChromeBreadcrumbsClass,
   projectChromeHeaderInnerClass,
-  projectChromeHeaderShellClass,
 } from '../tasks/tasksPanelNeuStyles';
 import {
   isJiraSolusFixedTabId,
@@ -31,6 +35,9 @@ import {
 } from '../../utils/workspaceTabs';
 import { getAdjacentOpenTaskId } from '../../utils/workspaceSessionStorage';
 import { useWorkspaceTabs } from '../../hooks/useWorkspaceTabs';
+import { useTaskTrackingHeaderStore } from '../../store/taskTrackingHeaderStore';
+import { writeTaskTrackingSnapshot } from '../../services/taskTrackingStorage';
+import toast from 'react-hot-toast';
 import { KeepAlivePanel } from '../common/KeepAlivePanel';
 
 const FIXED_TABS: Array<{ id: JiraSolusFixedTabId; label: string }> = [
@@ -90,6 +97,25 @@ export const JiraSolusView = React.memo(() => {
     () => initialSnapshot.slaRiskWindowHours
   );
   const [activeFilter, setActiveFilter] = useState<JiraFilasFilter>({ kind: 'all' });
+  const setHeaderSaveAction = useTaskTrackingHeaderStore(s => s.setSaveAction);
+
+  const saveTaskTracking = useCallback(async () => {
+    writeTaskTrackingSnapshot({
+      selectedProjectKey,
+      queueSelection: readTaskTrackingSnapshot().queueSelection,
+      tasks,
+      slaRiskWindowHours,
+    });
+    toast.success('Acompanhamento salvo localmente!');
+  }, [selectedProjectKey, tasks, slaRiskWindowHours]);
+
+  useEffect(() => {
+    setHeaderSaveAction({
+      onSave: saveTaskTracking,
+      isSaving: false,
+    });
+    return () => setHeaderSaveAction(null);
+  }, [setHeaderSaveAction, saveTaskTracking]);
 
   useEffect(() => {
     const handleRestored = () => {
@@ -102,6 +128,15 @@ export const JiraSolusView = React.memo(() => {
     window.addEventListener(TASK_TRACKING_RESTORED_EVENT, handleRestored);
     return () => window.removeEventListener(TASK_TRACKING_RESTORED_EVENT, handleRestored);
   }, []);
+
+  useEffect(() => {
+    const taskIdToFocus = sessionStorage.getItem('taskIdToFocus');
+    if (!taskIdToFocus) return;
+    const task = tasks.find(item => item.id === taskIdToFocus);
+    if (!task) return;
+    sessionStorage.removeItem('taskIdToFocus');
+    openTaskTab(task);
+  }, [tasks, openTaskTab]);
 
   useEffect(() => {
     try {
@@ -259,32 +294,33 @@ export const JiraSolusView = React.memo(() => {
   }, [activeTab, breadcrumbTaskTitle]);
 
   return (
-    <div className={projectsListShell}>
-      <div className={projectChromeHeaderShellClass}>
-        <div className={cn('flex min-w-0 flex-col gap-1', projectChromeHeaderInnerClass)}>
-          <div className="project-chrome-header-row flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-1 max-md:flex-nowrap max-md:items-center max-md:gap-1 max-md:gap-y-0">
-            <div className="min-w-0 max-w-full flex-1 overflow-x-auto max-md:overflow-hidden sm:overflow-visible">
-              <Breadcrumbs
-                items={breadcrumbItems}
-                showHome={false}
-                align="left"
-                dense
-                className={cn(projectChromeBreadcrumbsClass, 'w-full min-w-0 max-w-full')}
-              />
+    <div className={jiraSolusViewPageShellClass}>
+      <div className={jiraSolusViewContentClass}>
+        <div className={jiraSolusChromeHeaderClass}>
+          <div className={cn('flex min-w-0 flex-col gap-1', projectChromeHeaderInnerClass)}>
+            <div className="project-chrome-header-row flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-1 max-md:flex-nowrap max-md:items-center max-md:gap-1 max-md:gap-y-0">
+              <div className="min-w-0 max-w-full flex-1 overflow-x-auto max-md:overflow-hidden sm:overflow-visible">
+                <Breadcrumbs
+                  items={breadcrumbItems}
+                  showHome={false}
+                  align="left"
+                  dense
+                  className={cn(projectChromeBreadcrumbsClass, 'w-full min-w-0 max-w-full')}
+                />
+              </div>
             </div>
           </div>
+          <ProjectWorkspaceTabBar
+            fixedTabs={FIXED_TABS}
+            activeTab={activeTab}
+            taskTabs={taskTabLabels}
+            onSelectTab={handleSelectWorkspaceTab}
+            onCloseTaskTab={handleCloseTaskTab}
+            onTabKeyDown={handleTabKeyDown}
+          />
         </div>
-        <ProjectWorkspaceTabBar
-          fixedTabs={FIXED_TABS}
-          activeTab={activeTab}
-          taskTabs={taskTabLabels}
-          onSelectTab={handleSelectWorkspaceTab}
-          onCloseTaskTab={handleCloseTaskTab}
-          onTabKeyDown={handleTabKeyDown}
-        />
-      </div>
 
-      <div className="mt-4 sm:mt-5 max-md:mt-2">
+        <div className={jiraSolusPanelsAreaClass}>
         {openTaskTabIds.map(taskId => (
           <div
             key={taskId}
@@ -360,6 +396,7 @@ export const JiraSolusView = React.memo(() => {
               onWorkspaceBridgeChange={setFilasBridge}
             />
           </KeepAlivePanel>
+        </div>
         </div>
       </div>
     </div>

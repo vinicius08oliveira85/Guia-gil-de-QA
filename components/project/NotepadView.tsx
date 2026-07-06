@@ -5,8 +5,11 @@ import { downloadFile } from '../../utils/exportService';
 import { useNotepadPages } from '../../hooks/useNotepadPages';
 import { DEFAULT_NOTEPAD_PAGE_TITLE } from '../../utils/notepadPages';
 import { cn } from '../../utils/cn';
-import { projectViewShell } from '../common/viewUi';
-import { ConfirmDialog } from '../common/ConfirmDialog';
+import {
+  notepadViewContentClass,
+  notepadViewPageShellClass,
+  notepadViewPanelClass,
+} from './notepadViewNeuUi';
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
 import { NotepadPageTabs } from './NotepadPageTabs';
@@ -446,8 +449,10 @@ export const NotepadView: React.FC<{
   );
 
   return (
-    <div className={isDock ? 'flex min-h-0 min-w-0 flex-1 flex-col' : projectViewShell}>
+    <div className={isDock ? 'flex min-h-0 min-w-0 flex-1 flex-col' : notepadViewPageShellClass}>
+      <div className={isDock ? undefined : notepadViewContentClass}>
       {editor}
+      </div>
 
       <input
         ref={fileInputRef}
