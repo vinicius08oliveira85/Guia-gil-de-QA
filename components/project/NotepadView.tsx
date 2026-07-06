@@ -11,6 +11,7 @@ import {
   notepadViewPanelClass,
 } from './notepadViewNeuUi';
 import { Modal } from '../common/Modal';
+import { ConfirmDialog } from '../common/ConfirmDialog';
 import { Button } from '../common/Button';
 import { NotepadPageTabs } from './NotepadPageTabs';
 import {

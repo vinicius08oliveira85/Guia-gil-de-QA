@@ -1,5 +1,6 @@
 import { cn } from '../../utils/cn';
 import { workspaceSurfaceLightClass } from '../common/appPageNeuUi';
+import { appFullWidthContentClass } from '../common/viewUi';
 
 /**
  * Tokens compartilhados das abas internas do projeto (Dashboard, Tarefas,
@@ -10,10 +11,7 @@ import { workspaceSurfaceLightClass } from '../common/appPageNeuUi';
 /** Shell ambient das abas do projeto — ativa tokens warm sand + gradientes. */
 export const projectTabPageShellClass = 'project-tab-page-shell';
 
-export const projectTabContentClass = cn(
-  'project-tab-content relative z-[1] mx-auto w-full max-w-[88rem]'
-);
-
+export const projectTabContentClass = cn('project-tab-content', appFullWidthContentClass);
 export const projectTabHeroShellClass = 'project-tab-hero-shell w-full';
 
 export const projectTabHeroChromeClass = cn(

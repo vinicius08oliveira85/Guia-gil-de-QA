@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { JiraTask, BddScenario, TestCaseDetailLevel, Project, TestCase } from '../../types';
 import { TestCasesFreshnessIndicator } from './TestCasesFreshnessIndicator';
 import { TestCaseDetailLevelControl } from './TestCaseDetailLevelControl';
@@ -101,6 +103,7 @@ import {
   Download,
   ChevronLeft,
   ChevronRight,
+  Zap,
 } from 'lucide-react';
 
 import type { TaskDetailSectionId, OpenTaskNavProps } from '../../utils/workspaceSessionStorage';
@@ -127,6 +130,13 @@ function resolveMimeType(filename: string): string | undefined {
     csv: 'text/csv',
   };
   return ext ? map[ext] : undefined;
+}
+
+function formatRelativeTimestamp(iso?: string): string | null {
+  if (!iso) return null;
+  const parsed = new Date(iso);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return formatDistanceToNow(parsed, { addSuffix: true, locale: ptBR });
 }
 
 // Componente para renderizar descrição com formatação rica do Jira
@@ -276,6 +286,18 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
   const nextStep = getNextStepForTask(task);
   const hasTests = task.testCases && task.testCases.length > 0;
   const safeDomId = useMemo(() => task.id.replace(/[^a-zA-Z0-9_-]/g, '_'), [task.id]);
+
+  const jiraSyncedRelative = useMemo(
+    () => formatRelativeTimestamp(task.jiraSyncedAt),
+    [task.jiraSyncedAt]
+  );
+  const generateAllRelative = useMemo(
+    () => formatRelativeTimestamp(task.testCasesGeneratedAt),
+    [task.testCasesGeneratedAt]
+  );
+  const showJiraSync = Boolean(onUpdateFromJira && /^[A-Z]+-\d+$/.test(task.id));
+  const showGenerateAll = Boolean(onGenerateAll && !hideTestFeatures);
+  const isAiBusy = Boolean(isGenerating || isGeneratingBdd || isGeneratingAll);
 
   const jiraAttachmentItems = useMemo(() => {
     const jiraConfig = getJiraConfig();
@@ -607,28 +629,83 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
         )}
       </div>
 
-      {/* Sidebar: Atualizar do Jira + Campos do Jira + Ações Rápidas */}
+      {/* Sidebar: Atualizar do Jira + Gerar Tudo + Campos do Jira + Ações Rápidas */}
       <aside className="space-y-3">
-        {onUpdateFromJira && /^[A-Z]+-\d+$/.test(task.id) && (
-          <div className={cn(taskDetailsModalSectionClass, 'p-4')}>
-            <Button
-              variant="brandOutline"
-              size="sm"
-              className={taskDetailsModalJiraBtnClass}
-              onClick={() => onUpdateFromJira(task.id)}
-              disabled={!!isUpdatingFromJira}
-              aria-label="Atualizar somente esta tarefa do Jira"
-            >
-              {isUpdatingFromJira ? (
-                <Spinner small />
-              ) : (
-                <Download className="w-4 h-4" aria-hidden />
-              )}
-              {isUpdatingFromJira ? 'Atualizando…' : 'Atualizar do Jira (só esta tarefa)'}
-            </Button>
-            <p className={cn(leveTaskModalMutedXsClass, 'mt-2')}>
-              Busca apenas esta tarefa no Jira, sem carregar o projeto inteiro.
-            </p>
+        {(showJiraSync || showGenerateAll) && (
+          <div className={cn(taskDetailsModalSectionClass, 'space-y-4 p-4')}>
+            {showJiraSync && (
+              <div>
+                <Button
+                  variant="brandOutline"
+                  size="sm"
+                  className={taskDetailsModalJiraBtnClass}
+                  onClick={() => onUpdateFromJira!(task.id)}
+                  disabled={!!isUpdatingFromJira}
+                  aria-label="Atualizar somente esta tarefa do Jira"
+                >
+                  {isUpdatingFromJira ? (
+                    <Spinner small />
+                  ) : (
+                    <Download className="h-4 w-4" aria-hidden />
+                  )}
+                  {isUpdatingFromJira ? 'Atualizando…' : 'Atualizar do Jira (só esta tarefa)'}
+                </Button>
+                <p className={cn(leveTaskModalMutedXsClass, 'mt-2')}>
+                  Busca apenas esta tarefa no Jira, sem carregar o projeto inteiro.
+                </p>
+                {jiraSyncedRelative ? (
+                  <p
+                    className={cn(leveTaskModalMutedXsClass, 'mt-1.5')}
+                    title={task.jiraSyncedAt}
+                  >
+                    Última atualização {jiraSyncedRelative}
+                  </p>
+                ) : (
+                  <p className={cn(leveTaskModalMutedXsClass, 'mt-1.5 italic')}>
+                    Ainda não atualizado desta forma
+                  </p>
+                )}
+              </div>
+            )}
+
+            {showJiraSync && showGenerateAll && (
+              <div className="border-t border-[color-mix(in_srgb,var(--leve-purple)_12%,transparent)]" />
+            )}
+
+            {showGenerateAll && (
+              <div>
+                <Button
+                  variant="brandOutline"
+                  size="sm"
+                  className={taskDetailsModalJiraBtnClass}
+                  onClick={() => onGenerateAll!(task.id, detailLevel)}
+                  disabled={isAiBusy}
+                  aria-label="Gerar BDD, estratégias e casos de teste com IA"
+                >
+                  {isGeneratingAll ? (
+                    <Spinner small />
+                  ) : (
+                    <Zap className="h-4 w-4" aria-hidden />
+                  )}
+                  {isGeneratingAll ? 'Gerando…' : 'Gerar Tudo'}
+                </Button>
+                <p className={cn(leveTaskModalMutedXsClass, 'mt-2')}>
+                  Gera cenários BDD, estratégias de teste e casos de teste com IA.
+                </p>
+                {generateAllRelative ? (
+                  <p
+                    className={cn(leveTaskModalMutedXsClass, 'mt-1.5')}
+                    title={task.testCasesGeneratedAt}
+                  >
+                    Última geração {generateAllRelative}
+                  </p>
+                ) : (
+                  <p className={cn(leveTaskModalMutedXsClass, 'mt-1.5 italic')}>
+                    Ainda não gerado com IA
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         )}
         {hasJiraSidebarFields && (

@@ -238,6 +238,11 @@ export interface JiraTask {
   /** Categorias inteiras cujas regras do projeto entram no prompt (união com vínculos por id, sem duplicar id). */
   linkedBusinessRuleCategories?: string[];
   /**
+   * ISO date da última sincronização manual desta tarefa com o Jira
+   * (botão "Atualizar do Jira — só esta tarefa").
+   */
+  jiraSyncedAt?: string;
+  /**
    * ISO date da última geração de casos de teste com IA.
    * Usado pela UI para exibir "última geração em ...".
    */

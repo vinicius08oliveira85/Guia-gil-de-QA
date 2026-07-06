@@ -13,6 +13,7 @@ import { removeBusinessRuleFromProject } from '../../utils/businessRuleTaskLinki
 import { refreshBusinessRuleDossier, type DossierAiProgress } from '../../services/ai/businessRuleDossierService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { Modal } from '../common/Modal';
+import { ConfirmDialog } from '../common/ConfirmDialog';
 import {
   tasksViewHeaderFilterIconClass,
   tasksViewHeaderIconWrapClass,

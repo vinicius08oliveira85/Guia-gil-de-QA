@@ -6,6 +6,8 @@ import { recordLastOpenedProject } from '../utils/landingRecentProjects';
 import { lazyWithRetry } from '../utils/lazyWithRetry';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
 import { ProjectsDashboardSkeleton } from '../components/projectsDashboard/ProjectsDashboardSkeleton';
+import { appContentPaddingX } from '../components/common/viewUi';
+import { cn } from '../utils/cn';
 
 const ProjectView = lazyWithRetry(() =>
   import('../components/ProjectView').then(m => ({ default: m.ProjectView }))
@@ -44,7 +46,7 @@ export const ProjectViewPage: React.FC<ProjectViewPageProps> = ({
   return (
     <Suspense
       fallback={
-        <div className="container mx-auto p-4 sm:p-6">
+        <div className={cn('w-full min-w-0 max-w-none py-4 sm:py-6', appContentPaddingX)}>
           <LoadingSkeleton variant="card" count={3} />
         </div>
       }

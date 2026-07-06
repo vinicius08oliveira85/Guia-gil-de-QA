@@ -34,6 +34,7 @@ import { LANDING_SECTIONS } from './components/landing/landingSections';
 import { ProjectsDashboardSkeleton } from './components/projectsDashboard/ProjectsDashboardSkeleton';
 import { useAriaLive } from './hooks/useAriaLive';
 import { cn } from './utils/cn';
+import { appContentPaddingX } from './components/common/viewUi';
 import { GlobalSearchDialog } from './components/common/GlobalSearchDialog';
 import { LoadingSkeleton } from './components/common/LoadingSkeleton';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
@@ -480,7 +481,7 @@ const AppContent: React.FC = () => {
         )}
       >
         {storeError ? (
-          <div className="container mx-auto px-4 py-3">
+          <div className={cn('w-full min-w-0 max-w-none py-3', appContentPaddingX)}>
             <div
               className="flex flex-col gap-2 rounded-lg border border-error/30 bg-error/10 p-3 text-error-content sm:flex-row sm:items-center sm:justify-between"
               role="alert"
@@ -531,7 +532,7 @@ const AppContent: React.FC = () => {
               element={
                 <Suspense
                   fallback={
-                    <div className="container mx-auto p-4 sm:p-6">
+                    <div className={cn('w-full min-w-0 max-w-none py-4 sm:py-6', appContentPaddingX)}>
                       <LoadingSkeleton variant="card" count={3} />
                     </div>
                   }

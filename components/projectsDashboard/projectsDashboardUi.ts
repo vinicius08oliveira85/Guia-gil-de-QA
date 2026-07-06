@@ -1,5 +1,6 @@
 import { cn } from '../../utils/cn';
 import { appDarkSidebarPanelClass, workspaceSurfaceLightClass } from '../common/appPageNeuUi';
+import { appFullWidthContentClass } from '../common/viewUi';
 
 /**
  * Fundo e escopo da página Meus Projetos — tema CLARO (identidade LandingPage /
@@ -12,9 +13,10 @@ export const projectsDashboardPageClass = cn(
   'animate-fade-in min-h-[calc(100vh-4rem)] font-body'
 );
 
-/** Container centralizado — alinhado à LandingPage (max-w ~88rem). */
+/** Container principal — largura total da viewport (padding via projectsListShell). */
 export const projectsDashboardContentClass = cn(
-  'projects-dashboard-content relative z-[1] mx-auto w-full max-w-[88rem]'
+  'projects-dashboard-content',
+  appFullWidthContentClass
 );
 
 /**
@@ -164,11 +166,12 @@ export const projectsDashboardStatIconPlateClass = 'projects-dashboard-stat-icon
 
 /** Grade principal + sidebar */
 export const projectsDashboardMainGridClass = cn(
-  'mt-2 lg:grid lg:grid-cols-[minmax(0,1fr)_min(100%,20rem)] lg:items-start lg:gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]'
+  'mt-2 lg:grid lg:grid-cols-[minmax(0,1fr)_min(100%,20rem)] lg:items-start lg:gap-6',
+  'xl:grid-cols-[minmax(0,1fr)_22rem] 2xl:grid-cols-[minmax(0,1fr)_24rem]'
 );
 
 export const projectsDashboardProjectGridClass = cn(
-  'grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 md:gap-5',
+  'grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 md:gap-5',
   'max-md:gap-2'
 );
 

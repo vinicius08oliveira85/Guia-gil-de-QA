@@ -755,7 +755,8 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
           existingTask: existing,
           sprintCtx: sprintCtxRef.current ?? undefined,
         });
-        const withRelated = await importFilasRelatedIssues(config, [updated], {
+        const syncedTask = { ...updated, jiraSyncedAt: new Date().toISOString() };
+        const withRelated = await importFilasRelatedIssues(config, [syncedTask], {
           jiraProjectKey: selectedProjectKey || taskId.split('-')[0],
           sprintCtx: sprintCtxRef.current ?? undefined,
           existingTasks: tasks,

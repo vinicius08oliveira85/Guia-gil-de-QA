@@ -21,19 +21,20 @@ export const landingTextSubtleClass =
 
 export const landingAccentTextClass = 'text-[var(--project-card-accent)]';
 
-/** Container principal da home — mais largo em desktop. */
+/** Container principal da home — largura total. */
 export const landingPageContainerClass =
-  'relative z-[1] mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 sm:gap-7 lg:gap-8';
+  'relative z-[1] flex w-full min-w-0 max-w-none flex-1 flex-col gap-6 sm:gap-7 lg:gap-8';
 
 /** Shell da página — fundo ambient sutil (inspirado em hero SaaS / 21st). */
 export const landingPageShellClass = cn(
   'landing-page-shell app-neu-scope relative flex min-h-screen flex-col',
-  'px-4 pb-6 pt-6 sm:px-6 sm:pb-8 sm:pt-8 lg:px-8 lg:pb-10'
+  'px-3 pb-6 pt-6 sm:px-5 sm:pb-8 sm:pt-8 lg:px-6 lg:pb-10',
+  'xl:px-8 2xl:px-10'
 );
 
 /** Barra superior — marca + ações (padrão nav flutuante 21st). */
 export const landingTopBarClass = cn(
-  'landing-top-bar relative z-[2] mx-auto mb-4 flex w-full max-w-6xl items-center justify-between gap-3 sm:mb-5'
+  'landing-top-bar relative z-[2] mb-4 flex w-full min-w-0 max-w-none items-center justify-between gap-3 sm:mb-5'
 );
 
 export const landingTopBarBrandClass = cn(
@@ -66,6 +67,7 @@ export const landingNavClass = 'flex flex-col gap-4 lg:col-span-7';
 /** Grade bento dos cards de menu (21st bento grid). */
 export const landingMenuGridClass = cn(
   'landing-bento-grid grid w-full grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4 lg:grid-cols-2 lg:gap-5',
+  'xl:grid-cols-3 xl:gap-5 2xl:grid-cols-3',
   'lg:auto-rows-[minmax(10.5rem,auto)]'
 );
 

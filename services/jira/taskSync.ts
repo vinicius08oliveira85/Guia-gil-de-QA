@@ -374,6 +374,7 @@ export const updateSingleTaskFromJira = async (
     agileFallback: () =>
       fetchIssueSprintsFromAgileApi(config, key, sprintOpts.sprintFieldIds, sprintOpts.sprintCatalog),
   });
+  const jiraSyncedAt = new Date().toISOString();
   const finalTask: JiraTask = existingTask
     ? {
         ...existingTask,
@@ -387,8 +388,9 @@ export const updateSingleTaskFromJira = async (
         testStatus: existingTask.testStatus,
         linkedBusinessRuleIds: existingTask.linkedBusinessRuleIds,
         linkedBusinessRuleCategories: existingTask.linkedBusinessRuleCategories,
+        jiraSyncedAt,
       }
-    : task;
+    : { ...task, jiraSyncedAt };
   const newTasks = project.tasks.some(t => t.id === key)
     ? project.tasks.map(t => (t.id === key ? finalTask : t))
     : [...project.tasks, finalTask];

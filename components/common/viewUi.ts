@@ -3,8 +3,13 @@
 import { cn } from '../../utils/cn';
 import { workspaceSurfaceLightClass } from './appPageNeuUi';
 
-/** Padding horizontal alinhado ao header — conteúdo em largura total da viewport. */
-export const appContentPaddingX = 'px-3 sm:px-4 max-md:px-2';
+/** Padding horizontal alinhado ao header — usa quase toda a viewport. */
+export const appContentPaddingX =
+  'px-3 sm:px-4 lg:px-5 xl:px-6 2xl:px-8 max-md:px-2';
+
+/** Container de conteúdo em largura total (sem max-width centralizado). */
+export const appFullWidthContentClass =
+  'relative z-[1] w-full min-w-0 max-w-none';
 
 /**
  * Wrapper das abas do projeto (Tarefas, Documentos, Regras, etc.) — tema CLARO
@@ -116,10 +121,10 @@ export const settingsContentShell = cn(
 
 /** Grades responsivas para preencher largura disponível. */
 export const denseCardGrid =
-  'grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4';
+  'grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5';
 
 export const documentCardGrid =
-  'grid w-full grid-cols-1 items-start gap-3 sm:grid-cols-2 sm:gap-3 lg:grid-cols-2 xl:grid-cols-3';
+  'grid w-full grid-cols-1 items-start gap-3 sm:grid-cols-2 sm:gap-3 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4';
 
 export const strategicAnalysisGrid =
   'grid w-full grid-cols-1 gap-4 xl:grid-cols-2 2xl:grid-cols-3';

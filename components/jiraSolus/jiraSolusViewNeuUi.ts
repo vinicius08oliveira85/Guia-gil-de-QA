@@ -14,6 +14,7 @@ import {
   projectTabSectionHeaderClass,
   projectTabSectionLabelClass,
 } from '../common/projectTabNeuUi';
+import { appContentPaddingX } from '../common/viewUi';
 
 /**
  * Escopo da tela Acompanhamento (Jira x Solus) — warm sand + hero claro.
@@ -22,7 +23,8 @@ export const jiraSolusViewPageShellClass = cn(
   projectTabNeuScopeClass,
   'jira-solus-page-shell jira-solus-view-scope tasks-panel-scope',
   'animate-fade-in min-h-[calc(100vh-4rem)] font-body',
-  'w-full min-w-0 max-w-none'
+  'w-full min-w-0 max-w-none',
+  appContentPaddingX
 );
 
 export const jiraSolusViewContentClass = projectTabContentClass;
@@ -53,7 +55,8 @@ export const jiraSolusPanelDividerClass = projectTabPanelDividerClass;
 
 /** Grade bento de KPIs (Dashboard Filas). */
 export const jiraSolusKpiGridClass = cn(
-  'jira-solus-kpi-grid grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3 max-md:gap-2'
+  'jira-solus-kpi-grid grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3 max-md:gap-2',
+  'xl:grid-cols-5 2xl:grid-cols-6'
 );
 
 export const jiraSolusKpiCardClass = cn(

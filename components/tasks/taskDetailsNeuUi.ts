@@ -158,11 +158,12 @@ export const taskDetailsOverviewSectionClass = 'space-y-1.5';
 
 
 
-export const taskDetailsOverviewGridClass = 'grid grid-cols-1 gap-3 lg:grid-cols-3';
+export const taskDetailsOverviewGridClass =
+  'grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_min(20rem,28vw)] xl:grid-cols-[minmax(0,1fr)_min(22rem,26vw)] 2xl:grid-cols-[minmax(0,1fr)_min(24rem,22vw)]';
 
 
 
-export const taskDetailsOverviewMainClass = 'space-y-2.5 lg:col-span-2';
+export const taskDetailsOverviewMainClass = 'min-w-0 space-y-2.5';
 
 
 
