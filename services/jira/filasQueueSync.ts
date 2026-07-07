@@ -1,6 +1,5 @@
 import type { JiraTask } from '../../types';
 import { resolveQueueIdsFromFilasSelection } from '../../utils/jiraQueueTree';
-import { isValidJiraKey } from '../../utils/jiraFieldMapper';
 import { normalizeTasksParentIdsAcyclic } from '../../utils/taskParentCycle';
 import { logger } from '../../utils/logger';
 import {
@@ -28,26 +27,39 @@ export interface FilasQueueSyncResult {
   queueCount: number;
 }
 
-function mergeFilasTasks(existing: JiraTask[], imported: JiraTask[]): JiraTask[] {
-  const map = new Map(existing.map(task => [task.id, task]));
-  imported.forEach(task => map.set(task.id, task));
-  return normalizeTasksParentIdsAcyclic(Array.from(map.values()));
+/** Chave do projeto Jira a partir do ID da issue (ex.: SUS-12 → SUS). */
+function jiraProjectKeyOf(taskId: string): string | null {
+  const match = taskId.trim().toUpperCase().match(/^([A-Z][A-Z0-9]+)-\d+$/);
+  return match?.[1] ?? null;
 }
 
 /**
- * Mantém o enriquecimento (SLA + resumo JSM) previamente calculado em uma tarefa
- * apenas reelida (status/campos básicos), evitando reprocessar chamadas caras de
- * SLA/JSM para itens que já saíram da fila (ex.: concluídos).
+ * IDs que devem permanecer na fila: os membros atuais (chaves descobertas via
+ * JQL) e suas relacionadas/subtarefas alcançáveis pela cadeia de `parentId`.
+ * Serve para podar itens que saíram da fila (ex.: concluídos) sem remover
+ * relacionadas de tarefas que continuam ativas.
  */
-function preserveEnrichment(task: JiraTask, previous?: JiraTask): JiraTask {
-  if (!previous) return task;
-  return {
-    ...task,
-    jiraSlas: previous.jiraSlas,
-    jiraServiceName: previous.jiraServiceName,
-    jiraSectorName: previous.jiraSectorName,
-    jiraRequestTypeName: previous.jiraRequestTypeName,
-  };
+function collectQueueReachableIds(tasks: JiraTask[], queueKeys: Set<string>): Set<string> {
+  const byId = new Map(tasks.map(task => [task.id, task]));
+  const reachable = new Set<string>();
+
+  for (const task of tasks) {
+    const path: string[] = [];
+    const guard = new Set<string>();
+    let current: JiraTask | undefined = task;
+
+    while (current && !guard.has(current.id)) {
+      guard.add(current.id);
+      path.push(current.id);
+      if (queueKeys.has(current.id) || reachable.has(current.id)) {
+        path.forEach(id => reachable.add(id));
+        break;
+      }
+      current = current.parentId ? byId.get(current.parentId) : undefined;
+    }
+  }
+
+  return reachable;
 }
 
 async function enrichFilasTasks(
@@ -145,14 +157,8 @@ export async function syncFilasQueuesFromJira(
   // O endpoint `search/jql` tem consistência eventual e pode devolver campos
   // desatualizados (ex.: Responsável recém-alterado). Relê o estado atual das
   // issues descobertas via bulkfetch (leitura forte) para refletir as escritas.
-  //
-  // Além das issues da fila, revalida o estado das tarefas JÁ rastreadas: itens
-  // concluídos saem do filtro (JQL) da fila e, sem essa releitura, manteriam o
-  // status antigo (ex.: continuariam "pendente" mesmo já "Concluído" no Jira).
   const discoveredKeys = Array.from(issueByKey.keys());
-  const existingKeys = existingTasks.map(task => task.id).filter(isValidJiraKey);
-  const keysToRefresh = Array.from(new Set([...discoveredKeys, ...existingKeys]));
-  const freshIssues = await getJiraIssuesByKeysBulk(config, keysToRefresh, (current, total) =>
+  const freshIssues = await getJiraIssuesByKeysBulk(config, discoveredKeys, (current, total) =>
     onProgress?.(current, total)
   );
   for (const issue of freshIssues) {
@@ -174,24 +180,30 @@ export async function syncFilasQueuesFromJira(
     })
   );
 
-  // Tarefas ativas na fila (JQL) → pipeline completo (relacionadas + SLA/JSM).
-  // Tarefas apenas reelidas (já rastreadas, mas fora do filtro atual da fila —
-  // ex.: concluídas) → status/campos básicos atualizados, preservando o
-  // enriquecimento anterior para não reprocessar chamadas caras de SLA/JSM.
-  const queueConverted = converted.filter(task => discoveredKeySet.has(task.id));
-  const refreshedConverted = converted
-    .filter(task => !discoveredKeySet.has(task.id))
-    .map(task => preserveEnrichment(task, existingByKey.get(task.id)));
-
-  const withRelated = await importFilasRelatedIssues(config, queueConverted, {
+  const withRelated = await importFilasRelatedIssues(config, converted, {
     jiraProjectKey: projectKeys[0],
     sprintCtx: primarySprintCtx,
     existingTasks,
     onProgress: (done, total) => onProgress?.(done, total),
   });
 
-  const enrichedQueue = await enrichFilasTasks(config, withRelated, onProgress);
-  const mergedTasks = mergeFilasTasks(existingTasks, [...enrichedQueue, ...refreshedConverted]);
+  // Composição atual da fila: membros do JQL + relacionadas/subtarefas ligadas a
+  // eles. Apenas estas são (re)enriquecidas com SLA/JSM.
+  const scope = new Set(projectKeys);
+  const reachableIds = collectQueueReachableIds(withRelated, discoveredKeySet);
+  const syncedInScope = withRelated.filter(task => reachableIds.has(task.id));
+  const enriched = await enrichFilasTasks(config, syncedInScope, onProgress);
+
+  // Preserva tarefas de projetos fora do escopo sincronizado (ou tarefas locais)
+  // e REMOVE as do escopo que não fazem mais parte da fila (ex.: concluídas que
+  // saíram do filtro e não são relacionadas de tarefas ativas).
+  const preservedOutOfScope = existingTasks.filter(task => {
+    if (reachableIds.has(task.id)) return false;
+    const projectKey = jiraProjectKeyOf(task.id);
+    return projectKey === null || !scope.has(projectKey);
+  });
+
+  const mergedTasks = normalizeTasksParentIdsAcyclic([...preservedOutOfScope, ...enriched]);
 
   writeTaskTrackingSnapshot({
     ...snapshot,
