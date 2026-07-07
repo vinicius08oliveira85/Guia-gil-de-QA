@@ -34,6 +34,22 @@ function mergeFilasTasks(existing: JiraTask[], imported: JiraTask[]): JiraTask[]
   return normalizeTasksParentIdsAcyclic(Array.from(map.values()));
 }
 
+/**
+ * Mantém o enriquecimento (SLA + resumo JSM) previamente calculado em uma tarefa
+ * apenas reelida (status/campos básicos), evitando reprocessar chamadas caras de
+ * SLA/JSM para itens que já saíram da fila (ex.: concluídos).
+ */
+function preserveEnrichment(task: JiraTask, previous?: JiraTask): JiraTask {
+  if (!previous) return task;
+  return {
+    ...task,
+    jiraSlas: previous.jiraSlas,
+    jiraServiceName: previous.jiraServiceName,
+    jiraSectorName: previous.jiraSectorName,
+    jiraRequestTypeName: previous.jiraRequestTypeName,
+  };
+}
+
 async function enrichFilasTasks(
   config: JiraConfig,
   imported: JiraTask[],
@@ -143,27 +159,39 @@ export async function syncFilasQueuesFromJira(
     if (issue.key) issueByKey.set(issue.key, issue);
   }
 
+  const existingByKey = new Map(existingTasks.map(task => [task.id, task]));
+  const discoveredKeySet = new Set(discoveredKeys);
+
   const issues = Array.from(issueByKey.values());
   const converted = await Promise.all(
     issues.map(issue => {
       const issueProjectKey = issue.key?.split('-')[0] ?? projectKeys[0];
       return jiraIssueToTask(config, issue, {
         jiraProjectKey: issueProjectKey,
-        existingTask: existingTasks.find(task => task.id === issue.key),
+        existingTask: issue.key ? existingByKey.get(issue.key) : undefined,
         sprintCtx: sprintCtxByProject.get(issueProjectKey),
       });
     })
   );
 
-  const withRelated = await importFilasRelatedIssues(config, converted, {
+  // Tarefas ativas na fila (JQL) → pipeline completo (relacionadas + SLA/JSM).
+  // Tarefas apenas reelidas (já rastreadas, mas fora do filtro atual da fila —
+  // ex.: concluídas) → status/campos básicos atualizados, preservando o
+  // enriquecimento anterior para não reprocessar chamadas caras de SLA/JSM.
+  const queueConverted = converted.filter(task => discoveredKeySet.has(task.id));
+  const refreshedConverted = converted
+    .filter(task => !discoveredKeySet.has(task.id))
+    .map(task => preserveEnrichment(task, existingByKey.get(task.id)));
+
+  const withRelated = await importFilasRelatedIssues(config, queueConverted, {
     jiraProjectKey: projectKeys[0],
     sprintCtx: primarySprintCtx,
     existingTasks,
     onProgress: (done, total) => onProgress?.(done, total),
   });
 
-  const enriched = await enrichFilasTasks(config, withRelated, onProgress);
-  const mergedTasks = mergeFilasTasks(existingTasks, enriched);
+  const enrichedQueue = await enrichFilasTasks(config, withRelated, onProgress);
+  const mergedTasks = mergeFilasTasks(existingTasks, [...enrichedQueue, ...refreshedConverted]);
 
   writeTaskTrackingSnapshot({
     ...snapshot,
