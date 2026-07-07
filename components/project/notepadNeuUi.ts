@@ -115,7 +115,9 @@ export const notepadPageTabRenameInputClass = cn(
 /** Container externo da coluna fixa. */
 export const notepadDockAsideClass = cn(
   'non-printable flex min-h-0 shrink-0 flex-col',
-  'lg:sticky lg:top-[calc(var(--app-header-sticky-offset)+0.5rem)] lg:self-start',
-  'lg:h-[min(78vh,calc(100dvh-var(--app-header-sticky-offset)-10rem))]',
+  // A partir de md fixa altura relativa à viewport (evita encolher junto ao
+  // conteúdo curto da aba ao lado, ex.: faixa md 768–1023px).
+  'md:sticky md:top-[calc(var(--app-header-sticky-offset)+0.5rem)] md:self-start',
+  'md:h-[min(78vh,calc(100dvh-var(--app-header-sticky-offset)-10rem))]',
   'max-md:fixed max-md:inset-y-0 max-md:right-0 max-md:z-40 max-md:shadow-[var(--workspace-panel-neu-raised)]'
 );

@@ -451,7 +451,7 @@ export const NotepadView: React.FC<{
 
   return (
     <div className={isDock ? 'flex min-h-0 min-w-0 flex-1 flex-col' : notepadViewPageShellClass}>
-      <div className={isDock ? undefined : notepadViewContentClass}>
+      <div className={isDock ? 'flex min-h-0 min-w-0 flex-1 flex-col' : notepadViewContentClass}>
       {editor}
       </div>
 
