@@ -1,5 +1,6 @@
 import type { JiraTask } from '../../types';
 import { resolveQueueIdsFromFilasSelection } from '../../utils/jiraQueueTree';
+import { isValidJiraKey } from '../../utils/jiraFieldMapper';
 import { normalizeTasksParentIdsAcyclic } from '../../utils/taskParentCycle';
 import { logger } from '../../utils/logger';
 import {
@@ -128,8 +129,14 @@ export async function syncFilasQueuesFromJira(
   // O endpoint `search/jql` tem consistência eventual e pode devolver campos
   // desatualizados (ex.: Responsável recém-alterado). Relê o estado atual das
   // issues descobertas via bulkfetch (leitura forte) para refletir as escritas.
+  //
+  // Além das issues da fila, revalida o estado das tarefas JÁ rastreadas: itens
+  // concluídos saem do filtro (JQL) da fila e, sem essa releitura, manteriam o
+  // status antigo (ex.: continuariam "pendente" mesmo já "Concluído" no Jira).
   const discoveredKeys = Array.from(issueByKey.keys());
-  const freshIssues = await getJiraIssuesByKeysBulk(config, discoveredKeys, (current, total) =>
+  const existingKeys = existingTasks.map(task => task.id).filter(isValidJiraKey);
+  const keysToRefresh = Array.from(new Set([...discoveredKeys, ...existingKeys]));
+  const freshIssues = await getJiraIssuesByKeysBulk(config, keysToRefresh, (current, total) =>
     onProgress?.(current, total)
   );
   for (const issue of freshIssues) {
