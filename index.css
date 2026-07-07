@@ -108,20 +108,20 @@
     --projects-dash-bg: #ebe6df;
     --projects-dash-surface: #f5f1eb;
     --projects-dash-radius: 16px;
-    --projects-dash-neu-light: color-mix(in srgb, white 72%, var(--projects-dash-bg));
-    --projects-dash-neu-dark: color-mix(in srgb, black 10%, var(--projects-dash-bg));
+    --projects-dash-neu-light: color-mix(in srgb, white 78%, var(--projects-dash-bg));
+    --projects-dash-neu-dark: color-mix(in srgb, black 17%, var(--projects-dash-bg));
     --projects-dash-neu-raised:
-      6px 6px 14px var(--projects-dash-neu-dark),
-      -5px -5px 12px var(--projects-dash-neu-light);
+      7px 7px 18px var(--projects-dash-neu-dark),
+      -5px -5px 13px var(--projects-dash-neu-light);
     --projects-dash-neu-inset:
       inset 4px 4px 10px var(--projects-dash-neu-dark),
       inset -3px -3px 8px var(--projects-dash-neu-light);
     /** KPIs claros na faixa superior */
-    --workspace-stat-neu-light: color-mix(in srgb, white 80%, var(--workspace-stat-bg));
-    --workspace-stat-neu-dark: color-mix(in srgb, black 9%, var(--workspace-stat-bg));
+    --workspace-stat-neu-light: color-mix(in srgb, white 82%, var(--workspace-stat-bg));
+    --workspace-stat-neu-dark: color-mix(in srgb, black 16%, var(--workspace-stat-bg));
     --workspace-stat-neu-raised:
-      5px 5px 12px var(--workspace-stat-neu-dark),
-      -4px -4px 10px var(--workspace-stat-neu-light);
+      6px 6px 15px var(--workspace-stat-neu-dark),
+      -4px -4px 11px var(--workspace-stat-neu-light);
     --workspace-stat-neu-inset:
       inset 3px 3px 8px var(--workspace-stat-neu-dark),
       inset -2px -2px 6px var(--workspace-stat-neu-light);
@@ -161,7 +161,7 @@
     /** Grade ProjectDashboard (QADashboard) — creme, roxo, laranja Leve */
     --project-dashboard-insight-bg: var(--app-neu-bg);
     --project-dashboard-insight-text: #333333;
-    --project-dashboard-insight-text-muted: rgba(51, 51, 51, 0.65);
+    --project-dashboard-insight-text-muted: rgba(51, 51, 51, 0.74);
     --project-dashboard-insight-title: #421d3a;
     --project-dashboard-insight-accent: #e65100;
     --project-dashboard-insight-border: rgba(66, 29, 58, 0.1);
@@ -174,7 +174,7 @@
     /** Cabeçalhos ProjectView / QADashboard — seção “Precisa falar com a Leve?” */
     --leve-header-bg: #f8f9fa;
     --leve-header-text: #421d3a;
-    --leve-header-text-muted: rgba(51, 51, 51, 0.65);
+    --leve-header-text-muted: rgba(51, 51, 51, 0.74);
     --leve-header-accent: #e65100;
     --leve-header-cream: #f5f1e6;
     --leve-header-border: rgba(66, 29, 58, 0.12);
@@ -183,8 +183,8 @@
     --project-workspace-bg: #e6e0d6;
     --project-workspace-surface: #f0ebe3;
     --project-workspace-highlight: #f7f3ec;
-    --project-workspace-light: #fcfaf6;
-    --project-workspace-shadow: #d2c9bc;
+    --project-workspace-light: #fdfbf7;
+    --project-workspace-shadow: #c3b7a4;
     /** Neumorfismo global (app shell, abas, modais, painéis) */
     --app-neu-bg: var(--projects-dash-bg);
     --app-neu-surface: var(--projects-dash-surface);
@@ -195,20 +195,20 @@
     --app-neu-radius: var(--projects-dash-radius);
     --leve-neu-bg: var(--leve-header-bg);
     --leve-neu-surface: var(--leve-header-cream);
-    --leve-neu-light: color-mix(in srgb, white 78%, var(--leve-header-bg));
-    --leve-neu-dark: color-mix(in srgb, black 9%, var(--leve-header-bg));
+    --leve-neu-light: color-mix(in srgb, white 82%, var(--leve-header-bg));
+    --leve-neu-dark: color-mix(in srgb, black 16%, var(--leve-header-bg));
     --leve-neu-raised:
-      5px 5px 14px var(--leve-neu-dark),
-      -4px -4px 12px var(--leve-neu-light);
+      6px 6px 16px var(--leve-neu-dark),
+      -5px -5px 13px var(--leve-neu-light);
     --leve-neu-inset:
-      inset 4px 4px 10px var(--leve-neu-dark),
+      inset 5px 5px 11px var(--leve-neu-dark),
       inset -3px -3px 8px var(--leve-neu-light);
     --leve-neu-inset-deep:
-      inset 5px 5px 12px var(--leve-neu-dark),
+      inset 6px 6px 13px var(--leve-neu-dark),
       inset -4px -4px 10px var(--leve-neu-light);
     --leve-neu-hover:
-      7px 7px 18px var(--leve-neu-dark),
-      -5px -5px 14px var(--leve-neu-light),
+      8px 8px 20px var(--leve-neu-dark),
+      -5px -5px 15px var(--leve-neu-light),
       0 0 0 1px color-mix(in srgb, var(--leve-header-accent) 18%, transparent);
     /* Design System Leve Saúde (referência + contraste navegação) */
     --color-primary: #109685;
@@ -3859,8 +3859,9 @@
     background: var(--workspace-panel-badge-bg);
     color: var(--workspace-panel-badge-text);
     box-shadow:
-      2px 2px 6px var(--workspace-panel-neu-dark),
-      -1px -1px 4px var(--workspace-panel-neu-light);
+      3px 3px 9px var(--workspace-panel-neu-dark),
+      -2px -2px 6px var(--workspace-panel-neu-light),
+      inset 0 1px 0 color-mix(in srgb, white 22%, transparent);
   }
   .workspace-chrome-tab-idle {
     border-radius: 9999px;
@@ -5294,13 +5295,25 @@
     --workspace-stat-bg: var(--project-workspace-surface);
     --workspace-stat-text: var(--brand-text-strong);
     --workspace-stat-accent: var(--project-card-accent);
+    --workspace-stat-neu-light: var(--project-workspace-light);
+    --workspace-stat-neu-dark: color-mix(in srgb, var(--project-workspace-shadow) 90%, transparent);
+    --workspace-stat-neu-raised:
+      6px 6px 15px var(--workspace-stat-neu-dark),
+      -4px -4px 11px var(--workspace-stat-neu-light);
+    --workspace-stat-neu-inset:
+      inset 4px 4px 10px var(--workspace-stat-neu-dark),
+      inset -3px -3px 8px var(--workspace-stat-neu-light);
     --workspace-panel-bg: var(--project-workspace-surface);
     --leve-neu-raised:
-      5px 5px 14px color-mix(in srgb, var(--project-workspace-shadow) 55%, transparent),
-      -4px -4px 12px var(--project-workspace-light);
+      7px 7px 18px color-mix(in srgb, var(--project-workspace-shadow) 92%, transparent),
+      -5px -5px 14px var(--project-workspace-light);
     --leve-neu-inset:
-      inset 4px 4px 10px color-mix(in srgb, var(--project-workspace-shadow) 65%, transparent),
-      inset -3px -3px 8px var(--project-workspace-light);
+      inset 5px 5px 12px color-mix(in srgb, var(--project-workspace-shadow) 95%, transparent),
+      inset -4px -4px 10px var(--project-workspace-light);
+    --leve-neu-hover:
+      9px 9px 22px color-mix(in srgb, var(--project-workspace-shadow) 96%, transparent),
+      -6px -6px 16px var(--project-workspace-light),
+      0 0 0 1px color-mix(in srgb, var(--project-card-accent) 20%, transparent);
   }
 
   .project-tab-page-shell:not(.app-dark-page-surface)::before {
