@@ -47,6 +47,7 @@ import {
   JiraFilasDistributionBar,
   type JiraFilasDistributionSegment,
 } from './JiraFilasDistributionBar';
+import { EmptyState } from '../common/EmptyState';
 
 export interface JiraFilasDashboardPanelProps {
   tasks: JiraTask[];

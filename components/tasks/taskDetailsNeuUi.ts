@@ -437,6 +437,44 @@ export const testCaseDetailLevelOptionClass = (active: boolean) =>
 
 
 
+/** Tom semântico dos stat tiles do Resumo (paleta quente do modal escuro). */
+export type OverviewTileTone = 'accent' | 'error' | 'warning' | 'success' | 'info' | 'neutral';
+
+/** Cor do ícone/realce por tom — valores harmonizados com o tema escuro quente. */
+export const overviewTileToneColor: Record<OverviewTileTone, string> = {
+  accent: 'var(--leve-header-accent)',
+  error: '#F2795B',
+  warning: '#E7A93E',
+  success: '#7FB98A',
+  info: 'var(--leve-header-accent)',
+  neutral: 'var(--leve-header-text-muted)',
+};
+
+/** Card de indicador do Resumo — superfície elevada, ícone + rótulo + valor. */
+export const overviewStatTileClass = cn(
+  taskDetailsNeuRaisedClass,
+  'flex min-w-0 items-center gap-2.5 rounded-[var(--leve-header-radius)] px-3 py-2.5',
+  'transition-[box-shadow,transform] duration-200'
+);
+
+/** Aro do ícone — superfície rebaixada circular. */
+export const overviewStatTileIconWrapClass = cn(
+  taskDetailsNeuInsetClass,
+  'flex h-9 w-9 shrink-0 items-center justify-center rounded-full'
+);
+
+export const overviewStatTileLabelClass =
+  'font-sans text-[10px] font-bold uppercase tracking-wide text-[var(--leve-header-text-muted)]';
+
+export const overviewStatTileValueClass =
+  'min-w-0 truncate font-sans text-sm font-bold leading-snug text-[var(--leve-header-text)]';
+
+/** Variante em destaque (ex.: Próximo passo) — leve realce de accent. */
+export const overviewStatTileEmphasisClass = cn(
+  overviewStatTileClass,
+  'border border-[color-mix(in_srgb,var(--leve-header-accent)_22%,transparent)]'
+);
+
 /** CTA «Gerar / Regerar com IA». */
 
 export const taskDetailsModalPrimaryCtaClass = cn(
