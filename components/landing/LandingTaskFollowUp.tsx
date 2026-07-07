@@ -1,8 +1,9 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, ClipboardList } from 'lucide-react';
+import { ArrowRight, ClipboardList, RefreshCw } from 'lucide-react';
 import { getJiraConfig } from '../../services/jiraService';
 import { useFilasTaskTracking } from '../../hooks/useFilasTaskTracking';
+import { useFilasSync } from '../../hooks/useFilasSync';
 import { cn } from '../../utils/cn';
 import {
   collectAssigneeOptions,
@@ -82,7 +83,9 @@ const AssigneeFilterChip: React.FC<AssigneeFilterChipProps> = ({
  */
 export const LandingTaskFollowUp = React.memo(() => {
   const navigate = useNavigate();
-  const { tasks: filasTasks, slaRiskWindowHours, hasFilasSelection } = useFilasTaskTracking();
+  const { tasks: filasTasks, slaRiskWindowHours, hasFilasSelection, refresh } =
+    useFilasTaskTracking();
+  const { isSyncing, sync: syncFromJira } = useFilasSync({ onSuccess: refresh });
   const jiraConfigured = Boolean(getJiraConfig());
 
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>(() =>
@@ -136,6 +139,10 @@ export const LandingTaskFollowUp = React.memo(() => {
     [navigate]
   );
 
+  const handleSyncFromJira = useCallback(() => {
+    void syncFromJira();
+  }, [syncFromJira]);
+
   if (!jiraConfigured) return null;
 
   const allSelected = selectedAssignees.length === 0;
@@ -165,14 +172,30 @@ export const LandingTaskFollowUp = React.memo(() => {
               Filas Jira · sincronizado localmente
             </p>
           </div>
-          <Link
-            to="/jira-solus"
-            className={landingNeuLinkBtnClass}
-            aria-label="Ver tarefas em Filas Jira"
-          >
-            Ver em Filas
-            <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-          </Link>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={handleSyncFromJira}
+              disabled={isSyncing}
+              className={cn(landingNeuLinkBtnClass, 'disabled:cursor-not-allowed disabled:opacity-60')}
+              aria-label="Atualizar tarefas do Jira"
+              aria-busy={isSyncing}
+            >
+              <RefreshCw
+                className={cn('h-3.5 w-3.5', isSyncing && 'animate-spin motion-reduce:animate-none')}
+                aria-hidden
+              />
+              {isSyncing ? 'Atualizando…' : 'Atualizar'}
+            </button>
+            <Link
+              to="/jira-solus"
+              className={landingNeuLinkBtnClass}
+              aria-label="Ver tarefas em Filas Jira"
+            >
+              Ver em Filas
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+            </Link>
+          </div>
         </div>
 
         {openTasks.length > 0 ? (

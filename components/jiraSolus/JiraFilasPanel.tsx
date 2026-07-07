@@ -13,7 +13,7 @@ import {
 import { enrichTasksWithJiraSlas } from '../../services/jira/sla';
 import { enrichTasksWithJsmSummary } from '../../services/jira/jsmRequest';
 import { importFilasRelatedIssues } from '../../services/jira/filasRelatedIssues';
-import { syncFilasQueuesFromJira } from '../../services/jira/filasQueueSync';
+import { runFilasSelectionSync } from '../../services/jira/filasSyncRunner';
 import { isJiraAutoSyncRunning } from '../../services/jira/jiraAutoSync';
 import { jiraIssueToTask } from '../../services/jira/issueToTask';
 import { buildJiraSprintSyncContext } from '../../services/jira/sprintSync';
@@ -31,6 +31,7 @@ import {
   type JiraFilasFilter,
 } from '../../utils/jiraFilasMetrics';
 import { normalizeTasksParentIdsAcyclic } from '../../utils/taskParentCycle';
+import { buildFilasQueueSyncMessage } from '../../utils/filasSyncMessages';
 import { logger } from '../../utils/logger';
 import { cn } from '../../utils/cn';
 import { Spinner } from '../common/Spinner';
@@ -482,25 +483,27 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
     setIsImportingProject(true);
     setImportProgress({ current: 0 });
     try {
-      const result = await syncFilasQueuesFromJira((current, total) =>
+      const outcome = await runFilasSelectionSync((current, total) =>
         setImportProgress({ current, total })
       );
-      if (!result) {
+      if (outcome.status === 'error') {
+        handleError(outcome.error, 'Importar filas do Jira');
+        return;
+      }
+      if (outcome.status === 'skipped') {
         handleWarning('Não foi possível importar com a seleção atual de projeto, fila e status.');
         return;
       }
 
-      const queueLabel =
-        result.queueCount === 1
-          ? `"${selectedQueues[0].name}"`
-          : `${result.queueCount} filas`;
+      const { result } = outcome;
       handleSuccess(
-        result.tasks.length === 1
-          ? `1 tarefa importada da fila ${queueLabel}.`
-          : `${result.tasks.length} tarefas importadas de ${queueLabel}.`
+        buildFilasQueueSyncMessage(
+          'importada',
+          result.tasks.length,
+          result.queueCount,
+          selectedQueues[0]?.name
+        )
       );
-    } catch (err) {
-      handleError(err, 'Importar filas do Jira');
     } finally {
       setIsImportingProject(false);
       setImportProgress(null);
@@ -539,25 +542,27 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
       setIsUpdatingQueue(true);
       setImportProgress({ current: 0 });
       try {
-        const result = await syncFilasQueuesFromJira((current, total) =>
+        const outcome = await runFilasSelectionSync((current, total) =>
           setImportProgress({ current, total })
         );
-        if (!result) {
+        if (outcome.status === 'error') {
+          handleError(outcome.error, 'Atualizar filas do Jira');
+          return;
+        }
+        if (outcome.status === 'skipped') {
           handleWarning('Não foi possível atualizar com a seleção atual de projeto, fila e status.');
           return;
         }
 
-        const queueLabel =
-          result.queueCount === 1
-            ? `"${selectedQueues[0].name}"`
-            : `${result.queueCount} filas`;
+        const { result } = outcome;
         handleSuccess(
-          result.tasks.length === 1
-            ? `1 tarefa atualizada da fila ${queueLabel}.`
-            : `${result.tasks.length} tarefas atualizadas de ${queueLabel}.`
+          buildFilasQueueSyncMessage(
+            'atualizada',
+            result.tasks.length,
+            result.queueCount,
+            selectedQueues[0]?.name
+          )
         );
-      } catch (err) {
-        handleError(err, 'Atualizar filas do Jira');
       } finally {
         setIsUpdatingQueue(false);
         setImportProgress(null);
