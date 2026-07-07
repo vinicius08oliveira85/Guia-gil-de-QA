@@ -171,7 +171,7 @@ export const projectsDashboardMainGridClass = cn(
 );
 
 export const projectsDashboardProjectGridClass = cn(
-  'grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 md:gap-5',
+  'grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 md:gap-5',
   'max-md:gap-2'
 );
 
