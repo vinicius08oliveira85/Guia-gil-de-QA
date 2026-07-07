@@ -65,7 +65,7 @@ export const LandingPage = React.memo(() => {
               onError={handleLogoError}
             />
           </span>
-          <span className="truncate font-sans text-sm font-bold tracking-tight sm:text-base">
+          <span className="app-brand-title truncate font-sans text-sm font-bold tracking-tight sm:text-base">
             {APP_BRAND.title}
           </span>
         </Link>
