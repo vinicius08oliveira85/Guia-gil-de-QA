@@ -1191,7 +1191,7 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
               <div className="space-y-6">
                 {groupedTasksEntries.map(([groupLabel, tasksInGroup]) => (
                   <section key={groupLabel} aria-label={`Grupo: ${groupLabel}`}>
-                    <h3 className="mb-3 flex items-center gap-2 font-heading text-xs font-bold uppercase tracking-wider text-[var(--leve-header-text-muted)]">
+                    <h3 className="mb-3 flex items-center gap-2 font-heading text-xs font-bold uppercase tracking-wider text-base-content/72">
                       <List className="h-4 w-4" aria-hidden />
                       {groupLabel}
                       <span className="font-medium normal-case tracking-normal text-[var(--brand-text-muted)]">

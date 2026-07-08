@@ -54,7 +54,7 @@ export const DashboardStatCard = React.memo<DashboardStatCardProps>(
         ? 'text-success'
         : trend === 'down'
           ? 'text-error'
-          : 'text-[var(--leve-header-text-muted)]';
+          : 'text-base-content/72';
 
     const isClickable = !!onClick;
     const toneStyle = TONE_STYLES[tone];
@@ -94,11 +94,11 @@ export const DashboardStatCard = React.memo<DashboardStatCardProps>(
           <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--leve-header-text-muted)] sm:text-[11px]">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-base-content/72 sm:text-[11px]">
             {title}
           </p>
           <div className="mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-0">
-            <span className="font-heading text-xl font-bold tabular-nums text-[var(--leve-header-text)] sm:text-2xl">
+            <span className="font-heading text-xl font-bold tabular-nums text-base-content sm:text-2xl">
               {value}
             </span>
             {changePercent != null && (

@@ -182,7 +182,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
       {showLoadingBanner && (
         <div className={dashboardLoadingBannerClass} role="status" aria-live="polite">
           <Loader2
-            className="h-4 w-4 shrink-0 animate-spin text-[var(--leve-header-accent)]"
+            className="h-4 w-4 shrink-0 animate-spin text-primary"
             aria-hidden
           />
           <span>Carregando ou sincronizando dados do projeto…</span>

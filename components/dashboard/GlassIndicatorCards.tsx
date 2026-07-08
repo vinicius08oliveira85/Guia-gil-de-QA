@@ -198,7 +198,7 @@ export function ExecutionAutomationCard({
       aria-label="Execução de Testes e Automatizados"
     >
       <div
-        className="pointer-events-none absolute -left-10 bottom-0 h-64 w-64 rounded-full bg-[color-mix(in_srgb,var(--leve-header-accent)_12%,transparent)] opacity-60"
+        className="pointer-events-none absolute -left-10 bottom-0 h-64 w-64 rounded-full bg-primary/12 opacity-60"
         aria-hidden
       />
       <div className="relative z-10 grid grid-cols-1 items-center gap-4 lg:grid-cols-12 lg:gap-5">
@@ -206,7 +206,7 @@ export function ExecutionAutomationCard({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <div
-                className="leve-neu-pill flex h-11 w-11 shrink-0 items-center justify-center text-[var(--leve-header-accent)]"
+                className="leve-neu-pill flex h-11 w-11 shrink-0 items-center justify-center text-primary"
                 aria-hidden
               >
                 <ListChecks className="h-5 w-5 text-primary" />

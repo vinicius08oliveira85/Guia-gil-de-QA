@@ -381,7 +381,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                     </label>
                     <button
                       onClick={() => loadJiraProjects(false)}
-                      className="inline-flex items-center gap-1 self-start text-xs font-semibold text-[var(--workspace-panel-accent)] hover:text-[var(--workspace-panel-text)] hover:underline sm:self-auto disabled:opacity-60"
+                      className="inline-flex items-center gap-1 self-start text-xs font-semibold text-primary hover:text-base-content hover:underline sm:self-auto disabled:opacity-60"
                       title="Atualizar lista de projetos"
                       disabled={isLoadingJiraProjects || jiraConfigStatus !== 'configured'}
                       aria-label="Atualizar lista de projetos do Jira"

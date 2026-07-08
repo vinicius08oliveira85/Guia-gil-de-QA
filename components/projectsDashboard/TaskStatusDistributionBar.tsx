@@ -73,7 +73,7 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
         Status das tarefas
       </h2>
       {!embedded && (
-        <p className="mt-0.5 text-xs leading-snug text-[var(--leve-header-text-muted)]">
+        <p className="mt-0.5 text-xs leading-snug text-base-content/72">
           To Do, In Progress / Blocked e Done — proporção ao total.
         </p>
       )}
@@ -96,7 +96,7 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
       <ul
         className={cn(
           'mt-3 flex flex-wrap gap-x-3 gap-y-1 font-sans text-[11px] sm:text-xs',
-          embedded ? 'text-[var(--workspace-panel-text-muted)]' : 'text-[var(--leve-header-text-muted)]'
+          embedded ? 'text-[var(--workspace-panel-text-muted)]' : 'text-base-content/72'
         )}
       >
         <li>
@@ -111,7 +111,7 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
           <strong
             className={cn(
               'font-semibold',
-              embedded ? 'text-[var(--workspace-panel-text)]' : 'text-[var(--leve-header-text)]'
+              embedded ? 'text-[var(--workspace-panel-text)]' : 'text-base-content'
             )}
           >
             {buckets.todo}
@@ -129,7 +129,7 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
           <strong
             className={cn(
               'font-semibold',
-              embedded ? 'text-[var(--workspace-panel-text)]' : 'text-[var(--leve-header-text)]'
+              embedded ? 'text-[var(--workspace-panel-text)]' : 'text-base-content'
             )}
           >
             {buckets.inProgress}
@@ -149,7 +149,7 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
           <strong
             className={cn(
               'font-semibold',
-              embedded ? 'text-[var(--workspace-panel-text)]' : 'text-[var(--leve-header-text)]'
+              embedded ? 'text-[var(--workspace-panel-text)]' : 'text-base-content'
             )}
           >
             {buckets.done}

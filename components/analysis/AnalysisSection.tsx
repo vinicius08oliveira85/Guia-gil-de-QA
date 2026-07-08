@@ -75,7 +75,7 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
                   'rounded-lg px-2 py-1 text-xs transition-colors',
                   viewMode === 'list'
                     ? 'bg-[color-mix(in_srgb,var(--brand-cta)_14%,transparent)] text-[var(--brand-cta)]'
-                    : 'text-base-content/60 hover:text-[var(--leve-header-accent)]'
+                    : 'text-base-content/60 hover:text-primary'
                 )}
                 title="Visualização em lista"
               >
@@ -103,7 +103,7 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
                   'rounded-lg px-2 py-1 text-xs transition-colors',
                   viewMode === 'detailed'
                     ? 'bg-[color-mix(in_srgb,var(--brand-cta)_14%,transparent)] text-[var(--brand-cta)]'
-                    : 'text-base-content/60 hover:text-[var(--leve-header-accent)]'
+                    : 'text-base-content/60 hover:text-primary'
                 )}
                 title="Visualização detalhada"
               >

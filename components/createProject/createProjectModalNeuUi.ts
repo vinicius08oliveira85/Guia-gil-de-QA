@@ -21,11 +21,11 @@ export const createProjectModalShellClass = cn(
 );
 
 export const createProjectModalBodyClass =
-  'font-sans text-[var(--workspace-panel-text-muted)] [&_.custom-scrollbar]:bg-[var(--workspace-panel-bg)]';
+  'font-sans text-base-content/72 [&_.custom-scrollbar]:bg-base-100';
 
 export const createProjectModalTitleClass = tasksPanelNeuModalTitleClass;
 
-export const createProjectModalDescClass = 'font-sans text-sm text-[var(--workspace-panel-text-muted)]';
+export const createProjectModalDescClass = 'font-sans text-sm text-base-content/72';
 
 export const createProjectFieldLabelClass = tasksPanelFormFieldLabelClass;
 
@@ -35,29 +35,29 @@ export const createProjectTextareaClass = cn(tasksPanelFormInputClass, 'min-h-[5
 
 /** Card de opção (template / Jira / arquivo) — pill elevado no painel claro. */
 export const createProjectOptionCardClass = cn(
-  'create-project-neu-option w-full rounded-[var(--leve-header-radius)] border p-4 text-left',
-  'border-[var(--workspace-panel-border)] bg-[var(--leve-neu-bg)]',
+  'create-project-neu-option w-full rounded-box border p-4 text-left',
+  'border-base-300 bg-base-200',
   neuRaised,
   'transition-[box-shadow,border-color,transform] duration-200',
-  'hover:border-[color-mix(in_srgb,var(--workspace-panel-accent)_35%,transparent)] hover:text-[var(--workspace-panel-text)]',
+  'hover:border-primary/35 hover:text-base-content',
   'active:translate-y-px',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--workspace-panel-accent)_40%,transparent)]',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
   'disabled:cursor-not-allowed disabled:opacity-50'
 );
 
-export const createProjectOptionTitleClass = 'font-sans text-sm font-bold text-[var(--workspace-panel-text)]';
+export const createProjectOptionTitleClass = 'font-sans text-sm font-bold text-base-content';
 
-export const createProjectOptionDescClass = 'font-sans text-xs text-[var(--workspace-panel-text-muted)]';
+export const createProjectOptionDescClass = 'font-sans text-xs text-base-content/72';
 
 /** Painel interno (importação Jira). */
 export const createProjectInsetPanelClass = cn(
-  'create-project-neu-inset rounded-[var(--leve-header-radius)] border p-4 sm:p-6',
-  'border-[var(--workspace-panel-border)] bg-[var(--leve-neu-bg)]',
+  'create-project-neu-inset rounded-box border p-4 sm:p-6',
+  'border-base-300 bg-base-200',
   neuInset
 );
 
 export const createProjectModalFooterClass =
-  'create-project-neu-footer border-t border-[var(--workspace-panel-border)] pt-1';
+  'create-project-neu-footer border-t border-base-300 pt-1';
 
 export const createProjectCancelBtnClass = tasksPanelFormCancelBtnClass;
 

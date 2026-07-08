@@ -156,7 +156,7 @@ export const dashboardProgressFillClass = 'workspace-stat-neu-fill h-full rounde
 
 export const dashboardEmptyChartClass = cn(
   neuCardInsetClass,
-  'flex h-48 items-center justify-center text-[var(--leve-header-text-muted)]'
+  'flex h-48 items-center justify-center text-base-content/72'
 );
 
 export const dashboardListRowClass = cn(
@@ -198,7 +198,7 @@ export const dashboardDashedPanelClass = 'neu-dashed-panel !p-4 sm:!p-6';
 /** Banner de carregamento / sincronização. */
 export const dashboardLoadingBannerClass = cn(
   'leve-neu-surface-inset flex items-center gap-2 px-3 py-2.5 text-sm',
-  'text-[var(--leve-header-text-muted)]'
+  'text-base-content/72'
 );
 
 /** Alerta de erro do store. */
