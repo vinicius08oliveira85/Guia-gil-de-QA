@@ -181,7 +181,7 @@ export const Modal: React.FC<ModalProps> = ({
             : cn(
                 panelBaseClass,
                 'max-sm:animate-modal-bottom-sheet-in w-full max-w-full max-sm:max-w-none sm:animate-in sm:fade-in sm:duration-200 sm:zoom-in-95 sm:slide-in-from-bottom-8',
-                'rounded-t-[var(--leve-header-radius)] rounded-b-none max-h-[min(96dvh,100svh-env(safe-area-inset-bottom))] min-h-[min(40vh,20rem)] sm:rounded-[var(--leve-header-radius)] sm:max-h-[min(92vh,100dvh-env(safe-area-inset-top)-1.5rem)]',
+                'rounded-t-box rounded-b-none max-h-[min(96dvh,100svh-env(safe-area-inset-bottom))] min-h-[min(40vh,20rem)] sm:rounded-box sm:max-h-[min(92vh,100dvh-env(safe-area-inset-top)-1.5rem)]',
                 sizeClasses[size]
               )
         }

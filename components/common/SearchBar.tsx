@@ -102,7 +102,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           placeholder={placeholder}
           className={searchInputClass}
         />
-        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--leve-header-text-muted)]">
+        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/72">
           🔍
         </span>
         {searchQuery && (

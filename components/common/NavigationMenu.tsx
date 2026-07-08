@@ -85,7 +85,7 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
         aria-label={title}
         className={cn(
           'fixed right-3 z-[130] flex max-h-[min(70vh,28rem)] w-[min(calc(100vw-2rem),20rem)] flex-col overflow-y-auto md:hidden',
-          'app-surface !max-w-none !rounded-[var(--rounded-box)] p-2 text-[var(--leve-header-text)]'
+          'app-surface !max-w-none !rounded-[var(--rounded-box)] p-2 text-base-content'
         )}
         style={{ top: 'calc(var(--app-header-sticky-offset, 4.5rem) + 0.25rem)' }}
       >

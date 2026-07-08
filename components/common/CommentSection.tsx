@@ -149,7 +149,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                           <button
                             type="button"
                             onClick={() => handleStartEdit(comment)}
-                            className="font-sans text-sm text-[var(--leve-header-text-muted)] hover:text-[var(--leve-header-accent)]"
+                            className="font-sans text-sm text-base-content/72 hover:text-primary"
                           >
                             Editar
                           </button>

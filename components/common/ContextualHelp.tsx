@@ -47,7 +47,7 @@ export const ContextualHelp: React.FC<ContextualHelpProps> = ({
           className={cn(
             'inline-flex items-center gap-1 transition-colors',
             neuBrandTextMutedClass,
-            'hover:text-[var(--leve-header-accent)]'
+            'hover:text-primary'
           )}
           aria-label={title}
         >
@@ -62,12 +62,12 @@ export const ContextualHelp: React.FC<ContextualHelpProps> = ({
       <div
         className={cn(
           neuLegacySurfacePanelClass,
-          'border border-[color-mix(in_srgb,var(--leve-header-accent)_28%,transparent)]',
-          'bg-[color-mix(in_srgb,var(--leve-header-accent)_8%,var(--leve-neu-bg))]'
+          'border border-primary/28',
+          'bg-primary/8'
         )}
       >
         <div className="flex items-start gap-3">
-          <div className="mt-0.5 shrink-0 text-[var(--leve-header-accent)]">
+          <div className="mt-0.5 shrink-0 text-primary">
             {icon || <InfoIcon className="h-5 w-5" />}
           </div>
           <div className="min-w-0 flex-1">
@@ -89,7 +89,7 @@ export const ContextualHelp: React.FC<ContextualHelpProps> = ({
         className={cn(
           'mt-0.5 shrink-0 transition-colors',
           neuBrandTextMutedClass,
-          'hover:text-[var(--leve-header-accent)]'
+          'hover:text-primary'
         )}
         aria-label={title}
         aria-expanded={isExpanded}

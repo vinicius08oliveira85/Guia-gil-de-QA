@@ -93,7 +93,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ task, project, onUpd
         <span
           className={cn(
             taskDetailsModalSectionClass,
-            'inline-block w-fit px-3 py-1.5 font-sans text-sm text-[var(--leve-header-accent)]'
+            'inline-block w-fit px-3 py-1.5 font-sans text-sm text-primary'
           )}
         >
           Bloqueada
@@ -111,8 +111,8 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ task, project, onUpd
                 className={cn(
                   'font-semibold',
                   estimation.actualHours <= estimation.estimatedHours
-                    ? 'text-[var(--leve-header-text)]'
-                    : 'text-[var(--leve-header-accent)]'
+                    ? 'text-base-content'
+                    : 'text-primary'
                 )}
               >
                 {estimation.actualHours}h

@@ -58,12 +58,12 @@ export const toolbarActionPrimaryClass = cn(
 
 /** Badge de contexto (ex.: chave do projeto Jira). */
 export const contextBadgeClass = cn(
-  'leve-neu-surface-inset app-element-typography shrink-0 px-2 py-0.5 text-xs font-medium text-[var(--leve-header-text-muted)]'
+  'leve-neu-surface-inset app-element-typography shrink-0 px-2 py-0.5 text-xs font-medium text-base-content/72'
 );
 
 /** Chip removível de filtro ativo (dashboard, listas). */
 export const activeFilterChipClass = cn(
-  'leve-neu-pill app-element-typography inline-flex items-center gap-1 pl-2.5 pr-1 py-1 text-xs text-[var(--leve-header-text-muted)]'
+  'leve-neu-pill app-element-typography inline-flex items-center gap-1 pl-2.5 pr-1 py-1 text-xs text-base-content/72'
 );
 
 export const searchInputClass = cn(
@@ -88,7 +88,7 @@ export const neuSelectTriggerClass = cn(
 export const helpTooltipTriggerClass = cn(
   'help-tooltip-trigger ml-1 inline-flex h-5 w-5 min-h-5 min-w-5 shrink-0 cursor-pointer items-center justify-center',
   'rounded-full border p-0 font-sans transition-[box-shadow,color,background-color] duration-150',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_28%,transparent)]'
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/28'
 );
 
 export const appMenuPanelClass = 'app-menu-panel';
@@ -107,10 +107,10 @@ export const appNavPillTabClass = cn(
 export const projectViewCard = cn('app-panel p-4 sm:p-5');
 
 export const pageTitleClass =
-  'app-element-typography font-heading text-2xl font-bold tracking-tight text-[var(--leve-header-text)] sm:text-[1.65rem]';
+  'app-element-typography font-heading text-2xl font-bold tracking-tight text-base-content sm:text-[1.65rem]';
 
 export const pageSubtitleClass =
-  'app-element-typography w-full text-sm leading-relaxed text-[var(--leve-header-text-muted)]';
+  'app-element-typography w-full text-sm leading-relaxed text-base-content/72';
 
 /** Container de telas globais (ex.: Configurações). */
 export const settingsContentShell = cn(

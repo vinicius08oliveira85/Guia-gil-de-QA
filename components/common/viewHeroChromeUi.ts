@@ -15,7 +15,7 @@ import {
 export const viewHeroChromeClass = cn(
   'dashboard-hero-chrome project-chrome-neu-shell tasks-panel-dark-surface',
   appDarkHeroChromeMarkerClass,
-  'rounded-[var(--leve-header-radius)] px-3 py-3 sm:px-4 sm:py-4',
+  'rounded-box px-3 py-3 sm:px-4 sm:py-4',
   'flex flex-col gap-4 sm:gap-5',
   'max-md:gap-2 max-md:px-2 max-md:py-2'
 );

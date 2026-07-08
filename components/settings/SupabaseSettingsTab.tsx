@@ -116,20 +116,20 @@ export const SupabaseSettingsTab: React.FC = () => {
           {supabaseAvailable ? (
             <>
               <div>
-                <p className="text-[var(--leve-header-text)]/70 text-sm mb-4 leading-relaxed">
+                <p className="text-base-content/70 text-sm mb-4 leading-relaxed">
                   {diagnosis.details}
                 </p>
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    <p className="text-[var(--leve-header-text)]/70">
-                      <strong className="text-[var(--leve-header-text)]">Status:</strong> Conectado
+                    <p className="text-base-content/70">
+                      <strong className="text-base-content">Status:</strong> Conectado
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
-                    <p className="text-[var(--leve-header-text)]/70">
-                      <strong className="text-[var(--leve-header-text)]">Modo:</strong>{' '}
+                    <p className="text-base-content/70">
+                      <strong className="text-base-content">Modo:</strong>{' '}
                       {diagnosis.hasProxy && diagnosis.hasSDK
                         ? 'Proxy e SDK'
                         : diagnosis.hasProxy
@@ -139,8 +139,8 @@ export const SupabaseSettingsTab: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
-                    <p className="text-[var(--leve-header-text)]/70">
-                      <strong className="text-[var(--leve-header-text)]">Autenticação:</strong> Anônima
+                    <p className="text-base-content/70">
+                      <strong className="text-base-content">Autenticação:</strong> Anônima
                       (compartilhada)
                     </p>
                   </div>
@@ -150,7 +150,7 @@ export const SupabaseSettingsTab: React.FC = () => {
           ) : (
             <>
               <div>
-                <p className="text-[var(--leve-header-text)]/70 text-sm mb-4 leading-relaxed">
+                <p className="text-base-content/70 text-sm mb-4 leading-relaxed">
                   {diagnosis.details} No navegador apenas variáveis com prefixo{' '}
                   <code className={leveViewInlineCodeClass}>VITE_</code> são expostas; use{' '}
                   <code className={leveViewInlineCodeClass}>VITE_SUPABASE_PROXY_URL</code> ou{' '}
@@ -193,7 +193,7 @@ export const SupabaseSettingsTab: React.FC = () => {
                               </StatusBadge>
                             )}
                           </div>
-                          <p className="text-xs text-[var(--leve-header-text)]/70 leading-relaxed">
+                          <p className="text-xs text-base-content/70 leading-relaxed">
                             {variable.description}
                           </p>
                         </div>
@@ -203,10 +203,10 @@ export const SupabaseSettingsTab: React.FC = () => {
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-semibold text-[var(--leve-header-text)] mb-1">
+                  <h4 className="text-sm font-semibold text-base-content mb-1">
                     Variáveis do Backend (Vercel - Serverless Functions)
                   </h4>
-                  <p className="text-xs text-[var(--leve-header-text)]/60 mb-3">
+                  <p className="text-xs text-base-content/60 mb-3">
                     Configuradas no servidor. O status não é verificável no navegador.
                   </p>
                   <div className="space-y-2">
@@ -227,7 +227,7 @@ export const SupabaseSettingsTab: React.FC = () => {
                               Obrigatório
                             </StatusBadge>
                           </div>
-                          <p className="text-xs text-[var(--leve-header-text)]/70 leading-relaxed">
+                          <p className="text-xs text-base-content/70 leading-relaxed">
                             {variable.description}
                           </p>
                         </div>
@@ -240,8 +240,8 @@ export const SupabaseSettingsTab: React.FC = () => {
               <div className="mt-4 p-4 rounded-lg bg-blue-500/10 border border-blue-500/30">
                 <div className="flex items-start gap-2">
                   <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-[var(--leve-header-text)]/70 leading-relaxed">
-                    <strong className="text-[var(--leve-header-text)]">Documentação:</strong> Consulte{' '}
+                  <p className="text-sm text-base-content/70 leading-relaxed">
+                    <strong className="text-base-content">Documentação:</strong> Consulte{' '}
                     <code className={leveViewInlineCodeClass}>
                       docs/SUPABASE_SETUP.md
                     </code>{' '}

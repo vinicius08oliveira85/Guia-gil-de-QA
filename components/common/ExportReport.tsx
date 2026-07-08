@@ -173,8 +173,8 @@ export const ExportReport: React.FC<ExportReportProps> = ({ project, onClose }) 
               className={cn(
                 'leve-neu-pill px-4 py-2 text-sm font-semibold transition-[box-shadow,color] duration-200',
                 format === fmt
-                  ? 'leve-neu-pill-active text-[var(--leve-header-text)]'
-                  : 'text-[var(--leve-header-text-muted)] hover:text-[var(--leve-header-accent)]'
+                  ? 'leve-neu-pill-active text-base-content'
+                  : 'text-base-content/72 hover:text-primary'
               )}
               aria-pressed={format === fmt}
             >
@@ -193,7 +193,7 @@ export const ExportReport: React.FC<ExportReportProps> = ({ project, onClose }) 
             type="checkbox"
             checked={includeMetrics}
             onChange={e => setIncludeMetrics(e.target.checked)}
-            className="h-4 w-4 rounded border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] text-[var(--leve-header-accent)]"
+            className="h-4 w-4 rounded border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] text-primary"
           />
           <span className={neuBrandTextStrongClass}>Métricas</span>
         </label>
@@ -202,7 +202,7 @@ export const ExportReport: React.FC<ExportReportProps> = ({ project, onClose }) 
             type="checkbox"
             checked={includeTasks}
             onChange={e => setIncludeTasks(e.target.checked)}
-            className="h-4 w-4 rounded border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] text-[var(--leve-header-accent)]"
+            className="h-4 w-4 rounded border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] text-primary"
           />
           <span className={neuBrandTextStrongClass}>Tarefas</span>
         </label>
@@ -211,7 +211,7 @@ export const ExportReport: React.FC<ExportReportProps> = ({ project, onClose }) 
             type="checkbox"
             checked={includeTestCases}
             onChange={e => setIncludeTestCases(e.target.checked)}
-            className="h-4 w-4 rounded border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] text-[var(--leve-header-accent)]"
+            className="h-4 w-4 rounded border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] text-primary"
           />
           <span className={neuBrandTextStrongClass}>Casos de Teste</span>
         </label>

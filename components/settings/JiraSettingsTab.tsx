@@ -348,10 +348,10 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
           <div className={cn(leveSettingsCardClass, 'lg:col-span-2')}>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="space-y-1">
-                <p className="text-[var(--leve-header-text-muted)] text-sm">
-                  Conectado como: <strong className="text-[var(--leve-header-text)]">{config.email}</strong>
+                <p className="text-base-content/72 text-sm">
+                  Conectado como: <strong className="text-base-content">{config.email}</strong>
                 </p>
-                <p className="text-[var(--leve-header-text-muted)] text-xs font-mono break-all">
+                <p className="text-base-content/72 text-xs font-mono break-all">
                   URL: {config.url}
                 </p>
               </div>
@@ -375,11 +375,11 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
           {isLoadingProjects ? (
             <div className={cn(leveSettingsCardClass, 'py-8')}>
               <div className="flex flex-col items-center gap-3">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--leve-header-accent)]"></div>
-                <p className="text-[var(--leve-header-text-muted)] text-sm font-medium">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <p className="text-base-content/72 text-sm font-medium">
                   Carregando projetos do Jira...
                 </p>
-                <p className="text-[var(--leve-header-text-muted)] text-xs">Isso pode levar alguns segundos</p>
+                <p className="text-base-content/72 text-xs">Isso pode levar alguns segundos</p>
               </div>
             </div>
           ) : jiraProjects.length > 0 ? (
@@ -387,7 +387,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
               <div className={leveSettingsCardClass}>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <label className="block text-sm font-medium text-[var(--leve-header-text)]">
+                    <label className="block text-sm font-medium text-base-content">
                       Selecione o projeto para importar:
                     </label>
                     <button
@@ -455,14 +455,14 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
                 <div
                   className={cn(
                     leveSettingsCardClass,
-                    'mt-4 border-[color-mix(in_srgb,var(--leve-header-accent)_25%,transparent)]'
+                    'mt-4 border-primary/25'
                   )}
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium text-[var(--leve-header-text)]">
+                    <span className="text-sm font-medium text-base-content">
                       Importando tarefas do Jira...
                     </span>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--leve-header-accent)]"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
                   </div>
                   <div className="workspace-stat-neu-track mb-2 h-2.5 w-full">
                     <div
@@ -474,7 +474,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
                       }}
                     />
                   </div>
-                  <div className="space-y-1 text-xs text-[var(--leve-header-text-muted)]">
+                  <div className="space-y-1 text-xs text-base-content/72">
                     <p>
                       <strong>Aguarde...</strong> Projetos grandes podem levar vários minutos.
                     </p>
@@ -489,7 +489,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
           ) : (
             <div className={cn(leveSettingsCardClass, 'py-8')}>
               <div className="text-center">
-                <p className="text-[var(--leve-header-text-muted)] text-sm">
+                <p className="text-base-content/72 text-sm">
                   Nenhum projeto encontrado. Verifique suas permissões no Jira.
                 </p>
               </div>
@@ -557,7 +557,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
             leftIcon={<KeyRound className="w-4 h-4" />}
             helperText=""
           />
-          <p className="text-xs text-[var(--leve-header-text-muted)] -mt-3">
+          <p className="text-xs text-base-content/72 -mt-3">
             <a
               href="https://id.atlassian.com/manage-profile/security/api-tokens"
               target="_blank"
@@ -568,7 +568,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
             </a>
           </p>
 
-          <div className="mt-6 flex flex-wrap justify-end gap-2 border-t border-[color-mix(in_srgb,var(--leve-header-text)_12%,transparent)] pt-4">
+          <div className="mt-6 flex flex-wrap justify-end gap-2 border-t border-base-content/12 pt-4">
             <button type="button" onClick={() => setShowConfigModal(false)} className={leveSettingsOutlineBtnClass}>
               Cancelar
             </button>

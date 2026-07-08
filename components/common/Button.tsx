@@ -12,7 +12,7 @@ export const buttonVariants = cva(
         destructive: 'btn-error',
         outline: 'btn-outline border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]',
         secondary: 'btn-secondary',
-        ghost: 'btn-ghost text-[var(--leve-header-text)] hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))]',
+        ghost: 'btn-ghost text-base-content hover:bg-base-300/25',
         link: 'btn-link',
         brand: 'app-btn-primary-inline border-0 shadow-md',
         brandOutline: 'app-btn-outline',

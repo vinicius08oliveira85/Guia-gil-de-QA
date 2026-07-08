@@ -13,8 +13,8 @@ export const neuTrackClass = 'workspace-stat-neu-track';
 export const neuFillClass = 'workspace-stat-neu-fill';
 export const neuKnobClass = 'workspace-stat-neu-knob';
 export const neuDividerClass = 'border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]';
-export const neuMutedTextClass = 'text-[var(--leve-header-text-muted)]';
-export const neuStrongTextClass = 'text-[var(--leve-header-text)]';
+export const neuMutedTextClass = 'text-base-content/72';
+export const neuStrongTextClass = 'text-base-content';
 
 export const neuCardClass = cn(neuSurfaceClass, 'p-4 sm:p-5', 'max-md:p-3');
 export const neuCardCompactClass = cn(neuSurfaceClass, 'p-3 sm:p-4', 'max-md:p-2');
@@ -36,7 +36,7 @@ export const neuLegacyInsetClass = neuSurfaceInsetClass;
 /** Substitui `bg-surface border border-surface-border rounded-lg` (painéis legados). */
 export const neuLegacySurfacePanelClass = cn(
   neuSurfaceClass,
-  'rounded-[var(--leve-header-radius)] border border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] p-3 sm:p-4'
+  'rounded-box border border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] p-3 sm:p-4'
 );
 
 /** Substitui `bg-surface border border-surface-border rounded-lg` em itens de lista. */
@@ -47,15 +47,15 @@ export const neuLegacyListItemPanelClass = cn(
 
 /** Substitui `hover:bg-surface-hover` em linhas de menu legadas. */
 export const neuLegacyMenuRowHoverClass =
-  'hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_14%,var(--leve-neu-bg))] hover:text-[var(--leve-header-text)]';
+  'hover:bg-base-300/25 hover:text-base-content';
 
 /** Chip de filtro ativo (listas, tarefas). */
 export const neuFilterChipClass = cn(
-  'leve-neu-pill app-element-typography inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-[var(--leve-header-text-muted)]'
+  'leve-neu-pill app-element-typography inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-base-content/72'
 );
 
 export const neuFilterChipBtnClass =
-  'flex h-5 w-5 items-center justify-center rounded-full transition-colors hover:text-[var(--leve-header-accent)]';
+  'flex h-5 w-5 items-center justify-center rounded-full transition-colors hover:text-primary';
 
 export const neuSkeletonShellClass = cn(neuSurfaceClass, 'relative overflow-hidden');
 export const neuSkeletonBlockClass =
@@ -71,8 +71,8 @@ export const neuBrandChipClass =
 export const neuBrandChipHoverClass =
   'hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_12%,var(--leve-neu-bg))]';
 
-export const neuBrandTextMutedClass = 'text-[var(--leve-header-text-muted)]';
-export const neuBrandTextStrongClass = 'text-[var(--leve-header-text)]';
+export const neuBrandTextMutedClass = 'text-base-content/72';
+export const neuBrandTextStrongClass = 'text-base-content';
 
 export const neuHoverSubtleClass =
   'hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))]';
@@ -85,7 +85,7 @@ export const neuInsetTileClass = cn(
 );
 
 export const neuBrandChipActiveClass =
-  'bg-[color-mix(in_srgb,var(--leve-header-accent)_12%,var(--leve-neu-bg))]';
+  'bg-primary/12';
 
 export const neuChecklistItemCheckedClass = cn(
   'rounded-xl border opacity-75',
@@ -151,14 +151,14 @@ export const neuSegmentedTabBadgeActiveClass = cn(
   'task-details-neu-tab-count inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full border-0',
   'bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))]',
   'font-sans text-[10px] font-bold tabular-nums leading-none',
-  '!text-[var(--leve-header-text)] leve-neu-pill-active'
+  '!text-base-content leve-neu-pill-active'
 );
 
 export const neuSegmentedTabBadgeIdleClass = cn(
   'task-details-neu-tab-count inline-flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full border-0',
   'bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))]',
   'font-sans text-[10px] font-bold tabular-nums leading-none',
-  '!text-[var(--leve-header-text-muted)] leve-neu-pill'
+  '!text-base-content/72 leve-neu-pill'
 );
 
 /** Chip de filtro compacto — mesmo padrão das abas do ProjectView. */

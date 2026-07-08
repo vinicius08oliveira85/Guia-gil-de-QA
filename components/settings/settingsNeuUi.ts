@@ -13,7 +13,7 @@ export const settingsNeuModalPanelClass = cn('settings-neu-modal', tasksPanelNeu
 
 /** Painel inset — chave API configurada (Gemini). */
 export const settingsNeuConfiguredPanelClass = cn(
-  'settings-neu-configured-panel rounded-[var(--leve-header-radius)] p-4 sm:p-5'
+  'settings-neu-configured-panel rounded-box p-4 sm:p-5'
 );
 
 export const settingsNeuInlineActionsClass = cn(
@@ -42,7 +42,7 @@ export const settingsNeuRemoveBtnClass = cn(
 export const settingsNeuKbdClass = cn(
   'settings-neu-kbd',
   'inline-flex min-h-9 min-w-[3.5rem] items-center justify-center rounded-full px-3 py-1.5',
-  'font-mono text-xs font-semibold tracking-wide text-[var(--leve-header-text)]'
+  'font-mono text-xs font-semibold tracking-wide text-base-content'
 );
 
 export const settingsNeuShortcutActionsClass = cn(

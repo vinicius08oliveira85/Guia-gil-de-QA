@@ -412,18 +412,18 @@ export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImpo
               </p>
             )}
             {folderPrefs.hasConfiguredFolder ? (
-              <p className="mt-2 text-sm text-[var(--leve-header-text)]" role="status">
+              <p className="mt-2 text-sm text-base-content" role="status">
                 Pasta atual:{' '}
                 <span className={leveSettingsStrongTextClass}>
                   {folderPrefs.folderLabel ?? '(sem nome)'}
                 </span>
                 {lastSyncLabel ? (
-                  <span className="mt-0.5 block text-[var(--leve-header-text-muted)]">
+                  <span className="mt-0.5 block text-base-content/72">
                     Última gravação: {lastSyncLabel}
                   </span>
                 ) : null}
                 {lastRestoreLabel ? (
-                  <span className="mt-0.5 block text-[var(--leve-header-text-muted)]">
+                  <span className="mt-0.5 block text-base-content/72">
                     Última restauração: {lastRestoreLabel}
                   </span>
                 ) : null}
@@ -434,7 +434,7 @@ export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImpo
                 ) : null}
               </p>
             ) : (
-              <p className="mt-2 text-sm text-[var(--leve-header-text-muted)]" role="status">
+              <p className="mt-2 text-sm text-base-content/72" role="status">
                 Nenhuma pasta configurada.
               </p>
             )}
@@ -446,19 +446,19 @@ export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImpo
         >
           <input
             type="checkbox"
-            className="checkbox checkbox-sm mt-0.5 shrink-0 border-[color-mix(in_srgb,var(--leve-header-text)_20%,transparent)] [--chkbg:var(--leve-header-accent)]"
+            className="checkbox checkbox-sm mt-0.5 shrink-0 border-base-content/20 [--chkbg:theme(colors.primary)]"
             checked={folderPrefs.autoSyncEnabled}
             onChange={e => handleAutoSyncToggle(e.target.checked)}
             disabled={!folderSupported || !folderPrefs.hasConfiguredFolder}
             aria-describedby="auto-sync-folder-hint"
           />
-          <span className="text-sm leading-snug text-[var(--leve-header-text)]">
+          <span className="text-sm leading-snug text-base-content">
             <span className={leveSettingsStrongTextClass}>
               Sincronizar automaticamente com a pasta
             </span>
             <span
               id="auto-sync-folder-hint"
-              className="mt-0.5 block text-[var(--leve-header-text-muted)]"
+              className="mt-0.5 block text-base-content/72"
             >
               Após mudanças nos projetos ou nas configurações (Jira, chaves Gemini, preferências), o
               backup é regravado na pasta em até cerca de 1 minuto. Configurações também são

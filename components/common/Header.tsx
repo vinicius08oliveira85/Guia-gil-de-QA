@@ -323,7 +323,7 @@ export const Header: React.FC<HeaderProps> = ({
           className={cn(
             'hidden truncate text-xs text-balance lg:block',
             '[font-family:var(--font-sans)] tracking-[var(--letter-spacing)]',
-            'text-[var(--leve-header-text-muted)]'
+            'text-base-content/72'
           )}
         >
           {resolvedBrandSubtitle}
@@ -380,7 +380,7 @@ export const Header: React.FC<HeaderProps> = ({
       ref={headerRef}
       className={cn(
         'app-header-shell relative sticky top-0 z-[100] !rounded-none',
-        'text-[var(--leve-header-text)]',
+        'text-base-content',
         'transition-[background-color,box-shadow,border-color,color] duration-300 ease-out'
       )}
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
@@ -424,7 +424,7 @@ export const Header: React.FC<HeaderProps> = ({
                 )}
                 aria-hidden
               >
-                <ChevronLeft className="h-5 w-5 text-[var(--leve-header-text-muted)] group-hover:text-[var(--leve-header-text)]" />
+                <ChevronLeft className="h-5 w-5 text-base-content/72 group-hover:text-base-content" />
               </span>
               {logoContent}
             </button>

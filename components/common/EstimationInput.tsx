@@ -51,14 +51,14 @@ export const EstimationInput: React.FC<EstimationInputProps> = ({ task, onSave, 
           <button
             type="button"
             onClick={handleUseSuggestion}
-            className="font-sans text-sm font-bold text-[var(--leve-header-accent)] underline hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)]"
+            className="font-sans text-sm font-bold text-primary underline hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/35"
           >
             Usar Sugestão
           </button>
         </div>
         <div className="relative z-10 flex items-baseline gap-2">
           <span className={cn('text-sm font-medium', leveTaskModalMutedClass)}>Estimativa sugerida:</span>
-          <span className={cn('text-2xl font-bold text-[var(--leve-header-accent)]')}>{suggestion}h</span>
+          <span className={cn('text-2xl font-bold text-primary')}>{suggestion}h</span>
         </div>
         <div className="pointer-events-none absolute -bottom-2 -right-2 opacity-[0.06]" aria-hidden>
           <span className="text-8xl">✨</span>
@@ -104,7 +104,7 @@ export const EstimationInput: React.FC<EstimationInputProps> = ({ task, onSave, 
                 'font-semibold',
                 actualHours <= estimatedHours
                   ? leveTaskModalStrongClass
-                  : 'text-[var(--leve-header-accent)]'
+                  : 'text-primary'
               )}
             >
               {actualHours <= estimatedHours

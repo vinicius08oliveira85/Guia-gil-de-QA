@@ -77,14 +77,14 @@ export const NotificationPreferences: React.FC = () => {
           </p>
         </div>
 
-        <div className="divide-y divide-[color-mix(in_srgb,var(--leve-header-text)_12%,transparent)]">
+        <div className="divide-y divide-base-content/12">
           {notificationTypes.map(type => (
             <div
               key={type.key}
               className="flex items-start justify-between gap-4 py-4 first:pt-0 last:pb-0"
             >
               <div className="flex-1 space-y-1">
-                <h5 className="font-medium text-[var(--leve-header-text)]">{type.label}</h5>
+                <h5 className="font-medium text-base-content">{type.label}</h5>
                 <p className={leveSettingsMutedTextClass}>{type.description}</p>
               </div>
               <label className="relative inline-flex shrink-0 cursor-pointer items-center">

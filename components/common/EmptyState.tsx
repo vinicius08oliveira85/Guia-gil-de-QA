@@ -137,8 +137,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           className={cn(
             'mb-6 max-w-md',
             neuInsetTileClass,
-            'border border-[color-mix(in_srgb,var(--leve-header-accent)_28%,transparent)]',
-            'bg-[color-mix(in_srgb,var(--leve-header-accent)_8%,var(--leve-neu-bg))]'
+            'border border-primary/28',
+            'bg-primary/8'
           )}
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}

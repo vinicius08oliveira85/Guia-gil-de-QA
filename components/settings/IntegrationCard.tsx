@@ -41,7 +41,7 @@ export const IntegrationCard = React.memo<IntegrationCardProps>(
       <div
         className={cn(
           leveSettingsCardClass,
-          'transition-colors hover:border-[color-mix(in_srgb,var(--leve-header-accent)_25%,transparent)]',
+          'transition-colors hover:border-primary/25',
           className
         )}
       >

@@ -41,9 +41,9 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
       onClick={handleCopy}
       className={cn(
         'leve-neu-pill inline-flex items-center gap-2 px-3 py-1 text-sm font-semibold',
-        'text-[var(--leve-header-text-muted)] transition-[box-shadow,color] duration-200',
-        'hover:text-[var(--leve-header-accent)]',
-        'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--leve-header-accent)]',
+        'text-base-content/72 transition-[box-shadow,color] duration-200',
+        'hover:text-primary',
+        'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
         className
       )}
       title={copied ? 'Copiado!' : 'Copiar'}

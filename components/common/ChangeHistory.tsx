@@ -67,8 +67,8 @@ export const ChangeHistory: React.FC<ChangeHistoryProps> = ({ project }) => {
               className={cn(
                 'leve-neu-pill px-3 py-1 text-sm font-semibold transition-[box-shadow,color] duration-200',
                 filter === action
-                  ? 'leve-neu-pill-active text-[var(--leve-header-text)]'
-                  : 'text-[var(--leve-header-text-muted)] hover:text-[var(--leve-header-accent)]'
+                  ? 'leve-neu-pill-active text-base-content'
+                  : 'text-base-content/72 hover:text-primary'
               )}
               aria-pressed={filter === action}
             >

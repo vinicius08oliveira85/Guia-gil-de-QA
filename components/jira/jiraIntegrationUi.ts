@@ -42,12 +42,12 @@ export const jiraIntegrationSelectClass = cn(
 );
 
 export const jiraIntegrationTitleClass =
-  'mb-2 font-sans text-xl font-bold text-[var(--leve-header-text)]';
+  'mb-2 font-sans text-xl font-bold text-base-content';
 
 export const jiraIntegrationSubtitleClass = leveSettingsMutedTextClass;
 
 export const jiraIntegrationLabelClass =
-  'block text-sm font-medium text-[var(--leve-header-text)]';
+  'block text-sm font-medium text-base-content';
 
 export const jiraIntegrationMutedXsClass = leveSettingsMutedTextXsClass;
 
@@ -69,10 +69,10 @@ export const jiraIntegrationDisconnectBtnClass = cn(
 export const jiraIntegrationLinkPillClass = cn(
   'jira-integration-link-pill',
   'inline-flex items-center rounded-full px-2.5 py-1',
-  'font-sans text-xs font-semibold text-[var(--leve-header-accent)]',
+  'font-sans text-xs font-semibold text-primary',
   'transition-[box-shadow,color,transform] duration-150',
   'focus-visible:outline-none focus-visible:ring-2',
-  'focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_28%,transparent)]'
+  'focus-visible:ring-primary/28'
 );
 
 /** Status no cabeçalho — pill elevada (não texto plano sobre fundo). */
@@ -108,7 +108,7 @@ export const jiraIntegrationImportProgressPanelClass = cn(
   'jira-integration-import-progress-panel',
   leveSettingsCardClass,
   'mt-2 p-4 sm:p-5',
-  'border-[color-mix(in_srgb,var(--leve-header-accent)_25%,transparent)]'
+  'border-primary/25'
 );
 
 /** Trilho — `var(--leve-neu-inset-deep)` via CSS (`.settings-view-scope`). */

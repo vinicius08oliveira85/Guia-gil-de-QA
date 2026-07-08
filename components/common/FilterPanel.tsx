@@ -42,10 +42,10 @@ const FilterSection: React.FC<FilterSectionProps> = ({
           <div className="leve-neu-pill p-1.5 transition-[box-shadow] group-hover:shadow-[var(--leve-neu-hover)]">
             {icon}
           </div>
-          <span className="text-sm font-semibold text-[var(--leve-header-text)]">{title}</span>
+          <span className="text-sm font-semibold text-base-content">{title}</span>
         </div>
         <motion.svg
-          className="h-4 w-4 text-[var(--leve-header-text-muted)]"
+          className="h-4 w-4 text-base-content/72"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

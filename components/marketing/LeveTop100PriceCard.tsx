@@ -25,7 +25,7 @@ export function LeveTop100PriceCard({
         <div
           className={cn(
             'project-card-neu-shell leve-neu-surface relative flex h-[468px] flex-col justify-between',
-            'overflow-hidden rounded-[var(--leve-header-radius)] bg-cover bg-center bg-no-repeat',
+            'overflow-hidden rounded-box bg-cover bg-center bg-no-repeat',
             'py-5 pl-6 pr-8 shadow-[var(--leve-neu-raised)]'
           )}
           style={backgroundImageUrl ? { backgroundImage: `url(${backgroundImageUrl})` } : undefined}
@@ -36,7 +36,7 @@ export function LeveTop100PriceCard({
           />
 
           <div className="relative z-[1]">
-            <h3 className="text-2xl text-[var(--leve-header-text)] sm:text-4xl">
+            <h3 className="text-2xl text-base-content sm:text-4xl">
               Leve <strong>Top 100</strong>
             </h3>
             <p className="mt-5 text-lg text-[var(--project-card-text)]">
@@ -44,9 +44,9 @@ export function LeveTop100PriceCard({
             </p>
 
             <div className="pt-5">
-              <p className="font-sans font-semibold text-[var(--leve-header-text)]">
+              <p className="font-sans font-semibold text-base-content">
                 a partir de <br />
-                <span className="text-3xl font-bold text-[var(--leve-header-accent)]">{price}</span>
+                <span className="text-3xl font-bold text-primary">{price}</span>
               </p>
             </div>
 
@@ -55,7 +55,7 @@ export function LeveTop100PriceCard({
                 Saiba mais
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="ml-4 h-4 w-4 fill-[var(--leve-header-text)]"
+                  className="ml-4 h-4 w-4 fill-base-content"
                   viewBox="0 0 12.396 12.396"
                   aria-hidden
                 >

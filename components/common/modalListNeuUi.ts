@@ -15,7 +15,7 @@ export const modalNeuListClass = cn(
 /** Linha clicável elevada (atalhos, busca, histórico). */
 export const modalNeuListRowClass = cn(
   'modal-neu-list-row group w-full text-left',
-  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--leve-header-accent)]',
+  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
   'motion-reduce:transform-none'
 );
 
@@ -33,7 +33,7 @@ export const modalNeuEmptyClass = cn(
 
 /** Campo de busca padrão em modais. */
 export const modalNeuSearchInputClass = cn(
-  'modal-neu-search-input input input-bordered w-full rounded-[var(--leve-header-radius)]'
+  'modal-neu-search-input input input-bordered w-full rounded-box'
 );
 
 /** Badge de tipo compacto em linhas de resultado. */

@@ -28,7 +28,7 @@ const lazyLoadTab = (importFn: () => Promise<any>, name: string) => {
       return {
         default: () => (
           <div className="p-6">
-            <div className="rounded-[var(--leve-header-radius)] border border-[color-mix(in_srgb,#e54b4f_30%,transparent)] bg-[color-mix(in_srgb,#e54b4f_8%,var(--leve-header-bg))] px-4 py-3 font-sans text-sm text-[#e54b4f]">
+            <div className="rounded-box border border-[color-mix(in_srgb,#e54b4f_30%,transparent)] bg-error/8 px-4 py-3 font-sans text-sm text-[#e54b4f]">
               Erro ao carregar {name}. Por favor, recarregue a página.
             </div>
           </div>
@@ -117,7 +117,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <div className="flex flex-col gap-6 max-md:gap-3">
             <div className="flex items-start gap-4 max-md:gap-2">
               <BackButton
-                className="mt-1 shrink-0 self-start text-[var(--leve-header-text-muted)] hover:text-[var(--leve-header-accent)]"
+                className="mt-1 shrink-0 self-start text-base-content/72 hover:text-primary"
                 onClick={handleClose}
                 title="Voltar"
                 aria-label="Voltar"

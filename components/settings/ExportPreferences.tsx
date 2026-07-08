@@ -139,7 +139,7 @@ export const ExportPreferences: React.FC = () => {
                   onChange={e => handleDefaultIncludeChange(option.key, e.target.checked)}
                   className="w-4 h-4 text-primary rounded focus:ring-primary/40"
                 />
-                <span className="text-sm text-[var(--leve-header-text)]">{option.label}</span>
+                <span className="text-sm text-base-content">{option.label}</span>
               </label>
             ))}
           </div>
@@ -170,11 +170,11 @@ export const ExportPreferences: React.FC = () => {
               {preferences.templates.map(template => (
                 <div
                   key={template.id}
-                  className="flex items-center justify-between rounded-lg border border-[color-mix(in_srgb,var(--leve-header-text)_12%,transparent)] bg-[var(--leve-header-bg)] p-3"
+                  className="flex items-center justify-between rounded-lg border border-base-content/12 bg-base-100 p-3"
                 >
                   <div>
                     <p className={leveSettingsStrongTextClass}>{template.name}</p>
-                    <p className="text-xs text-[var(--leve-header-text-muted)]">
+                    <p className="text-xs text-base-content/72">
                       {template.format.toUpperCase()} •{' '}
                       {[
                         template.includeMetrics && 'Métricas',
@@ -200,7 +200,7 @@ export const ExportPreferences: React.FC = () => {
         </div>
 
         {/* Agendamento Automático */}
-        <div className="space-y-4 border-t border-[color-mix(in_srgb,var(--leve-header-text)_12%,transparent)] pt-4">
+        <div className="space-y-4 border-t border-base-content/12 pt-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h5 className={leveSettingsHeadingXsClass}>Agendamento Automático</h5>
@@ -236,7 +236,7 @@ export const ExportPreferences: React.FC = () => {
             <div className={cn(leveSettingsCheckboxPanelClass, 'space-y-4')}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-2 block text-sm text-[var(--leve-header-text-muted)]">Frequência</label>
+                  <label className="mb-2 block text-sm text-base-content/72">Frequência</label>
                   <AppSelect
                     value={preferences.schedule?.frequency || 'daily'}
                     onChange={value =>
@@ -252,7 +252,7 @@ export const ExportPreferences: React.FC = () => {
                   </AppSelect>
                 </div>
                 <div>
-                  <label className="mb-2 block text-sm text-[var(--leve-header-text-muted)]">Horário</label>
+                  <label className="mb-2 block text-sm text-base-content/72">Horário</label>
                   <input
                     type="time"
                     value={preferences.schedule?.time || '09:00'}
@@ -262,7 +262,7 @@ export const ExportPreferences: React.FC = () => {
                 </div>
               </div>
               <div>
-                <label className="mb-2 block text-sm text-[var(--leve-header-text-muted)]">Formato</label>
+                <label className="mb-2 block text-sm text-base-content/72">Formato</label>
                 <div className={cn(leveTaskModalTabsStripClass, 'w-fit max-w-full')}>
                   {(['json', 'csv', 'markdown'] as const).map(format => (
                     <button
@@ -277,7 +277,7 @@ export const ExportPreferences: React.FC = () => {
                 </div>
               </div>
               <div>
-                <label className="mb-2 block text-sm text-[var(--leve-header-text-muted)]">Destino</label>
+                <label className="mb-2 block text-sm text-base-content/72">Destino</label>
                 <div className={cn(leveTaskModalTabsStripClass, 'w-fit max-w-full')}>
                   {(['download', 'local-folder'] as const).map(dest => (
                     <button
@@ -298,7 +298,7 @@ export const ExportPreferences: React.FC = () => {
                   onChange={e => handleScheduleChange({ notifyOnComplete: e.target.checked })}
                   className="w-4 h-4 text-primary rounded focus:ring-primary/40"
                 />
-                <span className="text-sm text-[var(--leve-header-text)]">
+                <span className="text-sm text-base-content">
                   Notificar quando exportação for concluída
                 </span>
               </label>

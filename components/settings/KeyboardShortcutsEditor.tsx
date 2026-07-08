@@ -125,19 +125,19 @@ export const KeyboardShortcutsEditor: React.FC = () => {
         </div>
 
         {conflictError && (
-          <div className="rounded-lg border border-[color-mix(in_srgb,#e54b4f_30%,transparent)] bg-[color-mix(in_srgb,#e54b4f_8%,var(--leve-header-bg))] p-3 text-sm text-[#e54b4f]">
+          <div className="rounded-lg border border-[color-mix(in_srgb,#e54b4f_30%,transparent)] bg-error/8 p-3 text-sm text-[#e54b4f]">
             {conflictError}
           </div>
         )}
 
-        <div className="divide-y divide-[color-mix(in_srgb,var(--leve-header-text)_12%,transparent)]">
+        <div className="divide-y divide-base-content/12">
           {shortcuts.map(shortcut => (
             <div
               key={shortcut.key}
               className="flex flex-col gap-4 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="flex-1 space-y-1">
-                <h5 className="font-medium text-[var(--leve-header-text)]">{shortcut.label}</h5>
+                <h5 className="font-medium text-base-content">{shortcut.label}</h5>
                 <p className={leveSettingsMutedTextClass}>{shortcut.description}</p>
               </div>
               {editingKey === shortcut.key ? (
@@ -164,7 +164,7 @@ export const KeyboardShortcutsEditor: React.FC = () => {
           ))}
         </div>
 
-        <div className="flex gap-3 border-t border-[color-mix(in_srgb,var(--leve-header-text)_12%,transparent)] pt-4">
+        <div className="flex gap-3 border-t border-base-content/12 pt-4">
           <button type="button" onClick={handleReset} className={leveSettingsOutlineBtnClass}>
             Resetar para Padrão
           </button>

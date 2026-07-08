@@ -349,7 +349,7 @@ export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChang
                   ? 'Usada quando não há chaves habilitadas na interface.'
                   : 'Definida no .env, mas não entra no fallback enquanto existir chave na interface.'}
               </p>
-              <p className="font-mono text-xs text-[var(--leve-header-text-muted)]">•••••••• (somente leitura)</p>
+              <p className="font-mono text-xs text-base-content/72">•••••••• (somente leitura)</p>
             </div>
             {envKeyInfo.activeAsFallback && exhaustedById.has(envKeyInfo.id) ? (
               <button
@@ -421,11 +421,11 @@ export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChang
                       <StatusBadge variant={getKeyStatusVariant(entry)}>
                         {getKeyStatusLabel(entry)}
                       </StatusBadge>
-                      <span className="font-sans text-[10px] uppercase tracking-wide text-[var(--leve-header-text-muted)]">
+                      <span className="font-sans text-[10px] uppercase tracking-wide text-base-content/72">
                         Fallback #{index + 1}
                       </span>
                     </div>
-                    <p className="break-all font-mono text-xs text-[var(--leve-header-text-muted)]">
+                    <p className="break-all font-mono text-xs text-base-content/72">
                       {maskGeminiApiKey(entry.apiKey)}
                     </p>
                   </div>
@@ -562,7 +562,7 @@ export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChang
             </span>
           </label>
 
-          <div className="mt-6 flex flex-wrap justify-end gap-2 border-t border-[color-mix(in_srgb,var(--leve-header-text)_12%,transparent)] pt-4">
+          <div className="mt-6 flex flex-wrap justify-end gap-2 border-t border-base-content/12 pt-4">
             <button type="button" onClick={() => setShowModal(false)} className={leveViewOutlineBtnClass}>
               Cancelar
             </button>

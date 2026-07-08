@@ -10,21 +10,17 @@ interface StatusBadgeProps {
 }
 
 const variantStyles: Record<StatusVariant, string> = {
-  connected:
-    'border-[color-mix(in_srgb,#10b981_35%,transparent)] bg-[color-mix(in_srgb,#10b981_10%,var(--leve-header-cream))] text-[#0d7a4f]',
-  disconnected:
-    'border-[var(--leve-header-border)] bg-[var(--leve-header-cream)] text-[var(--leve-header-text-muted)]',
-  configured:
-    'border-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] bg-[color-mix(in_srgb,var(--leve-header-accent)_10%,var(--leve-header-cream))] text-[var(--leve-header-accent)]',
-  warning:
-    'border-[color-mix(in_srgb,var(--leve-header-accent)_30%,transparent)] bg-[color-mix(in_srgb,var(--leve-header-accent)_8%,var(--leve-header-cream))] text-[var(--leve-header-accent)]',
+  connected: 'border-success/35 bg-success/10 text-success',
+  disconnected: 'border-base-300 bg-base-200 text-base-content/72',
+  configured: 'border-primary/35 bg-primary/10 text-primary',
+  warning: 'border-primary/30 bg-primary/8 text-primary',
 };
 
 const dotStyles: Record<StatusVariant, string> = {
-  connected: 'bg-[#10b981]',
-  disconnected: 'bg-[var(--leve-header-text-muted)]',
-  configured: 'bg-[var(--leve-header-accent)]',
-  warning: 'bg-[var(--leve-header-accent)]',
+  connected: 'bg-success',
+  disconnected: 'bg-base-content/72',
+  configured: 'bg-primary',
+  warning: 'bg-primary',
 };
 
 const ariaLabels: Record<StatusVariant, string> = {

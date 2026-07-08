@@ -43,11 +43,11 @@ const LEVEL_BADGE_CLASS: Record<AppLogLevel, string> = {
   error:
     'bg-[color-mix(in_srgb,#e54b4f_18%,transparent)] text-[#e54b4f] border-[color-mix(in_srgb,#e54b4f_35%,transparent)]',
   warn: 'bg-[color-mix(in_srgb,#f5a623_18%,transparent)] text-[#c47d00] border-[color-mix(in_srgb,#f5a623_35%,transparent)]',
-  info: 'bg-[color-mix(in_srgb,var(--leve-header-accent)_12%,transparent)] text-[var(--leve-header-accent)] border-[color-mix(in_srgb,var(--leve-header-accent)_30%,transparent)]',
+  info: 'bg-primary/12 text-primary border-primary/30',
   success:
     'bg-[color-mix(in_srgb,#22c55e_15%,transparent)] text-[#15803d] border-[color-mix(in_srgb,#22c55e_35%,transparent)]',
   debug:
-    'bg-[color-mix(in_srgb,var(--leve-header-text-muted)_12%,transparent)] text-[var(--leve-header-text-muted)] border-[color-mix(in_srgb,var(--leve-header-text-muted)_25%,transparent)]',
+    'bg-base-content/12 text-base-content/72 border-base-content/25',
 };
 
 function formatTimestamp(iso: string): string {
@@ -78,7 +78,7 @@ const LogRow: React.FC<LogRowProps> = ({ entry }) => {
     <article
       className={cn(
         leveSettingsInsetPanelClass,
-        'border border-[color-mix(in_srgb,var(--leve-header-text-muted)_15%,transparent)] p-3'
+        'border border-base-content/15 p-3'
       )}
     >
       <div className="flex flex-wrap items-start gap-2">
@@ -91,17 +91,17 @@ const LogRow: React.FC<LogRowProps> = ({ entry }) => {
           {entry.level}
         </span>
         {entry.context ? (
-          <span className="font-mono text-xs text-[var(--leve-header-text-muted)]">
+          <span className="font-mono text-xs text-base-content/72">
             [{entry.context}]
           </span>
         ) : null}
-        <span className="ml-auto font-sans text-xs text-[var(--leve-header-text-muted)]">
+        <span className="ml-auto font-sans text-xs text-base-content/72">
           {formatTimestamp(entry.timestamp)}
         </span>
       </div>
-      <p className="mt-2 font-sans text-sm text-[var(--leve-header-text)]">{entry.message}</p>
+      <p className="mt-2 font-sans text-sm text-base-content">{entry.message}</p>
       <div className="mt-1 flex flex-wrap items-center gap-2">
-        <span className="font-sans text-[10px] uppercase tracking-wide text-[var(--leve-header-text-muted)]">
+        <span className="font-sans text-[10px] uppercase tracking-wide text-base-content/72">
           origem: {entry.source}
         </span>
         {entry.data !== undefined ? (
@@ -117,7 +117,7 @@ const LogRow: React.FC<LogRowProps> = ({ entry }) => {
         ) : null}
       </div>
       {expanded && entry.data !== undefined ? (
-        <pre className="mt-2 max-h-48 overflow-auto rounded-md bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))] p-2 font-mono text-xs text-[var(--leve-header-text-muted)]">
+        <pre className="mt-2 max-h-48 overflow-auto rounded-md bg-base-300/25 p-2 font-mono text-xs text-base-content/72">
           {formatDataPreview(entry.data)}
         </pre>
       ) : null}

@@ -111,7 +111,7 @@ function JiraNeuSpinner({ size = 'md' }: { size?: 'sm' | 'md' }) {
     size === 'sm' ? jiraIntegrationSpinnerShellSmClass : jiraIntegrationSpinnerShellMdClass;
   return (
     <div className={shellClass} aria-hidden>
-      <Spinner small={size === 'sm'} className="text-[var(--leve-header-accent)]" />
+      <Spinner small={size === 'sm'} className="text-primary" />
     </div>
   );
 }
@@ -646,7 +646,7 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
 
                 <JiraNeuSpinner size="md" />
 
-                <p className="text-sm font-medium text-[var(--leve-header-text-muted)]">
+                <p className="text-sm font-medium text-base-content/72">
 
                   Carregando projetos do Jira...
 
@@ -770,7 +770,7 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
 
                   <div className="mb-3 flex items-center justify-between">
 
-                    <span className="text-sm font-medium text-[var(--leve-header-text)]">
+                    <span className="text-sm font-medium text-base-content">
 
                       Importando tarefas do Jira...
 
@@ -810,7 +810,7 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
 
                     <p>Verifique o console do navegador (F12) para ver o progresso detalhado.</p>
 
-                    <p className="font-medium text-[var(--leve-header-accent)]">
+                    <p className="font-medium text-primary">
 
                       Não feche esta página durante a importação!
 

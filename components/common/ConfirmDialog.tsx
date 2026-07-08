@@ -32,8 +32,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
   const confirmVariantClass = {
     danger: '!bg-[#e54b4f] !shadow-[0_2px_8px_rgba(229,75,79,0.25)] hover:brightness-105',
-    warning:
-      '!bg-[color-mix(in_srgb,#f59e0b_90%,var(--leve-header-accent))] hover:brightness-105',
+    warning: '!bg-[color-mix(in_srgb,#f59e0b_90%,#e65100)] hover:brightness-105',
     info: '',
   } as const;
 

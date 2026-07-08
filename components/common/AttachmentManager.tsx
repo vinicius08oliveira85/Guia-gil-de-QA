@@ -151,7 +151,7 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
               key={attachment.id}
               className={cn(
                 leveTaskModalSectionClass,
-                'flex items-center justify-between p-4 transition-all hover:border-[color-mix(in_srgb,var(--leve-header-accent)_30%,transparent)]'
+                'flex items-center justify-between p-4 transition-all hover:border-primary/30'
               )}
             >
               <div className="flex items-center gap-3 flex-1 min-w-0">
