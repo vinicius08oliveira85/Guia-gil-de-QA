@@ -562,6 +562,20 @@
 }
 
 @layer utilities {
+  /**
+   * DaisyUI v5 expõe as classes utilitárias `rounded-selector`/`rounded-field`, mas este
+   * projeto usa DaisyUI v4, onde elas não existem — ficam inertes e o `border-radius` cai
+   * no padrão do elemento (0 = quadrado). Isso aparecia nos estados ATIVOS de abas/chips
+   * (ex.: aba "Resumo"), pois as regras neu só fixam o raio nos estados idle.
+   * Definimos as utilitárias para que o raio do tema seja sempre aplicado.
+   */
+  .rounded-selector {
+    border-radius: var(--rounded-selector, 2rem);
+  }
+  .rounded-field {
+    border-radius: var(--rounded-field, 1rem);
+  }
+
   /* Scrollbar fina para painéis (ex.: Detalhes do Projeto) */
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
@@ -955,7 +969,7 @@
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal, .settings-neu-modal) .jira-integration-select {
     color: var(--modal-neu-text);
     border: 1px solid var(--modal-neu-border);
-    border-radius: var(--rounded-box, 1rem);
+    border-radius: var(--rounded-btn, 2rem);
     background-color: var(--modal-neu-bg);
     background-image: none !important;
     box-shadow: var(--modal-neu-inset);
@@ -1015,7 +1029,7 @@
   :is(.app-page, .tasks-panel-scope, .projects-dash-page) .neu-select-trigger:not(.tasks-panel-neu-select) {
     color: var(--leve-header-text);
     border: 1px solid color-mix(in srgb, var(--app-neu-light) 30%, transparent);
-    border-radius: var(--rounded-box, 1rem);
+    border-radius: var(--rounded-btn, 2rem);
     background-color: color-mix(in srgb, var(--app-neu-dark) 6%, var(--app-neu-bg));
     box-shadow: var(--app-neu-inset);
   }
@@ -2168,7 +2182,7 @@
   /** AppSelect / NeuSelect na integração Jira e demais abas de settings. */
   .settings-view-scope :is(.neu-select-trigger, .jira-integration-select) {
     border: 1px solid color-mix(in srgb, var(--st-neu-dark) 48%, transparent) !important;
-    border-radius: var(--rounded-box, 1rem) !important;
+    border-radius: var(--rounded-btn, 2rem) !important;
     background-color: color-mix(in srgb, var(--st-neu-dark) 28%, var(--st-neu-bg)) !important;
     background-image: none !important;
     color: var(--st-neu-text) !important;
@@ -4476,7 +4490,7 @@
     font-weight: 500;
     color: var(--leve-header-text);
     border: 1px solid color-mix(in srgb, var(--leve-neu-light) 30%, transparent);
-    border-radius: var(--rounded-box, 1rem);
+    border-radius: var(--rounded-btn, 2rem);
     background: color-mix(in srgb, var(--leve-neu-dark) 6%, var(--leve-neu-bg));
     box-shadow: var(--leve-neu-inset);
     transition:
@@ -4513,7 +4527,7 @@
     font-weight: 500;
     color: var(--leve-header-text);
     border: 1px solid color-mix(in srgb, var(--leve-neu-light) 30%, transparent);
-    border-radius: var(--rounded-box, 1rem);
+    border-radius: var(--rounded-btn, 2rem);
     appearance: none;
     -webkit-appearance: none;
     padding-right: 2.25rem;
@@ -4534,7 +4548,7 @@
     font-weight: 500;
     color: var(--leve-header-text);
     border: 1px solid color-mix(in srgb, var(--leve-neu-light) 30%, transparent);
-    border-radius: var(--rounded-box, 1rem);
+    border-radius: var(--rounded-btn, 2rem);
     background: color-mix(in srgb, var(--leve-neu-dark) 6%, var(--leve-neu-bg));
     box-shadow: var(--leve-neu-inset);
   }
@@ -6674,7 +6688,7 @@
   --project-card-inner-radius: 0.5rem;
   --projects-dash-radius: 1rem;
   --projects-dash-radius-selector: 2rem;
-  --projects-dash-radius-field: 0.5rem;
+  --projects-dash-radius-field: 2rem;
   --leve-neu-bg: oklch(98% 0 0);
   --leve-neu-light: oklch(100% 0 0);
   --leve-neu-dark: oklch(95% 0 0);
@@ -7537,7 +7551,7 @@ main:has(.projects-dashboard-page-surface) {
 
 .app-neu-scope .projects-dash-page[data-theme='leve'] {
   --rounded-box: 1rem;
-  --rounded-btn: 0.5rem;
+  --rounded-btn: 2rem;
   --rounded-badge: 2rem;
   --tab-radius: 2rem;
 }
@@ -7555,7 +7569,7 @@ main:has(.projects-dashboard-page-surface) {
     select,
     textarea
   ) {
-  border-radius: 0.5rem;
+  border-radius: var(--rounded-btn, 2rem);
   border: 1px solid oklch(95% 0 0);
   background-color: oklch(100% 0 0);
   color: #421d3a;
@@ -7577,7 +7591,7 @@ main:has(.projects-dashboard-page-surface) {
 }
 
 .app-neu-scope .projects-dash-page[data-theme='leve'] .btn-primary {
-  border-radius: 0.5rem;
+  border-radius: var(--rounded-btn, 2rem);
   background-color: #e65100;
   border-color: #e65100;
   color: oklch(98% 0 0);
@@ -7603,7 +7617,7 @@ main:has(.projects-dashboard-page-surface) {
 .app-neu-scope .projects-dash-page .projects-dash-empty-shell .btn-primary,
 .app-neu-scope .projects-dash-page .projects-dash-empty-shell .btn.btn-primary {
   min-height: 2.75rem;
-  border-radius: 0.5rem;
+  border-radius: var(--rounded-btn, 2rem);
   background-color: #e65100;
   border-color: #e65100;
   color: oklch(98% 0 0);
@@ -7667,7 +7681,7 @@ main:has(.projects-dashboard-page-surface) {
 
 .app-neu-scope .landing-page-shell[data-theme='leve'] {
   --rounded-box: 1rem;
-  --rounded-btn: 0.5rem;
+  --rounded-btn: 2rem;
   --rounded-badge: 2rem;
   --tab-radius: 2rem;
 }
@@ -7683,7 +7697,7 @@ main:has(.projects-dashboard-page-surface) {
     select,
     textarea
   ) {
-  border-radius: 0.5rem;
+  border-radius: var(--rounded-btn, 2rem);
   border: 1px solid oklch(95% 0 0);
   background-color: oklch(100% 0 0);
   color: #421d3a;
@@ -7705,7 +7719,7 @@ main:has(.projects-dashboard-page-surface) {
 }
 
 .app-neu-scope .landing-page-shell[data-theme='leve'] .btn-primary {
-  border-radius: 0.5rem;
+  border-radius: var(--rounded-btn, 2rem);
   background-color: #e65100;
   border-color: #e65100;
   color: oklch(98% 0 0);
@@ -7731,7 +7745,7 @@ main:has(.projects-dashboard-page-surface) {
   --project-card-radius: 1rem;
   --project-card-inner-radius: 0.5rem;
   --projects-dash-radius-selector: 2rem;
-  --projects-dash-radius-field: 0.5rem;
+  --projects-dash-radius-field: 2rem;
   --leve-header-text: #421d3a;
   --leve-header-text-muted: rgba(66, 29, 58, 0.72);
   --leve-header-accent: #e65100;
@@ -7994,7 +8008,7 @@ main:has(.projects-dashboard-page-surface) {
 
 .app-neu-scope .project-view-page-shell[data-theme='leve'] {
   --rounded-box: 1rem;
-  --rounded-btn: 0.5rem;
+  --rounded-btn: 2rem;
   --rounded-badge: 2rem;
   --tab-radius: 2rem;
 }
@@ -8012,7 +8026,7 @@ main:has(.projects-dashboard-page-surface) {
     select,
     textarea
   ) {
-  border-radius: 0.5rem;
+  border-radius: var(--rounded-btn, 2rem);
   border: 1px solid oklch(95% 0 0);
   background-color: oklch(100% 0 0);
   color: #421d3a;
@@ -8034,7 +8048,7 @@ main:has(.projects-dashboard-page-surface) {
 }
 
 .app-neu-scope .project-view-page-shell[data-theme='leve'] .btn-primary {
-  border-radius: 0.5rem;
+  border-radius: var(--rounded-btn, 2rem);
   background-color: #e65100;
   border-color: #e65100;
   color: oklch(98% 0 0);
