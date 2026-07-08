@@ -1,5 +1,4 @@
 import { cn } from '../../utils/cn';
-import { projectViewPanel } from '../common/viewUi';
 import { notepadViewPanelClass } from './notepadViewNeuUi';
 
 const neuRaised = 'shadow-[var(--workspace-panel-neu-raised)]';
@@ -51,10 +50,14 @@ export const notepadStatusBarClass = cn(
   'bg-base-200/90 px-3 py-1 font-sans text-xs tabular-nums text-base-content/72'
 );
 
-/** Shell compacto da coluna fixa lateral. */
+/**
+ * Shell compacto da coluna fixa lateral.
+ * A moldura arredondada + sombra vivem no `notepadDockAsideClass`; aqui é apenas
+ * o contêiner flexível que preenche a altura, evitando dupla borda/raio (redondo
+ * dentro de quadrado).
+ */
 export const notepadDockShellClass = cn(
-  projectViewPanel,
-  'flex min-h-0 flex-1 flex-col overflow-hidden p-0'
+  'flex min-h-0 flex-1 flex-col overflow-hidden bg-base-100'
 );
 
 /** Cabeçalho da coluna fixa. */
@@ -112,11 +115,15 @@ export const notepadPageTabRenameInputClass = cn(
   'focus-visible:ring-1 focus-visible:ring-primary/35'
 );
 
-/** Container externo da coluna fixa. */
+/**
+ * Container externo da coluna fixa — moldura única arredondada que recorta o
+ * cabeçalho, o editor e a barra de status (cantos consistentes) e ocupa a altura
+ * disponível até quase o fim da viewport. No mobile vira gaveta lateral sem raio.
+ */
 export const notepadDockAsideClass = cn(
-  'non-printable flex min-h-0 shrink-0 flex-col',
+  'non-printable flex min-h-0 shrink-0 flex-col overflow-hidden rounded-box border border-base-300 bg-base-100',
   'md:sticky md:top-[calc(var(--app-header-sticky-offset)+0.5rem)] md:self-start',
-  'md:h-[min(78vh,calc(100dvh-var(--app-header-sticky-offset)-10rem))]',
-  'max-md:fixed max-md:inset-y-0 max-md:right-0 max-md:z-40',
+  'md:h-[calc(100dvh-var(--app-header-sticky-offset)-1.5rem)]',
+  'max-md:fixed max-md:inset-y-0 max-md:right-0 max-md:z-40 max-md:rounded-none max-md:border-0',
   neuRaised
 );
