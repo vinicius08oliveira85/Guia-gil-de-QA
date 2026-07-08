@@ -68,7 +68,7 @@ export const LandingMenuCard = React.memo<LandingMenuCardProps>(
           aria-hidden
         />
 
-        <div className="relative z-[1] flex items-center gap-3.5">
+        <div className="relative z-[1] flex items-center gap-3">
           <div className={projectCardIconWrapClass} aria-hidden>
             <Icon
               className={cn(
@@ -82,8 +82,10 @@ export const LandingMenuCard = React.memo<LandingMenuCardProps>(
             <div className="flex flex-wrap items-center gap-2">
               <h2
                 className={cn(
-                  'font-bold text-[var(--project-card-text)] transition-colors duration-200 group-hover:text-[var(--project-card-accent)]',
-                  isPrimary ? 'text-2xl sm:text-3xl' : 'text-xl sm:text-2xl'
+                  'min-w-0 font-bold leading-tight text-[var(--project-card-text)] transition-colors duration-200 group-hover:text-[var(--project-card-accent)]',
+                  isPrimary
+                    ? 'text-2xl sm:text-3xl'
+                    : 'text-[clamp(1.05rem,0.55rem+1.15vw,1.5rem)]'
                 )}
               >
                 {title}

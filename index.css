@@ -3141,6 +3141,32 @@
     align-items: stretch;
   }
 
+  /**
+   * Cards do bento (Acesso rápido) — skin Neutra do tema `leve`:
+   * fundo semantic `neutral` + texto claro + acentos `neutral-content` (laranja).
+   * Escopo restrito à grade — hero, aside e demais painéis permanecem claros.
+   */
+  .app-neu-scope .landing-bento-grid .landing-menu-card {
+    --project-card-bg: oklch(var(--n));
+    --project-card-bg-hover: color-mix(in oklch, oklch(var(--n)) 90%, white);
+    --project-card-text: oklch(98% 0 0);
+    --project-card-text-muted: color-mix(in oklch, oklch(98% 0 0) 72%, transparent);
+    --project-card-text-subtle: color-mix(in oklch, oklch(98% 0 0) 55%, transparent);
+    --project-card-accent: oklch(var(--nc));
+    --project-card-border: color-mix(in oklch, oklch(98% 0 0) 12%, transparent);
+    --project-card-chip: color-mix(in oklch, oklch(98% 0 0) 8%, transparent);
+    --project-card-neu-light: color-mix(in oklch, white 16%, oklch(var(--n)));
+    --project-card-neu-dark: color-mix(in oklch, black 32%, oklch(var(--n)));
+    --project-card-neu-raised: var(--neu-flat-shadow);
+    --project-card-neu-raised-sm: var(--neu-flat-shadow-sm);
+    --project-card-neu-inset: var(--neu-flat-inset);
+    --project-card-neu-hover:
+      var(--neu-flat-hover),
+      0 0 0 1px color-mix(in oklch, oklch(var(--nc)) 22%, transparent);
+    border: 1px solid color-mix(in oklch, oklch(var(--n)) 72%, white);
+    color: oklch(98% 0 0);
+  }
+
   .app-neu-scope .landing-menu-card {
     transition:
       box-shadow 280ms ease,
@@ -3155,6 +3181,10 @@
   .app-neu-scope .landing-menu-card:active {
     transform: translateY(1px);
     box-shadow: var(--leve-neu-inset) !important;
+  }
+
+  .app-neu-scope .landing-bento-grid .landing-menu-card:active {
+    box-shadow: var(--project-card-neu-inset) !important;
   }
 
   .app-neu-scope .landing-menu-card--primary {
@@ -3205,6 +3235,11 @@
       height: 8.5rem;
       width: 8.5rem;
     }
+  }
+
+  .app-neu-scope .landing-bento-grid .landing-menu-card:hover .landing-menu-card__arrow {
+    box-shadow: var(--project-card-neu-hover);
+    transform: scale(1.05);
   }
 
   .app-neu-scope .landing-menu-card:hover .landing-menu-card__arrow {
