@@ -105,7 +105,7 @@
   .test-report-neu-format-idle
 ) {
   border: 1px solid color-mix(in srgb, var(--td-neu-dark) 42%, transparent) !important;
-  border-radius: var(--leve-header-radius);
+  border-radius: var(--rounded-box, 1rem);
   background: color-mix(in srgb, var(--td-neu-dark) 11%, var(--td-neu-bg)) !important;
   box-shadow: var(--td-neu-raised) !important;
   color: var(--td-neu-text-muted) !important;

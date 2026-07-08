@@ -166,7 +166,7 @@
     --leve-header-accent: #e65100;
     --leve-header-cream: #f5f1e6;
     --leve-header-border: rgba(66, 29, 58, 0.12);
-    --leve-header-radius: 16px;
+    --leve-header-radius: var(--rounded-box, 1rem);
     /** Canvas das abas internas do projeto — alinhado ao tema base (oklch). */
     --project-workspace-bg: oklch(98% 0 0);
     --project-workspace-surface: oklch(100% 0 0);
@@ -955,7 +955,7 @@
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal, .settings-neu-modal) .jira-integration-select {
     color: var(--modal-neu-text);
     border: 1px solid var(--modal-neu-border);
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     background-color: var(--modal-neu-bg);
     background-image: none !important;
     box-shadow: var(--modal-neu-inset);
@@ -1015,7 +1015,7 @@
   :is(.app-page, .tasks-panel-scope, .projects-dash-page) .neu-select-trigger:not(.tasks-panel-neu-select) {
     color: var(--leve-header-text);
     border: 1px solid color-mix(in srgb, var(--app-neu-light) 30%, transparent);
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     background-color: color-mix(in srgb, var(--app-neu-dark) 6%, var(--app-neu-bg));
     box-shadow: var(--app-neu-inset);
   }
@@ -1144,7 +1144,7 @@
   .task-card-shell {
     --task-card-surface-bg: var(--leve-neu-bg);
     border: 1px solid color-mix(in srgb, var(--leve-neu-light) 52%, transparent);
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     background-color: var(--task-card-surface-bg);
     box-shadow: var(--leve-neu-raised);
     font-family: var(--font-sans);
@@ -1465,7 +1465,7 @@
   .documents-view-scope .documents-card,
   .documents-view-scope .app-panel {
     border: 1px solid color-mix(in srgb, var(--doc-neu-dark) 70%, transparent) !important;
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     background: color-mix(in srgb, var(--doc-neu-light) 60%, var(--doc-neu-bg)) !important;
     box-shadow: var(--doc-neu-raised) !important;
     color: var(--doc-neu-text-muted);
@@ -1555,7 +1555,7 @@
 
   .documents-view-scope .dashboard-hero-chrome .dashboard-glass-indicator-card {
     border: 1px solid color-mix(in srgb, var(--workspace-panel-border) 90%, transparent) !important;
-    border-radius: var(--leve-header-radius) !important;
+    border-radius: var(--rounded-box, 1rem) !important;
     background: color-mix(in srgb, var(--workspace-panel-neu-dark) 14%, var(--workspace-panel-bg)) !important;
     box-shadow: var(--workspace-panel-neu-inset) !important;
   }
@@ -1721,7 +1721,7 @@
   :is(.documents-neu-modal.tasks-panel-neu-modal) .documents-neu-inset,
   :is(.documents-neu-modal.tasks-panel-neu-modal) .documents-modal-input {
     border: 1px solid color-mix(in srgb, #fdf6e3 10%, transparent) !important;
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     background: #423b37 !important;
     color: #fdf6e3 !important;
     box-shadow:
@@ -1847,7 +1847,7 @@
     padding: 0.45rem 0.6rem;
     border: 1px solid color-mix(in srgb, var(--br-neu-dark) 50%, transparent);
     border-left: 3px solid color-mix(in srgb, var(--br-neu-accent) 55%, transparent);
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     background: color-mix(in srgb, var(--br-neu-dark) 20%, var(--br-neu-bg));
     font-size: 0.8125rem;
     font-weight: 700;
@@ -1918,7 +1918,7 @@
     padding: 0.5rem 0.7rem;
     border-left: 3px solid color-mix(in srgb, var(--br-neu-accent) 55%, transparent);
     background: color-mix(in srgb, var(--br-neu-dark) 18%, var(--br-neu-bg));
-    border-radius: 0 var(--leve-header-radius) var(--leve-header-radius) 0;
+    border-radius: 0 var(--rounded-box, 1rem) var(--rounded-box, 1rem) 0;
     font-size: 0.75rem;
     color: var(--br-neu-text-muted);
   }
@@ -2080,7 +2080,7 @@
   .settings-view-scope .leve-neu-surface.leve-settings-panel,
   .settings-view-scope .leve-settings-card {
     border: 1px solid color-mix(in srgb, var(--st-neu-dark) 42%, transparent) !important;
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     background: color-mix(in srgb, var(--st-neu-dark) 11%, var(--st-neu-bg)) !important;
     box-shadow: var(--st-neu-raised) !important;
     color: var(--st-neu-text-muted);
@@ -2168,7 +2168,7 @@
   /** AppSelect / NeuSelect na integração Jira e demais abas de settings. */
   .settings-view-scope :is(.neu-select-trigger, .jira-integration-select) {
     border: 1px solid color-mix(in srgb, var(--st-neu-dark) 48%, transparent) !important;
-    border-radius: var(--leve-header-radius) !important;
+    border-radius: var(--rounded-box, 1rem) !important;
     background-color: color-mix(in srgb, var(--st-neu-dark) 28%, var(--st-neu-bg)) !important;
     background-image: none !important;
     color: var(--st-neu-text) !important;
@@ -2336,12 +2336,12 @@
     color: #047857 !important;
   }
 
-  .settings-view-scope a[class*='text-[var(--leve-header-accent)]'],
+  .settings-view-scope a.text-primary,
   .settings-view-scope .leve-settings-link {
     color: var(--st-neu-accent) !important;
   }
 
-  .settings-view-scope a[class*='text-[var(--leve-header-accent)]']:hover,
+  .settings-view-scope a.text-primary:hover,
   .settings-view-scope .leve-settings-link:hover {
     color: color-mix(in srgb, var(--st-neu-accent) 85%, var(--st-neu-text)) !important;
   }
@@ -2415,7 +2415,7 @@
   /** Listas e linhas no corpo dos modais — mesma paleta clara do shell */
   :is(.leve-modal-neu-shell, .task-details-neu-modal) .modal-neu-list {
     padding: 0.375rem;
-    border-radius: calc(var(--leve-header-radius) - 2px);
+    border-radius: calc(var(--rounded-box, 1rem) - 2px);
     border: 1px solid color-mix(in srgb, var(--leve-header-border) 85%, transparent);
     background: color-mix(in srgb, var(--leve-neu-surface) 55%, var(--leve-neu-bg));
     box-shadow: var(--leve-neu-inset-deep);
@@ -2426,7 +2426,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    border-radius: calc(var(--leve-header-radius) - 4px);
+    border-radius: calc(var(--rounded-box, 1rem) - 4px);
     border: 1px solid color-mix(in srgb, var(--leve-header-border) 80%, transparent);
     background: var(--leve-neu-bg);
     padding: 0.75rem;
@@ -2464,7 +2464,7 @@
   }
 
   :is(.leve-modal-neu-shell, .task-details-neu-modal) .modal-neu-tip {
-    border-radius: calc(var(--leve-header-radius) - 4px);
+    border-radius: calc(var(--rounded-box, 1rem) - 4px);
     border: 1px solid color-mix(in srgb, var(--leve-header-accent) 28%, transparent);
     background: color-mix(in srgb, var(--leve-header-accent) 8%, var(--leve-neu-bg));
     padding: 0.75rem;
@@ -2472,7 +2472,7 @@
   }
 
   :is(.leve-modal-neu-shell, .task-details-neu-modal) .modal-neu-empty {
-    border-radius: calc(var(--leve-header-radius) - 4px);
+    border-radius: calc(var(--rounded-box, 1rem) - 4px);
     border: 1px solid color-mix(in srgb, var(--leve-header-border) 70%, transparent);
     background: color-mix(in srgb, var(--leve-neu-surface) 40%, var(--leve-neu-bg));
     box-shadow: var(--leve-neu-inset);
@@ -2506,7 +2506,7 @@
   }
 
   :is(.leve-modal-neu-shell, .task-details-neu-modal) .modal-neu-stat-tile {
-    border-radius: calc(var(--leve-header-radius) - 4px);
+    border-radius: calc(var(--rounded-box, 1rem) - 4px);
     border: 1px solid color-mix(in srgb, var(--leve-header-border) 80%, transparent);
     background: var(--leve-neu-bg);
     padding: 0.75rem 1rem;
@@ -2553,7 +2553,7 @@
     -webkit-overflow-scrolling: touch;
     padding: 0.125rem 0.375rem;
     border: 1px solid color-mix(in srgb, var(--leve-neu-light) 40%, transparent);
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     background: color-mix(in srgb, var(--leve-neu-dark) 5%, var(--task-card-surface-bg, var(--leve-neu-bg)));
     box-shadow: var(--leve-neu-inset);
     color: var(--leve-header-text-muted);
@@ -2571,26 +2571,28 @@
   }
 
   .task-card-title {
-    @apply task-element-typography font-bold text-[var(--leve-header-text)];
+    @apply task-element-typography font-bold text-base-content;
   }
 
   .task-card-muted {
-    @apply task-element-typography text-[var(--leve-header-text-muted)];
+    @apply task-element-typography;
+    color: oklch(var(--bc) / 0.72);
   }
 
   .task-card-field-label {
-    @apply task-element-typography text-[11px] font-semibold uppercase tracking-wide text-[var(--leve-header-text-muted)];
+    @apply task-element-typography text-[11px] font-semibold uppercase tracking-wide;
+    color: oklch(var(--bc) / 0.72);
   }
 
   .task-card-section-title {
-    @apply task-element-typography text-sm font-bold text-[var(--leve-header-text)] sm:text-base;
+    @apply task-element-typography text-sm font-bold text-base-content sm:text-base;
   }
 
   /** Painéis internos em cards expandidos e modais de tarefa. */
   .task-modal-section {
     border: 1px solid color-mix(in srgb, var(--leve-neu-light) 45%, transparent);
     background: var(--leve-neu-bg);
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     box-shadow: var(--leve-neu-raised);
     font-family: var(--font-sans);
     letter-spacing: var(--letter-spacing);
@@ -2606,7 +2608,7 @@
   .task-modal-section-accent {
     border: 2px solid color-mix(in srgb, var(--leve-header-accent) 32%, transparent);
     background: color-mix(in srgb, var(--leve-header-accent) 8%, var(--leve-neu-bg));
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     box-shadow:
       var(--leve-neu-inset),
       0 0 0 1px color-mix(in srgb, var(--leve-header-accent) 10%, transparent);
@@ -4062,7 +4064,7 @@
 
   .app-surface {
     border: 1px solid color-mix(in srgb, var(--leve-neu-light) 50%, transparent);
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     background: var(--leve-neu-bg);
     box-shadow: var(--leve-neu-raised);
   }
@@ -4392,7 +4394,7 @@
 
   .app-toolbar-shell {
     border: 1px solid color-mix(in srgb, var(--leve-neu-light) 45%, transparent);
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     background: var(--leve-neu-bg);
     box-shadow: var(--leve-neu-raised);
   }
@@ -4474,7 +4476,7 @@
     font-weight: 500;
     color: var(--leve-header-text);
     border: 1px solid color-mix(in srgb, var(--leve-neu-light) 30%, transparent);
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     background: color-mix(in srgb, var(--leve-neu-dark) 6%, var(--leve-neu-bg));
     box-shadow: var(--leve-neu-inset);
     transition:
@@ -4511,7 +4513,7 @@
     font-weight: 500;
     color: var(--leve-header-text);
     border: 1px solid color-mix(in srgb, var(--leve-neu-light) 30%, transparent);
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     appearance: none;
     -webkit-appearance: none;
     padding-right: 2.25rem;
@@ -4532,7 +4534,7 @@
     font-weight: 500;
     color: var(--leve-header-text);
     border: 1px solid color-mix(in srgb, var(--leve-neu-light) 30%, transparent);
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     background: color-mix(in srgb, var(--leve-neu-dark) 6%, var(--leve-neu-bg));
     box-shadow: var(--leve-neu-inset);
   }
@@ -4803,7 +4805,7 @@
     font-family: var(--font-sans);
     letter-spacing: var(--letter-spacing);
     font-weight: 600;
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     border: 1px solid color-mix(in srgb, var(--leve-neu-light) 40%, transparent);
     background: var(--leve-neu-surface);
     color: var(--leve-header-text);
@@ -4831,7 +4833,7 @@
     font-family: var(--font-sans);
     letter-spacing: var(--letter-spacing);
     font-weight: 600;
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     border: 1px solid color-mix(in srgb, var(--leve-header-accent) 45%, transparent);
     background: linear-gradient(
       145deg,
@@ -4865,7 +4867,7 @@
   /** Painel de conteúdo (filtros, cards de seção). */
   .app-panel {
     border: 1px solid color-mix(in srgb, var(--leve-neu-light) 50%, transparent);
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     background: var(--leve-neu-bg);
     box-shadow: var(--leve-neu-raised);
     font-family: var(--font-sans);
@@ -5008,7 +5010,7 @@
 
   .mica {
     border: 1px solid color-mix(in srgb, var(--leve-neu-light) 45%, transparent);
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     background: var(--leve-neu-bg);
     box-shadow: var(--leve-neu-raised);
   }
@@ -5016,12 +5018,12 @@
   /** Superfícies Leve reutilizáveis (abas, modais, settings) */
   .leve-neu-surface {
     border: 1px solid color-mix(in srgb, var(--leve-neu-light) 50%, transparent);
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     background: var(--leve-neu-bg);
     box-shadow: var(--leve-neu-raised);
   }
   .leve-neu-surface-inset {
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     background: color-mix(in srgb, var(--leve-neu-dark) 8%, var(--leve-neu-bg));
     box-shadow: var(--leve-neu-inset);
   }
@@ -5132,7 +5134,7 @@
   /** Faixa superior GlassIndicatorCards (Total, Concluídas, Backlog, etc.) */
   .dashboard-glass-indicator-card {
     border: 1px solid color-mix(in srgb, var(--app-neu-light) 48%, transparent);
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     background: var(--app-neu-bg);
     box-shadow: var(--app-neu-raised);
     transition:
@@ -5717,7 +5719,7 @@
 
   .dashboard-hero-chrome .dashboard-glass-indicator-card {
     border: 1px solid color-mix(in srgb, var(--workspace-panel-border) 90%, transparent);
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     background: color-mix(in srgb, var(--workspace-panel-neu-dark) 14%, var(--workspace-panel-bg));
     box-shadow: var(--workspace-panel-neu-inset);
     transition:
@@ -5747,7 +5749,7 @@
 
   .dashboard-hero-chrome .projects-dash-stat-card {
     border: 1px solid color-mix(in srgb, var(--workspace-panel-border) 90%, transparent);
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     background: color-mix(in srgb, var(--workspace-panel-neu-dark) 14%, var(--workspace-panel-bg));
     box-shadow: var(--workspace-panel-neu-inset);
     transition:
@@ -5915,7 +5917,7 @@
   /** DaisyUI dentro do app — alinhamento neumórfico leve */
   .app-page .btn-primary,
   .leve-modal-neu-shell .btn-primary {
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     border: 1px solid color-mix(in srgb, var(--leve-header-accent) 45%, transparent);
     background: linear-gradient(
       145deg,
@@ -5930,7 +5932,7 @@
   .app-page .btn-ghost,
   .leve-modal-neu-shell .btn-outline,
   .leve-modal-neu-shell .btn-ghost {
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
   }
   .app-page .input,
   .app-page .textarea,
@@ -5957,7 +5959,7 @@
 
   .neu-dashed-panel {
     border: 2px dashed color-mix(in srgb, var(--leve-header-accent) 32%, transparent);
-    border-radius: var(--leve-header-radius);
+    border-radius: var(--rounded-box, 1rem);
     background: color-mix(in srgb, var(--leve-neu-dark) 6%, var(--leve-neu-bg));
     box-shadow: var(--leve-neu-inset);
     transition:
@@ -6451,7 +6453,7 @@
     column-gap: 0 !important;
     row-gap: 0.375rem !important;
     padding: 0.5rem 1rem !important;
-    border-radius: var(--leve-header-radius) !important;
+    border-radius: var(--rounded-box, 1rem) !important;
     overflow: hidden;
     box-sizing: border-box;
   }
@@ -7746,7 +7748,7 @@ main:has(.projects-dashboard-page-surface) {
   --leve-neu-dark: oklch(95% 0 0);
   --leve-neu-surface: oklch(100% 0 0);
   --leve-header-cream: oklch(100% 0 0);
-  --leve-header-radius: 1rem;
+  --leve-header-radius: var(--rounded-box, 1rem);
   --app-neu-bg: oklch(98% 0 0);
   --app-neu-surface: oklch(100% 0 0);
   --project-workspace-bg: oklch(98% 0 0);

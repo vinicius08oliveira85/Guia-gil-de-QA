@@ -82,7 +82,7 @@ export function getJiraSlaToneClass(status: JiraSlaDisplayStatus): string {
     case 'onTrack':
       return 'text-success';
     default:
-      return 'text-[var(--leve-header-text-muted)]';
+      return 'text-base-content/72';
   }
 }
 

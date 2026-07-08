@@ -24,7 +24,7 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
           key: 'empty',
           pct: 100,
           className: embedded
-            ? 'bg-[color-mix(in_srgb,var(--workspace-panel-text-muted)_25%,transparent)]'
+            ? 'bg-base-content/25'
             : 'bg-[color-mix(in_srgb,var(--brand-text-muted)_20%,transparent)]',
           label: 'Sem tarefas',
         },
@@ -37,14 +37,14 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
       {
         key: 'todo',
         pct: pTodo,
-        className: embedded ? 'bg-[var(--workspace-panel-accent)]' : 'bg-[var(--brand-cta)]',
+        className: embedded ? 'bg-primary' : 'bg-[var(--brand-cta)]',
         label: 'A fazer',
       },
       {
         key: 'prog',
         pct: pProg,
         className: embedded
-          ? 'bg-[color-mix(in_srgb,var(--workspace-panel-accent)_55%,#fbbf24)]'
+          ? 'bg-[color-mix(in_srgb,oklch(var(--p))_55%,#fbbf24)]'
           : 'bg-warning',
         label: 'Em prog.',
       },
@@ -52,7 +52,7 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
         key: 'done',
         pct: pDone,
         className: embedded
-          ? 'bg-[color-mix(in_srgb,var(--workspace-panel-text)_40%,transparent)]'
+          ? 'bg-[color-mix(in_srgb,oklch(var(--bc))_40%,transparent)]'
           : 'bg-success',
         label: 'Feito',
       },
@@ -63,7 +63,7 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
     <section
       className={cn(
         embedded
-          ? 'flex flex-col border-t border-[color-mix(in_srgb,var(--workspace-panel-neu-highlight-inset)_35%,transparent)] pt-4'
+          ? 'flex flex-col border-t border-base-300/35 pt-4'
           : 'leve-neu-surface flex h-full min-h-0 flex-col p-3 sm:p-3.5',
         className
       )}
@@ -95,24 +95,20 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
       </div>
       <ul
         className={cn(
-          'mt-3 flex flex-wrap gap-x-3 gap-y-1 font-sans text-[11px] sm:text-xs',
-          embedded ? 'text-[var(--workspace-panel-text-muted)]' : 'text-base-content/72'
+          'mt-3 flex flex-wrap gap-x-3 gap-y-1 font-sans text-[11px] text-base-content/72 sm:text-xs'
         )}
       >
         <li>
           <span
             className={cn(
               'mr-1 inline-block h-2 w-2 rounded-full align-middle',
-              embedded ? 'bg-[var(--workspace-panel-accent)]' : 'bg-[var(--brand-cta)]'
+              embedded ? 'bg-primary' : 'bg-[var(--brand-cta)]'
             )}
             aria-hidden
           />
           A fazer:{' '}
           <strong
-            className={cn(
-              'font-semibold',
-              embedded ? 'text-[var(--workspace-panel-text)]' : 'text-base-content'
-            )}
+            className={cn('font-semibold text-base-content')}
           >
             {buckets.todo}
           </strong>
@@ -121,16 +117,13 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
           <span
             className={cn(
               'mr-1 inline-block h-2 w-2 rounded-full align-middle',
-              embedded ? 'bg-[color-mix(in_srgb,var(--workspace-panel-accent)_55%,#fbbf24)]' : 'bg-warning'
+              embedded ? 'bg-[color-mix(in_srgb,oklch(var(--p))_55%,#fbbf24)]' : 'bg-warning'
             )}
             aria-hidden
           />
           Em prog.:{' '}
           <strong
-            className={cn(
-              'font-semibold',
-              embedded ? 'text-[var(--workspace-panel-text)]' : 'text-base-content'
-            )}
+            className={cn('font-semibold text-base-content')}
           >
             {buckets.inProgress}
           </strong>
@@ -140,17 +133,14 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
             className={cn(
               'mr-1 inline-block h-2 w-2 rounded-full align-middle',
               embedded
-                ? 'bg-[color-mix(in_srgb,var(--workspace-panel-text)_40%,transparent)]'
+                ? 'bg-[color-mix(in_srgb,oklch(var(--bc))_40%,transparent)]'
                 : 'bg-success'
             )}
             aria-hidden
           />
           Feito:{' '}
           <strong
-            className={cn(
-              'font-semibold',
-              embedded ? 'text-[var(--workspace-panel-text)]' : 'text-base-content'
-            )}
+            className={cn('font-semibold text-base-content')}
           >
             {buckets.done}
           </strong>

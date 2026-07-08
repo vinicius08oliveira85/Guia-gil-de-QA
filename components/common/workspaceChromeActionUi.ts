@@ -18,13 +18,12 @@ export const appNeuActionTrackWrapClass = cn(
 
 export const appNeuActionDividerClass = cn(
   'app-neu-action-divider my-1.5 w-px shrink-0 self-stretch',
-  'bg-[color-mix(in_srgb,var(--workspace-panel-border)_80%,transparent)]'
+  'bg-base-300/80'
 );
 
 /**
  * Botão elevado no trilho. A cor do texto segue o token da superfície
- * (`--workspace-panel-text*` via `.workspace-chrome-pill`), garantindo contraste
- * tanto em telas claras quanto escuras.
+ * (`.workspace-chrome-pill`), garantindo contraste em telas claras e escuras.
  */
 export const appNeuActionBtnClass = cn(
   'workspace-chrome-pill app-neu-action-btn',
@@ -35,7 +34,7 @@ export const appNeuActionBtnClass = cn(
   'disabled:cursor-not-allowed disabled:opacity-50'
 );
 
-/** Botão ativo / primário (laranja) — texto de contraste via `--workspace-panel-badge-text`. */
+/** Botão ativo / primário (laranja) — texto de contraste via `primary-content`. */
 export const appNeuActionBtnActiveClass = cn(
   'workspace-chrome-pill-active app-neu-action-btn--active',
   'inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5',
@@ -49,7 +48,7 @@ export const appNeuActionBtnActiveClass = cn(
 /** Círculo do ícone com borda e glow laranja. */
 export const appNeuActionIconWrapClass = cn(
   'app-neu-action-icon-wrap dashboard-neu-filter-icon-wrap',
-  'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[var(--workspace-panel-accent)]'
+  'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-primary'
 );
 
 export const appNeuActionIconClass = 'h-3.5 w-3.5 shrink-0';

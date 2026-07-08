@@ -99,20 +99,20 @@ export const projectCardHealthDotClass = (tone: HealthTone) =>
 /** Painéis laterais — neumorfismo via `--workspace-panel-*` (claro ou escuro conforme o escopo). */
 export const workspacePanelShellClass = cn(
   'workspace-panel-neu-shell relative flex flex-col overflow-hidden font-sans',
-  'rounded-[var(--workspace-panel-radius)]'
+  'rounded-box'
 );
 
 /** Faixa rebaixada das métricas no painel lateral. */
 export const workspacePanelMetricTileClass = cn(
   'workspace-panel-neu-metric-tile flex min-h-0 flex-row items-center gap-2.5 p-2.5 sm:gap-3 sm:p-3',
-  'rounded-[var(--workspace-panel-metric-radius)]'
+  'rounded-box'
 );
 
 /** Título de seção — laranja com sublinhado (como no rodapé Leve). */
 export const workspacePanelSectionTitleClass = cn(
   'inline-block font-sans text-[10px] font-extrabold uppercase tracking-wider sm:text-[11px]',
-  'text-[var(--workspace-panel-accent)]',
-  'border-b border-[var(--workspace-panel-accent)] pb-1'
+  'text-primary',
+  'border-b border-primary pb-1'
 );
 
 /** Badge contador (abas, alertas). */
@@ -143,8 +143,8 @@ export const workspaceMetricIconWrapClass = cn(
 
 /** Link/ação estilo “Saiba mais” (laranja + seta). */
 export const workspacePanelLinkClass = cn(
-  'inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-[var(--workspace-panel-accent)]',
-  'border-b border-[var(--workspace-panel-accent)] pb-0.5 transition-opacity hover:opacity-80 sm:text-xs'
+  'inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-primary',
+  'border-b border-primary pb-0.5 transition-opacity hover:opacity-80 sm:text-xs'
 );
 
 /** Seção RecentActivity — shell claro + cards elevados (LandingPage / Jira x Solus). */
@@ -158,7 +158,7 @@ export const recentActivityHeaderDividerClass =
   'mb-4 flex flex-col gap-3 border-b border-base-300 pb-4 sm:mb-5 sm:flex-row sm:items-end sm:justify-between sm:pb-5';
 
 export const recentActivityEyebrowClass = cn(
-  'font-sans text-[10px] font-bold uppercase tracking-widest text-[var(--workspace-panel-text-muted)]'
+  'font-sans text-[10px] font-bold uppercase tracking-widest text-base-content/72'
 );
 
 export const recentActivityTitleClass = cn(
@@ -167,31 +167,31 @@ export const recentActivityTitleClass = cn(
 );
 
 export const recentActivityStatusBadgeClass = cn(
-  'inline-block max-w-full truncate rounded-[var(--workspace-panel-inner-radius)] px-2 py-0.5',
-  'bg-[var(--workspace-panel-badge-bg)] font-sans text-[10px] font-bold uppercase tracking-wide text-[var(--workspace-panel-badge-text)]'
+  'inline-block max-w-full truncate rounded-field px-2 py-0.5',
+  'bg-primary font-sans text-[10px] font-bold uppercase tracking-wide text-primary-content'
 );
 
 export const recentActivityStatusBadgeNeutralClass = cn(
-  'inline-block max-w-full truncate rounded-[var(--workspace-panel-inner-radius)] px-2 py-0.5',
-  'bg-[var(--workspace-panel-badge-neutral-bg)] font-sans text-[10px] font-bold uppercase tracking-wide text-[var(--workspace-panel-badge-neutral-text)]'
+  'inline-block max-w-full truncate rounded-field px-2 py-0.5',
+  'bg-base-300/35 font-sans text-[10px] font-bold uppercase tracking-wide text-base-content'
 );
 
 export const recentActivityItemClass = cn(
   workspaceMetricTileClass,
   'recent-activity-item flex gap-3 transition-[box-shadow] duration-200',
-  'hover:shadow-[var(--workspace-panel-neu-raised)]'
+  'hover:shadow-[var(--leve-neu-raised)]'
 );
 
 export const recentActivityDescriptionClass =
-  'mt-1 line-clamp-2 font-sans text-xs leading-relaxed text-[var(--workspace-panel-text-muted)]';
+  'mt-1 line-clamp-2 font-sans text-xs leading-relaxed text-base-content/72';
 
 export const recentActivityTimeClass =
-  'mt-1.5 block font-sans text-[10px] text-[var(--workspace-panel-text-muted)]';
+  'mt-1.5 block font-sans text-[10px] text-base-content/72';
 
 export const recentActivityIconWrapClass = (type: 'pass' | 'fail' | 'pending' | 'report' | 'warning') =>
   cn(
     'workspace-panel-neu-icon-wrap mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center sm:h-9 sm:w-9',
-    type === 'fail' && '!bg-[#e54b4f] !text-[var(--workspace-panel-badge-text)]'
+    type === 'fail' && '!bg-[#e54b4f] !text-primary-content'
   );
 
 /** Cabeçalho ProjectView — fundo claro, títulos roxo, destaque laranja. */
@@ -213,7 +213,7 @@ export const projectViewHeaderToolbarClass = cn(
 );
 
 export const projectViewHeaderToolbarDividerClass =
-  'mx-0.5 h-5 w-px shrink-0 bg-[color-mix(in_srgb,var(--workspace-panel-neu-light)_35%,transparent)]';
+  'mx-0.5 h-5 w-px shrink-0 bg-base-300/35';
 
 export const projectViewHeaderTabsDividerClass = 'relative mt-2.5 sm:mt-3';
 
@@ -233,13 +233,13 @@ export const projectViewHeaderTabClass = (active: boolean) =>
       );
 
 export const projectViewHeaderScrollFadeFromClass =
-  'pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-8 rounded-l-full bg-gradient-to-r from-[var(--workspace-panel-bg)] to-transparent';
+  'pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-8 rounded-l-full bg-gradient-to-r from-base-100 to-transparent';
 
 export const projectViewHeaderScrollFadeToClass =
-  'pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-8 rounded-r-full bg-gradient-to-l from-[var(--workspace-panel-bg)] to-transparent';
+  'pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-8 rounded-r-full bg-gradient-to-l from-base-100 to-transparent';
 
 export const projectViewHeaderScrollHintClass =
-  'mt-1 text-center font-sans text-[11px] text-[var(--workspace-panel-text-muted)] md:hidden';
+  'mt-1 text-center font-sans text-[11px] text-base-content/72 md:hidden';
 
 export const projectViewHeaderBacklogBtnClass = (active: boolean) =>
   cn(

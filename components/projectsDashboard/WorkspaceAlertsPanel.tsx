@@ -62,12 +62,12 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
   /** Contador na aba ativa (laranja): creme + texto escuro para contraste legível. */
   const tabCountBadgeClass = cn(
     workspacePanelCountBadgeClass,
-    'bg-[var(--workspace-panel-text)] text-[var(--workspace-panel-bg)]'
+    'bg-base-content text-base-100'
   );
 
   const projectChipClass = () =>
     cn(
-      'workspace-panel-neu-chip w-full truncate border-0 px-2 py-1.5 text-left font-sans text-xs font-medium text-[var(--workspace-panel-text)] sm:px-2.5 sm:text-sm'
+      'workspace-panel-neu-chip w-full truncate border-0 px-2 py-1.5 text-left font-sans text-xs font-medium text-base-content sm:px-2.5 sm:text-sm'
     );
 
   return (
@@ -123,7 +123,7 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
           hidden={tab !== 'health'}
           className={cn('flex min-h-0 flex-1 flex-col overflow-hidden', tab !== 'health' && 'hidden')}
         >
-          <p className="mb-2 shrink-0 font-sans text-[11px] leading-relaxed text-[var(--workspace-panel-text-muted)] sm:text-xs">
+          <p className="mb-2 shrink-0 font-sans text-[11px] leading-relaxed text-base-content/72 sm:text-xs">
             Critério: 2 ou mais bugs abertos, ou taxa de sucesso dos testes abaixo de 70% com casos já
             executados.
           </p>
@@ -144,7 +144,7 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
               </li>
             ))}
           </ul>
-          <div className="mt-3 shrink-0 border-t border-[var(--workspace-panel-divider)] pt-3">
+          <div className="mt-3 shrink-0 border-t border-base-300/55 pt-3">
             <button
               type="button"
               onClick={onToggleListFilterNeedsAttention}
@@ -172,10 +172,10 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
             >
               <AlertOctagon className="h-4 w-4" strokeWidth={1.75} />
             </div>
-            <p className="font-sans text-[11px] leading-relaxed text-[var(--workspace-panel-text-muted)] sm:text-xs">
+            <p className="font-sans text-[11px] leading-relaxed text-base-content/72 sm:text-xs">
               Projetos com ao menos um caso de teste em status{' '}
-              <strong className="font-semibold text-[var(--workspace-panel-text)]">Falhou</strong> ou{' '}
-              <strong className="font-semibold text-[var(--workspace-panel-text)]">Bloqueado</strong>.
+              <strong className="font-semibold text-base-content">Falhou</strong> ou{' '}
+              <strong className="font-semibold text-base-content">Bloqueado</strong>.
             </p>
           </div>
           <ul

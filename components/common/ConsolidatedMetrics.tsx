@@ -51,7 +51,7 @@ export const ConsolidatedMetrics = React.memo<ConsolidatedMetricsProps>(
       );
 
     const labelCls = embedded
-      ? 'font-sans text-[10px] font-bold uppercase tracking-wide text-[var(--workspace-panel-text-muted)]'
+      ? 'font-sans text-[10px] font-bold uppercase tracking-wide text-base-content/72'
       : 'text-[10px] font-bold uppercase tracking-wide text-base-content/70';
 
     return (
@@ -60,7 +60,7 @@ export const ConsolidatedMetrics = React.memo<ConsolidatedMetricsProps>(
           <BarChart3
             className={cn(
               'shrink-0',
-              embedded ? 'h-4 w-4 text-[var(--workspace-panel-accent)]' : 'h-5 w-5 text-primary'
+              embedded ? 'h-4 w-4 text-primary' : 'h-5 w-5 text-primary'
             )}
             strokeWidth={embedded ? 1.75 : 2}
             aria-hidden

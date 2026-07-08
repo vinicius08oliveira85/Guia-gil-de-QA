@@ -544,7 +544,7 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
             'rounded-box p-3 sm:p-4'
           )}
         >
-          <div className="mb-3 flex min-w-0 flex-col gap-1 border-b border-[color-mix(in_srgb,var(--workspace-panel-divider)_80%,transparent)] pb-3">
+          <div className="mb-3 flex min-w-0 flex-col gap-1 border-b border-base-300/55 pb-3">
             <span className={taskDetailsModalHeaderSectionClass} title={activeSectionLabel}>
               {activeSectionLabel}
             </span>

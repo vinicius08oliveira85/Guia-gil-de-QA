@@ -26,7 +26,7 @@ export const viewHeroHeaderShellClass = cn(
 );
 
 export const viewHeroTitleClass = cn(
-  'font-sans text-2xl font-bold tracking-tight text-[var(--workspace-panel-text)] sm:text-[1.65rem]',
+  'font-sans text-2xl font-bold tracking-tight text-base-content sm:text-[1.65rem]',
   'max-md:text-xl'
 );
 
@@ -36,16 +36,16 @@ export const viewHeroJiraBadgeClass = cn(
 );
 
 export const viewHeroSubtitleClass = cn(
-  'max-w-2xl font-sans text-sm leading-relaxed text-[var(--workspace-panel-text-muted)]',
+  'max-w-2xl font-sans text-sm leading-relaxed text-base-content/72',
   'max-md:text-xs max-md:leading-snug'
 );
 
-export const viewHeroMutedClass = 'font-sans text-[var(--workspace-panel-text-muted)]';
+export const viewHeroMutedClass = 'font-sans text-base-content/72';
 
 export const viewHeroFilterChipClass = cn(
   'workspace-chrome-pill inline-flex items-center gap-1 rounded-full pl-2.5 pr-1 py-1 font-sans text-xs',
-  'text-[var(--workspace-panel-text)]',
-  '[&_button]:text-[var(--workspace-panel-accent)] [&_button:hover]:text-[var(--workspace-panel-text)]'
+  'text-base-content',
+  '[&_button]:text-primary [&_button:hover]:text-base-content'
 );
 
 export const viewHeroToolbarClass = cn(
@@ -54,7 +54,7 @@ export const viewHeroToolbarClass = cn(
 );
 
 export const viewHeroToolbarDividerClass =
-  'my-1.5 w-px shrink-0 self-stretch bg-[var(--workspace-panel-divider)]';
+  'my-1.5 w-px shrink-0 self-stretch bg-base-300/55';
 
 export const viewHeroToolbarBtnClass = cn(
   'dashboard-neu-filter-btn',
