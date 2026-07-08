@@ -222,7 +222,10 @@ export const getJiraStatusLozengeStyles = (
   const indicator = statusColor ? normalizeHexColor(statusColor) : FALLBACK_COLOR;
   return {
     indicatorColor: indicator,
-    backgroundColor: `color-mix(in srgb, ${indicator} 16%, oklch(var(--b2)))`,
+    // Fallback `98% 0 0` (base-200 claro) garante que, mesmo se `--b2` não existir
+    // no escopo (ex.: dropdowns em portal para document.body), o `color-mix` continue
+    // válido em produção — evita o badge perder a cor de fundo.
+    backgroundColor: `color-mix(in srgb, ${indicator} 16%, oklch(var(--b2, 98% 0 0)))`,
     // Texto na cor da categoria do Jira (escurecida p/ contraste), em vez de um tom fixo.
     color: `color-mix(in srgb, ${indicator} 78%, #1c1c1c)`,
   };

@@ -10,6 +10,8 @@ export interface JiraFilasSearchableMultiSelectOption {
   label: string;
   searchText?: string;
   disabled?: boolean;
+  /** Cor (hex) do status Jira — exibida como indicador ao lado do rótulo. */
+  color?: string;
 }
 
 export interface JiraFilasSearchableMultiSelectProps {
@@ -234,6 +236,13 @@ export const JiraFilasSearchableMultiSelect: React.FC<JiraFilasSearchableMultiSe
                     tabIndex={-1}
                     aria-hidden
                   />
+                  {opt.color ? (
+                    <span
+                      className="h-2.5 w-2.5 shrink-0 rounded-[3px]"
+                      style={{ backgroundColor: opt.color }}
+                      aria-hidden
+                    />
+                  ) : null}
                   <span className="min-w-0 flex-1 truncate text-left" title={opt.label}>
                     {opt.label}
                   </span>

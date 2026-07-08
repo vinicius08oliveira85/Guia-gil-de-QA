@@ -8,6 +8,7 @@ import {
   getJiraQueueCategories,
   getJiraQueueStatusLabels,
 } from '../../utils/jiraQueueTree';
+import { getJiraStatusColor } from '../../utils/jiraStatusColors';
 import { JiraFilasSearchableMultiSelect } from './JiraFilasSearchableMultiSelect';
 import { jiraSolusFieldClass, jiraSolusFieldLabelClass, jiraSolusSelectClass } from './jiraSolusNeuUi';
 
@@ -79,6 +80,7 @@ export const JiraFilasImportSelector: React.FC<JiraFilasImportSelectorProps> = (
       getJiraQueueStatusLabels(queues, selectedQueueCategories).map(status => ({
         value: status,
         label: status,
+        color: getJiraStatusColor(status),
       })),
     [queues, selectedQueueCategories]
   );
