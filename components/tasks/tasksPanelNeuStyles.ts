@@ -31,7 +31,7 @@ export const tasksPanelCardClass = cn(
 );
 
 export const tasksPanelSectionDividerClass = cn(
-  'mt-4 border-t border-[var(--workspace-panel-divider)] pt-3',
+  'mt-4 border-t border-base-300 pt-3',
   'max-md:mt-2 max-md:pt-2'
 );
 
@@ -79,12 +79,12 @@ export const tasksViewHeaderFilterCountClass = cn(
 );
 
 export const tasksViewHeaderProgressTrackClass = cn(
-  'h-1 w-full overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_55%,var(--workspace-panel-bg))]',
+  'h-1 w-full overflow-hidden rounded-full bg-base-300/55',
   'shadow-[inset_2px_2px_4px_var(--workspace-panel-neu-dark)]'
 );
 
 export const tasksViewHeaderProgressFillClass =
-  'h-1 rounded-full bg-[var(--workspace-panel-accent)] transition-all duration-500';
+  'h-1 rounded-full bg-primary transition-all duration-500';
 
 /* ── Abas Todas / Backlog ────────────────────────────────────── */
 
@@ -419,14 +419,14 @@ export const projectChromeToolbarClass = cn(
 );
 
 export const projectChromeToolbarDividerClass = cn(
-  'mx-0.5 h-5 w-px shrink-0 bg-[var(--workspace-panel-divider)]',
+  'mx-0.5 h-5 w-px shrink-0 bg-base-300',
   'max-md:mx-0 max-md:h-4'
 );
 
-export const projectChromeToolbarStatusClass = 'text-[var(--workspace-panel-text-muted)]';
+export const projectChromeToolbarStatusClass = 'text-base-content/72';
 
 export const projectChromeTabsDividerClass = cn(
-  'project-chrome-tabs-divider relative mt-2.5 border-t border-[var(--workspace-panel-divider)] pt-2.5 sm:mt-3 sm:pt-3',
+  'project-chrome-tabs-divider relative mt-2.5 border-t border-base-300 pt-2.5 sm:mt-3 sm:pt-3',
   'max-md:mt-0.5 max-md:border-t-0 max-md:pt-0.5'
 );
 
@@ -467,22 +467,22 @@ export const projectChromeTaskTabIdleClass = cn(
 );
 
 export const projectChromeTaskTabDividerClass =
-  'mx-1 h-6 w-px shrink-0 self-center bg-[var(--workspace-panel-divider)] max-md:mx-0.5';
+  'mx-1 h-6 w-px shrink-0 self-center bg-base-300 max-md:mx-0.5';
 
 export const projectChromeTaskTabCloseBtnClass = cn(
   'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full',
-  'text-[var(--workspace-panel-text-muted)] hover:bg-[color-mix(in_srgb,var(--workspace-panel-text)_8%,transparent)]',
+  'text-base-content/72 hover:bg-base-content/8',
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40'
 );
 
 export const projectChromeScrollFadeFromClass =
-  'pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-8 rounded-l-full bg-gradient-to-r from-[var(--workspace-panel-bg)] to-transparent max-md:hidden';
+  'pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-8 rounded-l-full bg-gradient-to-r from-base-100 to-transparent max-md:hidden';
 
 export const projectChromeScrollFadeToClass =
-  'pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-8 rounded-r-full bg-gradient-to-l from-[var(--workspace-panel-bg)] to-transparent max-md:hidden';
+  'pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-8 rounded-r-full bg-gradient-to-l from-base-100 to-transparent max-md:hidden';
 
 export const projectChromeScrollHintClass = cn(
-  'project-chrome-scroll-hint mt-1 text-center font-sans text-[11px] text-[var(--workspace-panel-text-muted)] md:hidden',
+  'project-chrome-scroll-hint mt-1 text-center font-sans text-[11px] text-base-content/72 md:hidden',
   'max-md:hidden'
 );
 

@@ -597,7 +597,7 @@ export const ProjectView: React.FC<{
                   className={cn(
                     projectChromeSyncBtnClass,
                     isNotepadDockOpen &&
-                      'bg-[color-mix(in_srgb,var(--workspace-panel-accent)_14%,transparent)] text-[var(--workspace-panel-accent)]'
+                      'bg-primary/14 text-primary'
                   )}
                   aria-label={
                     isNotepadDockOpen
@@ -639,26 +639,26 @@ export const ProjectView: React.FC<{
               activeTab !== 'notepad' &&
               activeTab !== 'businessRules' && (
             <div className="flex min-w-0 flex-nowrap items-center gap-x-2 overflow-hidden">
-              <span className="inline-flex shrink-0 items-center rounded-[var(--project-dashboard-insight-inner-radius)] bg-[var(--leve-header-cream)] px-2 py-0.5 font-sans text-[10px] font-bold leading-none text-[var(--leve-header-accent)]">
+              <span className="inline-flex shrink-0 items-center rounded-[var(--project-dashboard-insight-inner-radius)] bg-base-200 px-2 py-0.5 font-sans text-[10px] font-bold leading-none text-primary">
                 {currentProject.settings?.jiraProjectKey
                   ? `Jira: ${currentProject.settings.jiraProjectKey}`
                   : 'Projeto'}
               </span>
               <h1
                 id="project-view-title"
-                className="min-w-0 max-w-[55%] flex-1 basis-0 truncate font-sans text-xl font-bold leading-tight tracking-tight text-[var(--leve-header-text)] sm:max-w-none sm:text-2xl"
+                className="min-w-0 max-w-[55%] flex-1 basis-0 truncate font-sans text-xl font-bold leading-tight tracking-tight text-base-content sm:max-w-none sm:text-2xl"
                 title={currentProject.name}
               >
                 {currentProject.name}
               </h1>
               <span
-                className="hidden shrink-0 text-[var(--leve-header-text-muted)] sm:inline"
+                className="hidden shrink-0 text-base-content/72 sm:inline"
                 aria-hidden="true"
               >
                 ·
               </span>
               <span
-                className="min-w-0 flex-1 basis-0 truncate text-left font-sans text-xs leading-tight text-[var(--leve-header-text-muted)] sm:text-sm"
+                className="min-w-0 flex-1 basis-0 truncate text-left font-sans text-xs leading-tight text-base-content/72 sm:text-sm"
                 title={
                   currentProject.description?.trim() ? currentProject.description : 'Sem descrição.'
                 }

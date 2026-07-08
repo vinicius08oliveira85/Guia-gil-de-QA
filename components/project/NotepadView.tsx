@@ -64,7 +64,7 @@ const NotepadMenu: React.FC<NotepadMenuProps> = ({
         type="button"
         className={cn(
           notepadMenuTriggerClass,
-          isOpen && 'bg-[color-mix(in_srgb,var(--workspace-panel-accent)_14%,transparent)]'
+          isOpen && 'bg-primary/14'
         )}
         aria-haspopup="menu"
         aria-expanded={isOpen}
@@ -298,7 +298,7 @@ export const NotepadView: React.FC<{
             }}
           >
             Nova aba
-            <span className="ml-auto pl-4 text-xs text-[var(--workspace-panel-text-muted)]">Ctrl+T</span>
+            <span className="ml-auto pl-4 text-xs text-base-content/72">Ctrl+T</span>
           </button>
           <button
             type="button"
@@ -342,7 +342,7 @@ export const NotepadView: React.FC<{
             }}
           >
             Localizar…
-            <span className="ml-auto pl-4 text-xs text-[var(--workspace-panel-text-muted)]">Ctrl+F</span>
+            <span className="ml-auto pl-4 text-xs text-base-content/72">Ctrl+F</span>
           </button>
           <button
             type="button"
@@ -481,7 +481,7 @@ export const NotepadView: React.FC<{
           </div>
         }
       >
-        <label className="block font-sans text-sm text-[var(--workspace-panel-text)]">
+        <label className="block font-sans text-sm text-base-content">
           Localizar o quê:
           <input
             type="text"

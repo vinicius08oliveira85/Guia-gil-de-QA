@@ -77,7 +77,7 @@ export const NotepadDockPanel: React.FC<NotepadDockPanelProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="rounded p-1 text-[var(--workspace-panel-text-muted)] hover:bg-[color-mix(in_srgb,var(--workspace-panel-accent)_10%,transparent)] hover:text-[var(--workspace-panel-text)]"
+              className="rounded p-1 text-base-content/72 hover:bg-primary/10 hover:text-base-content"
               aria-label="Fechar coluna fixa do bloco de notas"
               title="Fechar coluna"
             >
