@@ -9,6 +9,7 @@ import {
   projectTabPanelDividerClass,
   projectTabSectionDescClass,
   projectTabSectionHeaderClass,
+  projectTabSectionHeaderFollowClass,
   projectTabSectionLabelClass,
 } from '../common/projectTabNeuUi';
 
@@ -25,6 +26,7 @@ export const documentsViewHeroChromeClass = projectTabHeroChromeClass;
 export const documentsViewSectionLabelClass = projectTabSectionLabelClass;
 export const documentsViewSectionDescClass = projectTabSectionDescClass;
 export const documentsViewSectionHeaderClass = projectTabSectionHeaderClass;
+export const documentsViewSectionHeaderFollowClass = projectTabSectionHeaderFollowClass;
 export const documentsViewPanelClass = projectTabPanelClass;
 export const documentsViewListPanelClass = projectTabListPanelClass;
 export const documentsViewPanelDividerClass = projectTabPanelDividerClass;

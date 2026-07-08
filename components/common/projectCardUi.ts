@@ -818,12 +818,12 @@ export const leveTaskModalIconBtnClass = cn(
 
 /** Faixa WorkspaceDaisyStats — fundo claro, valores em laranja Leve. */
 export const workspaceDaisyStatCardClass = cn(
-  'projects-dash-stat-card flex min-h-[4rem] flex-col items-center justify-center gap-1.5 font-sans text-center',
-  'px-3 py-3 sm:min-h-[4.25rem] sm:px-4 sm:py-3.5'
+  'projects-dash-stat-card flex h-full min-h-[5.25rem] flex-col items-stretch justify-between gap-2 font-sans text-left',
+  'px-3 py-3 sm:min-h-[5.5rem] sm:px-4 sm:py-3.5'
 );
 
 export const workspaceDaisyStatLabelClass = cn(
-  'font-sans text-[9px] font-extrabold uppercase tracking-wider text-[var(--workspace-stat-text)] sm:text-[10px]'
+  'min-w-0 truncate font-sans text-[9px] font-extrabold uppercase tracking-wider text-[var(--workspace-stat-text)] sm:text-[10px]'
 );
 
 export const workspaceDaisyStatValueClass = cn(

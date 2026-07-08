@@ -67,7 +67,8 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
 
   const projectChipClass = () =>
     cn(
-      'workspace-panel-neu-chip w-full truncate border-0 px-2 py-1.5 text-left font-sans text-xs font-medium text-base-content sm:px-2.5 sm:text-sm'
+      'workspace-panel-neu-chip w-full border-0 px-2 py-1.5 text-left font-sans text-xs font-medium leading-snug text-base-content',
+      'whitespace-normal break-words line-clamp-2 sm:px-2.5 sm:text-sm'
     );
 
   return (
@@ -128,7 +129,7 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
             executados.
           </p>
           <ul
-            className="m-0 grid min-h-0 flex-1 list-none grid-cols-2 gap-1.5 overflow-y-auto overscroll-contain p-0 [scrollbar-gutter:stable] sm:grid-cols-2 sm:gap-2"
+            className="m-0 grid min-h-0 flex-1 list-none grid-cols-1 gap-1.5 overflow-y-auto overscroll-contain p-0 [scrollbar-gutter:stable] sm:gap-2"
             aria-label="Projetos com alerta de saúde"
           >
             {healthProjects.map(p => (
@@ -183,11 +184,12 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
             aria-label="Projetos com falha ou bloqueio em testes"
           >
             {testExecutionAlertProjects.map(p => (
-              <li key={p.id}>
+              <li key={p.id} className="min-w-0 max-w-full">
                 <button
                   type="button"
                   onClick={() => onSelectProject(p.id)}
-                  className={cn(projectChipClass(), 'min-h-[40px] px-3 py-2 sm:min-h-0')}
+                  className={cn(projectChipClass(), 'min-h-[2.5rem] px-3 py-2 sm:min-h-0')}
+                  title={p.name}
                 >
                   {p.name}
                 </button>

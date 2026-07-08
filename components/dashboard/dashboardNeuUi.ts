@@ -1,6 +1,6 @@
 import { cn } from '../../utils/cn';
 import { workspaceSurfaceLightClass } from '../common/appPageNeuUi';
-import { projectTabContentClass, projectTabPageShellClass } from '../common/projectTabNeuUi';
+import { projectTabContentClass, projectTabPageShellClass, projectTabSectionHeaderClass } from '../common/projectTabNeuUi';
 import {
   viewHeroFilterChipClass,
   viewHeroMobileActionBtnClass,
@@ -42,9 +42,7 @@ export const dashboardMainStackClass = cn(
 );
 
 /** Cabeçalho da seção «Qualidade e execução». */
-export const dashboardInsightsSectionHeaderClass = cn(
-  'flex flex-col gap-0.5 border-b border-base-300 pb-3 sm:pb-3.5'
-);
+export const dashboardInsightsSectionHeaderClass = projectTabSectionHeaderClass;
 
 /** Shell externo do hero (gradiente + painel elevado). */
 export const dashboardHeroShellClass = 'dashboard-project-hero-shell w-full';

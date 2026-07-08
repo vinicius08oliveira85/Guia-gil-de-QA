@@ -49,8 +49,28 @@ export const projectTabSectionDescClass = cn(
   'text-[color-mix(in_srgb,var(--brand-text-strong)_78%,transparent)]'
 );
 
+export const projectTabSectionHeaderBaseClass = cn(
+  'project-tab-section-header flex min-w-0 flex-col gap-1 sm:gap-1.5',
+  'border-b border-base-300/55 pb-3 sm:pb-3.5'
+);
+
+/** Cabeçalho entre painéis — alinhado ao recuo interno dos cards (`project-tab-panel`). */
 export const projectTabSectionHeaderClass = cn(
-  'flex flex-col gap-0.5 border-b border-base-300 pb-3'
+  projectTabSectionHeaderBaseClass,
+  'px-3 sm:px-4 max-md:px-2',
+  'mb-3 sm:mb-4 max-md:mb-2'
+);
+
+/** Mesmo cabeçalho após um painel (espaço superior extra). */
+export const projectTabSectionHeaderFollowClass = cn(
+  projectTabSectionHeaderClass,
+  'mt-3 sm:mt-4 max-md:mt-2'
+);
+
+/** Cabeçalho dentro de um painel que já possui padding. */
+export const projectTabInlineSectionHeaderClass = cn(
+  projectTabSectionHeaderBaseClass,
+  'mb-2 sm:mb-3'
 );
 
 export const projectTabPanelClass = cn(

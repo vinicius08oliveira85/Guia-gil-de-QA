@@ -105,7 +105,15 @@ export const landingNeuOrbCtaClass = projectCardOrbCtaClass;
 export const landingNeuOrbHighlightClass = projectCardOrbHighlightClass;
 
 export const landingNeuSectionHeaderClass = cn(
-  'flex items-end justify-between gap-2 border-b border-base-300 pb-3'
+  'landing-neu-section-header flex items-end justify-between gap-2',
+  'border-b border-base-300/55 pb-3 sm:pb-3.5'
+);
+
+/** Cabeçalho vertical (título + descrição) — alinhado aos cards do bento. */
+export const landingNeuSectionHeaderStackClass = cn(
+  'landing-neu-section-header-stack flex min-w-0 flex-col gap-1 sm:gap-1.5',
+  'border-b border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pb-3 sm:pb-3.5',
+  '[&_p]:mt-0'
 );
 
 export const landingNeuSectionLabelClass = 'landing-neu-section-label';

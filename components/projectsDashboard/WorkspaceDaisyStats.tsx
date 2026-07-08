@@ -50,16 +50,14 @@ export const WorkspaceDaisyStats: React.FC<WorkspaceDaisyStatsProps> = ({
         aria-hidden
       />
     );
-    backupValueClass =
-      'font-sans text-xl font-extrabold tabular-nums leading-none text-[var(--workspace-stat-text)] opacity-50 sm:text-2xl';
+    backupValueClass = cn(workspaceDaisyStatValueClass, 'opacity-50');
   } else if (localBackupStatus === 'pending') {
     backupValue = 'Pendente';
     backupTitle = 'Backup local pendente ou com erro. Clique para abrir Configurações.';
     backupIcon = (
       <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-warning sm:h-4 sm:w-4" strokeWidth={1.75} aria-hidden />
     );
-    backupValueClass =
-      'font-sans text-lg font-extrabold tabular-nums leading-none text-warning sm:text-xl';
+    backupValueClass = cn(workspaceDaisyStatValueClass, 'text-base sm:text-lg');
   } else {
     backupValue = 'OK';
     backupTitle = 'Backup local configurado. Clique para gerenciar em Configurações.';
@@ -80,7 +78,7 @@ export const WorkspaceDaisyStats: React.FC<WorkspaceDaisyStatsProps> = ({
     {
       key: 'success' as const,
       icon: <CircleCheck className={iconClass} strokeWidth={1.75} aria-hidden />,
-      label: 'Sucesso testes',
+      label: 'Sucesso',
       value: formatWorkspaceStatPercent(testSuccessPercent),
       valueClass: workspaceDaisyStatValueClass,
       title: 'Taxa de sucesso dos casos de teste executados no workspace',
@@ -122,20 +120,21 @@ export const WorkspaceDaisyStats: React.FC<WorkspaceDaisyStatsProps> = ({
         const clickable = Boolean(onStatClick);
         const content = (
           <>
-            <div className="flex w-full items-center gap-2">
+            <div className="flex w-full min-w-0 items-center gap-2">
               <span className={projectsDashboardStatIconPlateClass} aria-hidden>
                 {item.icon}
               </span>
-              <span className={cn(workspaceDaisyStatLabelClass, 'text-left')}>{item.label}</span>
+              <span className={workspaceDaisyStatLabelClass}>{item.label}</span>
             </div>
-            <div className="mt-auto flex w-full items-end justify-between gap-2 pt-1">
-              <span className={item.valueClass}>{item.value}</span>
+            <div className="flex w-full min-w-0 items-center justify-between gap-2">
+              <span className={cn(item.valueClass, 'min-w-0 truncate')}>{item.value}</span>
               {item.progress !== undefined ? (
                 <RadialProgress
                   value={item.progress}
                   size={36}
                   strokeWidth={4}
                   ariaLabel={item.progressLabel}
+                  className="shrink-0"
                 />
               ) : null}
             </div>

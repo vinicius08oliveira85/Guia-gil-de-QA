@@ -41,6 +41,7 @@ import {
   businessRulesViewPanelClass,
   businessRulesViewSectionDescClass,
   businessRulesViewSectionHeaderClass,
+  businessRulesViewSectionHeaderFollowClass,
   businessRulesViewSectionLabelClass,
 } from './businessRulesViewNeuUi';
 import { businessRulesListPanelClass } from './businessRulesNeuUi';
@@ -350,7 +351,7 @@ export const BusinessRulesManager: React.FC<{
           </div>
         </section>
 
-          <div className={businessRulesViewSectionHeaderClass}>
+          <div className={businessRulesViewSectionHeaderFollowClass}>
             <h2 className={businessRulesViewSectionLabelClass}>Dossiês de regras</h2>
             <p className={businessRulesViewSectionDescClass}>
               Expanda cada regra para ver o dossiê gerado pela IA, editar ou reanalisar.

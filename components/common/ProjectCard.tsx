@@ -208,6 +208,7 @@ export const ProjectCard = React.memo<ProjectCardProps>(
           projectCardShellClass,
           'project-card-warm-dark',
           'cursor-pointer p-4 sm:p-[1.125rem]',
+          'min-h-[12.5rem] sm:min-h-[14rem]',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--project-card-accent)_55%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--project-card-bg)]',
           'active:scale-[0.99] motion-reduce:active:scale-100',
           className
@@ -217,9 +218,9 @@ export const ProjectCard = React.memo<ProjectCardProps>(
         <div className={projectCardOrbCtaClass} aria-hidden />
         <div className={projectCardOrbHighlightClass} aria-hidden />
 
-        <div className="relative flex items-start gap-3">
+        <div className="relative flex items-center gap-3">
           <div
-            className={projectCardIconWrapClass}
+            className={cn(projectCardIconWrapClass, 'shrink-0')}
             aria-label={iconMeta.label}
             title={iconMeta.label}
           >
@@ -230,7 +231,10 @@ export const ProjectCard = React.memo<ProjectCardProps>(
           </div>
 
           <div className="min-w-0 flex-1 space-y-1">
-            <h3 className="line-clamp-2 font-sans text-[0.9375rem] font-extrabold leading-snug text-[var(--project-card-text)] transition-colors duration-200 group-hover:text-[var(--project-card-accent)] sm:text-base">
+            <h3
+              className="truncate font-sans text-[0.9375rem] font-extrabold leading-tight text-[var(--project-card-text)] transition-colors duration-200 group-hover:text-[var(--project-card-accent)] sm:text-base"
+              title={project.name}
+            >
               {project.name}
             </h3>
             {jiraKey ? (
@@ -257,7 +261,7 @@ export const ProjectCard = React.memo<ProjectCardProps>(
           <RadialProgress
             value={tasksDonePercent}
             ariaLabel="Conclusão de tarefas"
-            className="mt-0.5"
+            className="shrink-0"
           >
             <span className="flex flex-col items-center leading-none">
               <span className="font-sans text-sm font-extrabold tabular-nums text-[var(--project-card-accent)]">

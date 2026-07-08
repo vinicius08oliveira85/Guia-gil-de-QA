@@ -1,6 +1,9 @@
 import { cn } from '../../utils/cn';
 import { appDarkSidebarPanelClass, workspaceSurfaceLightClass } from '../common/appPageNeuUi';
 import { appFullWidthContentClass } from '../common/viewUi';
+import {
+  projectTabSectionHeaderClass,
+} from '../common/projectTabNeuUi';
 
 /**
  * Fundo e escopo da página Meus Projetos — tema CLARO (identidade LandingPage /
@@ -46,6 +49,12 @@ export const projectsDashboardSectionLabelClass = cn(
 export const projectsDashboardSectionDescClass = cn(
   'projects-dashboard-section-desc font-sans text-sm font-medium',
   'text-[color-mix(in_srgb,var(--brand-text-strong)_78%,transparent)]'
+);
+
+/** Cabeçalho de seção alinhado aos painéis da grade. */
+export const projectsDashboardSectionHeaderClass = cn(
+  projectTabSectionHeaderClass,
+  'projects-dashboard-section-header'
 );
 
 /** Badge contador no título */
@@ -168,7 +177,7 @@ export const projectsDashboardSyncAlertTitleClass = 'font-medium';
 /** Faixa de KPIs (WorkspaceDaisyStats + Eficiência) — layout bento. */
 export const projectsDashboardStatsRegionClass = cn(
   'projects-dashboard-stats-bento mb-0 mt-0 grid grid-cols-2 gap-2.5 sm:gap-3',
-  'sm:grid-cols-4 lg:grid-cols-[repeat(4,minmax(0,1fr))_minmax(11rem,1.35fr)] lg:items-stretch',
+  'sm:grid-cols-4 lg:grid-cols-[repeat(4,minmax(0,1fr))_minmax(12rem,1.3fr)] lg:items-stretch',
   'max-md:mb-2 max-md:mt-2 max-md:gap-2'
 );
 

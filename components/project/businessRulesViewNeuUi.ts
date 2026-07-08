@@ -13,6 +13,7 @@ import {
   projectTabPanelClass,
   projectTabSectionDescClass,
   projectTabSectionHeaderClass,
+  projectTabSectionHeaderFollowClass,
   projectTabSectionLabelClass,
 } from '../common/projectTabNeuUi';
 
@@ -34,5 +35,6 @@ export const businessRulesViewHeroSubtitleClass = projectTabHeroSubtitleClass;
 export const businessRulesViewSectionLabelClass = projectTabSectionLabelClass;
 export const businessRulesViewSectionDescClass = projectTabSectionDescClass;
 export const businessRulesViewSectionHeaderClass = projectTabSectionHeaderClass;
+export const businessRulesViewSectionHeaderFollowClass = projectTabSectionHeaderFollowClass;
 export const businessRulesViewPanelClass = projectTabPanelClass;
 export const businessRulesViewListPanelClass = projectTabListPanelClass;

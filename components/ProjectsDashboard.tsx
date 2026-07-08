@@ -51,6 +51,7 @@ import {
   projectsDashboardGlobalEfficiencyGridClass,
   projectsDashboardHeroShellClass,
   projectsDashboardSectionDescClass,
+  projectsDashboardSectionHeaderClass,
   projectsDashboardSectionLabelClass,
   projectsDashboardContentClass,
   projectsDashboardHeroChromeClass,
@@ -380,7 +381,7 @@ export const ProjectsDashboard: React.FC<{
           <div ref={listRef} className={cn(projects.length > 0 && projectsDashboardMainGridClass)}>
             <div className="min-w-0">
               {projects.length > 0 && !isLoading ? (
-                <div className="mb-3 flex flex-col gap-0.5 border-b border-base-300 pb-3 sm:mb-4">
+                <div className={projectsDashboardSectionHeaderClass}>
                   <h2 className={projectsDashboardSectionLabelClass}>Seus projetos</h2>
                   <p className={projectsDashboardSectionDescClass}>
                     {filteredProjects.length}{' '}

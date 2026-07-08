@@ -33,7 +33,7 @@ export const GlobalEfficiencyMetric: React.FC<GlobalEfficiencyMetricProps> = ({
 
   const body = (
     <>
-      <div className="flex w-full items-center justify-center gap-2">
+      <div className="flex w-full min-w-0 items-center justify-center gap-2">
         <span className={projectsDashboardStatIconPlateClass} aria-hidden>
           <Gauge
             className="h-3.5 w-3.5 shrink-0 text-[var(--workspace-stat-accent)] sm:h-4 sm:w-4"
@@ -41,19 +41,21 @@ export const GlobalEfficiencyMetric: React.FC<GlobalEfficiencyMetricProps> = ({
             aria-hidden
           />
         </span>
-        <span className={workspaceDaisyStatLabelClass}>Eficiência global</span>
+        <span className={cn(workspaceDaisyStatLabelClass, 'text-center')}>Eficiência global</span>
       </div>
-      <RadialProgress value={clamped} size={72} strokeWidth={6} ariaLabel="Eficiência global">
-        <strong className={cn(workspaceDaisyStatValueClass, 'text-sm sm:text-base')}>
-          {formatWorkspaceStatPercent(clamped)}
-        </strong>
-      </RadialProgress>
-      {totalCount != null && totalCount > 0 && executedCount != null && (
-        <p className="font-sans text-[10px] leading-tight text-[color-mix(in_srgb,var(--brand-text-strong)_72%,transparent)] sm:text-[11px]">
-          {formatWorkspaceStatCount(executedCount)}/{formatWorkspaceStatCount(totalCount)} casos
-          executados
-        </p>
-      )}
+      <div className="flex flex-1 flex-col items-center justify-center gap-2">
+        <RadialProgress value={clamped} size={72} strokeWidth={6} ariaLabel="Eficiência global">
+          <strong className={cn(workspaceDaisyStatValueClass, 'text-sm sm:text-base')}>
+            {formatWorkspaceStatPercent(clamped)}
+          </strong>
+        </RadialProgress>
+        {totalCount != null && totalCount > 0 && executedCount != null && (
+          <p className="max-w-[12rem] text-balance font-sans text-[10px] leading-snug text-[color-mix(in_srgb,var(--brand-text-strong)_72%,transparent)] sm:text-[11px]">
+            {formatWorkspaceStatCount(executedCount)}/{formatWorkspaceStatCount(totalCount)} casos
+            executados
+          </p>
+        )}
+      </div>
     </>
   );
 
@@ -63,7 +65,7 @@ export const GlobalEfficiencyMetric: React.FC<GlobalEfficiencyMetricProps> = ({
         type="button"
         className={cn(
           workspaceDaisyStatCardClass,
-          'projects-dashboard-stat-card projects-dashboard-stat-card--featured gap-2.5 cursor-pointer transition-[transform,box-shadow] hover:-translate-y-0.5',
+          'projects-dashboard-stat-card projects-dashboard-stat-card--featured h-full gap-2.5 cursor-pointer transition-[transform,box-shadow] hover:-translate-y-0.5',
           'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-stat-accent)]',
           'motion-reduce:transform-none',
           className
@@ -78,7 +80,7 @@ export const GlobalEfficiencyMetric: React.FC<GlobalEfficiencyMetricProps> = ({
   }
 
   return (
-    <div className={cn(workspaceDaisyStatCardClass, 'projects-dashboard-stat-card projects-dashboard-stat-card--featured gap-2.5', className)} role="group" aria-label={label}>
+    <div className={cn(workspaceDaisyStatCardClass, 'projects-dashboard-stat-card projects-dashboard-stat-card--featured h-full gap-2.5', className)} role="group" aria-label={label}>
       {body}
     </div>
   );

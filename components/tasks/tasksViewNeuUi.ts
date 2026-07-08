@@ -8,6 +8,8 @@ import {
   projectTabPanelClass,
   projectTabPanelDividerClass,
   projectTabSectionDescClass,
+  projectTabSectionHeaderClass,
+  projectTabSectionHeaderFollowClass,
   projectTabSectionLabelClass,
 } from '../common/projectTabNeuUi';
 
@@ -26,6 +28,8 @@ export const tasksViewHeroChromeClass = projectTabHeroChromeClass;
 export const tasksViewEyebrowClass = 'project-tab-eyebrow tasks-view-eyebrow';
 export const tasksViewSectionLabelClass = projectTabSectionLabelClass;
 export const tasksViewSectionDescClass = projectTabSectionDescClass;
+export const tasksViewSectionHeaderClass = projectTabSectionHeaderClass;
+export const tasksViewSectionHeaderFollowClass = projectTabSectionHeaderFollowClass;
 export const tasksViewPanelClass = projectTabPanelClass;
 export const tasksViewListPanelClass = projectTabListPanelClass;
 export const tasksViewPanelDividerClass = projectTabPanelDividerClass;

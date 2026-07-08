@@ -53,6 +53,7 @@ import {
   documentsViewPanelClass,
   documentsViewSectionDescClass,
   documentsViewSectionHeaderClass,
+  documentsViewSectionHeaderFollowClass,
   documentsViewSectionLabelClass,
 } from './documents/documentsViewNeuUi';
 import {
@@ -476,7 +477,7 @@ export const DocumentsView: React.FC<{
         ) : null}
       </section>
 
-        <div className={documentsViewSectionHeaderClass}>
+        <div className={documentsViewSectionHeaderFollowClass}>
           <h2 className={documentsViewSectionLabelClass}>Biblioteca de documentos</h2>
           <p className={documentsViewSectionDescClass}>
             Visualize, gere tarefas a partir do conteúdo e gerencie análises por documento.

@@ -91,6 +91,8 @@ import {
   tasksViewPanelClass,
   tasksViewPanelDividerClass,
   tasksViewSectionDescClass,
+  tasksViewSectionHeaderClass,
+  tasksViewSectionHeaderFollowClass,
   tasksViewSectionLabelClass,
 } from './tasksViewNeuUi';
 import { getDisplayStatus } from '../../utils/taskHelpers';
@@ -2265,7 +2267,7 @@ export const TasksView: React.FC<{
             </div>
           </div>
 
-          <div className="flex flex-col gap-0.5 border-b border-base-300/35 pb-3">
+          <div className={tasksViewSectionHeaderClass}>
             <h2 className={tasksViewSectionLabelClass}>Explorar tarefas</h2>
             <p className={tasksViewSectionDescClass}>
               Alterne entre todas as tarefas e o backlog, filtre por sprint e busque por ID ou título.
@@ -2304,7 +2306,7 @@ export const TasksView: React.FC<{
             </div>
           </section>
 
-          <div className="flex flex-col gap-0.5 border-b border-base-300/35 pb-3 pt-1">
+          <div className={tasksViewSectionHeaderFollowClass}>
             <h2 className={tasksViewSectionLabelClass}>Lista de tarefas</h2>
             <p className={tasksViewSectionDescClass}>
               {listModeProp === 'backlog'

@@ -24,6 +24,7 @@ import {
   landingNeuActionBtnClass,
   landingNeuLogoPlateClass,
   landingNeuSectionDescClass,
+  landingNeuSectionHeaderStackClass,
   landingNeuSectionLabelClass,
   landingPageContainerClass,
   landingPageShellClass,
@@ -139,7 +140,7 @@ export const LandingPage = React.memo(() => {
             aria-label="Menu principal"
             aria-labelledby="landing-quick-access-heading"
           >
-            <div className="flex flex-col gap-1 border-b border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pb-3 sm:gap-1.5">
+            <div className={landingNeuSectionHeaderStackClass}>
               <h2 id="landing-quick-access-heading" className={landingNeuSectionLabelClass}>
                 Acesso rápido
               </h2>

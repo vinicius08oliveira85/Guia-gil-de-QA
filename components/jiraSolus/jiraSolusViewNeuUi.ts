@@ -11,7 +11,7 @@ import {
   projectTabPanelClass,
   projectTabPanelDividerClass,
   projectTabSectionDescClass,
-  projectTabSectionHeaderClass,
+  projectTabInlineSectionHeaderClass,
   projectTabSectionLabelClass,
 } from '../common/projectTabNeuUi';
 import { appContentPaddingX } from '../common/viewUi';
@@ -48,7 +48,7 @@ export const jiraSolusHeroJiraBadgeClass = projectTabHeroJiraBadgeClass;
 export const jiraSolusHeroSubtitleClass = projectTabHeroSubtitleClass;
 export const jiraSolusSectionLabelClass = projectTabSectionLabelClass;
 export const jiraSolusSectionDescClass = projectTabSectionDescClass;
-export const jiraSolusSectionHeaderClass = projectTabSectionHeaderClass;
+export const jiraSolusSectionHeaderClass = projectTabInlineSectionHeaderClass;
 export const jiraSolusPanelClass = projectTabPanelClass;
 export const jiraSolusListPanelClass = projectTabListPanelClass;
 export const jiraSolusPanelDividerClass = projectTabPanelDividerClass;
