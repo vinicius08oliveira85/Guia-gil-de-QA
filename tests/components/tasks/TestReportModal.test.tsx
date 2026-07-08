@@ -13,6 +13,7 @@ vi.mock('react-hot-toast', () => ({
 
 vi.mock('../../../services/ai/testReportSummaryService', () => ({
   summarizeTestReport: vi.fn(async (text: string) => text),
+  summarizeTestReportForPo: vi.fn(async (text: string) => `PO: ${text.slice(0, 40)}`),
 }));
 
 function buildTask(): JiraTask {
@@ -45,31 +46,30 @@ function buildTask(): JiraTask {
 }
 
 describe('TestReportModal', () => {
-  it('mantém apenas Texto estruturado e Resumido, com resumo visual colorido por status', async () => {
+  it('exibe formatos estruturado, resumido, PO e markdown com painel expansível', async () => {
     render(<TestReportModal isOpen={true} onClose={() => {}} task={buildTask()} />);
 
     expect(screen.getAllByText('Texto estruturado').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Resumido').length).toBeGreaterThan(0);
-    expect(screen.queryByText('Markdown')).not.toBeInTheDocument();
+    expect(screen.getAllByText('Para o PO').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Markdown').length).toBeGreaterThan(0);
     expect(screen.getByText('Aprovados')).toBeInTheDocument();
     expect(screen.getByText('Bloqueados')).toBeInTheDocument();
     expect(screen.getByLabelText('Prévia do relatório de testes')).toBeInTheDocument();
-    expect(screen.queryByLabelText('Conteúdo do relatório de testes')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Expandir detalhes do caso 1/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Gerar narrativa para Product Owner com IA' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Baixar relatório em Markdown' })).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByText('SÍNTESE DA EXECUÇÃO')).toBeInTheDocument();
       expect(screen.getByText('Bloqueados: 1')).toBeInTheDocument();
-      expect(screen.queryByText('1. Acessar o painel com perfil backoffice')).not.toBeInTheDocument();
     });
   });
 
   it('exibe atalhos de cópia para resumo e resultados', async () => {
     render(<TestReportModal isOpen={true} onClose={() => {}} task={buildTask()} />);
 
-    const copySummaryButton = screen.getByRole('button', { name: 'Copiar resumo executivo' });
-    const copyResultsButton = screen.getByRole('button', { name: 'Copiar somente resultados' });
-
-    expect(copySummaryButton).toBeInTheDocument();
-    expect(copyResultsButton).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Copiar resumo executivo' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Copiar somente resultados' })).toBeInTheDocument();
   });
 });

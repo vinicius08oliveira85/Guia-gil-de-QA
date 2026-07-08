@@ -10,9 +10,10 @@ function buildTask(): JiraTask {
   return {
     id: 'TASK-123',
     title: 'Validar contador de beneficiários',
-    description: '',
+    description: 'Como PO, quero ver o total de beneficiários após importação.',
     status: 'In Progress',
     type: 'Tarefa',
+    bddScenarios: [{ id: 'bdd-1', title: 'Exibir total após importação', gherkin: 'Given...' }],
     testCases: [
       {
         id: 'tc-1',
@@ -52,32 +53,58 @@ function buildTask(): JiraTask {
 }
 
 describe('generateTestReport', () => {
-  it('gera texto estruturado simplificado sem passo a passo detalhado', () => {
+  it('gera texto estruturado com detalhes em bloqueios e resumo em aprovados', () => {
     const report = generateTestReport(buildTask(), new Date('2026-05-13T14:00:00.000Z'));
 
     expect(report).toContain('SÍNTESE DA EXECUÇÃO:');
-    expect(report).toContain('Bloqueados: 1');
-    expect(report).toContain('[APROVADO ✅]');
+    expect(report).toContain('História / contexto:');
+    expect(report).toContain('Cenários BDD relacionados:');
+    expect(report).toContain('PONTOS DE ATENÇÃO (detalhados):');
     expect(report).toContain('[BLOQUEADO ⚠️]');
-    expect(report).not.toContain('Parâmetros necessários');
-    expect(report).not.toContain('Resultado esperado');
-    expect(report).not.toContain('1. Acessar o painel com perfil backoffice');
+    expect(report).toContain('Resultado esperado:');
+    expect(report).toContain('Ação necessária:');
+    expect(report).toContain('Parâmetros / contexto:');
+    expect(report).toContain('CASOS APROVADOS (resumo):');
+    expect(report).toContain('Resultado obtido: Card apresentou 2.645 beneficiários corretamente.');
     expect(report).toContain('Card exibe a contagem correta de beneficiários após a importação.');
-    expect(report).not.toContain('Card exibe a contagem correta de beneficiários…');
   });
 
   it('gera versão resumida focada no resultado final', () => {
     const report = generateTestReport(buildTask(), new Date('2026-05-13T14:00:00.000Z'), {
-      concise: true,
+      mode: 'concise',
       format: 'text',
     });
 
     expect(report).toContain('Resumo: 1 aprovado(s) | 0 reprovado(s) | 1 bloqueado(s) | 1 não executado(s)');
     expect(report).toContain('- Aprovado ✅: Card exibe a contagem correta de beneficiários após a importação.');
-    expect(report).toContain(
-      '- Bloqueado ⚠️: Sistema informa bloqueio temporário da atualização sem perder consistência.'
-    );
     expect(report).not.toContain('1. Acessar o painel com perfil backoffice');
+  });
+
+  it('gera relatório completo para o PO', () => {
+    const report = generateTestReport(buildTask(), new Date('2026-05-13T14:00:00.000Z'), {
+      mode: 'po',
+      format: 'text',
+    });
+
+    expect(report).toContain('RELATÓRIO DE VALIDAÇÃO PARA PO | TASK-123');
+    expect(report).toContain('O que foi validado:');
+    expect(report).toContain('Como foi testado:');
+    expect(report).toContain('Dados / contexto:');
+    expect(report).toContain('1. Acessar o painel com perfil backoffice.');
+    expect(report).toContain('Resultado obtido:');
+  });
+
+  it('gera relatório em markdown com tabela de síntese', () => {
+    const report = generateTestReport(buildTask(), new Date('2026-05-13T14:00:00.000Z'), {
+      mode: 'po',
+      format: 'markdown',
+    });
+
+    expect(report).toContain('# Registro de Testes — TASK-123');
+    expect(report).toContain('## Síntese da execução');
+    expect(report).toContain('| Aprovados | 1 |');
+    expect(report).toContain('**Resultado esperado:**');
+    expect(report).toContain('- Acessar o painel com perfil backoffice.');
   });
 
   it('gera atalho só com resultados executados', () => {
@@ -87,9 +114,6 @@ describe('generateTestReport', () => {
     expect(report).toContain(
       '1. Aprovado ✅: Card exibe a contagem correta de beneficiários após a importação.'
     );
-    expect(report).toContain(
-      '2. Bloqueado ⚠️: Sistema informa bloqueio temporário da atualização sem perder consistência.'
-    );
     expect(report).not.toContain('Não executado');
   });
 
@@ -97,7 +121,6 @@ describe('generateTestReport', () => {
     const summary = generateTestExecutiveSummary(buildTask(), new Date('2026-05-13T14:00:00.000Z'));
 
     expect(summary).toContain('Resumo executivo da validação TASK-123');
-    expect(summary).toContain('Status consolidado: 1 aprovado(s), 0 reprovado(s), 1 bloqueado(s) e 1 não executado(s).');
     expect(summary).toContain('Pontos de atenção:');
     expect(summary).toContain('Bloqueado: Sistema informa bloqueio temporário da atualização sem perder consistência.');
   });

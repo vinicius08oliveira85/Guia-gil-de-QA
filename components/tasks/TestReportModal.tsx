@@ -6,10 +6,15 @@ import {
   generateTestExecutiveSummary,
   generateTestReport,
   generateTestResultsOnlyReport,
+  TEST_REPORT_MODE_LABELS,
+  type GenerateTestReportOptions,
 } from '../../utils/testReportGenerator';
 import { downloadFile } from '../../utils/exportService';
 import { logger } from '../../utils/logger';
-import { summarizeTestReport } from '../../services/ai/testReportSummaryService';
+import {
+  summarizeTestReport,
+  summarizeTestReportForPo,
+} from '../../services/ai/testReportSummaryService';
 import { Modal } from '../common/Modal';
 import { TestReportExecutionPanel } from './TestReportExecutionPanel';
 import { TestReportTextPreview } from './TestReportTextPreview';
@@ -29,8 +34,9 @@ import {
   testReportModalShellClass,
 } from './testReportNeuUi';
 
-type ReportFormatOption = 'text' | 'resumido';
+type ReportFormatOption = 'text' | 'resumido' | 'po' | 'markdown';
 type CopyVariant = 'full' | 'summary' | 'results' | null;
+type AISummaryMode = 'executive' | 'po' | null;
 
 interface TestReportModalProps {
   isOpen: boolean;
@@ -38,16 +44,30 @@ interface TestReportModalProps {
   task: JiraTask;
 }
 
-function getReportGeneratorOptions(format: ReportFormatOption) {
-  if (format === 'resumido') {
-    return { format: 'text' as const, concise: true, includeTools: false };
+function getReportGeneratorOptions(format: ReportFormatOption): GenerateTestReportOptions {
+  switch (format) {
+    case 'resumido':
+      return { mode: 'concise', format: 'text', includeTools: false };
+    case 'po':
+      return { mode: 'po', format: 'text', includeTools: false };
+    case 'markdown':
+      return { mode: 'po', format: 'markdown', includeTools: false };
+    default:
+      return { mode: 'structured', format: 'text', includeTools: false };
   }
+}
 
-  return {
-    format: 'text' as const,
-    concise: false,
-    includeTools: false,
-  };
+function getFormatLabel(format: ReportFormatOption): string {
+  switch (format) {
+    case 'resumido':
+      return TEST_REPORT_MODE_LABELS.concise;
+    case 'po':
+      return TEST_REPORT_MODE_LABELS.po;
+    case 'markdown':
+      return TEST_REPORT_MODE_LABELS.markdown;
+    default:
+      return TEST_REPORT_MODE_LABELS.structured;
+  }
 }
 
 export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClose, task }) => {
@@ -56,7 +76,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
   const [format, setFormat] = useState<ReportFormatOption>('text');
   const [generationDate, setGenerationDate] = useState<Date | null>(null);
   const [summarizing, setSummarizing] = useState(false);
-  const [isAISummarized, setIsAISummarized] = useState(false);
+  const [aiSummaryMode, setAiSummaryMode] = useState<AISummaryMode>(null);
 
   const executedTestCases = useMemo(
     () => (task?.testCases || []).filter(testCase => testCase.status !== 'Not Run'),
@@ -76,12 +96,12 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
     if (!isOpen || !task) {
       setFormat('text');
       setGenerationDate(null);
-      setIsAISummarized(false);
+      setAiSummaryMode(null);
       setCopiedVariant(null);
       return;
     }
 
-    if (isAISummarized) {
+    if (aiSummaryMode) {
       return;
     }
 
@@ -93,7 +113,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
     const report = generateTestReport(task, baseDate, getReportGeneratorOptions(format));
     setReportText(report);
     setCopiedVariant(null);
-  }, [format, generationDate, isAISummarized, isOpen, task]);
+  }, [aiSummaryMode, format, generationDate, isOpen, task]);
 
   const effectiveGenerationDate = generationDate ?? new Date();
   const executiveSummaryText = useMemo(
@@ -141,26 +161,38 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
   const handleCopyResultsOnly = () =>
     copyText(resultsOnlyText, 'results', 'Somente os resultados foram copiados.');
 
-  const handleDownload = () => {
+  const handleDownloadTxt = () => {
     downloadFile(reportText, `${task.id}-registro-testes.txt`, 'text/plain');
   };
 
-  const handleSummarizeWithAI = async () => {
+  const handleDownloadMarkdown = () => {
+    const markdown = generateTestReport(task, effectiveGenerationDate, {
+      mode: 'po',
+      format: 'markdown',
+      includeTools: false,
+    });
+    downloadFile(markdown, `${task.id}-registro-testes.md`, 'text/markdown');
+  };
+
+  const runAiSummary = async (mode: Exclude<AISummaryMode, null>) => {
     if (!reportText.trim() || summarizing) {
       return;
     }
 
     setSummarizing(true);
     try {
-      const summarized = await summarizeTestReport(reportText);
+      const summarized =
+        mode === 'po'
+          ? await summarizeTestReportForPo(reportText)
+          : await summarizeTestReport(reportText);
       setReportText(summarized);
-      setIsAISummarized(true);
-      toast.success('Relatório resumido com IA.');
+      setAiSummaryMode(mode);
+      toast.success(mode === 'po' ? 'Narrativa para PO gerada com IA.' : 'Relatório resumido com IA.');
     } catch (err) {
       const message =
         err instanceof Error
           ? err.message
-          : 'Erro ao resumir com IA. Verifique a API key do Gemini em Configurações.';
+          : 'Erro ao processar com IA. Verifique a API key do Gemini em Configurações.';
       toast.error(message);
     } finally {
       setSummarizing(false);
@@ -171,16 +203,27 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
     {
       label: 'Texto estruturado',
       value: 'text',
-      description: 'Resumo organizado, direto ao ponto e pronto para colar.',
+      description: 'Resumo organizado com detalhes em reprovações e bloqueios.',
     },
     {
       label: 'Resumido',
       value: 'resumido',
       description: 'Versão compacta com foco apenas no resultado final.',
     },
+    {
+      label: 'Para o PO',
+      value: 'po',
+      description: 'Critério, passos, contexto e resultado em linguagem de negócio.',
+    },
+    {
+      label: 'Markdown',
+      value: 'markdown',
+      description: 'Formato para Confluence, Notion ou documentação técnica.',
+    },
   ];
 
-  const currentFormatLabel = format === 'resumido' ? 'Resumido' : 'Texto estruturado';
+  const currentFormatLabel = getFormatLabel(format);
+  const isAISummarized = aiSummaryMode !== null;
 
   return (
     <Modal
@@ -206,22 +249,41 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
               <div className="flex flex-wrap items-center justify-end gap-2">
                 <button
                   type="button"
-                  onClick={handleSummarizeWithAI}
+                  onClick={() => void runAiSummary('executive')}
                   disabled={summarizing || !reportText.trim()}
                   aria-label="Resumir relatório com IA"
                   className={testReportModalChipBtnClass}
                 >
                   <Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                  {summarizing ? 'Resumindo…' : 'Resumir com IA'}
+                  {summarizing ? 'Processando…' : 'Resumir com IA'}
                 </button>
                 <button
                   type="button"
-                  onClick={handleDownload}
+                  onClick={() => void runAiSummary('po')}
+                  disabled={summarizing || !reportText.trim()}
+                  aria-label="Gerar narrativa para Product Owner com IA"
+                  className={testReportModalChipBtnClass}
+                >
+                  <Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                  {summarizing ? 'Processando…' : 'Narrativa PO'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDownloadTxt}
                   aria-label="Baixar relatório em .txt"
                   className={testReportModalChipBtnClass}
                 >
                   <Download className="h-3.5 w-3.5 shrink-0" aria-hidden />
                   Baixar .txt
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDownloadMarkdown}
+                  aria-label="Baixar relatório em Markdown"
+                  className={testReportModalChipBtnClass}
+                >
+                  <Download className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                  Baixar .md
                 </button>
                 <button
                   type="button"
@@ -288,7 +350,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
 
         <div className="flex flex-shrink-0 flex-col gap-3">
           <p className={leveSettingsHeadingXsClass}>Formato do relatório</p>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {formatOptions.map(option => {
               const isSelected = format === option.value;
               return (
@@ -297,7 +359,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
                   type="button"
                   onClick={() => {
                     setFormat(option.value);
-                    setIsAISummarized(false);
+                    setAiSummaryMode(null);
                   }}
                   aria-pressed={isSelected}
                   aria-label={`${option.label}: ${option.description}`}
@@ -336,6 +398,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
               reportText={reportText}
               formatLabel={currentFormatLabel}
               isAISummarized={isAISummarized}
+              aiSummaryMode={aiSummaryMode}
             />
           </div>
         </div>

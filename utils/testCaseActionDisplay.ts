@@ -69,6 +69,55 @@ export function getTestCaseListTitle(
 }
 
 /**
+ * Resumo para stakeholders (PO): critério de aceite completo ou título da listagem.
+ */
+export function getTestCasePoSummary(testCase: TestCase): string {
+  const expected = (testCase.expectedResult || '').trim();
+  if (!isPlaceholderOrEmptyExpected(expected)) {
+    return expected;
+  }
+  return getTestCaseListTitle(testCase, { truncate: false });
+}
+
+/**
+ * Passos de execução condensados para relatórios (máx. N passos).
+ */
+export function getTestCaseActionSummary(testCase: TestCase, maxSteps = 3): string {
+  const steps = parseTestCaseActionSteps(testCase.action || '');
+  if (steps.length === 0) {
+    return '';
+  }
+  const labels = steps.map(step => stripLeadingStepIndex(step)).filter(Boolean);
+  if (labels.length <= maxSteps) {
+    return labels.join('; ');
+  }
+  return `${labels.slice(0, maxSteps).join('; ')}…`;
+}
+
+/**
+ * Linha de contexto (parâmetros, ambiente, suíte) para relatórios ao PO.
+ */
+export function getTestCaseContextLine(testCase: TestCase): string | null {
+  const parts: string[] = [];
+  const params = (testCase.parameters || '').trim();
+  if (params && params !== '—') {
+    parts.push(params);
+  }
+  const env = getTestCaseEnvironment(testCase);
+  if (env && !/ambiente\s*:/i.test(params)) {
+    parts.push(`Ambiente: ${env}`);
+  }
+  const suite = getTestCaseSuite(testCase);
+  if (suite && !/suíte\s*:|suite\s*:/i.test(params)) {
+    parts.push(`Suíte: ${suite}`);
+  }
+  if (parts.length === 0) {
+    return null;
+  }
+  return collapseOneLine(parts.join(' · '));
+}
+
+/**
  * Normaliza texto de ação de caso de teste em passos para exibição.
  * Cobre listas numeradas em várias linhas e passos colados na mesma linha (ex.: "...'.2. Informe...").
  */

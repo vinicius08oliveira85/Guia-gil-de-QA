@@ -1,6 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import type { TestCase } from '../../types';
-import { getTestCaseListTitle } from '../../utils/testCaseActionDisplay';
+import {
+  getTestCaseActionSummary,
+  getTestCaseContextLine,
+  getTestCaseListTitle,
+  getTestCasePoSummary,
+  parseTestCaseActionSteps,
+  stripLeadingStepIndex,
+} from '../../utils/testCaseActionDisplay';
 import { Badge } from '../common/Badge';
 import { cn } from '../../utils/cn';
 import {
@@ -54,6 +62,136 @@ function getTestCaseHeadline(testCase: TestCase, index: number) {
   return `Caso de teste ${index + 1}`;
 }
 
+interface ExecutedCaseRowProps {
+  testCase: TestCase;
+  index: number;
+}
+
+const ExecutedCaseRow: React.FC<ExecutedCaseRowProps> = ({ testCase, index }) => {
+  const [expanded, setExpanded] = useState(false);
+  const statusData = getStatusBadge(testCase.status);
+  const headline = getTestCaseHeadline(testCase, index);
+  const poSummary = getTestCasePoSummary(testCase);
+  const contextLine = getTestCaseContextLine(testCase);
+  const actionSteps = parseTestCaseActionSteps(testCase.action || '').map(step =>
+    stripLeadingStepIndex(step)
+  );
+  const actionSummary = getTestCaseActionSummary(testCase);
+  const hasDetails =
+    poSummary !== headline ||
+    Boolean(contextLine) ||
+    actionSteps.length > 0 ||
+    Boolean(testCase.observedResult?.trim());
+
+  return (
+    <div className={`p-4 transition-colors ${statusData.accentClass}`}>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="whitespace-pre-wrap break-words text-sm font-medium text-[var(--leve-header-text)]">
+            {headline}
+          </p>
+          {!expanded && poSummary !== headline ? (
+            <p className={cn('mt-1 line-clamp-2 text-xs', leveSettingsMutedTextClass)}>
+              {poSummary}
+            </p>
+          ) : null}
+        </div>
+        <div className="flex shrink-0 items-center gap-2 self-start">
+          {hasDetails ? (
+            <button
+              type="button"
+              onClick={() => setExpanded(current => !current)}
+              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-[var(--leve-header-text-muted)] transition-colors hover:bg-[color-mix(in_srgb,var(--leve-header-text)_6%,transparent)]"
+              aria-expanded={expanded}
+              aria-label={expanded ? `Recolher detalhes do caso ${index + 1}` : `Expandir detalhes do caso ${index + 1}`}
+            >
+              {expanded ? (
+                <>
+                  <ChevronUp className="h-3.5 w-3.5" aria-hidden />
+                  Menos
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="h-3.5 w-3.5" aria-hidden />
+                  Detalhes
+                </>
+              )}
+            </button>
+          ) : null}
+          <Badge variant={statusData.variant} appearance="pill" size="sm">
+            {statusData.label}
+          </Badge>
+        </div>
+      </div>
+
+      {expanded ? (
+        <div className="mt-3 space-y-2 rounded-[var(--leve-header-radius)] border border-[var(--leve-header-border)] bg-[color-mix(in_srgb,var(--leve-header-text)_4%,transparent)] p-3">
+          <div>
+            <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-[var(--leve-header-text-muted)]">
+              O que foi validado
+            </p>
+            <p className="whitespace-pre-wrap break-words text-xs text-[var(--leve-header-text)]">
+              {poSummary}
+            </p>
+          </div>
+
+          {actionSteps.length > 0 ? (
+            <div>
+              <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-[var(--leve-header-text-muted)]">
+                Como foi testado
+              </p>
+              <ol className="list-decimal space-y-1 pl-4 text-xs text-[var(--leve-header-text)]">
+                {actionSteps.map((step, stepIndex) => (
+                  <li key={`${testCase.id}-step-${stepIndex}`} className="break-words">
+                    {step}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          ) : actionSummary ? (
+            <div>
+              <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-[var(--leve-header-text-muted)]">
+                Como foi testado
+              </p>
+              <p className="text-xs text-[var(--leve-header-text)]">{actionSummary}</p>
+            </div>
+          ) : null}
+
+          {contextLine ? (
+            <div>
+              <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-[var(--leve-header-text-muted)]">
+                Dados / contexto
+              </p>
+              <p className="whitespace-pre-wrap break-words text-xs text-[var(--leve-header-text)]">
+                {contextLine}
+              </p>
+            </div>
+          ) : null}
+
+          <div>
+            <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-[var(--leve-header-text-muted)]">
+              Resultado obtido
+            </p>
+            <p className={`whitespace-pre-wrap break-words text-xs ${statusData.textClass}`}>
+              {testCase.observedResult?.trim() ||
+                (testCase.status === 'Passed' ? 'Conforme esperado.' : '—')}
+            </p>
+          </div>
+        </div>
+      ) : testCase.observedResult && testCase.observedResult.trim() ? (
+        <div className="mt-2">
+          <p className="mb-0.5 text-xs font-medium text-[var(--leve-header-text-muted)]">
+            Resultado Obtido:
+          </p>
+          <p className={`text-xs whitespace-pre-wrap break-words ${statusData.textClass}`}>
+            {testCase.observedResult}
+          </p>
+        </div>
+      ) : null}
+    </div>
+  );
+};
+
 export const TestReportExecutionPanel: React.FC<TestReportExecutionPanelProps> = ({
   executedTestCases,
   visualStats,
@@ -103,47 +241,16 @@ export const TestReportExecutionPanel: React.FC<TestReportExecutionPanelProps> =
       <div className={cn(testReportModalSectionClass, 'flex min-h-0 flex-1 flex-col overflow-hidden')}>
         <div className="border-b border-[var(--leve-header-border)] px-4 py-3">
           <p className={leveSettingsHeadingXsClass}>Casos executados</p>
-          <p className={leveSettingsMutedTextXsClass}>Visão resumida dos cenários já validados.</p>
+          <p className={leveSettingsMutedTextXsClass}>
+            Expanda cada caso para ver critério, passos e contexto antes de copiar.
+          </p>
         </div>
 
         {executedTestCases.length > 0 ? (
           <div className="custom-scrollbar max-h-[360px] overflow-y-auto divide-y divide-[var(--leve-header-border)]">
-            {executedTestCases.map((testCase, index) => {
-              const statusData = getStatusBadge(testCase.status);
-              return (
-                <div
-                  key={`${testCase.id}-${index}`}
-                  className={`p-4 transition-colors ${statusData.accentClass}`}
-                >
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="whitespace-pre-wrap break-words text-sm font-medium text-[var(--leve-header-text)]">
-                        {getTestCaseHeadline(testCase, index)}
-                      </p>
-                    </div>
-                    <Badge
-                      variant={statusData.variant}
-                      appearance="pill"
-                      size="sm"
-                      className="self-start"
-                    >
-                      {statusData.label}
-                    </Badge>
-                  </div>
-
-                  {testCase.observedResult && testCase.observedResult.trim() && (
-                    <div className="mt-2">
-                      <p className="mb-0.5 text-xs font-medium text-[var(--leve-header-text-muted)]">
-                        Resultado Obtido:
-                      </p>
-                      <p className={`text-xs whitespace-pre-wrap break-words ${statusData.textClass}`}>
-                        {testCase.observedResult}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            {executedTestCases.map((testCase, index) => (
+              <ExecutedCaseRow key={`${testCase.id}-${index}`} testCase={testCase} index={index} />
+            ))}
           </div>
         ) : (
           <div className={cn('px-4 py-6', leveSettingsMutedTextClass)}>

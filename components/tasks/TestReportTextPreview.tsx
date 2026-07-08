@@ -18,6 +18,7 @@ interface TestReportTextPreviewProps {
   reportText: string;
   formatLabel: string;
   isAISummarized?: boolean;
+  aiSummaryMode?: 'executive' | 'po' | null;
 }
 
 type PreviewStatus = 'Aprovado' | 'Reprovado' | 'Bloqueado';
@@ -33,6 +34,7 @@ type PreviewRow =
   | { type: 'summary'; metrics: PreviewSummaryMetrics }
   | { type: 'section'; title: string }
   | { type: 'status'; status: PreviewStatus; content: string; details: string[] }
+  | { type: 'poCase'; status: PreviewStatus; title: string; details: string[] }
   | { type: 'text'; content: string }
   | { type: 'footer'; content: string };
 
@@ -102,6 +104,7 @@ function getSummaryMetricStyles(type: keyof PreviewSummaryMetrics) {
 function parseReportRows(reportText: string): PreviewRow[] {
   const rows: PreviewRow[] = [];
   let activeStatusRow: Extract<PreviewRow, { type: 'status' }> | null = null;
+  let activePoCase: Extract<PreviewRow, { type: 'poCase' }> | null = null;
 
   const flushActiveStatus = () => {
     if (activeStatusRow) {
@@ -110,29 +113,56 @@ function parseReportRows(reportText: string): PreviewRow[] {
     }
   };
 
+  const flushActivePoCase = () => {
+    if (activePoCase) {
+      rows.push(activePoCase);
+      activePoCase = null;
+    }
+  };
+
+  const flushActive = () => {
+    flushActiveStatus();
+    flushActivePoCase();
+  };
+
   const lines = reportText.split('\n');
 
   for (const rawLine of lines) {
     const line = rawLine.trim();
     if (!line) {
-      flushActiveStatus();
+      flushActive();
       continue;
     }
 
-    if (line.startsWith('TASK: ')) {
-      flushActiveStatus();
-      rows.push({ type: 'meta', label: 'Task', value: line.replace(/^TASK:\s*/, '') });
+    if (line.startsWith('TASK: ') || line.startsWith('RELATÓRIO DE VALIDAÇÃO PARA PO |')) {
+      flushActive();
+      rows.push({
+        type: 'meta',
+        label: 'Task',
+        value: line.replace(/^TASK:\s*/, '').replace(/^RELATÓRIO DE VALIDAÇÃO PARA PO \| /, ''),
+      });
       continue;
     }
 
     if (line.startsWith('Título: ')) {
-      flushActiveStatus();
+      flushActive();
       rows.push({ type: 'meta', label: 'Título', value: line.replace(/^Título:\s*/, '') });
       continue;
     }
 
+    if (
+      line.startsWith('História / contexto: ') ||
+      line.startsWith('Cenários BDD relacionados: ') ||
+      line.startsWith('Escopo desta execução: ')
+    ) {
+      flushActive();
+      const [label, ...rest] = line.split(':');
+      rows.push({ type: 'meta', label: label.trim(), value: rest.join(':').trim() });
+      continue;
+    }
+
     if (line.startsWith('Concluído em: ')) {
-      flushActiveStatus();
+      flushActive();
       rows.push({ type: 'footer', content: line });
       continue;
     }
@@ -141,7 +171,7 @@ function parseReportRows(reportText: string): PreviewRow[] {
       /^Resumo:\s+(\d+)\s+aprovado\(s\)\s+\|\s+(\d+)\s+reprovado\(s\)\s+\|\s+(\d+)\s+bloqueado\(s\)\s+\|\s+(\d+)\s+n(?:ã|a)o executado\(s\)$/i
     );
     if (conciseSummaryMatch) {
-      flushActiveStatus();
+      flushActive();
       rows.push({
         type: 'summary',
         metrics: {
@@ -154,8 +184,31 @@ function parseReportRows(reportText: string): PreviewRow[] {
       continue;
     }
 
-    if (/^[A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ0-9 ]+:$/.test(line)) {
-      flushActiveStatus();
+    const poCaseMatch = line.match(/^CASO\s+(\d+)\s+—\s+(Aprovado|Reprovado|Bloqueado)/i);
+    if (poCaseMatch) {
+      flushActive();
+      activePoCase = {
+        type: 'poCase',
+        status: poCaseMatch[2] as PreviewStatus,
+        title: `Caso ${poCaseMatch[1]}`,
+        details: [],
+      };
+      continue;
+    }
+
+    if (activePoCase) {
+      if (/^(O que foi validado|Como foi testado|Dados \/ contexto|Resultado obtido|Status):/.test(line)) {
+        activePoCase.details.push(line);
+        continue;
+      }
+      if (/^\d+\.\s+/.test(line)) {
+        activePoCase.details.push(line);
+        continue;
+      }
+    }
+
+    if (/^[A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ0-9 /]+:$/.test(line)) {
+      flushActive();
       rows.push({ type: 'section', title: line.replace(/:$/, '') });
       continue;
     }
@@ -164,7 +217,7 @@ function parseReportRows(reportText: string): PreviewRow[] {
       /^\d+\.\s+\[(APROVADO|REPROVADO|BLOQUEADO)(?:\s+[^\]]+)?\]\s+(.+)$/
     );
     if (structuredStatusMatch) {
-      flushActiveStatus();
+      flushActive();
       const mappedStatus =
         structuredStatusMatch[1] === 'APROVADO'
           ? 'Aprovado'
@@ -185,7 +238,7 @@ function parseReportRows(reportText: string): PreviewRow[] {
       /^-\s+(Aprovado|Reprovado|Bloqueado)(?:\s+(?:✅|❌|⚠️))?:\s+(.+)$/
     );
     if (conciseStatusMatch) {
-      flushActiveStatus();
+      flushActive();
       rows.push({
         type: 'status',
         status: conciseStatusMatch[1] as PreviewStatus,
@@ -195,16 +248,21 @@ function parseReportRows(reportText: string): PreviewRow[] {
       continue;
     }
 
-    if (activeStatusRow && /^(Observação|Status final):\s+(.+)$/.test(line)) {
+    if (
+      activeStatusRow &&
+      /^(Observação|Status final|Resultado esperado|Ação necessária|Parâmetros \/ contexto|Resultado obtido):\s+/.test(
+        line
+      )
+    ) {
       activeStatusRow.details.push(line);
       continue;
     }
 
-    flushActiveStatus();
+    flushActive();
     rows.push({ type: 'text', content: line });
   }
 
-  flushActiveStatus();
+  flushActive();
   return rows;
 }
 
@@ -212,8 +270,10 @@ export const TestReportTextPreview: React.FC<TestReportTextPreviewProps> = ({
   reportText,
   formatLabel,
   isAISummarized = false,
+  aiSummaryMode = null,
 }) => {
   const parsedRows = useMemo(() => parseReportRows(reportText), [reportText]);
+  const isMarkdown = formatLabel === 'Markdown' && !isAISummarized;
 
   return (
     <section
@@ -239,7 +299,7 @@ export const TestReportTextPreview: React.FC<TestReportTextPreviewProps> = ({
           </Badge>
           {isAISummarized ? (
             <Badge variant="info" appearance="pill" size="sm">
-              Resumido com IA
+              {aiSummaryMode === 'po' ? 'Narrativa PO (IA)' : 'Resumido com IA'}
             </Badge>
           ) : null}
         </div>
@@ -253,14 +313,20 @@ export const TestReportTextPreview: React.FC<TestReportTextPreviewProps> = ({
               .map(line => line.trim())
               .filter(Boolean)
               .map((line, index) => (
-                <p
-                  key={`${line}-${index}`}
-                  className={testReportModalPreviewFieldClass}
-                >
+                <p key={`${line}-${index}`} className={testReportModalPreviewFieldClass}>
                   {line}
                 </p>
               ))}
           </div>
+        ) : isMarkdown ? (
+          <pre
+            className={cn(
+              testReportModalPreviewFieldClass,
+              'whitespace-pre-wrap break-words font-mono text-xs leading-relaxed text-[var(--leve-header-text)]'
+            )}
+          >
+            {reportText}
+          </pre>
         ) : (
           <div className="space-y-3 select-text">
             {parsedRows.map((row, index) => {
@@ -370,6 +436,41 @@ export const TestReportTextPreview: React.FC<TestReportTextPreviewProps> = ({
                         ))}
                       </div>
                     ) : null}
+                  </div>
+                );
+              }
+
+              if (row.type === 'poCase') {
+                const styles = getStatusStyles(row.status);
+                const Icon = styles.Icon;
+                return (
+                  <div
+                    key={`${row.type}-${index}`}
+                    className={`space-y-2 rounded-[var(--leve-header-radius)] px-3 py-3 ${styles.cardClass}`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-semibold text-[var(--leve-header-text)]">{row.title}</p>
+                      <Badge variant={styles.badgeVariant} appearance="pill" size="sm">
+                        {row.status}
+                      </Badge>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span
+                        className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${styles.iconChipClass}`}
+                      >
+                        <Icon className={`h-3.5 w-3.5 ${styles.iconClass}`} aria-hidden />
+                      </span>
+                      <div className="space-y-1.5">
+                        {row.details.map((detail, detailIndex) => (
+                          <p
+                            key={`${detail}-${detailIndex}`}
+                            className="text-xs leading-relaxed text-[var(--leve-header-text)]"
+                          >
+                            {detail}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 );
               }
