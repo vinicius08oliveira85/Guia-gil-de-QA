@@ -22,6 +22,8 @@ import {
 } from '../../utils/landingTaskFollowUpStorage';
 import { classifyTaskSla } from '../../utils/jiraFilasMetrics';
 import { getTaskAssigneeLabel, getTaskStatusLabel } from '../../utils/taskDisplayLabels';
+import { getJiraStatusColor } from '../../utils/jiraStatusColors';
+import { JiraStatusLozenge } from '../tasks/JiraStatusLozenge';
 import {
   landingAccentTextClass,
   landingNeuAccentBarClass,
@@ -263,6 +265,8 @@ export const LandingTaskFollowUp = React.memo(() => {
                   {filteredTasks.map(({ task }) => {
                     const slaBucket = classifyTaskSla(task, Date.now(), slaRiskWindowHours);
                     const jiraProjectKey = getJiraProjectKeyFromTaskId(task.id);
+                    const statusLabel = getTaskStatusLabel(task);
+                    const statusColor = getJiraStatusColor(statusLabel);
                     return (
                       <li key={task.id}>
                         <button
@@ -291,15 +295,16 @@ export const LandingTaskFollowUp = React.memo(() => {
                                 {task.title}
                               </span>
                             </div>
-                            <p className={cn('mt-0.5 truncate text-xs', landingTextMutedClass)}>
-                              {jiraProjectKey}
-                              {' · '}
-                              {getTaskStatusLabel(task)}
-                              {' · '}
-                              {getTaskAssigneeLabel(task)}
-                              {' · '}
-                              {formatTaskActivityLabel(task)}
-                            </p>
+                            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+                              <JiraStatusLozenge label={statusLabel} statusColor={statusColor} />
+                              <p className={cn('min-w-0 truncate text-xs', landingTextMutedClass)}>
+                                {jiraProjectKey}
+                                {' · '}
+                                {getTaskAssigneeLabel(task)}
+                                {' · '}
+                                {formatTaskActivityLabel(task)}
+                              </p>
+                            </div>
                           </div>
                           <span className={landingNeuSlaBadgeClass(slaBucket)}>
                             {SLA_BUCKET_LABELS[slaBucket]}
