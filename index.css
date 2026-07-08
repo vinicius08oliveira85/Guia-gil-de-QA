@@ -25,6 +25,21 @@
     --tasks-panel-gap: 0.5rem;
     --tasks-panel-gap-tight: 0.375rem;
     --tasks-panel-gap-loose: 0.65rem;
+    /**
+     * === Padrão flat global (neumorfismo só em ícones e botões) ===
+     * Superfícies (cards, painéis, seções, listas, modais, inputs) usam sombra suave
+     * neutra + borda fina — funciona em fundo claro e escuro. Ícones e botões mantêm
+     * o relevo neumórfico via --neu-relief*. Fonte única de verdade da padronização.
+     */
+    --neu-flat-shadow: 0 1px 2px rgba(15, 12, 10, 0.06), 0 8px 22px rgba(15, 12, 10, 0.08);
+    --neu-flat-shadow-sm: 0 1px 2px rgba(15, 12, 10, 0.05), 0 3px 10px rgba(15, 12, 10, 0.06);
+    --neu-flat-hover: 0 2px 6px rgba(15, 12, 10, 0.09), 0 16px 34px rgba(15, 12, 10, 0.11);
+    --neu-flat-inset: none;
+    --neu-relief: 3px 3px 8px rgba(0, 0, 0, 0.2), -3px -3px 7px rgba(255, 255, 255, 0.55);
+    --neu-relief-sm: 2px 2px 6px rgba(0, 0, 0, 0.18), -2px -2px 5px rgba(255, 255, 255, 0.5);
+    --neu-relief-pressed:
+      inset 2px 2px 5px rgba(0, 0, 0, 0.2),
+      inset -2px -2px 5px rgba(255, 255, 255, 0.5);
     /** Epic (listagem): badge + faixa esquerda do card — roxo Leve (alinhado a `--project-card-bg` / ícone Epic) */
     --jira-task-epic-accent: #421d3a;
     --jira-task-epic-accent-border: #351830;
@@ -57,21 +72,12 @@
     /** Neumorfismo — sombras derivadas do roxo do card (claro/escuro) */
     --project-card-neu-light: color-mix(in srgb, white 16%, var(--project-card-bg));
     --project-card-neu-dark: color-mix(in srgb, black 32%, var(--project-card-bg));
-    --project-card-neu-raised:
-      6px 6px 14px var(--project-card-neu-dark),
-      -5px -5px 12px var(--project-card-neu-light);
-    --project-card-neu-raised-sm:
-      4px 4px 10px var(--project-card-neu-dark),
-      -3px -3px 8px var(--project-card-neu-light);
-    --project-card-neu-inset:
-      inset 4px 4px 10px var(--project-card-neu-dark),
-      inset -3px -3px 8px var(--project-card-neu-light);
-    --project-card-neu-inset-deep:
-      inset 5px 5px 12px var(--project-card-neu-dark),
-      inset -4px -4px 10px var(--project-card-neu-light);
+    --project-card-neu-raised: var(--neu-flat-shadow);
+    --project-card-neu-raised-sm: var(--neu-flat-shadow-sm);
+    --project-card-neu-inset: var(--neu-flat-inset);
+    --project-card-neu-inset-deep: var(--neu-flat-inset);
     --project-card-neu-hover:
-      8px 8px 20px var(--project-card-neu-dark),
-      -6px -6px 16px var(--project-card-neu-light),
+      var(--neu-flat-hover),
       0 0 0 1px color-mix(in srgb, var(--project-card-accent) 22%, transparent);
     --project-card-progress-fill: linear-gradient(
       90deg,
@@ -110,24 +116,14 @@
     --projects-dash-radius: 16px;
     --projects-dash-neu-light: color-mix(in srgb, white 78%, var(--projects-dash-bg));
     --projects-dash-neu-dark: color-mix(in srgb, black 17%, var(--projects-dash-bg));
-    --projects-dash-neu-raised:
-      7px 7px 18px var(--projects-dash-neu-dark),
-      -5px -5px 13px var(--projects-dash-neu-light);
-    --projects-dash-neu-inset:
-      inset 4px 4px 10px var(--projects-dash-neu-dark),
-      inset -3px -3px 8px var(--projects-dash-neu-light);
+    --projects-dash-neu-raised: var(--neu-flat-shadow);
+    --projects-dash-neu-inset: var(--neu-flat-inset);
     /** KPIs claros na faixa superior */
     --workspace-stat-neu-light: color-mix(in srgb, white 82%, var(--workspace-stat-bg));
     --workspace-stat-neu-dark: color-mix(in srgb, black 16%, var(--workspace-stat-bg));
-    --workspace-stat-neu-raised:
-      6px 6px 15px var(--workspace-stat-neu-dark),
-      -4px -4px 11px var(--workspace-stat-neu-light);
-    --workspace-stat-neu-inset:
-      inset 3px 3px 8px var(--workspace-stat-neu-dark),
-      inset -2px -2px 6px var(--workspace-stat-neu-light);
-    --workspace-stat-neu-inset-deep:
-      inset 4px 4px 10px var(--workspace-stat-neu-dark),
-      inset -3px -3px 8px var(--workspace-stat-neu-light);
+    --workspace-stat-neu-raised: var(--neu-flat-shadow);
+    --workspace-stat-neu-inset: var(--neu-flat-inset);
+    --workspace-stat-neu-inset-deep: var(--neu-flat-inset);
     --workspace-stat-progress-fill: linear-gradient(
       90deg,
       color-mix(in srgb, var(--workspace-stat-accent) 70%, white) 0%,
@@ -136,15 +132,9 @@
     /** Painéis laterais escuros (métricas / alertas) — rebaixo/relevo na mesma base #4B433D */
     --workspace-panel-neu-light: color-mix(in srgb, var(--workspace-panel-neu-highlight-inset) 55%, var(--workspace-panel-bg));
     --workspace-panel-neu-dark: var(--workspace-panel-neu-shadow);
-    --workspace-panel-neu-raised:
-      6px 6px 16px color-mix(in srgb, var(--workspace-panel-neu-shadow) 52%, transparent),
-      -4px -4px 10px color-mix(in srgb, var(--workspace-panel-neu-highlight-inset) 28%, var(--workspace-panel-bg));
-    --workspace-panel-neu-inset:
-      inset 5px 5px 10px var(--workspace-panel-neu-shadow),
-      inset -4px -4px 8px var(--workspace-panel-neu-highlight-inset);
-    --workspace-panel-neu-inset-deep:
-      inset 6px 6px 12px var(--workspace-panel-neu-shadow),
-      inset -5px -5px 10px var(--workspace-panel-neu-highlight-inset);
+    --workspace-panel-neu-raised: var(--neu-flat-shadow);
+    --workspace-panel-neu-inset: var(--neu-flat-inset);
+    --workspace-panel-neu-inset-deep: var(--neu-flat-inset);
     --workspace-panel-radius: 16px;
     /** Listas flutuantes (NeuSelect, ActionMenu, busca, dropdown DaisyUI) — portal em body. */
     --app-menu-bg: var(--workspace-panel-bg);
@@ -155,9 +145,7 @@
     --app-menu-border: color-mix(in srgb, var(--workspace-panel-neu-light) 28%, transparent);
     --app-menu-raised: var(--workspace-panel-neu-raised);
     --app-menu-inset: var(--workspace-panel-neu-inset);
-    --app-menu-hover:
-      7px 7px 16px var(--workspace-panel-neu-dark),
-      -5px -5px 12px var(--workspace-panel-neu-light);
+    --app-menu-hover: var(--neu-flat-hover);
     /** Grade ProjectDashboard (QADashboard) — creme, roxo, laranja Leve */
     --project-dashboard-insight-bg: var(--app-neu-bg);
     --project-dashboard-insight-text: #333333;
@@ -179,12 +167,12 @@
     --leve-header-cream: #f5f1e6;
     --leve-header-border: rgba(66, 29, 58, 0.12);
     --leve-header-radius: 16px;
-    /** Canvas warm sand das abas internas do projeto (Dashboard, Tarefas, Documentos, Regras). */
-    --project-workspace-bg: #e6e0d6;
-    --project-workspace-surface: #f0ebe3;
-    --project-workspace-highlight: #f7f3ec;
-    --project-workspace-light: #fdfbf7;
-    --project-workspace-shadow: #c3b7a4;
+    /** Canvas das abas internas do projeto — alinhado ao tema base (oklch). */
+    --project-workspace-bg: oklch(98% 0 0);
+    --project-workspace-surface: oklch(100% 0 0);
+    --project-workspace-highlight: oklch(100% 0 0);
+    --project-workspace-light: oklch(100% 0 0);
+    --project-workspace-shadow: oklch(95% 0 0);
     /** Neumorfismo global (app shell, abas, modais, painéis) */
     --app-neu-bg: var(--projects-dash-bg);
     --app-neu-surface: var(--projects-dash-surface);
@@ -197,18 +185,11 @@
     --leve-neu-surface: var(--leve-header-cream);
     --leve-neu-light: color-mix(in srgb, white 82%, var(--leve-header-bg));
     --leve-neu-dark: color-mix(in srgb, black 16%, var(--leve-header-bg));
-    --leve-neu-raised:
-      6px 6px 16px var(--leve-neu-dark),
-      -5px -5px 13px var(--leve-neu-light);
-    --leve-neu-inset:
-      inset 5px 5px 11px var(--leve-neu-dark),
-      inset -3px -3px 8px var(--leve-neu-light);
-    --leve-neu-inset-deep:
-      inset 6px 6px 13px var(--leve-neu-dark),
-      inset -4px -4px 10px var(--leve-neu-light);
+    --leve-neu-raised: var(--neu-flat-shadow);
+    --leve-neu-inset: var(--neu-flat-inset);
+    --leve-neu-inset-deep: var(--neu-flat-inset);
     --leve-neu-hover:
-      8px 8px 20px var(--leve-neu-dark),
-      -5px -5px 15px var(--leve-neu-light),
+      var(--neu-flat-hover),
       0 0 0 1px color-mix(in srgb, var(--leve-header-accent) 18%, transparent);
     /* Design System Leve Saúde (referência + contraste navegação) */
     --color-primary: #109685;
@@ -313,34 +294,18 @@
     --projects-dash-surface: #322e2b;
     --projects-dash-neu-light: color-mix(in srgb, white 10%, var(--projects-dash-bg));
     --projects-dash-neu-dark: color-mix(in srgb, black 35%, var(--projects-dash-bg));
-    --projects-dash-neu-raised:
-      6px 6px 16px var(--projects-dash-neu-dark),
-      -4px -4px 10px var(--projects-dash-neu-light);
-    --projects-dash-neu-inset:
-      inset 4px 4px 10px var(--projects-dash-neu-dark),
-      inset -3px -3px 8px var(--projects-dash-neu-light);
+    --projects-dash-neu-raised: var(--neu-flat-shadow);
+    --projects-dash-neu-inset: var(--neu-flat-inset);
     --workspace-stat-neu-light: color-mix(in srgb, white 12%, var(--workspace-stat-bg));
     --workspace-stat-neu-dark: color-mix(in srgb, black 30%, var(--workspace-stat-bg));
-    --workspace-stat-neu-raised:
-      5px 5px 14px var(--workspace-stat-neu-dark),
-      -3px -3px 8px var(--workspace-stat-neu-light);
-    --workspace-stat-neu-inset:
-      inset 3px 3px 8px var(--workspace-stat-neu-dark),
-      inset -2px -2px 6px var(--workspace-stat-neu-light);
-    --workspace-stat-neu-inset-deep:
-      inset 4px 4px 10px var(--workspace-stat-neu-dark),
-      inset -3px -3px 8px var(--workspace-stat-neu-light);
+    --workspace-stat-neu-raised: var(--neu-flat-shadow);
+    --workspace-stat-neu-inset: var(--neu-flat-inset);
+    --workspace-stat-neu-inset-deep: var(--neu-flat-inset);
     --workspace-panel-neu-light: color-mix(in srgb, var(--workspace-panel-neu-highlight-inset) 50%, var(--workspace-panel-bg));
     --workspace-panel-neu-dark: var(--workspace-panel-neu-shadow);
-    --workspace-panel-neu-raised:
-      6px 6px 16px color-mix(in srgb, var(--workspace-panel-neu-shadow) 55%, transparent),
-      -4px -4px 10px color-mix(in srgb, var(--workspace-panel-neu-highlight-inset) 25%, var(--workspace-panel-bg));
-    --workspace-panel-neu-inset:
-      inset 5px 5px 10px var(--workspace-panel-neu-shadow),
-      inset -4px -4px 8px var(--workspace-panel-neu-highlight-inset);
-    --workspace-panel-neu-inset-deep:
-      inset 6px 6px 12px var(--workspace-panel-neu-shadow),
-      inset -5px -5px 10px var(--workspace-panel-neu-highlight-inset);
+    --workspace-panel-neu-raised: var(--neu-flat-shadow);
+    --workspace-panel-neu-inset: var(--neu-flat-inset);
+    --workspace-panel-neu-inset-deep: var(--neu-flat-inset);
     --project-dashboard-insight-bg: var(--app-neu-bg);
     --project-dashboard-insight-text: rgba(255, 255, 255, 0.88);
     --project-dashboard-insight-text-muted: rgba(255, 255, 255, 0.62);
@@ -367,18 +332,11 @@
     --leve-neu-surface: color-mix(in srgb, var(--leve-header-cream) 12%, var(--leve-header-bg));
     --leve-neu-light: color-mix(in srgb, white 10%, var(--leve-header-bg));
     --leve-neu-dark: color-mix(in srgb, black 32%, var(--leve-header-bg));
-    --leve-neu-raised:
-      5px 5px 16px var(--leve-neu-dark),
-      -3px -3px 10px var(--leve-neu-light);
-    --leve-neu-inset:
-      inset 4px 4px 10px var(--leve-neu-dark),
-      inset -3px -3px 8px var(--leve-neu-light);
-    --leve-neu-inset-deep:
-      inset 5px 5px 12px var(--leve-neu-dark),
-      inset -4px -4px 10px var(--leve-neu-light);
+    --leve-neu-raised: var(--neu-flat-shadow);
+    --leve-neu-inset: var(--neu-flat-inset);
+    --leve-neu-inset-deep: var(--neu-flat-inset);
     --leve-neu-hover:
-      7px 7px 18px var(--leve-neu-dark),
-      -4px -4px 12px var(--leve-neu-light),
+      var(--neu-flat-hover),
       0 0 0 1px color-mix(in srgb, var(--leve-header-accent) 22%, transparent);
 
     --card: #1d1e22;
@@ -669,11 +627,18 @@
   /** NeuSelect / AppSelect — paleta CLARA via tokens (sem background-image; chevron é ícone Lucide). */
   .tasks-panel-dark-surface .neu-select-trigger.tasks-panel-neu-select,
   .tasks-panel-dark-surface .tasks-panel-neu-select.neu-select-trigger {
-    color: var(--workspace-panel-text);
-    border-color: var(--workspace-panel-border);
-    background-color: color-mix(in srgb, var(--workspace-panel-neu-dark) 22%, var(--workspace-panel-bg));
+    color: oklch(var(--bc));
+    border-color: oklch(var(--b3));
+    background-color: color-mix(in oklch, oklch(var(--b3)) 22%, oklch(var(--b2)));
     background-image: none;
     box-shadow: var(--workspace-panel-neu-inset);
+  }
+
+  [data-theme='leve'] .tasks-panel-scope .tasks-panel-dark-surface .neu-select-trigger.tasks-panel-neu-select,
+  [data-theme='leve'] .tasks-panel-scope .tasks-panel-dark-surface .tasks-panel-neu-select.neu-select-trigger {
+    color: oklch(var(--bc));
+    border-color: oklch(var(--b3));
+    background-color: color-mix(in oklch, oklch(var(--b3)) 22%, oklch(var(--b2)));
   }
 
   .tasks-panel-dark-surface .neu-select-trigger.tasks-panel-neu-select:hover:not(:disabled),
@@ -728,30 +693,48 @@
    * `.workspace-surface-light`, então a paleta precisa nascer no próprio shell.
    */
   :is(.tasks-panel-neu-modal, .tasks-panel-filters-modal, .task-details-neu-modal, .test-report-neu-modal).leve-modal-neu-shell {
-    --modal-neu-shell-bg: #ebe6de;
-    --modal-neu-bg: #f2eee8;
-    --modal-neu-surface: #e5dfd5;
-    --modal-neu-border: #ded7cd;
-    --modal-neu-light: #ffffff;
-    --modal-neu-text: #401c31;
-    --modal-neu-text-muted: #6b5e5e;
-    --modal-neu-placeholder: #8a7d76;
-    --modal-neu-accent: #ff5c1b;
-    --modal-neu-accent-legacy: #e65100;
-    --modal-neu-accent-contrast: #ffffff;
-    --modal-neu-raised:
-      6px 6px 14px color-mix(in srgb, var(--modal-neu-border) 72%, transparent),
-      -4px -4px 10px color-mix(in srgb, var(--modal-neu-light) 52%, var(--modal-neu-bg));
-    --modal-neu-inset:
-      inset 4px 4px 10px color-mix(in srgb, var(--modal-neu-border) 58%, transparent),
-      inset -3px -3px 8px color-mix(in srgb, var(--modal-neu-light) 24%, var(--modal-neu-surface));
-    --modal-neu-inset-deep:
-      inset 5px 5px 14px color-mix(in srgb, var(--modal-neu-border) 64%, transparent),
-      inset -4px -4px 10px color-mix(in srgb, var(--modal-neu-light) 22%, var(--modal-neu-surface));
+    --modal-neu-shell-bg: oklch(var(--b2));
+    --modal-neu-bg: oklch(var(--b1));
+    --modal-neu-surface: oklch(var(--b2));
+    --modal-neu-border: oklch(var(--b3));
+    --modal-neu-light: oklch(var(--b1));
+    --modal-neu-text: oklch(var(--bc));
+    --modal-neu-text-muted: oklch(var(--bc) / 0.72);
+    --modal-neu-placeholder: oklch(var(--bc) / 0.55);
+    --modal-neu-accent: oklch(var(--p));
+    --modal-neu-accent-legacy: oklch(var(--p));
+    --modal-neu-accent-contrast: oklch(var(--pc));
+    --modal-neu-raised: var(--neu-flat-shadow);
+    --modal-neu-inset: var(--neu-flat-inset);
+    --modal-neu-inset-deep: var(--neu-flat-inset);
     --modal-neu-shell-shadow:
-      10px 10px 28px color-mix(in srgb, var(--modal-neu-border) 68%, transparent),
-      -6px -6px 16px color-mix(in srgb, var(--modal-neu-light) 30%, var(--modal-neu-bg)),
-      0 24px 48px color-mix(in srgb, var(--modal-neu-text) 14%, transparent);
+      10px 10px 28px color-mix(in oklch, oklch(var(--b3)) 68%, transparent),
+      -6px -6px 16px color-mix(in oklch, oklch(var(--b1)) 30%, oklch(var(--b2))),
+      0 24px 48px color-mix(in oklch, oklch(var(--bc)) 14%, transparent);
+  }
+
+  :is(.task-details-neu-modal, .test-report-neu-modal).leve-modal-neu-shell {
+    --leve-header-text: var(--modal-neu-text);
+    --leve-header-text-muted: var(--modal-neu-text-muted);
+    --leve-header-accent: var(--modal-neu-accent);
+    --leve-header-bg: var(--modal-neu-bg);
+    --leve-header-cream: var(--modal-neu-bg);
+    --leve-header-border: var(--modal-neu-border);
+    --leve-neu-bg: var(--modal-neu-bg);
+    --leve-neu-surface: var(--modal-neu-surface);
+    --leve-neu-light: var(--modal-neu-light);
+    --leve-neu-dark: var(--modal-neu-border);
+    --color-primary: var(--modal-neu-accent);
+    --color-primary-deep: var(--modal-neu-text);
+    --workspace-panel-accent: var(--modal-neu-accent);
+    --workspace-panel-bg: var(--modal-neu-shell-bg);
+    --workspace-panel-text: var(--modal-neu-text);
+    --workspace-panel-text-muted: var(--modal-neu-text-muted);
+    --workspace-panel-border: var(--modal-neu-border);
+    border-color: var(--modal-neu-border);
+    background: var(--modal-neu-shell-bg);
+    color: var(--modal-neu-text-muted);
+    box-shadow: var(--modal-neu-shell-shadow);
   }
 
   /**
@@ -898,7 +881,7 @@
     border: 1px solid color-mix(in srgb, var(--modal-neu-accent) 55%, transparent);
     background: var(--modal-neu-accent);
     color: var(--modal-neu-accent-contrast);
-    box-shadow: var(--modal-neu-raised);
+    box-shadow: var(--neu-relief);
   }
 
   .tasks-panel-neu-modal .btn-outline {
@@ -1180,171 +1163,263 @@
     box-shadow: var(--leve-neu-hover);
   }
 
-  /** Lista de tarefas — paleta clara neumórfica (cards). */
+  /** Lista de tarefas — tokens DaisyUI (herda de `data-theme="leve"`). */
   .tasks-list-panel {
-    --leve-header-text: #401c31;
-    --leve-header-text-muted: #6b5e5e;
-    --leve-header-accent: #ff5c1b;
-    --leve-neu-bg: #f2eee8;
-    --leve-neu-surface: #e5dfd5;
-    --task-card-surface-bg: #f2eee8;
-    --color-primary: #ff5c1b;
-    --color-primary-deep: #401c31;
-    --leve-neu-light: color-mix(in srgb, #ffffff 22%, #f2eee8);
-    --leve-neu-dark: color-mix(in srgb, #ded7cd 70%, #e5dfd5);
-    --leve-neu-raised:
-      3px 3px 8px color-mix(in srgb, #ded7cd 45%, transparent),
-      -2px -2px 6px color-mix(in srgb, #ffffff 18%, #f2eee8);
-    --leve-neu-inset:
-      inset 3px 3px 8px color-mix(in srgb, #ded7cd 50%, transparent),
-      inset -2px -2px 6px color-mix(in srgb, #ffffff 18%, #e5dfd5);
-    --leve-neu-hover:
-      4px 4px 10px color-mix(in srgb, #ded7cd 52%, transparent),
-      -2px -2px 7px color-mix(in srgb, #ffffff 20%, #f2eee8);
+    --leve-header-text: oklch(var(--bc));
+    --leve-header-text-muted: oklch(var(--bc) / 0.72);
+    --leve-header-accent: oklch(var(--p));
+    --leve-neu-bg: oklch(var(--b2));
+    --leve-neu-surface: oklch(var(--b1));
+    --task-card-surface-bg: oklch(var(--b1));
+    --color-primary: oklch(var(--p));
+    --color-primary-deep: oklch(var(--bc));
+    --leve-neu-light: oklch(var(--b1));
+    --leve-neu-dark: oklch(var(--b3));
+    --leve-neu-raised: var(--neu-flat-shadow);
+    --leve-neu-inset: var(--neu-flat-inset);
+    --leve-neu-hover: var(--neu-flat-hover);
+    --task-list-raised: var(--neu-flat-shadow);
+    --task-list-inset:
+      inset 3px 3px 8px color-mix(in oklch, oklch(var(--b3)) 60%, transparent),
+      inset -2px -2px 6px color-mix(in oklch, oklch(var(--b1)) 45%, oklch(var(--b3)));
+    --task-list-chip-raised:
+      2px 2px 6px color-mix(in oklch, oklch(var(--b3)) 55%, transparent),
+      -1px -1px 4px color-mix(in oklch, oklch(var(--b1)) 50%, transparent);
+    --task-list-chip-active:
+      inset 2px 2px 6px color-mix(in oklch, oklch(var(--b3)) 60%, transparent),
+      inset -1px -1px 4px color-mix(in oklch, oklch(var(--b1)) 40%, transparent);
+    background-color: oklch(var(--b2));
   }
 
   .tasks-list-panel .task-list-card-shell {
-    --task-card-surface-bg: #f2eee8;
-    border-color: #ded7cd;
-    background-color: #f2eee8;
-    box-shadow:
-      6px 6px 14px color-mix(in srgb, #ded7cd 75%, transparent),
-      -4px -4px 10px color-mix(in srgb, #ffffff 55%, #f2eee8);
+    --task-card-surface-bg: oklch(var(--b1));
+    border-color: oklch(var(--b3));
+    background-color: oklch(var(--b1));
+    box-shadow: var(--task-list-raised);
   }
 
   .tasks-list-panel .task-list-card-shell:hover {
-    border-color: color-mix(in srgb, #ff5c1b 28%, transparent);
+    border-color: color-mix(in oklch, oklch(var(--p)) 28%, transparent);
   }
 
   .tasks-list-panel .task-list-card-shell:focus-visible {
-    border-color: color-mix(in srgb, #ff5c1b 40%, transparent);
+    border-color: color-mix(in oklch, oklch(var(--p)) 40%, transparent);
     box-shadow:
-      6px 6px 14px color-mix(in srgb, #ded7cd 80%, transparent),
-      -4px -4px 10px color-mix(in srgb, #ffffff 60%, #f2eee8),
-      0 0 0 2px color-mix(in srgb, #ff5c1b 30%, transparent);
+      var(--task-list-raised),
+      0 0 0 2px color-mix(in oklch, oklch(var(--p)) 30%, transparent);
   }
 
   .tasks-list-panel .task-card-metadata-strip {
-    border-color: #ded7cd;
-    background: #e5dfd5 !important;
-    color: #6b5e5e;
-    box-shadow:
-      inset 3px 3px 8px color-mix(in srgb, #ded7cd 50%, transparent),
-      inset -2px -2px 6px color-mix(in srgb, #ffffff 18%, #e5dfd5) !important;
+    border-color: oklch(var(--b3));
+    background: oklch(var(--b3)) !important;
+    color: oklch(var(--bc) / 0.72);
+    box-shadow: var(--task-list-inset) !important;
   }
 
   .tasks-list-panel .task-card-title {
-    color: #401c31;
+    color: oklch(var(--bc));
   }
 
   .tasks-list-panel .task-card-muted,
   .tasks-list-panel .task-card-field-label {
-    color: #6b5e5e;
+    color: oklch(var(--bc) / 0.72);
   }
 
   .tasks-list-panel .task-card-action-chip-cta {
-    color: #6b5e5e;
+    color: oklch(var(--bc) / 0.72);
   }
 
   .tasks-list-panel .task-card-action-chip-cta:hover {
-    color: #ff5c1b;
+    color: oklch(var(--p));
   }
 
   .tasks-list-panel .text-primary {
-    color: #ff5c1b;
+    color: oklch(var(--p));
   }
 
   .tasks-list-panel .task-list-card-shell :is(.task-list-neu-chip-raised, .task-list-action-chip) {
-    border-color: #ded7cd;
-    background-color: #f2eee8;
-    box-shadow:
-      2px 2px 6px color-mix(in srgb, #ded7cd 42%, transparent),
-      -1px -1px 4px color-mix(in srgb, #ffffff 14%, #f2eee8);
+    border-color: oklch(var(--b3));
+    background-color: oklch(var(--b1));
+    box-shadow: var(--task-list-chip-raised);
   }
 
   .tasks-list-panel .task-list-card-shell :is(.task-list-neu-chip-raised, .task-list-action-chip):hover:not(:disabled) {
-    background-color: color-mix(in srgb, #e8e2da 45%, #f2eee8);
+    background-color: color-mix(in oklch, oklch(var(--b3)) 45%, oklch(var(--b1)));
   }
 
   .tasks-list-panel .task-list-card-shell .task-list-action-chip:active:not(:disabled) {
     transform: translateY(1px);
-    box-shadow:
-      inset 2px 2px 6px color-mix(in srgb, #ded7cd 48%, transparent),
-      inset -1px -1px 4px color-mix(in srgb, #ffffff 12%, #f2eee8) !important;
+    box-shadow: var(--task-list-chip-active) !important;
   }
 
-  /** Badges da faixa de metadados — relevo raised (cores semânticas preservadas). */
+  /** Badges da faixa de metadados — cores semânticas do tema. */
   .tasks-list-panel .task-card-metadata-strip .task-list-neu-badge {
     --tw-ring-width: 0 !important;
     --tw-ring-color: transparent !important;
-    border: 1px solid #ded7cd !important;
-    box-shadow:
-      2px 2px 6px color-mix(in srgb, #ded7cd 42%, transparent),
-      -1px -1px 4px color-mix(in srgb, #ffffff 14%, #f2eee8) !important;
+    border: 1px solid oklch(var(--b3)) !important;
+    box-shadow: var(--task-list-chip-raised) !important;
   }
 
   .tasks-list-panel .task-list-neu-badge--info {
-    background: #2563eb !important;
-    color: #ffffff !important;
-    border-color: color-mix(in srgb, #2563eb 35%, #ded7cd) !important;
+    background: oklch(var(--in)) !important;
+    color: oklch(var(--inc)) !important;
+    border-color: color-mix(in oklch, oklch(var(--in)) 35%, oklch(var(--b3))) !important;
   }
 
   .tasks-list-panel .task-list-neu-badge--error {
-    background: #dc2626 !important;
-    color: #ffffff !important;
-    border-color: color-mix(in srgb, #dc2626 35%, #ded7cd) !important;
+    background: oklch(var(--er)) !important;
+    color: oklch(var(--erc)) !important;
+    border-color: color-mix(in oklch, oklch(var(--er)) 35%, oklch(var(--b3))) !important;
   }
 
   .tasks-list-panel .task-list-neu-badge--success {
-    background: #16a34a !important;
-    color: #ffffff !important;
-    border-color: color-mix(in srgb, #16a34a 35%, #ded7cd) !important;
+    background: oklch(var(--su)) !important;
+    color: oklch(var(--suc)) !important;
+    border-color: color-mix(in oklch, oklch(var(--su)) 35%, oklch(var(--b3))) !important;
   }
 
-  .tasks-list-panel .task-list-neu-badge--primary,
+  .tasks-list-panel .task-list-neu-badge--primary {
+    background: oklch(var(--n)) !important;
+    color: oklch(var(--nc)) !important;
+    border-color: color-mix(in oklch, oklch(var(--n)) 28%, oklch(var(--b3))) !important;
+  }
+
   .tasks-list-panel .task-list-neu-badge--primary.jira-task-epic-type-pill {
-    background: #421d3a !important;
-    color: #f5f1e6 !important;
-    border-color: color-mix(in srgb, #421d3a 28%, #ded7cd) !important;
+    background-color: var(--jira-task-epic-accent) !important;
+    color: #ffffff !important;
+    border-color: var(--jira-task-epic-accent-border) !important;
   }
 
   .tasks-list-panel .task-list-neu-badge--neutral {
-    background: #f2eee8 !important;
-    color: #401c31 !important;
-    border-color: #ded7cd !important;
+    background: oklch(var(--b1)) !important;
+    color: oklch(var(--bc)) !important;
+    border-color: oklch(var(--b3)) !important;
   }
 
   .tasks-list-panel .task-list-neu-badge--tech {
-    background: #f2eee8 !important;
-    color: #401c31 !important;
-    border-color: #ded7cd !important;
+    background: oklch(var(--b1)) !important;
+    color: oklch(var(--bc)) !important;
+    border-color: oklch(var(--b3)) !important;
   }
 
   .tasks-list-panel .task-card-metadata-strip button.task-list-neu-badge:hover:not(:disabled) {
     filter: brightness(1.04);
-    box-shadow:
-      3px 3px 8px color-mix(in srgb, #ded7cd 48%, transparent),
-      -2px -2px 5px color-mix(in srgb, #ffffff 16%, #f2eee8) !important;
+    box-shadow: var(--leve-neu-hover) !important;
   }
 
   .tasks-list-panel .task-card-metadata-strip button.task-list-neu-badge:active:not(:disabled) {
     transform: translateY(1px);
-    box-shadow:
-      inset 2px 2px 6px color-mix(in srgb, #ded7cd 45%, transparent),
-      inset -1px -1px 4px color-mix(in srgb, #ffffff 12%, #f2eee8) !important;
+    box-shadow: var(--task-list-chip-active) !important;
   }
 
   .tasks-list-panel .task-list-subtree-expand-placeholder {
-    border-color: #ded7cd;
-    background-color: #e5dfd5;
-    box-shadow:
-      inset 3px 3px 8px color-mix(in srgb, #ded7cd 50%, transparent),
-      inset -2px -2px 6px color-mix(in srgb, #ffffff 18%, #e5dfd5);
+    border-color: oklch(var(--b3));
+    background-color: oklch(var(--b3));
+    box-shadow: var(--task-list-inset);
   }
 
   .tasks-list-panel .task-list-card-shell [role='progressbar'] {
-    border-color: #ded7cd;
-    background: color-mix(in srgb, #ded7cd 28%, #f2eee8);
+    border-color: oklch(var(--b3));
+    background: color-mix(in oklch, oklch(var(--b3)) 28%, oklch(var(--b1)));
+  }
+
+  /** Detalhe expandido no card — mesma família visual do modal (`task-details-neu-*`). */
+  .tasks-list-panel .task-list-card-shell :is(
+    .task-details-neu-raised,
+    .task-modal-section
+  ) {
+    border: 1px solid oklch(var(--b3));
+    border-radius: var(--rounded-box, 1rem);
+    background: color-mix(in oklch, oklch(var(--b3)) 11%, oklch(var(--b2)));
+    box-shadow: var(--task-list-raised);
+  }
+
+  .tasks-list-panel .task-list-card-shell :is(
+    .task-details-neu-inset,
+    .task-details-neu-inset-deep,
+    .leve-neu-surface-inset
+  ) {
+    border: 1px solid oklch(var(--b3));
+    background: color-mix(in oklch, oklch(var(--b3)) 24%, oklch(var(--b2)));
+    box-shadow: var(--task-list-inset);
+  }
+
+  .tasks-list-panel .task-list-card-shell .task-details-neu-track {
+    border: 1px solid oklch(var(--b3));
+    border-radius: var(--rounded-selector, 2rem);
+    background: color-mix(in oklch, oklch(var(--b3)) 32%, oklch(var(--b2)));
+    box-shadow: var(--task-list-inset);
+  }
+
+  .tasks-list-panel .task-list-card-shell :is(
+    .task-details-neu-chip,
+    .leve-neu-pill,
+    .task-details-neu-ghost-btn
+  ):not(.task-details-neu-chip--active):not(.task-details-neu-chip--status-active) {
+    border: 1px solid oklch(var(--b3));
+    border-radius: var(--rounded-selector, 2rem);
+    background: color-mix(in oklch, oklch(var(--b3)) 10%, oklch(var(--b2)));
+    color: oklch(var(--bc) / 0.72);
+    box-shadow: var(--task-list-chip-raised);
+  }
+
+  .tasks-list-panel .task-list-card-shell :is(
+    .task-details-neu-chip,
+    .leve-neu-pill
+  ):hover:not(:disabled):not(.task-details-neu-chip--active) {
+    color: oklch(var(--p));
+  }
+
+  .tasks-list-panel .task-list-card-shell :is(
+    .task-details-neu-chip--active,
+    .task-details-neu-chip--status-active
+  ) {
+    border: 1px solid color-mix(in oklch, oklch(var(--p)) 38%, oklch(var(--b3)));
+    background: color-mix(in oklch, oklch(var(--p)) 12%, oklch(var(--b2)));
+    color: oklch(var(--p));
+    box-shadow: var(--task-list-chip-raised);
+  }
+
+  .tasks-list-panel .task-list-card-shell .task-details-neu-primary-cta {
+    border: 1px solid color-mix(in oklch, oklch(var(--p)) 45%, oklch(var(--b3)));
+    background: oklch(var(--p));
+    color: oklch(var(--pc));
+    box-shadow: var(--task-list-chip-raised);
+  }
+
+  .tasks-list-panel .task-list-card-shell .task-details-neu-section-header {
+    border-color: oklch(var(--b3));
+    background: color-mix(in oklch, oklch(var(--b3)) 18%, oklch(var(--b2)));
+    color: oklch(var(--bc));
+    box-shadow: var(--task-list-inset);
+  }
+
+  [data-theme='leve'] .tasks-panel-scope {
+    --workspace-panel-bg: oklch(var(--b1));
+    --workspace-panel-neu-shadow: oklch(var(--b3));
+    --workspace-panel-neu-highlight-inset: oklch(var(--b1));
+    --workspace-panel-neu-highlight-raised: oklch(var(--b1));
+    --workspace-panel-neu-highlight: oklch(var(--b1));
+    --workspace-panel-neu-light: oklch(var(--b1));
+    --workspace-panel-neu-dark: oklch(var(--b3));
+    --workspace-panel-text: oklch(var(--bc));
+    --workspace-panel-text-muted: oklch(var(--bc) / 0.72);
+    --workspace-panel-accent: oklch(var(--p));
+    --workspace-panel-border: oklch(var(--b3));
+    --workspace-panel-chip: oklch(var(--bc) / 0.05);
+    --workspace-panel-divider: oklch(var(--b3) / 0.55);
+    --workspace-panel-badge-bg: oklch(var(--p));
+    --workspace-panel-badge-text: oklch(var(--pc));
+    --workspace-panel-badge-neutral-bg: oklch(var(--b3) / 0.35);
+    --workspace-panel-badge-neutral-text: oklch(var(--bc));
+    --leve-header-text: oklch(var(--bc));
+    --leve-header-text-muted: oklch(var(--bc) / 0.72);
+    --leve-header-accent: oklch(var(--p));
+    --leve-header-bg: oklch(var(--b2));
+    --leve-neu-bg: oklch(var(--b2));
+    --leve-neu-surface: oklch(var(--b1));
+    --leve-neu-light: oklch(var(--b1));
+    --leve-neu-dark: oklch(var(--b3));
   }
 
   /**
@@ -1360,15 +1435,9 @@
     --doc-neu-category-requisitos-text: #b3450b;
     --doc-neu-text: #4f2557;
     --doc-neu-text-muted: rgba(79, 37, 87, 0.7);
-    --doc-neu-raised:
-      6px 6px 16px color-mix(in srgb, var(--doc-neu-dark) 60%, transparent),
-      -4px -4px 10px var(--doc-neu-light);
-    --doc-neu-inset:
-      inset 4px 4px 10px color-mix(in srgb, var(--doc-neu-dark) 70%, transparent),
-      inset -3px -3px 8px var(--doc-neu-light);
-    --doc-neu-inset-deep:
-      inset 6px 6px 12px color-mix(in srgb, var(--doc-neu-dark) 80%, transparent),
-      inset -5px -5px 10px var(--doc-neu-light);
+    --doc-neu-raised: var(--neu-flat-shadow);
+    --doc-neu-inset: var(--neu-flat-inset);
+    --doc-neu-inset-deep: var(--neu-flat-inset);
     --leve-neu-bg: #f8f9fa;
     --leve-neu-light: #ffffff;
     --leve-neu-dark: #dfe1e5;
@@ -1453,8 +1522,7 @@
   .documents-view-scope .documents-card:hover {
     border-color: color-mix(in srgb, var(--doc-neu-accent) 28%, var(--doc-neu-dark)) !important;
     box-shadow:
-      7px 7px 18px color-mix(in srgb, var(--doc-neu-dark) 60%, transparent),
-      -5px -5px 12px var(--doc-neu-light),
+      var(--neu-flat-hover),
       0 0 0 1px color-mix(in srgb, var(--doc-neu-accent) 14%, transparent) !important;
   }
 
@@ -1511,7 +1579,7 @@
     border: 1px solid color-mix(in srgb, oklch(var(--er)) 32%, var(--doc-neu-dark)) !important;
     background: color-mix(in srgb, var(--doc-neu-light) 60%, var(--doc-neu-bg)) !important;
     color: oklch(var(--er)) !important;
-    box-shadow: var(--doc-neu-raised) !important;
+    box-shadow: var(--neu-relief) !important;
   }
 
   .documents-view-scope .documents-neu-spec-remove:hover:not(:disabled) {
@@ -1526,7 +1594,7 @@
   }
 
   .documents-view-scope .documents-card .documents-neu-chip:not(.documents-card-action-btn) {
-    box-shadow: var(--doc-neu-raised) !important;
+    box-shadow: var(--neu-relief) !important;
   }
 
   .documents-view-scope .documents-neu-chip,
@@ -1534,7 +1602,7 @@
     border: 1px solid color-mix(in srgb, var(--doc-neu-dark) 70%, transparent) !important;
     background: color-mix(in srgb, var(--doc-neu-light) 55%, var(--doc-neu-bg)) !important;
     color: var(--doc-neu-text-muted) !important;
-    box-shadow: var(--doc-neu-raised) !important;
+    box-shadow: var(--neu-relief) !important;
   }
 
   .documents-view-scope .documents-neu-filter-pill.leve-neu-pill-active {
@@ -1560,7 +1628,7 @@
     border: 1px solid color-mix(in srgb, var(--doc-neu-accent) 55%, transparent) !important;
     background: var(--doc-neu-accent) !important;
     color: var(--doc-neu-accent-contrast) !important;
-    box-shadow: var(--doc-neu-raised) !important;
+    box-shadow: var(--neu-relief) !important;
   }
 
   .documents-view-scope .documents-neu-btn-primary:hover:not(:disabled),
@@ -1573,7 +1641,7 @@
     border: 1px solid color-mix(in srgb, var(--doc-neu-dark) 70%, transparent) !important;
     background: color-mix(in srgb, var(--doc-neu-light) 55%, var(--doc-neu-bg)) !important;
     color: var(--doc-neu-text) !important;
-    box-shadow: var(--doc-neu-raised) !important;
+    box-shadow: var(--neu-relief) !important;
   }
 
   .documents-view-scope .documents-card-action-outline:hover:not(:disabled) {
@@ -1582,7 +1650,7 @@
 
   .documents-view-scope .documents-card-list-panel .app-btn-primary-inline,
   .documents-view-scope .documents-card-list-panel .app-btn-outline {
-    box-shadow: var(--doc-neu-raised) !important;
+    box-shadow: var(--neu-relief) !important;
   }
 
   .documents-view-scope .documents-neu-chip:active,
@@ -1594,7 +1662,7 @@
 
   .documents-view-scope .documents-card-actions .documents-card-action-btn {
     border-radius: 9999px !important;
-    box-shadow: var(--doc-neu-raised) !important;
+    box-shadow: var(--neu-relief) !important;
   }
 
   .documents-view-scope .documents-card-actions .documents-card-action-outline {
@@ -1605,14 +1673,14 @@
 
   .documents-view-scope .documents-card-actions .documents-card-action-outline:hover:not(:disabled) {
     color: var(--doc-neu-accent) !important;
-    box-shadow: var(--doc-neu-raised) !important;
+    box-shadow: var(--neu-relief) !important;
   }
 
   .documents-view-scope .documents-card-actions .documents-card-action-primary {
     border: 1px solid color-mix(in srgb, var(--doc-neu-accent) 55%, transparent) !important;
     background: var(--doc-neu-accent) !important;
     color: var(--doc-neu-accent-contrast) !important;
-    box-shadow: var(--doc-neu-raised) !important;
+    box-shadow: var(--neu-relief) !important;
   }
 
   .documents-view-scope .documents-card-actions .documents-card-action-primary:hover:not(:disabled) {
@@ -1685,15 +1753,9 @@
     --br-neu-category-accent-text: #b3450b;
     --br-neu-text: #4f2557;
     --br-neu-text-muted: rgba(79, 37, 87, 0.7);
-    --br-neu-raised:
-      6px 6px 16px color-mix(in srgb, var(--br-neu-dark) 60%, transparent),
-      -4px -4px 10px var(--br-neu-light);
-    --br-neu-inset:
-      inset 4px 4px 10px color-mix(in srgb, var(--br-neu-dark) 70%, transparent),
-      inset -3px -3px 8px var(--br-neu-light);
-    --br-neu-inset-deep:
-      inset 6px 6px 12px color-mix(in srgb, var(--br-neu-dark) 80%, transparent),
-      inset -5px -5px 10px var(--br-neu-light);
+    --br-neu-raised: var(--neu-flat-shadow);
+    --br-neu-inset: var(--neu-flat-inset);
+    --br-neu-inset-deep: var(--neu-flat-inset);
     --app-neu-bg: #f8f9fa;
     --app-neu-surface: #ffffff;
     --app-neu-light: #ffffff;
@@ -1731,8 +1793,7 @@
   .business-rules-view-scope .business-rules-neu-card:hover {
     border-color: color-mix(in srgb, var(--br-neu-accent) 28%, var(--br-neu-dark)) !important;
     box-shadow:
-      7px 7px 18px color-mix(in srgb, var(--br-neu-dark) 60%, transparent),
-      -5px -5px 12px var(--br-neu-light),
+      var(--neu-flat-hover),
       0 0 0 1px color-mix(in srgb, var(--br-neu-accent) 14%, transparent) !important;
   }
 
@@ -1887,7 +1948,7 @@
     border: 1px solid color-mix(in srgb, var(--br-neu-dark) 70%, transparent) !important;
     background: color-mix(in srgb, var(--br-neu-light) 55%, var(--br-neu-bg)) !important;
     color: var(--br-neu-text) !important;
-    box-shadow: var(--br-neu-raised) !important;
+    box-shadow: var(--neu-relief) !important;
   }
 
   .business-rules-view-scope .business-rules-card-action-btn:hover:not(:disabled) {
@@ -1911,7 +1972,7 @@
   }
 
   .business-rules-view-scope .business-rules-neu-category-badge {
-    box-shadow: var(--br-neu-raised) !important;
+    box-shadow: var(--neu-relief) !important;
     border-width: 1px !important;
     border-style: solid;
   }
@@ -1985,23 +2046,17 @@
    * Tela Configurações — paleta CLARA neumórfica (LandingPage / modais).
    */
   .settings-view-scope {
-    --st-neu-bg: #f2eee8;
-    --st-neu-shell-bg: #ebe6de;
-    --st-neu-surface: #e5dfd5;
-    --st-neu-dark: #ded7cd;
-    --st-neu-light: #ffffff;
-    --st-neu-accent: #ff5c1b;
-    --st-neu-text: #401c31;
-    --st-neu-text-muted: #6b5e5e;
-    --st-neu-raised:
-      6px 6px 16px color-mix(in srgb, var(--st-neu-dark) 70%, transparent),
-      -4px -4px 10px color-mix(in srgb, var(--st-neu-light) 55%, var(--st-neu-bg));
-    --st-neu-inset:
-      inset 5px 5px 10px color-mix(in srgb, var(--st-neu-dark) 58%, transparent),
-      inset -4px -4px 8px color-mix(in srgb, var(--st-neu-light) 24%, var(--st-neu-surface));
-    --st-neu-inset-deep:
-      inset 6px 6px 12px color-mix(in srgb, var(--st-neu-dark) 64%, transparent),
-      inset -5px -5px 10px color-mix(in srgb, var(--st-neu-light) 22%, var(--st-neu-surface));
+    --st-neu-bg: oklch(98% 0 0);
+    --st-neu-shell-bg: oklch(100% 0 0);
+    --st-neu-surface: oklch(98% 0 0);
+    --st-neu-dark: oklch(95% 0 0);
+    --st-neu-light: oklch(100% 0 0);
+    --st-neu-accent: #e65100;
+    --st-neu-text: #421d3a;
+    --st-neu-text-muted: rgba(66, 29, 58, 0.72);
+    --st-neu-raised: var(--neu-flat-shadow);
+    --st-neu-inset: var(--neu-flat-inset);
+    --st-neu-inset-deep: var(--neu-flat-inset);
     --leve-neu-bg: var(--st-neu-bg);
     --leve-neu-light: var(--st-neu-light);
     --leve-neu-dark: var(--st-neu-dark);
@@ -2080,7 +2135,7 @@
     border: 1px solid color-mix(in srgb, var(--st-neu-dark) 42%, transparent) !important;
     background: color-mix(in srgb, var(--st-neu-dark) 10%, var(--st-neu-bg)) !important;
     color: var(--st-neu-text) !important;
-    box-shadow: var(--st-neu-raised) !important;
+    box-shadow: var(--neu-relief) !important;
   }
 
   .settings-view-scope :is(.workspace-chrome-pill, .app-btn-outline):hover:not(:disabled) {
@@ -2181,13 +2236,13 @@
     border: 1px solid color-mix(in srgb, oklch(var(--er)) 32%, var(--st-neu-dark)) !important;
     background: color-mix(in srgb, var(--st-neu-dark) 10%, var(--st-neu-bg)) !important;
     color: oklch(var(--er)) !important;
-    box-shadow: var(--st-neu-raised) !important;
+    box-shadow: var(--neu-relief) !important;
   }
 
   .settings-view-scope .jira-integration-disconnect-btn:hover:not(:disabled) {
     border-color: color-mix(in srgb, oklch(var(--er)) 45%, var(--st-neu-dark)) !important;
     color: oklch(var(--er)) !important;
-    box-shadow: var(--st-neu-raised) !important;
+    box-shadow: var(--neu-relief) !important;
   }
 
   .settings-view-scope .jira-integration-disconnect-btn:active:not(:disabled) {
@@ -2205,7 +2260,7 @@
 
   .settings-view-scope .jira-integration-link-pill:hover {
     color: var(--st-neu-accent) !important;
-    box-shadow: var(--st-neu-raised);
+    box-shadow: var(--neu-relief);
   }
 
   .settings-view-scope .jira-integration-link-pill:active {
@@ -2215,7 +2270,7 @@
 
   /** StatusBadge — elevação neumórfica no cabeçalho Jira */
   .settings-view-scope .jira-integration-status-badge {
-    box-shadow: var(--st-neu-raised) !important;
+    box-shadow: var(--neu-relief) !important;
   }
 
   .settings-view-scope .jira-integration-status-badge--connected {
@@ -2333,121 +2388,28 @@
     border-color: color-mix(in srgb, oklch(var(--er)) 38%, var(--st-neu-dark)) !important;
   }
 
-  /** Modal de detalhe da tarefa (Resumo, BDD, Testes…) — paleta clara neumórfica. */
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) {
-    --leve-header-text: #401c31;
-    --leve-header-text-muted: #6b5e5e;
-    --leve-header-accent: #ff5c1b;
-    --leve-header-bg: #ebe6de;
-    --leve-header-cream: #f2eee8;
-    --leve-header-border: #ded7cd;
-    --leve-neu-bg: #f2eee8;
-    --leve-neu-surface: #e5dfd5;
-    --workspace-panel-accent: #ff5c1b;
-    --color-primary: #ff5c1b;
-    --color-primary-deep: #401c31;
-    --leve-neu-light: color-mix(in srgb, #ffffff 22%, #f2eee8);
-    --leve-neu-dark: color-mix(in srgb, #ded7cd 70%, #e5dfd5);
-    --leve-neu-raised:
-      6px 6px 14px color-mix(in srgb, #ded7cd 72%, transparent),
-      -4px -4px 10px color-mix(in srgb, #ffffff 52%, #f2eee8);
-    --leve-neu-inset:
-      inset 4px 4px 10px color-mix(in srgb, #ded7cd 58%, transparent),
-      inset -3px -3px 8px color-mix(in srgb, #ffffff 24%, #e5dfd5);
-    --leve-neu-inset-deep:
-      inset 5px 5px 14px color-mix(in srgb, #ded7cd 64%, transparent),
-      inset -4px -4px 10px color-mix(in srgb, #ffffff 22%, #e5dfd5);
-    --leve-neu-hover:
-      7px 7px 18px color-mix(in srgb, #ded7cd 68%, transparent),
-      -5px -5px 12px color-mix(in srgb, #ffffff 55%, #f2eee8);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal).leve-modal-neu-shell {
-    border-color: #ded7cd;
-    background: #ebe6de;
-    box-shadow:
-      10px 10px 28px color-mix(in srgb, #ded7cd 68%, transparent),
-      -6px -6px 16px color-mix(in srgb, #ffffff 30%, #f2eee8),
-      0 24px 48px color-mix(in srgb, #401c31 14%, transparent);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .leve-modal-neu-header {
-    border-color: #ded7cd;
-    background: #f2eee8;
-    color: #401c31;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .leve-modal-neu-close {
-    border: 1px solid #ded7cd;
-    background: #f2eee8;
-    color: #6b5e5e;
-    box-shadow:
-      3px 3px 8px color-mix(in srgb, #ded7cd 45%, transparent),
-      -2px -2px 6px color-mix(in srgb, #ffffff 18%, #f2eee8);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .leve-modal-neu-close:hover {
-    color: #ff5c1b;
-    box-shadow:
-      inset 3px 3px 8px color-mix(in srgb, #ded7cd 50%, transparent),
-      inset -2px -2px 6px color-mix(in srgb, #ffffff 18%, #e5dfd5);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-modal-section {
-    border-color: #ded7cd;
-    background: #f2eee8;
-    box-shadow: var(--leve-neu-raised);
-    transition:
-      box-shadow 200ms ease,
-      border-color 200ms ease;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-modal-section:hover {
-    box-shadow: var(--leve-neu-hover);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-modal-section-accent {
-    border-color: color-mix(in srgb, #ff5c1b 32%, #ded7cd);
-    background: color-mix(in srgb, #ff5c1b 8%, #f2eee8);
-    box-shadow: var(--leve-neu-inset);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-section-header {
-    border-color: color-mix(in srgb, #ded7cd 80%, transparent);
-    background: color-mix(in srgb, #ded7cd 18%, #f2eee8);
-    box-shadow:
-      inset 0 2px 4px color-mix(in srgb, #ded7cd 35%, transparent),
-      inset 0 -1px 0 color-mix(in srgb, #ffffff 30%, #f2eee8);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-nav-footer {
-    border-color: #ded7cd;
-    background: #e5dfd5;
-    box-shadow: var(--leve-neu-inset-deep);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-back-btn,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-ghost-btn {
-    border: 1px solid #ded7cd;
-    background: #f2eee8;
-    color: #401c31;
-    box-shadow: var(--leve-neu-raised);
-    transition:
-      box-shadow 200ms ease,
-      color 200ms ease,
-      transform 150ms ease;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-back-btn:hover,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-ghost-btn:hover {
-    color: #ff5c1b;
-    box-shadow: var(--leve-neu-hover);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-back-btn:active,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-ghost-btn:active {
-    transform: translateY(1px);
-    box-shadow: var(--leve-neu-inset);
+  /**
+   * Modal de detalhe da tarefa — ponte de tokens.
+   * Estilos visuais: `styles/task-modal-dark-neu.css` + `--modal-neu-*` no shell do portal.
+   */
+  :is(.leve-modal-neu-shell, .task-details-neu-modal, .test-report-neu-modal) {
+    --leve-header-text: var(--modal-neu-text, oklch(var(--bc)));
+    --leve-header-text-muted: var(--modal-neu-text-muted, oklch(var(--bc) / 0.72));
+    --leve-header-accent: var(--modal-neu-accent, oklch(var(--p)));
+    --leve-header-bg: var(--modal-neu-bg, oklch(var(--b1)));
+    --leve-header-cream: var(--modal-neu-bg, oklch(var(--b1)));
+    --leve-header-border: var(--modal-neu-border, oklch(var(--b3)));
+    --leve-neu-bg: var(--modal-neu-bg, oklch(var(--b1)));
+    --leve-neu-surface: var(--modal-neu-surface, oklch(var(--b2)));
+    --workspace-panel-accent: var(--modal-neu-accent, oklch(var(--p)));
+    --color-primary: var(--modal-neu-accent, oklch(var(--p)));
+    --color-primary-deep: var(--modal-neu-text, oklch(var(--bc)));
+    --leve-neu-light: var(--modal-neu-light, oklch(var(--b1)));
+    --leve-neu-dark: var(--modal-neu-border, oklch(var(--b3)));
+    --leve-neu-raised: var(--modal-neu-raised, var(--neu-flat-shadow));
+    --leve-neu-inset: var(--modal-neu-inset, var(--neu-flat-inset));
+    --leve-neu-inset-deep: var(--modal-neu-inset-deep, var(--neu-flat-inset));
+    --leve-neu-hover: var(--neu-flat-hover);
   }
 
   /** Listas e linhas no corpo dos modais — mesma paleta clara do shell */
@@ -2574,218 +2536,6 @@
     border-color: color-mix(in srgb, var(--project-card-accent) 28%, transparent);
     box-shadow: var(--leve-neu-hover);
     transform: translateY(-1px);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .leve-neu-surface-inset {
-    border: 1px solid #ded7cd;
-    background: #e5dfd5;
-    box-shadow: var(--leve-neu-inset-deep);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .leve-neu-pill {
-    border-color: #ded7cd;
-    background: #f2eee8;
-    box-shadow: var(--leve-neu-raised);
-    transition:
-      box-shadow 200ms ease,
-      color 200ms ease,
-      background-color 200ms ease,
-      transform 150ms ease;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .leve-neu-pill:hover {
-    box-shadow: var(--leve-neu-hover);
-    color: #401c31;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .leve-neu-pill:active {
-    transform: translateY(1px);
-    box-shadow: var(--leve-neu-inset);
-  }
-
-  /** Abas segmentadas — trilho rebaixado + aba ativa pressionada */
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-tabs-track {
-    border: 1px solid #ded7cd;
-    border-radius: 9999px;
-    background: #e5dfd5;
-    box-shadow: var(--leve-neu-inset-deep);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-tab.leve-neu-pill {
-    color: #6b5e5e;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-tab.leve-neu-pill:hover {
-    color: #401c31;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-tab--active {
-    border: 1px solid #ded7cd;
-    border-radius: 9999px;
-    background: #e2d9d0;
-    color: #401c31;
-    box-shadow: var(--leve-neu-inset);
-    transition:
-      box-shadow 200ms ease,
-      background-color 200ms ease,
-      color 200ms ease;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-tab--active:hover {
-    color: #401c31;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-tab.leve-neu-pill:active {
-    transform: translateY(1px);
-    box-shadow: var(--leve-neu-inset);
-  }
-
-  /** Status rápido — trilho inset + pílula ativa em relevo laranja */
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-status-track {
-    border: 1px solid #ded7cd;
-    border-radius: 9999px;
-    padding: 0.25rem;
-    background: #e5dfd5;
-    box-shadow: var(--leve-neu-inset-deep);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-status-pill.leve-neu-pill {
-    color: #6b5e5e;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-status-pill.leve-neu-pill:hover {
-    color: #401c31;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-status-pill.leve-neu-pill:active {
-    transform: translateY(1px);
-    box-shadow: var(--leve-neu-inset);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-status-pill.leve-neu-pill-active,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-status-pill--active {
-    border-color: color-mix(in srgb, #ff5c1b 40%, transparent);
-    background: color-mix(in srgb, #ff5c1b 14%, #f2eee8);
-    color: #ff5c1b;
-    box-shadow: var(--leve-neu-inset);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-status-pill.leve-neu-pill-active:hover,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-status-pill--active:hover {
-    color: #ff5c1b;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .btn-primary,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .app-btn-primary-inline {
-    border: 1px solid color-mix(in srgb, #ff5c1b 45%, transparent) !important;
-    background: #ff5c1b !important;
-    color: #ffffff !important;
-    box-shadow:
-      3px 3px 8px color-mix(in srgb, #ded7cd 50%, transparent),
-      -2px -2px 6px color-mix(in srgb, #ffffff 20%, #f2eee8) !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .btn-primary:hover,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .app-btn-primary-inline:hover {
-    filter: brightness(1.05);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .app-btn-outline {
-    border: 1px solid #ded7cd;
-    background: #f2eee8;
-    color: #401c31;
-    box-shadow:
-      3px 3px 8px color-mix(in srgb, #ded7cd 45%, transparent),
-      -2px -2px 6px color-mix(in srgb, #ffffff 18%, #f2eee8);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .app-btn-outline:hover {
-    color: #ff5c1b;
-    border-color: color-mix(in srgb, #ff5c1b 35%, #ded7cd);
-    box-shadow: var(--leve-neu-hover);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .app-btn-outline:active {
-    transform: translateY(1px);
-    box-shadow: var(--leve-neu-inset);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .leve-neu-surface-inset.task-details-neu-description,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-watchers {
-    border-color: #ded7cd;
-    background: #e5dfd5;
-    box-shadow: var(--leve-neu-inset-deep);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-tab .badge,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) [role='tab'] .badge,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) [role='tab'] [role='status'],
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-tab-count {
-    border: 0;
-    background: color-mix(in srgb, var(--leve-neu-dark) 8%, var(--leve-neu-bg)) !important;
-    color: #401c31 !important;
-    box-shadow: var(--leve-neu-raised);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-tab--active .badge,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-tab--active .task-details-neu-tab-count,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) [role='tab'][aria-selected='true'] .task-details-neu-tab-count {
-    border: 0;
-    background: color-mix(in srgb, var(--leve-neu-dark) 8%, var(--leve-neu-bg)) !important;
-    color: #401c31 !important;
-    box-shadow: var(--leve-neu-inset);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) [role='tab']:not([aria-selected='true']) .task-details-neu-tab-count {
-    color: #6b5e5e !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-header-section {
-    border: 1px solid #ded7cd;
-    background: #f2eee8;
-    color: #401c31 !important;
-    box-shadow: var(--leve-neu-raised);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-exec-badge {
-    color: #401c31 !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .btn-ghost,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .btn-outline,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .win-icon-button:not(.leve-modal-neu-close) {
-    border: 1px solid #ded7cd;
-    background: #f2eee8;
-    color: #401c31;
-    box-shadow:
-      3px 3px 8px color-mix(in srgb, #ded7cd 45%, transparent),
-      -2px -2px 6px color-mix(in srgb, #ffffff 18%, #f2eee8);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .btn-ghost:hover,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .btn-outline:hover {
-    color: #ff5c1b;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .input,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .textarea,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .select:not(.select-ghost) {
-    border-color: #ded7cd;
-    background: #e5dfd5;
-    color: #401c31;
-    box-shadow:
-      inset 3px 3px 8px color-mix(in srgb, #ded7cd 50%, transparent),
-      inset -2px -2px 6px color-mix(in srgb, #ffffff 18%, #e5dfd5);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .text-primary {
-    color: #ff5c1b;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .text-base-content,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .text-muted,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .text-base-content\/70 {
-    color: #6b5e5e;
   }
 
   /** Faixa de metadados (ID, tipo, status) — relevo inset no card. */
@@ -3020,6 +2770,23 @@
   .project-card-neu-shell:is(button, [role='button']):hover:not(:disabled) {
     box-shadow: var(--project-card-neu-hover);
   }
+  .project-card-neu-shell:is(button, [role='button']):active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: var(--project-card-neu-inset) !important;
+  }
+
+  .projects-dash-page .project-card-neu-shell--cta {
+    border-color: color-mix(in srgb, var(--project-card-accent) 25%, transparent);
+    box-shadow:
+      var(--project-card-neu-raised),
+      0 0 16px color-mix(in srgb, var(--project-card-accent) 15%, transparent);
+  }
+
+  .projects-dash-page .project-card-neu-shell--cta:hover {
+    border-color: color-mix(in srgb, var(--project-card-accent) 40%, transparent);
+    box-shadow: var(--project-card-neu-hover);
+  }
+
   .project-card-neu-raised {
     border-radius: 9999px;
     background: var(--project-card-bg);
@@ -3069,6 +2836,38 @@
     box-shadow: var(--project-card-neu-inset);
   }
 
+  /**
+   * Skin neumórfico ESCURO WARM dos cards da lista de projetos (ProjectsDashboard).
+   * Re-tematiza apenas os tokens --project-card-* nas superfícies destes cards:
+   * marrom #4B433D + laranja #E65100 + creme #FDF6E3. Sombras derivadas do bg
+   * (luz creme quente / sombra profunda) para preservar o relevo neumórfico.
+   * Escopo restrito a ProjectCard/NewProjectCard — não afeta outras telas.
+   */
+  .project-card-warm-dark {
+    --project-card-bg: #4b433d;
+    --project-card-bg-hover: #544b44;
+    --project-card-text: #fdf6e3;
+    --project-card-text-muted: rgba(253, 246, 227, 0.74);
+    --project-card-text-subtle: rgba(253, 246, 227, 0.56);
+    --project-card-accent: #e65100;
+    --project-card-border: rgba(253, 246, 227, 0.14);
+    --project-card-chip: rgba(253, 246, 227, 0.08);
+    --project-card-neu-light: color-mix(in srgb, #fdf6e3 15%, var(--project-card-bg));
+    --project-card-neu-dark: color-mix(in srgb, black 34%, var(--project-card-bg));
+    --project-card-neu-raised: var(--neu-flat-shadow);
+    --project-card-neu-raised-sm: var(--neu-flat-shadow-sm);
+    --project-card-neu-inset: var(--neu-flat-inset);
+    --project-card-neu-inset-deep: var(--neu-flat-inset);
+    --project-card-neu-hover:
+      var(--neu-flat-hover),
+      0 0 0 1px color-mix(in srgb, var(--project-card-accent) 24%, transparent);
+    --project-card-progress-fill: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--project-card-accent) 72%, #fdf6e3) 0%,
+      var(--project-card-accent) 100%
+    );
+  }
+
   /** Escopo e fundo neumórfico — app inteiro (header + main + portaled) */
   .app-neu-scope {
     background: var(--app-neu-bg);
@@ -3080,9 +2879,10 @@
     min-height: inherit;
   }
   .projects-dash-surface-raised {
-    border: 1px solid color-mix(in srgb, var(--projects-dash-neu-light) 50%, transparent);
-    background: var(--projects-dash-surface);
-    box-shadow: var(--projects-dash-neu-raised);
+    border-radius: var(--projects-dash-radius, 1rem);
+    border: 1px solid oklch(95% 0 0);
+    background: oklch(100% 0 0);
+    box-shadow: var(--neu-flat-shadow-sm);
   }
   .projects-dash-neu-badge {
     border-radius: 9999px;
@@ -3107,10 +2907,12 @@
       color 200ms ease;
   }
   .projects-dash-neu-icon-btn:hover {
-    color: var(--workspace-panel-text);
-    box-shadow:
-      7px 7px 16px var(--workspace-panel-neu-dark),
-      -5px -5px 12px var(--workspace-panel-neu-light);
+    color: var(--workspace-panel-accent);
+    box-shadow: var(--neu-relief);
+  }
+  .projects-dash-neu-icon-btn:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: var(--neu-relief-pressed);
   }
   .projects-dash-neu-select {
     box-shadow: var(--projects-dash-neu-inset);
@@ -3122,41 +2924,77 @@
     gap: 0.375rem;
     min-height: 2.25rem;
     padding: 0.375rem 0.875rem;
-    border-radius: 9999px;
-    border: 1px solid color-mix(in srgb, var(--workspace-panel-neu-light) 30%, transparent);
-    background: color-mix(in srgb, var(--workspace-panel-neu-dark) 12%, var(--workspace-panel-bg));
+    border-radius: var(--projects-dash-radius-selector, 2rem);
+    border: 1px solid #e65100;
+    background: oklch(100% 0 0);
     font-family: var(--font-sans);
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--workspace-panel-text-muted);
-    box-shadow: var(--workspace-panel-neu-inset);
+    color: #e65100;
+    box-shadow: var(--neu-flat-shadow-sm);
     transition:
       box-shadow 200ms ease,
       background-color 200ms ease,
-      color 200ms ease;
+      color 200ms ease,
+      border-color 200ms ease;
   }
   .projects-dash-filter-pill:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--workspace-panel-neu-dark) 8%, var(--workspace-panel-bg));
-    color: var(--workspace-panel-text);
-    box-shadow: var(--workspace-panel-neu-inset);
+    color: #e65100;
+    border-color: color-mix(in srgb, #e65100 75%, oklch(95% 0 0));
+    background: color-mix(in srgb, #e65100 6%, oklch(100% 0 0));
+    box-shadow: var(--neu-flat-hover);
   }
   .projects-dash-filter-pill-active {
-    border-color: transparent;
-    background: var(--workspace-panel-badge-bg);
-    color: var(--workspace-panel-badge-text);
-    box-shadow:
-      2px 2px 6px var(--workspace-panel-neu-dark),
-      -1px -1px 4px var(--workspace-panel-neu-light);
+    border-color: #e65100;
+    background: #e65100;
+    color: oklch(98% 0 0);
+    box-shadow: var(--neu-relief-sm);
   }
   .projects-dash-filter-pill-active:hover:not(:disabled) {
     color: var(--workspace-panel-badge-text);
+    filter: brightness(1.04);
+  }
+  .projects-dash-filter-pill-active:active:not(:disabled) {
+    transform: translateY(1px);
+    filter: brightness(0.97);
+    box-shadow: var(--neu-relief-pressed);
   }
 
-  /** Landing — shell da página (fundo ambient + grade sutil) */
+  /** Landing — shell da página (tema DaisyUI `leve` fiel) */
   .app-neu-scope .landing-page-shell {
+    color-scheme: light;
     position: relative;
     isolation: isolate;
-    background: var(--leve-neu-bg);
+    --brand-text-strong: #421d3a;
+    --brand-text-muted: rgba(66, 29, 58, 0.72);
+    --project-card-bg: oklch(100% 0 0);
+    --project-card-bg-hover: oklch(98% 0 0);
+    --project-card-text: #421d3a;
+    --project-card-text-muted: rgba(66, 29, 58, 0.72);
+    --project-card-text-subtle: rgba(66, 29, 58, 0.55);
+    --project-card-accent: #e65100;
+    --project-card-border: oklch(95% 0 0);
+    --project-card-chip: color-mix(in srgb, #421d3a 6%, transparent);
+    --project-card-radius: 1rem;
+    --project-card-inner-radius: 0.5rem;
+    --landing-radius-selector: 2rem;
+    --project-card-neu-light: oklch(100% 0 0);
+    --project-card-neu-dark: oklch(95% 0 0);
+    --project-card-neu-raised: var(--neu-flat-shadow);
+    --project-card-neu-raised-sm: var(--neu-flat-shadow-sm);
+    --project-card-neu-inset: var(--neu-flat-inset);
+    --project-card-neu-hover:
+      var(--neu-flat-hover),
+      0 0 0 1px color-mix(in srgb, #e65100 22%, transparent);
+    --leve-neu-bg: oklch(98% 0 0);
+    --leve-neu-light: oklch(100% 0 0);
+    --leve-neu-dark: oklch(95% 0 0);
+    --leve-neu-raised: var(--neu-flat-shadow);
+    --leve-neu-inset: var(--neu-flat-inset);
+    --leve-neu-hover: var(--neu-flat-hover);
+    --leve-header-cream: oklch(100% 0 0);
+    --app-neu-bg: oklch(98% 0 0);
+    background: oklch(98% 0 0);
   }
 
   .app-neu-scope .landing-page-shell::before {
@@ -3198,25 +3036,14 @@
     mask-image: linear-gradient(to bottom, black 0%, transparent 72%);
   }
 
-  /** Barra superior flutuante — mesma paleta roxa neumórfica do header global
-      (.app-header-shell). Sobrescreve as variáveis "leve" para o vocabulário do
-      card de projeto, de modo que marca, logo e botões herdem o tema roxo. */
+  /** Barra superior — caixa base-100 (radius-box). */
   .app-neu-scope .landing-top-bar {
-    --brand-text-strong: var(--project-card-text);
-    --brand-text-muted: var(--project-card-text-muted);
-    --leve-header-cream: #f5f1e6;
-    --leve-neu-bg: var(--project-card-bg);
-    --leve-neu-light: var(--project-card-neu-light);
-    --leve-neu-dark: var(--project-card-neu-dark);
-    --leve-neu-raised: var(--project-card-neu-raised);
-    --leve-neu-inset: var(--project-card-neu-inset);
-    --leve-neu-hover: var(--project-card-neu-hover);
     padding: 0.375rem 0.625rem;
-    border-radius: 9999px;
-    border: 1px solid color-mix(in srgb, var(--project-card-neu-light) 32%, transparent);
-    background: var(--project-card-bg);
-    color: var(--project-card-text);
-    box-shadow: var(--project-card-neu-raised);
+    border-radius: var(--project-card-radius);
+    border: 1px solid oklch(95% 0 0);
+    background: oklch(100% 0 0);
+    color: #421d3a;
+    box-shadow: var(--neu-flat-shadow);
     backdrop-filter: blur(10px);
   }
 
@@ -3240,9 +3067,9 @@
   .app-neu-scope .landing-hero-shell {
     position: relative;
     overflow: hidden;
-    border-radius: calc(var(--project-card-radius) + 4px);
-    border: 1px solid color-mix(in srgb, var(--leve-neu-light) 48%, transparent);
-    background: color-mix(in srgb, var(--leve-neu-bg) 94%, white);
+    border-radius: var(--project-card-radius);
+    border: 1px solid oklch(95% 0 0);
+    background: oklch(100% 0 0);
     box-shadow: var(--leve-neu-raised);
   }
 
@@ -3259,27 +3086,27 @@
     );
   }
 
-  /** Eyebrow / announcement pill — tema claro (creme + roxo) */
+  /** Eyebrow — seletor pill (radius-selector 2rem). */
   .app-neu-scope .landing-eyebrow {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
     max-width: 100%;
     padding: 0.3125rem 0.75rem;
-    border-radius: 9999px;
-    border: 1px solid color-mix(in srgb, var(--leve-neu-light) 42%, transparent);
-    background: color-mix(in srgb, var(--leve-header-cream) 90%, var(--leve-neu-bg));
+    border-radius: var(--landing-radius-selector, 2rem);
+    border: 1px solid oklch(95% 0 0);
+    background: oklch(100% 0 0);
     font-family: var(--font-sans);
     font-size: 0.6875rem;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--brand-text-strong);
-    box-shadow: var(--leve-neu-raised);
+    color: #421d3a;
+    box-shadow: var(--neu-flat-shadow-sm);
   }
 
   .app-neu-scope .landing-eyebrow svg {
-    color: var(--project-card-accent);
+    color: #e65100;
     flex-shrink: 0;
   }
 
@@ -3305,13 +3132,58 @@
     transform: translateY(-3px);
   }
 
+  .app-neu-scope .landing-menu-card:active {
+    transform: translateY(1px);
+    box-shadow: var(--leve-neu-inset) !important;
+  }
+
   .app-neu-scope .landing-menu-card--primary {
     min-height: 11rem;
+    background-image: radial-gradient(
+      140% 120% at 100% 0%,
+      color-mix(in srgb, var(--project-card-accent) 10%, transparent),
+      transparent 60%
+    );
+  }
+
+  .app-neu-scope .landing-menu-card__watermark {
+    pointer-events: none;
+    position: absolute;
+    z-index: 0;
+    color: var(--project-card-accent);
+    opacity: 0.05;
+    transition:
+      opacity 280ms ease,
+      transform 280ms ease;
+  }
+
+  .app-neu-scope .landing-menu-card:hover .landing-menu-card__watermark {
+    opacity: 0.09;
+    transform: scale(1.05);
+  }
+
+  .app-neu-scope .landing-menu-card__watermark--primary {
+    bottom: -1rem;
+    right: -0.5rem;
+    height: 7rem;
+    width: 7rem;
+  }
+
+  .app-neu-scope .landing-menu-card__watermark--secondary {
+    bottom: -0.75rem;
+    right: -0.25rem;
+    height: 5rem;
+    width: 5rem;
   }
 
   @media (min-width: 1024px) {
     .app-neu-scope .landing-menu-card--primary {
       min-height: 14rem;
+    }
+
+    .app-neu-scope .landing-menu-card__watermark--primary {
+      height: 8.5rem;
+      width: 8.5rem;
     }
   }
 
@@ -3326,14 +3198,14 @@
       transform 220ms ease;
   }
 
-  /** Landing — painéis Continuar / Acompanhamento (identidade project-card + hero claro) */
+  /** Landing — painéis (caixas base-100, radius-box 1rem). */
   .app-neu-scope .landing-neu-panel {
     position: relative;
     overflow: hidden;
-    border: 1px solid color-mix(in srgb, var(--leve-neu-light) 45%, transparent);
+    border: 1px solid oklch(95% 0 0);
     border-radius: var(--project-card-radius);
-    background: var(--leve-neu-bg);
-    box-shadow: var(--leve-neu-raised);
+    background: oklch(100% 0 0);
+    box-shadow: var(--neu-flat-shadow);
   }
 
   .app-neu-scope .landing-neu-panel__body {
@@ -3347,9 +3219,9 @@
     gap: 0.5rem 0.75rem;
     padding: 0.625rem 0.875rem;
     border-radius: var(--project-card-inner-radius);
-    border: 1px solid color-mix(in srgb, var(--leve-neu-light) 32%, transparent);
-    background: color-mix(in srgb, var(--leve-neu-dark) 6%, var(--leve-neu-bg));
-    box-shadow: var(--leve-neu-inset);
+    border: 1px solid oklch(95% 0 0);
+    background: oklch(98% 0 0);
+    box-shadow: var(--neu-flat-inset);
   }
 
   .app-neu-scope .landing-neu-summary-stat {
@@ -3377,50 +3249,51 @@
     align-items: center;
     gap: 0.375rem;
     padding: 0.375rem;
-    border-radius: calc(var(--project-card-inner-radius) + 2px);
-    border: 1px solid color-mix(in srgb, var(--leve-neu-light) 32%, transparent);
-    background: color-mix(in srgb, var(--leve-neu-dark) 7%, var(--leve-neu-bg));
-    box-shadow: var(--leve-neu-inset);
+    border-radius: var(--project-card-inner-radius);
+    border: 1px solid oklch(95% 0 0);
+    background: oklch(98% 0 0);
+    box-shadow: var(--neu-flat-inset);
   }
 
+  /** Seletores / pills de filtro — radius-selector 2rem. */
   .app-neu-scope .landing-neu-filter-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
-    min-height: 2rem;
-    padding: 0.25rem 0.625rem;
-    border-radius: 9999px;
-    border: 1px solid color-mix(in srgb, var(--leve-neu-light) 38%, transparent);
-    background: var(--leve-neu-bg);
+    min-height: 3rem;
+    padding: 0.25rem 0.875rem;
+    border-radius: var(--landing-radius-selector, 2rem);
+    border: 1px solid oklch(95% 0 0);
+    background: oklch(100% 0 0);
     font-family: var(--font-sans);
     font-size: 0.75rem;
     font-weight: 600;
-    color: color-mix(in srgb, var(--brand-text-strong) 72%, transparent);
-    box-shadow: var(--leve-neu-raised);
+    color: rgba(66, 29, 58, 0.72);
+    box-shadow: var(--neu-flat-shadow-sm);
     transition:
       box-shadow 200ms ease,
       transform 200ms ease,
       color 200ms ease,
-      border-color 200ms ease;
+      border-color 200ms ease,
+      background-color 200ms ease;
   }
 
   .app-neu-scope .landing-neu-filter-btn:hover:not(:disabled) {
-    color: var(--brand-text-strong);
-    box-shadow: var(--leve-neu-hover);
+    color: #421d3a;
+    border-color: color-mix(in srgb, #e65100 20%, oklch(95% 0 0));
+    box-shadow: var(--neu-flat-hover);
     transform: translateY(-1px);
   }
 
   .app-neu-scope .landing-neu-filter-btn--active {
-    color: #fffaf5;
-    border-color: transparent;
-    background: var(--brand-text-strong);
-    box-shadow:
-      2px 2px 6px var(--leve-neu-dark),
-      -1px -1px 4px var(--leve-neu-light);
+    color: oklch(98% 0 0);
+    border-color: #e65100;
+    background: #e65100;
+    box-shadow: var(--neu-relief-sm);
   }
 
   .app-neu-scope .landing-neu-filter-btn--active:hover:not(:disabled) {
-    color: #fffaf5;
+    color: oklch(98% 0 0);
     transform: none;
     filter: brightness(1.04);
   }
@@ -3431,33 +3304,31 @@
     min-width: 1.125rem;
     align-items: center;
     justify-content: center;
-    border-radius: 9999px;
+    border-radius: var(--landing-radius-selector, 2rem);
     padding: 0 0.375rem;
     font-size: 0.625rem;
     font-weight: 700;
     line-height: 1;
     font-variant-numeric: tabular-nums;
-    border: 1px solid color-mix(in srgb, var(--leve-neu-light) 35%, transparent);
-    background: color-mix(in srgb, var(--leve-neu-dark) 8%, var(--leve-neu-bg));
-    color: color-mix(in srgb, var(--brand-text-strong) 75%, transparent);
-    box-shadow: var(--leve-neu-inset);
+    border: 1px solid oklch(95% 0 0);
+    background: oklch(98% 0 0);
+    color: rgba(66, 29, 58, 0.72);
+    box-shadow: var(--neu-flat-inset);
   }
 
   .app-neu-scope .landing-neu-filter-btn--active .landing-neu-filter-count {
-    border-color: color-mix(in srgb, white 38%, transparent);
-    background: #ffffff;
-    color: var(--brand-text-strong);
-    box-shadow:
-      2px 2px 5px color-mix(in srgb, var(--leve-neu-dark) 40%, transparent),
-      -1px -1px 3px color-mix(in srgb, var(--leve-neu-light) 55%, transparent);
+    border-color: color-mix(in srgb, white 40%, transparent);
+    background: oklch(100% 0 0);
+    color: #e65100;
+    box-shadow: var(--neu-flat-shadow-sm);
   }
 
   .app-neu-scope .landing-neu-list {
     padding: 0.375rem;
-    border-radius: calc(var(--project-card-inner-radius) + 2px);
-    border: 1px solid color-mix(in srgb, var(--leve-neu-light) 32%, transparent);
-    background: color-mix(in srgb, var(--leve-neu-dark) 4%, var(--leve-neu-bg));
-    box-shadow: var(--leve-neu-inset);
+    border-radius: var(--project-card-inner-radius);
+    border: 1px solid oklch(95% 0 0);
+    background: oklch(98% 0 0);
+    box-shadow: var(--neu-flat-inset);
   }
 
   .app-neu-scope .landing-neu-row {
@@ -3465,12 +3336,12 @@
     width: 100%;
     align-items: flex-start;
     gap: 0.75rem;
-    border-radius: calc(var(--project-card-inner-radius));
-    border: 1px solid color-mix(in srgb, var(--leve-neu-light) 34%, transparent);
-    background: var(--leve-neu-bg);
+    border-radius: var(--project-card-inner-radius);
+    border: 1px solid oklch(95% 0 0);
+    background: oklch(100% 0 0);
     padding: 0.75rem;
     text-align: left;
-    box-shadow: var(--leve-neu-raised);
+    box-shadow: var(--neu-flat-shadow-sm);
     transition:
       box-shadow 220ms ease,
       transform 220ms ease,
@@ -3478,8 +3349,8 @@
   }
 
   .app-neu-scope .landing-neu-row:hover {
-    border-color: color-mix(in srgb, var(--project-card-accent) 24%, transparent);
-    box-shadow: var(--leve-neu-hover);
+    border-color: color-mix(in srgb, #e65100 28%, oklch(95% 0 0));
+    box-shadow: var(--neu-flat-hover);
     transform: translateY(-2px);
   }
 
@@ -3512,9 +3383,9 @@
 
   .app-neu-scope .landing-neu-empty {
     border-radius: var(--project-card-inner-radius);
-    border: 1px solid color-mix(in srgb, var(--leve-neu-light) 28%, transparent);
-    background: color-mix(in srgb, var(--leve-neu-dark) 6%, var(--leve-neu-bg));
-    box-shadow: var(--leve-neu-inset);
+    border: 1px solid oklch(95% 0 0);
+    background: oklch(98% 0 0);
+    box-shadow: var(--neu-flat-inset);
   }
 
   .app-neu-scope .landing-neu-link-btn {
@@ -3522,41 +3393,37 @@
     align-items: center;
     gap: 0.25rem;
     min-height: 2rem;
-    padding: 0.25rem 0.625rem;
-    border-radius: 9999px;
-    border: 1px solid color-mix(in srgb, var(--leve-neu-light) 38%, transparent);
-    background: var(--leve-neu-bg);
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--landing-radius-selector, 2rem);
+    border: 1px solid oklch(95% 0 0);
+    background-color: oklch(100% 0 0);
     font-family: var(--font-sans);
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--brand-text-strong);
+    color: #421d3a;
     text-decoration: none;
-    box-shadow: var(--leve-neu-raised);
     transition:
-      box-shadow 200ms ease,
-      transform 200ms ease,
+      background-color 200ms ease,
       color 200ms ease,
       border-color 200ms ease;
   }
 
   .app-neu-scope .landing-neu-link-btn:hover {
-    color: var(--project-card-accent);
-    border-color: color-mix(in srgb, var(--project-card-accent) 26%, transparent);
-    box-shadow: var(--leve-neu-hover);
-    transform: translateY(-1px);
+    color: #e65100;
+    border-color: color-mix(in srgb, #e65100 30%, oklch(95% 0 0));
+    background-color: color-mix(in srgb, #e65100 8%, oklch(100% 0 0));
   }
 
   .app-neu-scope .landing-neu-sla-badge {
     display: inline-flex;
     flex-shrink: 0;
     align-items: center;
-    border-radius: 9999px;
+    border-radius: var(--landing-radius-selector, 2rem);
     padding: 0.125rem 0.5rem;
     font-size: 0.625rem;
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    box-shadow: var(--leve-neu-inset);
   }
 
   /** Hero — placa circular da logo */
@@ -3590,22 +3457,22 @@
     transform: translateY(-2px);
   }
 
-  /** Botão de ação flutuante (ex.: Configurações) */
+  /** Botão de ação (radius-selector 2rem). */
   .app-neu-scope .landing-neu-action-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     min-height: 2.75rem;
     padding: 0.375rem 0.875rem;
-    border-radius: 9999px;
-    border: 1px solid color-mix(in srgb, var(--leve-neu-light) 42%, transparent);
-    background: var(--leve-neu-bg);
+    border-radius: var(--landing-radius-selector, 2rem);
+    border: 1px solid oklch(95% 0 0);
+    background: oklch(100% 0 0);
     font-family: var(--font-sans);
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--brand-text-strong);
+    color: #421d3a;
     text-decoration: none;
-    box-shadow: var(--leve-neu-raised);
+    box-shadow: var(--neu-flat-shadow-sm);
     transition:
       box-shadow 200ms ease,
       transform 200ms ease,
@@ -3614,27 +3481,27 @@
   }
 
   .app-neu-scope .landing-neu-action-btn:hover {
-    color: var(--project-card-accent);
-    border-color: color-mix(in srgb, var(--project-card-accent) 22%, transparent);
-    box-shadow: var(--leve-neu-hover);
+    color: #e65100;
+    border-color: color-mix(in srgb, #e65100 28%, oklch(95% 0 0));
+    box-shadow: var(--neu-flat-hover);
     transform: translateY(-2px);
   }
 
-  /** Chips de status de integração */
+  /** Chips de status — seletores (radius-selector). */
   .app-neu-scope .landing-neu-status-chip {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
     min-height: 1.75rem;
     padding: 0.25rem 0.625rem;
-    border-radius: 9999px;
-    border: 1px solid color-mix(in srgb, var(--leve-neu-light) 38%, transparent);
-    background: var(--leve-neu-bg);
+    border-radius: var(--landing-radius-selector, 2rem);
+    border: 1px solid oklch(95% 0 0);
+    background: oklch(100% 0 0);
     font-family: var(--font-sans);
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--brand-text-strong);
-    box-shadow: var(--leve-neu-raised);
+    color: #421d3a;
+    box-shadow: var(--neu-flat-shadow-sm);
     transition:
       box-shadow 200ms ease,
       border-color 200ms ease,
@@ -3642,35 +3509,33 @@
   }
 
   .app-neu-scope .landing-neu-status-chip--ok {
-    color: var(--brand-text-strong);
-    border-color: color-mix(in srgb, #22c55e 30%, transparent);
-    background: color-mix(in srgb, #22c55e 10%, var(--leve-neu-bg));
+    color: #421d3a;
+    border-color: color-mix(in srgb, #10b981 35%, oklch(95% 0 0));
+    background: color-mix(in srgb, #10b981 12%, oklch(100% 0 0));
   }
 
   .app-neu-scope .landing-neu-status-chip--idle {
-    color: color-mix(in srgb, var(--brand-text-strong) 65%, transparent);
-    background: color-mix(in srgb, var(--leve-neu-dark) 5%, var(--leve-neu-bg));
-    box-shadow: var(--leve-neu-inset);
+    color: rgba(66, 29, 58, 0.72);
+    background: oklch(98% 0 0);
+    box-shadow: var(--neu-flat-inset);
   }
 
-  /** CTA primário (onboarding) */
+  /** CTA primário — campo/botão (radius-field 0.5rem). */
   .app-neu-scope .landing-neu-cta-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
     min-height: 2.25rem;
     padding: 0.375rem 1rem;
-    border-radius: 9999px;
-    border: 1px solid color-mix(in srgb, var(--project-card-accent) 35%, transparent);
-    background: var(--project-card-accent);
+    border-radius: var(--project-card-inner-radius);
+    border: 1px solid #e65100;
+    background: #e65100;
     font-family: var(--font-sans);
     font-size: 0.875rem;
     font-weight: 600;
-    color: #fff;
+    color: oklch(98% 0 0);
     text-decoration: none;
-    box-shadow:
-      var(--project-card-neu-raised-sm),
-      0 0 0 1px color-mix(in srgb, var(--project-card-accent) 20%, transparent);
+    box-shadow: var(--neu-flat-shadow-sm);
     transition:
       box-shadow 200ms ease,
       transform 200ms ease,
@@ -3683,22 +3548,28 @@
     transform: translateY(-2px);
   }
 
+  .app-neu-scope .landing-neu-cta-btn:active {
+    transform: translateY(1px);
+    filter: brightness(0.95);
+    box-shadow: var(--leve-neu-inset) !important;
+  }
+
   .app-neu-scope .landing-neu-section-label {
     font-family: var(--font-sans);
     font-size: 0.875rem;
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: var(--brand-text-strong);
+    color: #421d3a;
   }
 
   .app-neu-scope .landing-neu-footer {
     margin-top: 0.25rem;
     padding-top: 1rem;
-    border-top: 1px solid color-mix(in srgb, var(--leve-neu-light) 35%, transparent);
+    border-top: 1px solid oklch(95% 0 0);
   }
 
-  /** Filtros rápidos Meus Projetos — trilho inset claro + pills segmentados. */
+  /** Filtros rápidos — trilho base-200 + pills seletores. */
   .projects-dash-quick-filters-toolbar {
     display: inline-flex;
     flex-wrap: wrap;
@@ -3706,10 +3577,10 @@
     gap: 0.25rem;
     max-width: 100%;
     padding: 0.25rem;
-    border-radius: 9999px;
-    border: 1px solid color-mix(in srgb, var(--leve-neu-light) 32%, transparent);
-    background: color-mix(in srgb, var(--leve-neu-dark) 7%, var(--leve-neu-bg));
-    box-shadow: var(--leve-neu-inset);
+    border-radius: var(--project-card-inner-radius, 0.5rem);
+    border: 1px solid oklch(95% 0 0);
+    background: oklch(98% 0 0);
+    box-shadow: var(--neu-flat-inset);
   }
 
   .projects-dash-quick-filters-pill {
@@ -3717,58 +3588,55 @@
     align-items: center;
     justify-content: center;
     gap: 0.375rem;
-    padding: 0.375rem 0.75rem;
-    border-radius: 9999px;
-    border: none;
-    background: transparent;
+    min-height: 2.75rem;
+    padding: 0.375rem 0.875rem;
+    border-radius: var(--projects-dash-radius-selector, 2rem);
+    border: 1px solid #e65100;
+    background: oklch(100% 0 0);
     font-family: var(--font-sans);
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1.25;
-    color: var(--workspace-panel-text-muted);
-    box-shadow: none;
+    color: #e65100;
+    box-shadow: var(--neu-flat-shadow-sm);
     transition:
       box-shadow 200ms ease,
       background-color 200ms ease,
       color 200ms ease,
-      transform 150ms ease;
+      transform 150ms ease,
+      border-color 200ms ease;
   }
 
   .projects-dash-quick-filters-pill:hover:not(:disabled) {
-    color: var(--workspace-panel-text);
-    background: color-mix(in srgb, var(--workspace-panel-neu-dark) 8%, var(--workspace-panel-bg));
-    box-shadow: none;
+    color: #e65100;
+    border-color: color-mix(in srgb, #e65100 75%, oklch(95% 0 0));
+    background: color-mix(in srgb, #e65100 6%, oklch(100% 0 0));
+    box-shadow: var(--neu-flat-hover);
   }
 
   .projects-dash-quick-filters-pill:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--workspace-panel-accent) 40%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, #e65100 28%, transparent);
   }
 
   .projects-dash-quick-filters-pill--active {
-    border-color: transparent;
+    border-color: #e65100;
     font-weight: 600;
-    color: var(--workspace-panel-badge-text);
-    background: var(--workspace-panel-badge-bg);
-    box-shadow:
-      2px 2px 6px var(--workspace-panel-neu-dark),
-      -1px -1px 4px var(--workspace-panel-neu-light);
+    color: oklch(98% 0 0);
+    background: #e65100;
+    box-shadow: var(--neu-relief-sm);
   }
 
   .projects-dash-quick-filters-pill--active:hover:not(:disabled) {
     color: var(--workspace-panel-badge-text);
     filter: brightness(1.04);
-    box-shadow:
-      3px 3px 8px var(--workspace-panel-neu-dark),
-      -2px -2px 6px var(--workspace-panel-neu-light);
+    box-shadow: var(--neu-relief-sm);
   }
 
   .projects-dash-quick-filters-pill--active:active:not(:disabled) {
     transform: translateY(1px);
-    filter: none;
-    box-shadow:
-      inset 2px 2px 5px color-mix(in srgb, var(--workspace-panel-neu-dark) 55%, transparent),
-      inset -1px -1px 3px color-mix(in srgb, var(--workspace-panel-neu-light) 40%, transparent);
+    filter: brightness(0.97);
+    box-shadow: var(--neu-relief-pressed);
   }
 
   .projects-dash-quick-filters-count {
@@ -3778,7 +3646,7 @@
     align-items: center;
     justify-content: center;
     padding: 0 0.375rem;
-    border-radius: 9999px;
+    border-radius: var(--projects-dash-radius-selector, 2rem);
     font-family: var(--font-sans);
     font-size: 10px;
     font-weight: 700;
@@ -3787,17 +3655,16 @@
   }
 
   .projects-dash-quick-filters-count--active {
-    border: 1px solid color-mix(in srgb, #ffffff 35%, transparent);
-    background: #ffffff;
-    color: var(--workspace-panel-badge-bg);
-    box-shadow:
-      2px 2px 5px color-mix(in srgb, var(--workspace-panel-neu-dark) 45%, transparent),
-      -1px -1px 3px color-mix(in srgb, var(--workspace-panel-neu-light) 50%, transparent);
+    border: 1px solid color-mix(in srgb, white 40%, transparent);
+    background: oklch(100% 0 0);
+    color: #e65100;
+    box-shadow: var(--neu-flat-shadow-sm);
   }
 
   .projects-dash-quick-filters-count--idle {
-    background: color-mix(in srgb, var(--workspace-panel-neu-dark) 12%, var(--workspace-panel-bg));
-    color: var(--workspace-panel-text-muted);
+    border: 1px solid oklch(95% 0 0);
+    background: oklch(98% 0 0);
+    color: rgba(66, 29, 58, 0.72);
   }
 
   /** Chrome neumórfico escuro — ProjectView / QADashboard (paleta do painel de alertas) */
@@ -3839,14 +3706,18 @@
   }
   .workspace-chrome-pill-active {
     border-color: transparent;
-    background: var(--workspace-panel-badge-bg);
+    background: var(--workspace-panel-accent);
     color: var(--workspace-panel-badge-text);
-    box-shadow:
-      2px 2px 6px var(--workspace-panel-neu-dark),
-      -1px -1px 4px var(--workspace-panel-neu-light);
+    box-shadow: var(--neu-relief-sm);
   }
   .workspace-chrome-pill-active:hover:not(:disabled) {
     color: var(--workspace-panel-badge-text);
+    filter: brightness(1.04);
+  }
+  .workspace-chrome-pill-active:active:not(:disabled) {
+    transform: translateY(1px);
+    filter: brightness(0.97);
+    box-shadow: var(--neu-relief-pressed);
   }
   .workspace-chrome-pill-danger {
     color: oklch(var(--er));
@@ -3856,12 +3727,9 @@
   }
   .workspace-chrome-tab-active {
     border-radius: 9999px;
-    background: var(--workspace-panel-badge-bg);
+    background: var(--workspace-panel-accent);
     color: var(--workspace-panel-badge-text);
-    box-shadow:
-      3px 3px 9px var(--workspace-panel-neu-dark),
-      -2px -2px 6px var(--workspace-panel-neu-light),
-      inset 0 1px 0 color-mix(in srgb, white 22%, transparent);
+    box-shadow: var(--neu-relief-sm);
   }
   .workspace-chrome-tab-idle {
     border-radius: 9999px;
@@ -3983,30 +3851,33 @@
   }
 
   .projects-dash-alert {
+    border-radius: var(--project-card-radius, 1rem);
     border: 1px solid transparent;
-    box-shadow: var(--projects-dash-neu-inset);
+    box-shadow: var(--neu-flat-shadow-sm);
   }
   .projects-dash-alert-warning {
-    background: color-mix(in srgb, var(--workspace-stat-accent) 8%, var(--projects-dash-surface));
-    color: color-mix(in srgb, var(--workspace-stat-accent) 85%, black);
-    border-color: color-mix(in srgb, var(--workspace-stat-accent) 25%, transparent);
+    background: color-mix(in srgb, #e65100 8%, oklch(100% 0 0));
+    color: #421d3a;
+    border-color: color-mix(in srgb, #e65100 25%, transparent);
   }
   .projects-dash-alert-error {
-    background: color-mix(in srgb, var(--destructive) 10%, var(--projects-dash-surface));
-    color: var(--destructive);
-    border-color: color-mix(in srgb, var(--destructive) 28%, transparent);
+    background: color-mix(in srgb, #dc2626 10%, oklch(100% 0 0));
+    color: #dc2626;
+    border-color: color-mix(in srgb, #dc2626 28%, transparent);
   }
   .projects-dash-alert-btn-warning {
-    border-radius: var(--projects-dash-radius);
-    background: color-mix(in srgb, var(--workspace-stat-accent) 18%, var(--projects-dash-surface));
-    box-shadow: var(--projects-dash-neu-raised);
-    color: color-mix(in srgb, var(--workspace-stat-accent) 90%, black);
+    border-radius: var(--project-card-inner-radius, 0.5rem);
+    background: color-mix(in srgb, #e65100 14%, oklch(100% 0 0));
+    border: 1px solid color-mix(in srgb, #e65100 30%, transparent);
+    box-shadow: var(--neu-flat-shadow-sm);
+    color: #e65100;
   }
   .projects-dash-alert-btn-error {
-    border-radius: var(--projects-dash-radius);
-    background: color-mix(in srgb, var(--destructive) 14%, var(--projects-dash-surface));
-    box-shadow: var(--projects-dash-neu-raised);
-    color: var(--destructive);
+    border-radius: var(--project-card-inner-radius, 0.5rem);
+    background: color-mix(in srgb, #dc2626 12%, oklch(100% 0 0));
+    border: 1px solid color-mix(in srgb, #dc2626 30%, transparent);
+    box-shadow: var(--neu-flat-shadow-sm);
+    color: #dc2626;
   }
   .projects-dash-stat-card {
     border-radius: var(--workspace-stat-radius);
@@ -4019,8 +3890,7 @@
   }
   .projects-dash-stat-card:hover {
     box-shadow:
-      7px 7px 18px var(--app-neu-dark),
-      -5px -5px 14px var(--app-neu-light),
+      var(--neu-flat-hover),
       0 0 0 1px color-mix(in srgb, var(--workspace-stat-accent) 12%, transparent);
   }
   .workspace-stat-neu-track {
@@ -4232,13 +4102,24 @@
     box-shadow: var(--project-card-neu-raised);
   }
 
-  .app-header-shell .app-brand-title,
-  .app-neu-scope .landing-top-bar .app-brand-title {
+  .app-header-shell .app-brand-title {
     color: var(--project-card-text);
     background-image: linear-gradient(
       135deg,
       var(--project-card-text) 0%,
       color-mix(in srgb, var(--project-card-accent) 38%, var(--project-card-text)) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .app-neu-scope .landing-top-bar .app-brand-title {
+    color: var(--brand-text-strong);
+    background-image: linear-gradient(
+      135deg,
+      var(--brand-text-strong) 0%,
+      color-mix(in srgb, var(--project-card-accent) 42%, var(--brand-text-strong)) 100%
     );
     -webkit-background-clip: text;
     background-clip: text;
@@ -4673,23 +4554,25 @@
     cursor: not-allowed;
   }
 
-  /** Painel flutuante (dropdown, resultados de busca) — neumorfismo claro (portal em body). */
+  /** Painel flutuante (dropdown, resultados de busca) — tokens tema `leve` (portal em body). */
   .app-menu-panel {
-    --app-menu-bg: var(--modal-neu-shell-bg, #ebe6de);
-    --app-menu-surface: color-mix(in srgb, var(--modal-neu-border, #ded7cd) 12%, var(--modal-neu-bg, #f2eee8));
-    --app-menu-text: var(--modal-neu-text, #401c31);
-    --app-menu-text-muted: var(--modal-neu-text-muted, #6b5e5e);
-    --app-menu-accent: var(--modal-neu-accent, #ff5c1b);
-    --app-menu-border: color-mix(in srgb, var(--modal-neu-border, #ded7cd) 86%, transparent);
-    --app-menu-raised:
-      5px 5px 12px color-mix(in srgb, var(--modal-neu-border, #ded7cd) 62%, transparent),
-      -3px -3px 8px color-mix(in srgb, var(--modal-neu-light, #ffffff) 45%, var(--modal-neu-bg, #f2eee8));
-    --app-menu-inset:
-      inset 4px 4px 10px color-mix(in srgb, var(--modal-neu-border, #ded7cd) 56%, transparent),
-      inset -3px -3px 8px color-mix(in srgb, var(--modal-neu-light, #ffffff) 22%, var(--modal-neu-surface, #e5dfd5));
-    --app-menu-hover:
-      7px 7px 18px color-mix(in srgb, var(--modal-neu-border, #ded7cd) 68%, transparent),
-      -5px -5px 12px color-mix(in srgb, var(--modal-neu-light, #ffffff) 55%, var(--modal-neu-bg, #f2eee8));
+    --app-menu-bg: var(--modal-neu-shell-bg, oklch(98% 0 0));
+    --app-menu-surface: color-mix(
+      in oklch,
+      var(--modal-neu-border, oklch(95% 0 0)) 12%,
+      var(--app-menu-bg)
+    );
+    --app-menu-text: var(--modal-neu-text, #421d3a);
+    --app-menu-text-muted: var(--modal-neu-text-muted, color-mix(in oklch, #421d3a 72%, transparent));
+    --app-menu-accent: var(--modal-neu-accent, #e65100);
+    --app-menu-border: color-mix(
+      in oklch,
+      var(--modal-neu-border, oklch(95% 0 0)) 86%,
+      transparent
+    );
+    --app-menu-raised: var(--neu-flat-shadow);
+    --app-menu-inset: var(--neu-flat-inset);
+    --app-menu-hover: var(--neu-flat-hover);
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
@@ -4748,13 +4631,13 @@
   }
 
   .app-menu-item-danger {
-    color: #f87171;
+    color: oklch(var(--er));
   }
 
   .app-menu-item-danger:hover:not(:disabled) {
-    border-color: color-mix(in srgb, #f87171 40%, transparent);
-    background: color-mix(in srgb, #f87171 12%, var(--app-menu-bg));
-    color: #fca5a5;
+    border-color: color-mix(in oklch, oklch(var(--er)) 40%, transparent);
+    background: color-mix(in oklch, oklch(var(--er)) 12%, var(--app-menu-bg));
+    color: oklch(var(--erc));
     box-shadow: var(--app-menu-inset);
   }
 
@@ -4774,21 +4657,23 @@
   /** Menus DaisyUI (dropdown-content menu) — mesma paleta das listas flutuantes. */
   .app-page .menu,
   .dropdown-content.menu {
-    --app-menu-bg: var(--modal-neu-shell-bg, #ebe6de);
-    --app-menu-surface: color-mix(in srgb, var(--modal-neu-border, #ded7cd) 12%, var(--modal-neu-bg, #f2eee8));
-    --app-menu-text: var(--modal-neu-text, #401c31);
-    --app-menu-text-muted: var(--modal-neu-text-muted, #6b5e5e);
-    --app-menu-accent: var(--modal-neu-accent, #ff5c1b);
-    --app-menu-border: color-mix(in srgb, var(--modal-neu-border, #ded7cd) 86%, transparent);
-    --app-menu-raised:
-      5px 5px 12px color-mix(in srgb, var(--modal-neu-border, #ded7cd) 62%, transparent),
-      -3px -3px 8px color-mix(in srgb, var(--modal-neu-light, #ffffff) 45%, var(--modal-neu-bg, #f2eee8));
-    --app-menu-inset:
-      inset 4px 4px 10px color-mix(in srgb, var(--modal-neu-border, #ded7cd) 56%, transparent),
-      inset -3px -3px 8px color-mix(in srgb, var(--modal-neu-light, #ffffff) 22%, var(--modal-neu-surface, #e5dfd5));
-    --app-menu-hover:
-      7px 7px 18px color-mix(in srgb, var(--modal-neu-border, #ded7cd) 68%, transparent),
-      -5px -5px 12px color-mix(in srgb, var(--modal-neu-light, #ffffff) 55%, var(--modal-neu-bg, #f2eee8));
+    --app-menu-bg: var(--modal-neu-shell-bg, oklch(98% 0 0));
+    --app-menu-surface: color-mix(
+      in oklch,
+      var(--modal-neu-border, oklch(95% 0 0)) 12%,
+      var(--app-menu-bg)
+    );
+    --app-menu-text: var(--modal-neu-text, #421d3a);
+    --app-menu-text-muted: var(--modal-neu-text-muted, color-mix(in oklch, #421d3a 72%, transparent));
+    --app-menu-accent: var(--modal-neu-accent, #e65100);
+    --app-menu-border: color-mix(
+      in oklch,
+      var(--modal-neu-border, oklch(95% 0 0)) 86%,
+      transparent
+    );
+    --app-menu-raised: var(--neu-flat-shadow);
+    --app-menu-inset: var(--neu-flat-inset);
+    --app-menu-hover: var(--neu-flat-hover);
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
@@ -4845,6 +4730,17 @@
     color: var(--app-menu-accent) !important;
     font-weight: 600;
     box-shadow: var(--app-menu-inset) !important;
+  }
+
+  [data-theme='leve'] .app-menu-panel,
+  [data-theme='leve'] .app-page .menu,
+  [data-theme='leve'] .dropdown-content.menu {
+    --app-menu-bg: var(--modal-neu-shell-bg, oklch(var(--b2)));
+    --app-menu-surface: color-mix(in oklch, oklch(var(--b3)) 12%, var(--app-menu-bg));
+    --app-menu-text: var(--modal-neu-text, oklch(var(--bc)));
+    --app-menu-text-muted: var(--modal-neu-text-muted, oklch(var(--bc) / 0.72));
+    --app-menu-accent: var(--modal-neu-accent, oklch(var(--p)));
+    --app-menu-border: color-mix(in oklch, oklch(var(--b3)) 86%, transparent);
   }
 
   /** Pills de filtro (toolbar, modos de listagem). */
@@ -4982,7 +4878,7 @@
    */
   .jira-task-epic-type-pill {
     background-color: var(--jira-task-epic-accent) !important;
-    color: #f4efff !important;
+    color: #ffffff !important;
     border: 1px solid var(--jira-task-epic-accent-border) !important;
     box-shadow: inset 0 1px 0 color-mix(in oklch, oklch(100% 0 0) 10%, transparent);
   }
@@ -5207,8 +5103,7 @@
   .dashboard-neu-insight-card:hover {
     border-color: color-mix(in srgb, var(--project-dashboard-insight-accent) 35%, transparent);
     box-shadow:
-      7px 7px 18px var(--app-neu-dark),
-      -5px -5px 14px var(--app-neu-light),
+      var(--neu-flat-hover),
       0 0 0 1px color-mix(in srgb, var(--project-dashboard-insight-accent) 14%, transparent);
   }
   .dashboard-neu-insight-inset {
@@ -5248,15 +5143,13 @@
   .dashboard-glass-indicator-card:hover {
     border-color: color-mix(in srgb, var(--workspace-stat-accent) 32%, transparent);
     box-shadow:
-      7px 7px 18px var(--app-neu-dark),
-      -5px -5px 14px var(--app-neu-light),
+      var(--neu-flat-hover),
       0 0 0 1px color-mix(in srgb, var(--workspace-stat-accent) 12%, transparent);
   }
   .dashboard-glass-indicator-card--active {
     border-color: color-mix(in srgb, var(--workspace-stat-accent) 38%, transparent);
     box-shadow:
-      7px 7px 18px var(--app-neu-dark),
-      -5px -5px 14px var(--app-neu-light),
+      var(--neu-flat-shadow),
       0 0 0 2px color-mix(in srgb, var(--workspace-stat-accent) 22%, transparent);
   }
 
@@ -5283,7 +5176,7 @@
   .project-tab-page-shell:not(.app-dark-page-surface) {
     position: relative;
     isolation: isolate;
-    background: var(--project-workspace-bg);
+    background: oklch(98% 0 0);
     --app-neu-bg: var(--project-workspace-bg);
     --leve-neu-bg: var(--project-workspace-bg);
     --leve-neu-light: var(--project-workspace-light);
@@ -5297,62 +5190,22 @@
     --workspace-stat-accent: var(--project-card-accent);
     --workspace-stat-neu-light: var(--project-workspace-light);
     --workspace-stat-neu-dark: color-mix(in srgb, var(--project-workspace-shadow) 90%, transparent);
-    --workspace-stat-neu-raised:
-      6px 6px 15px var(--workspace-stat-neu-dark),
-      -4px -4px 11px var(--workspace-stat-neu-light);
-    --workspace-stat-neu-inset:
-      inset 4px 4px 10px var(--workspace-stat-neu-dark),
-      inset -3px -3px 8px var(--workspace-stat-neu-light);
+    --workspace-stat-neu-raised: var(--neu-flat-shadow);
+    --workspace-stat-neu-inset: var(--neu-flat-inset);
     --workspace-panel-bg: var(--project-workspace-surface);
-    --leve-neu-raised:
-      7px 7px 18px color-mix(in srgb, var(--project-workspace-shadow) 92%, transparent),
-      -5px -5px 14px var(--project-workspace-light);
-    --leve-neu-inset:
-      inset 5px 5px 12px color-mix(in srgb, var(--project-workspace-shadow) 95%, transparent),
-      inset -4px -4px 10px var(--project-workspace-light);
+    --leve-neu-raised: var(--neu-flat-shadow);
+    --leve-neu-inset: var(--neu-flat-inset);
     --leve-neu-hover:
-      9px 9px 22px color-mix(in srgb, var(--project-workspace-shadow) 96%, transparent),
-      -6px -6px 16px var(--project-workspace-light),
+      var(--neu-flat-hover),
       0 0 0 1px color-mix(in srgb, var(--project-card-accent) 20%, transparent);
   }
 
   .project-tab-page-shell:not(.app-dark-page-surface)::before {
-    content: '';
-    pointer-events: none;
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    background:
-      radial-gradient(
-        ellipse 74% 50% at 50% -5%,
-        color-mix(in srgb, var(--project-card-accent) 8%, transparent),
-        transparent 60%
-      ),
-      radial-gradient(
-        ellipse 48% 32% at 100% 8%,
-        color-mix(in srgb, var(--brand-text-strong) 5%, transparent),
-        transparent 55%
-      ),
-      linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--project-workspace-highlight) 40%, var(--project-workspace-bg)) 0%,
-        var(--project-workspace-bg) 45%
-      );
+    content: none;
   }
 
   .project-tab-page-shell:not(.app-dark-page-surface)::after {
-    content: '';
-    pointer-events: none;
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    opacity: 0.22;
-    background-image: radial-gradient(
-      color-mix(in srgb, var(--project-workspace-shadow) 14%, transparent) 1px,
-      transparent 1px
-    );
-    background-size: 22px 22px;
-    mask-image: linear-gradient(to bottom, black 0%, transparent 70%);
+    content: none;
   }
 
   .project-tab-page-shell:not(.app-dark-page-surface) > * {
@@ -5697,6 +5550,43 @@
   /** Grade bento — cards de insight */
   .dashboard-neu-scope .dashboard-insights-bento {
     align-items: stretch;
+    gap: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .dashboard-neu-scope .dashboard-insights-bento {
+      gap: 1.25rem;
+    }
+  }
+
+  [data-theme='leve'] .dashboard-neu-scope .dashboard-main-stack {
+    gap: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    [data-theme='leve'] .dashboard-neu-scope .dashboard-main-stack {
+      gap: 1.25rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    [data-theme='leve'] .dashboard-neu-scope .dashboard-main-stack {
+      gap: 1.5rem;
+    }
+  }
+
+  [data-theme='leve'] .dashboard-neu-scope .dashboard-insights-bento {
+    gap: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    [data-theme='leve'] .dashboard-neu-scope .dashboard-insights-bento {
+      gap: 1.25rem;
+    }
+  }
+
+  [data-theme='leve'] .dashboard-neu-scope .recent-activity-shell {
+    margin-top: 0;
   }
 
   .dashboard-neu-scope .dashboard-insight-bento-card {
@@ -6225,135 +6115,20 @@
   }
 
   /**
-   * Modal de tarefa — classes dedicadas (padrão project-card-neu-*).
-   * Sombras literais + !important: portal fora de .app-page; overflow não pode cortar relevo.
+   * Modal de tarefa — reforço estrutural (cores via task-modal-dark-neu.css + --modal-neu-*).
    */
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) {
-    --td-neu-dark: #b8aea3;
-    --td-neu-light: #faf7f2;
-    --td-neu-raised: 6px 6px 14px var(--td-neu-dark), -5px -5px 12px var(--td-neu-light);
-    --td-neu-inset: inset 4px 4px 10px var(--td-neu-dark), inset -3px -3px 8px var(--td-neu-light);
-    --td-neu-inset-deep: inset 5px 5px 14px var(--td-neu-dark), inset -4px -4px 10px var(--td-neu-light);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-raised,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-modal-section {
-    border: 1px solid #ded7cd !important;
-    border-radius: var(--leve-header-radius);
-    background: #f2eee8 !important;
-    box-shadow: var(--td-neu-raised) !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-inset,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-description,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-watchers {
-    border: 1px solid #ded7cd !important;
-    border-radius: var(--leve-header-radius);
-    background: #e5dfd5 !important;
-    box-shadow: var(--td-neu-inset) !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-inset-deep,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-strategy-neu-inset,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-track {
-    border: 1px solid #ded7cd !important;
-    background: #e5dfd5 !important;
-    box-shadow: var(--td-neu-inset-deep) !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-track {
-    border-radius: 9999px;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-chip {
-    border: 1px solid #ded7cd !important;
-    border-radius: 9999px;
-    background: #f2eee8 !important;
-    color: #6b5e5e;
-    box-shadow: var(--td-neu-raised) !important;
-    transition:
-      box-shadow 200ms ease,
-      color 200ms ease,
-      transform 150ms ease;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-chip:hover {
-    color: #401c31;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-chip:active {
-    transform: translateY(1px);
-    box-shadow: var(--td-neu-inset) !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-chip--active {
-    border: 1px solid #ded7cd !important;
-    border-radius: 9999px;
-    background: #e2d9d0 !important;
-    color: #401c31 !important;
-    box-shadow: var(--td-neu-inset) !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-chip--status-active {
-    border-color: color-mix(in srgb, #ff5c1b 42%, #ded7cd) !important;
-    background: color-mix(in srgb, #ff5c1b 14%, #f2eee8) !important;
-    color: #ff5c1b !important;
-    box-shadow: var(--td-neu-inset) !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-ghost-btn,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-jira-btn,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .btn-ghost.task-details-neu-ghost-btn,
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .app-btn-outline.task-details-neu-jira-btn {
-    box-shadow: var(--td-neu-raised) !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-section-header {
-    border-color: color-mix(in srgb, #ded7cd 80%, transparent);
-    background: color-mix(in srgb, #ded7cd 18%, #f2eee8);
-    box-shadow:
-      inset 0 2px 4px color-mix(in srgb, #b8aea3 45%, transparent),
-      inset 0 -1px 0 color-mix(in srgb, #faf7f2 80%, #f2eee8) !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-nav-footer {
-    border: 1px solid #ded7cd;
-    background: #e5dfd5;
-    box-shadow: var(--td-neu-inset-deep) !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .leve-neu-pill:not(.leve-neu-pill-active) {
-    box-shadow: var(--td-neu-raised) !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .leve-neu-pill-active {
-    box-shadow: var(--td-neu-inset) !important;
-  }
-
   :is(.leve-modal-neu-shell, .task-details-neu-modal) .custom-scrollbar {
     overflow-x: visible;
   }
 
-  /** Caso de teste — roteiro completo, badge, select e campos */
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-roteiro-shell {
-    border-radius: var(--leve-header-radius) !important;
-  }
-
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-roteiro-shell,
   :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-roteiro-block {
-    border-radius: var(--leve-header-radius) !important;
+    border-radius: var(--rounded-box, 1rem) !important;
   }
 
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-exec-badge {
-    border: 1px solid #ded7cd !important;
-    box-shadow: var(--td-neu-raised) !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-select {
-    border: 1px solid #ded7cd !important;
-    border-radius: var(--leve-header-radius) !important;
-    background: #f2eee8 !important;
-    color: #401c31;
-    box-shadow: var(--td-neu-raised) !important;
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-track,
+  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-case-detail-level-track {
+    border-radius: 9999px !important;
   }
 
   :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-select:disabled {
@@ -6361,86 +6136,9 @@
     cursor: not-allowed;
   }
 
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-textarea {
-    border: 1px solid #ded7cd !important;
-    border-radius: var(--leve-header-radius) !important;
-    background: #e5dfd5 !important;
-    box-shadow: var(--td-neu-inset) !important;
-  }
-
   :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-textarea:focus {
     outline: none;
     box-shadow: var(--td-neu-inset-deep) !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-status-btn.task-details-neu-chip--active.text-success {
-    border-color: color-mix(in srgb, oklch(var(--su)) 35%, #ded7cd) !important;
-    background: color-mix(in srgb, oklch(var(--su)) 18%, #e5dfd5) !important;
-    color: oklch(var(--su)) !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-status-btn.task-details-neu-chip--active.text-error {
-    border-color: color-mix(in srgb, oklch(var(--er)) 35%, #ded7cd) !important;
-    background: color-mix(in srgb, oklch(var(--er)) 18%, #e5dfd5) !important;
-    color: oklch(var(--er)) !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-status-btn.task-details-neu-chip--active.text-warning {
-    border-color: color-mix(in srgb, oklch(var(--wa)) 35%, #ded7cd) !important;
-    background: color-mix(in srgb, oklch(var(--wa)) 18%, #e5dfd5) !important;
-    color: oklch(var(--wa)) !important;
-  }
-
-  /** Estratégia de teste — toggle, passos e ferramentas */
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-strategy-neu-card {
-    border: 1px solid #ded7cd !important;
-    background: #f2eee8 !important;
-    box-shadow: var(--td-neu-raised) !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-strategy-neu-toggle {
-    position: relative;
-    display: inline-block;
-    height: 1.5rem;
-    width: 2.75rem;
-    flex-shrink: 0;
-    border-radius: 9999px;
-    border: 1px solid #ded7cd;
-    background: #e5dfd5;
-    box-shadow: var(--td-neu-inset-deep) !important;
-    transition:
-      background-color 200ms ease,
-      box-shadow 200ms ease;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-strategy-neu-toggle::after {
-    content: '';
-    position: absolute;
-    left: 2px;
-    top: 2px;
-    height: 1.25rem;
-    width: 1.25rem;
-    border-radius: 9999px;
-    border: 1px solid #ded7cd;
-    background: #f2eee8;
-    box-shadow: var(--td-neu-raised) !important;
-    transition: transform 200ms ease;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .peer:checked + .test-strategy-neu-toggle {
-    background: color-mix(in srgb, oklch(var(--su)) 62%, #e5dfd5);
-    box-shadow: var(--td-neu-inset) !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .peer:checked + .test-strategy-neu-toggle::after {
-    transform: translateX(1.25rem);
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .peer:focus-visible + .test-strategy-neu-toggle {
-    outline: none;
-    box-shadow:
-      var(--td-neu-inset-deep),
-      0 0 0 2px color-mix(in srgb, #ff5c1b 28%, transparent) !important;
   }
 
   :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-strategy-neu-tool-input {
@@ -6450,67 +6148,12 @@
     padding-right: 1rem;
   }
 
-  /** Nível de detalhe — segmentado + CTA IA */
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-case-detail-level-track {
-    border-radius: 9999px !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-case-detail-level-option--active {
-    border-color: color-mix(in srgb, #ff5c1b 48%, #ded7cd) !important;
-    background: #ff5c1b !important;
-    color: #ffffff !important;
-    box-shadow: var(--td-neu-inset) !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-case-detail-level-option:not(.test-case-detail-level-option--active):hover:not(:disabled) {
-    color: #401c31 !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-primary-cta {
-    border: 1px solid color-mix(in srgb, #ff5c1b 45%, transparent) !important;
-    background: #ff5c1b !important;
-    color: #ffffff !important;
-    box-shadow: var(--td-neu-raised) !important;
-  }
-
   :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-primary-cta:hover:not(:disabled) {
     filter: brightness(1.05);
   }
 
   :is(.leve-modal-neu-shell, .task-details-neu-modal) .task-details-neu-primary-cta:active:not(:disabled) {
     transform: translateY(1px);
-    box-shadow: var(--td-neu-inset) !important;
-  }
-
-  /** Modal Registro de Testes */
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-report-neu-modal .test-report-neu-section {
-    border: 1px solid #ded7cd !important;
-    background: #f2eee8 !important;
-    box-shadow: var(--td-neu-raised) !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-report-neu-modal .test-report-neu-inset {
-    box-shadow: var(--td-neu-inset-deep) !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-report-neu-modal .test-report-neu-format-option--active {
-    border-color: color-mix(in srgb, #ff5c1b 38%, #ded7cd) !important;
-    background: color-mix(in srgb, #ff5c1b 10%, #f2eee8) !important;
-    box-shadow: var(--td-neu-inset) !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-report-neu-modal .test-report-neu-format-idle:hover {
-    border-color: color-mix(in srgb, #ff5c1b 28%, #ded7cd) !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-report-neu-modal .test-report-neu-chip-btn:active:not(:disabled) {
-    transform: translateY(1px);
-    box-shadow: var(--td-neu-inset) !important;
-  }
-
-  :is(.leve-modal-neu-shell, .task-details-neu-modal) .test-report-neu-modal .test-report-neu-preview-field {
-    border: 1px solid #ded7cd !important;
-    background: #e5dfd5 !important;
     box-shadow: var(--td-neu-inset) !important;
   }
 }
@@ -6537,8 +6180,19 @@
     gap: 0.5rem;
   }
 
-  /* Painéis bege do dashboard — menos espaço entre blocos empilhados. */
-  .dashboard-neu-scope .space-y-4 > :not([hidden]) ~ :not([hidden]) {
+  /* Painéis do dashboard — ritmo vertical no tema leve (não comprimir). */
+  [data-theme='leve'] .dashboard-neu-scope .space-y-4 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    [data-theme='leve'] .dashboard-neu-scope .space-y-4 > :not([hidden]) ~ :not([hidden]) {
+      margin-top: 1.25rem;
+    }
+  }
+
+  /* Painéis bege do dashboard (legado) — menos espaço entre blocos empilhados. */
+  .dashboard-neu-scope:not([data-theme='leve']) .space-y-4 > :not([hidden]) ~ :not([hidden]) {
     margin-top: 0.75rem;
   }
 
@@ -6943,73 +6597,105 @@
  * Meus Projetos — faixa hero CLARA (painel neumórfico bege/creme).
  */
 .projects-dash-page .projects-dashboard-hero-chrome {
-  --workspace-stat-bg: var(--leve-neu-bg);
-  --workspace-stat-text: var(--brand-text-strong);
-  --workspace-stat-text-muted: color-mix(in srgb, var(--brand-text-strong) 72%, transparent);
-  --workspace-stat-accent: var(--project-card-accent);
-  border: 1px solid color-mix(in srgb, var(--leve-neu-light) 45%, transparent);
-  border-radius: var(--project-card-radius);
-  background: var(--leve-neu-bg);
-  box-shadow: var(--leve-neu-raised);
-  color: var(--brand-text-strong);
+  --workspace-stat-bg: oklch(100% 0 0);
+  --workspace-stat-text: #421d3a;
+  --workspace-stat-text-muted: rgba(66, 29, 58, 0.72);
+  --workspace-stat-accent: #e65100;
+  border: 1px solid oklch(95% 0 0);
+  border-radius: var(--project-card-radius, 1rem);
+  background: oklch(100% 0 0);
+  box-shadow: var(--neu-flat-shadow);
+  color: #421d3a;
 }
 
 .projects-dash-page .projects-dashboard-hero-chrome .projects-dash-stat-card {
-  border: 1px solid color-mix(in srgb, var(--leve-neu-light) 32%, transparent) !important;
-  border-radius: 14px;
-  background: var(--leve-neu-bg) !important;
-  box-shadow: var(--leve-neu-inset) !important;
+  border: 1px solid oklch(95% 0 0) !important;
+  border-radius: var(--project-card-radius, 1rem) !important;
+  background: oklch(100% 0 0) !important;
+  box-shadow: var(--neu-flat-shadow-sm) !important;
 }
 
 .projects-dash-page .projects-dashboard-hero-chrome .projects-dash-stat-card:hover {
-  box-shadow: var(--leve-neu-hover) !important;
+  box-shadow: var(--neu-flat-hover) !important;
   transform: translateY(-1px);
 }
 
 .projects-dash-page .projects-dashboard-hero-chrome .workspace-stat-neu-track {
-  background: color-mix(in srgb, var(--leve-neu-dark) 12%, var(--leve-neu-bg)) !important;
-  box-shadow: var(--leve-neu-inset) !important;
+  background: oklch(98% 0 0) !important;
+  box-shadow: var(--neu-flat-inset) !important;
 }
 
 .projects-dash-page .projects-dashboard-hero-chrome .projects-dash-neu-icon-btn,
 .projects-dash-page .projects-dashboard-hero-chrome .projects-dash-neu-badge {
-  border: 1px solid color-mix(in srgb, var(--leve-neu-light) 35%, transparent) !important;
-  background: var(--leve-neu-bg) !important;
-  color: var(--brand-text-strong) !important;
-  box-shadow: var(--leve-neu-raised) !important;
+  border: 1px solid oklch(95% 0 0) !important;
+  background: oklch(100% 0 0) !important;
+  color: #421d3a !important;
+  box-shadow: var(--neu-flat-shadow-sm) !important;
+  border-radius: var(--projects-dash-radius-selector, 2rem);
 }
 
 .projects-dash-page .projects-dashboard-hero-chrome .projects-dash-neu-icon-btn:hover {
-  color: var(--project-card-accent) !important;
-  box-shadow: var(--leve-neu-hover) !important;
+  color: #e65100 !important;
+  border-color: color-mix(in srgb, #e65100 28%, oklch(95% 0 0)) !important;
+  box-shadow: var(--neu-flat-hover) !important;
 }
 
 .projects-dash-page .projects-dashboard-hero-chrome .projects-dash-neu-search-input {
-  border: 1px solid color-mix(in srgb, var(--leve-neu-light) 38%, transparent);
-  background: color-mix(in srgb, var(--leve-neu-dark) 6%, var(--leve-neu-bg));
-  color: var(--brand-text-strong);
-  box-shadow: var(--leve-neu-inset);
+  border: 1px solid oklch(95% 0 0);
+  border-radius: var(--project-card-inner-radius, 0.5rem);
+  background: oklch(100% 0 0);
+  color: #421d3a;
+  box-shadow: none;
 }
 
 .projects-dash-page .projects-dashboard-hero-chrome .projects-dash-neu-search-input::placeholder {
-  color: color-mix(in srgb, var(--brand-text-strong) 62%, transparent);
+  color: rgba(66, 29, 58, 0.55);
 }
 
 .projects-dash-page .projects-dashboard-hero-chrome .projects-dash-neu-search-input:focus-visible {
   outline: none;
-  border-color: color-mix(in srgb, var(--project-card-accent) 40%, transparent);
-  box-shadow:
-    var(--leve-neu-inset),
-    0 0 0 2px color-mix(in srgb, var(--project-card-accent) 28%, transparent);
+  border-color: color-mix(in srgb, #e65100 45%, oklch(95% 0 0));
+  box-shadow: 0 0 0 2px color-mix(in srgb, #e65100 22%, transparent);
 }
 
 /**
  * Meus Projetos — shell ambient (inspirado LandingPage / 21st SaaS hero).
  */
 .projects-dash-page.projects-dashboard-page-shell {
+  color-scheme: light;
   position: relative;
   isolation: isolate;
-  background: var(--leve-neu-bg);
+  --brand-text-strong: #421d3a;
+  --brand-text-muted: rgba(66, 29, 58, 0.72);
+  --project-card-accent: #e65100;
+  --project-card-radius: 1rem;
+  --project-card-inner-radius: 0.5rem;
+  --projects-dash-radius: 1rem;
+  --projects-dash-radius-selector: 2rem;
+  --projects-dash-radius-field: 0.5rem;
+  --leve-neu-bg: oklch(98% 0 0);
+  --leve-neu-light: oklch(100% 0 0);
+  --leve-neu-dark: oklch(95% 0 0);
+  --leve-neu-raised: var(--neu-flat-shadow);
+  --leve-neu-inset: var(--neu-flat-inset);
+  --leve-neu-hover: var(--neu-flat-hover);
+  --leve-header-cream: oklch(100% 0 0);
+  --app-neu-bg: oklch(98% 0 0);
+  --projects-dash-bg: oklch(98% 0 0);
+  --projects-dash-surface: oklch(100% 0 0);
+  --workspace-stat-accent: #e65100;
+  --workspace-stat-text: #421d3a;
+  --workspace-stat-text-muted: rgba(66, 29, 58, 0.72);
+  --workspace-panel-accent: #e65100;
+  --workspace-panel-badge-bg: #e65100;
+  --workspace-panel-badge-text: oklch(98% 0 0);
+  --workspace-panel-bg: oklch(100% 0 0);
+  --workspace-panel-text: #421d3a;
+  --workspace-panel-text-muted: rgba(66, 29, 58, 0.72);
+  --workspace-panel-border: oklch(95% 0 0);
+  --workspace-panel-radius: 1rem;
+  --workspace-panel-inner-radius: 0.5rem;
+  background: oklch(98% 0 0);
 }
 
 .projects-dash-page.projects-dashboard-page-shell::before {
@@ -7073,27 +6759,27 @@
   z-index: 1;
 }
 
-/** Eyebrow — pill claro */
+/** Eyebrow — seletor (radius-selector 2rem). */
 .projects-dash-page .projects-dashboard-eyebrow {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
   max-width: 100%;
   padding: 0.3125rem 0.75rem;
-  border-radius: 9999px;
-  border: 1px solid color-mix(in srgb, var(--leve-neu-light) 42%, transparent);
-  background: color-mix(in srgb, var(--leve-header-cream) 90%, var(--leve-neu-bg));
+  border-radius: var(--projects-dash-radius-selector, 2rem);
+  border: 1px solid oklch(95% 0 0);
+  background: oklch(100% 0 0);
   font-family: var(--font-sans);
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--brand-text-strong);
-  box-shadow: var(--leve-neu-raised);
+  color: #421d3a;
+  box-shadow: var(--neu-flat-shadow-sm);
 }
 
 .projects-dash-page .projects-dashboard-eyebrow svg {
-  color: var(--project-card-accent);
+  color: #e65100;
   flex-shrink: 0;
 }
 
@@ -7109,11 +6795,11 @@
   align-items: center;
   justify-content: center;
   min-height: 1.375rem;
-  border-radius: 9999px;
-  border: 1px solid color-mix(in srgb, var(--brand-text-strong) 18%, transparent);
-  background: color-mix(in srgb, var(--brand-text-strong) 8%, var(--leve-neu-bg));
-  color: var(--brand-text-strong);
-  box-shadow: var(--leve-neu-raised);
+  border-radius: var(--projects-dash-radius-selector, 2rem);
+  border: 1px solid oklch(95% 0 0);
+  background: oklch(98% 0 0);
+  color: #421d3a;
+  box-shadow: var(--neu-flat-shadow-sm);
 }
 
 /** KPI cards — bento analytics (21st) */
@@ -7142,10 +6828,10 @@
   justify-content: center;
   width: 1.75rem;
   height: 1.75rem;
-  border-radius: 9999px;
-  border: 1px solid color-mix(in srgb, var(--leve-neu-light) 38%, transparent);
-  background: color-mix(in srgb, var(--leve-header-cream) 88%, var(--leve-neu-bg));
-  box-shadow: var(--leve-neu-raised);
+  border-radius: var(--project-card-inner-radius, 0.5rem);
+  border: 1px solid oklch(95% 0 0);
+  background: oklch(100% 0 0);
+  box-shadow: var(--neu-flat-shadow-sm);
 }
 
 @media (min-width: 640px) {
@@ -7292,34 +6978,25 @@
 .projects-dash-page {
   --project-card-bg: #fcf9ec;
   --project-card-bg-hover: #f5f1dc;
-  --project-card-text: #451e44;
-  --project-card-text-muted: rgba(69, 30, 68, 0.72);
-  --project-card-text-subtle: rgba(69, 30, 68, 0.55);
-  --project-card-accent: #fb4c00;
-  --project-card-border: rgba(69, 30, 68, 0.12);
-  --project-card-chip: rgba(69, 30, 68, 0.06);
+  --project-card-text: #421d3a;
+  --project-card-text-muted: rgba(66, 29, 58, 0.72);
+  --project-card-text-subtle: rgba(66, 29, 58, 0.55);
+  --project-card-accent: #e65100;
+  --project-card-border: rgba(66, 29, 58, 0.12);
+  --project-card-chip: rgba(66, 29, 58, 0.06);
   --project-card-neu-light: color-mix(in srgb, white 62%, #fcf9ec);
   --project-card-neu-dark: color-mix(in srgb, black 14%, #fcf9ec);
-  --project-card-neu-raised:
-    6px 6px 14px color-mix(in srgb, #3a342f 22%, #fcf9ec),
-    -5px -5px 12px color-mix(in srgb, white 72%, #fcf9ec);
-  --project-card-neu-raised-sm:
-    4px 4px 10px color-mix(in srgb, #3a342f 18%, #fcf9ec),
-    -3px -3px 8px color-mix(in srgb, white 68%, #fcf9ec);
-  --project-card-neu-inset:
-    inset 4px 4px 10px color-mix(in srgb, #3a342f 16%, #fcf9ec),
-    inset -3px -3px 8px color-mix(in srgb, white 65%, #fcf9ec);
-  --project-card-neu-inset-deep:
-    inset 5px 5px 12px color-mix(in srgb, #3a342f 20%, #fcf9ec),
-    inset -4px -4px 10px color-mix(in srgb, white 60%, #fcf9ec);
+  --project-card-neu-raised: var(--neu-flat-shadow);
+  --project-card-neu-raised-sm: var(--neu-flat-shadow-sm);
+  --project-card-neu-inset: var(--neu-flat-inset);
+  --project-card-neu-inset-deep: var(--neu-flat-inset);
   --project-card-neu-hover:
-    8px 8px 20px color-mix(in srgb, #3a342f 26%, #fcf9ec),
-    -6px -6px 16px color-mix(in srgb, white 75%, #fcf9ec),
-    0 0 0 1px color-mix(in srgb, #fb4c00 22%, transparent);
+    var(--neu-flat-hover),
+    0 0 0 1px color-mix(in srgb, #e65100 22%, transparent);
   --project-card-progress-fill: linear-gradient(
     90deg,
-    color-mix(in srgb, #fb4c00 72%, white) 0%,
-    #fb4c00 100%
+    color-mix(in srgb, #e65100 72%, white) 0%,
+    #e65100 100%
   );
 }
 
@@ -7335,12 +7012,8 @@
   --projects-dash-surface: #4b433d;
   --projects-dash-neu-light: #5c524b;
   --projects-dash-neu-dark: #3a342f;
-  --projects-dash-neu-raised:
-    6px 6px 16px color-mix(in srgb, #3a342f 48%, transparent),
-    -4px -4px 10px color-mix(in srgb, #5c524b 20%, #4b433d);
-  --projects-dash-neu-inset:
-    inset 5px 5px 12px #3a342f,
-    inset -4px -4px 10px #5c524b;
+  --projects-dash-neu-raised: var(--neu-flat-shadow);
+  --projects-dash-neu-inset: var(--neu-flat-inset);
   background-color: #4b433d !important;
   background-image: radial-gradient(
     ellipse 130% 85% at 50% -15%,
@@ -7377,14 +7050,11 @@ main:has(.projects-dashboard-page-surface) {
   --app-neu-surface: #4b433d;
   --app-neu-light: #5c524b;
   --app-neu-dark: #3a342f;
-  --app-neu-raised:
-    6px 6px 16px color-mix(in srgb, #3a342f 52%, transparent),
-    -4px -4px 10px color-mix(in srgb, #5c524b 28%, #4b433d);
-  --app-neu-inset: inset 5px 5px 10px #3a342f, inset -4px -4px 8px #5c524b;
-  --app-neu-inset-deep: inset 6px 6px 12px #3a342f, inset -5px -5px 10px #5c524b;
+  --app-neu-raised: var(--neu-flat-shadow);
+  --app-neu-inset: var(--neu-flat-inset);
+  --app-neu-inset-deep: var(--neu-flat-inset);
   --app-neu-hover:
-    7px 7px 18px color-mix(in srgb, #3a342f 55%, transparent),
-    -5px -5px 12px color-mix(in srgb, #fdf6e3 10%, #4b433d),
+    var(--neu-flat-hover),
     0 0 0 1px color-mix(in srgb, #e65100 18%, transparent);
   --leve-neu-bg: #4b433d;
   --leve-neu-light: #5c524b;
@@ -7570,9 +7240,7 @@ main:has(.projects-dashboard-page-surface) {
 .app-dark-page-surface .dashboard-neu-scope .dashboard-hero-chrome .dashboard-glass-indicator-card:hover,
 .app-dark-page-surface.dashboard-neu-scope .dashboard-hero-chrome .dashboard-glass-indicator-card:hover {
   border-color: color-mix(in srgb, #e65100 32%, #5c524b) !important;
-  box-shadow:
-    3px 3px 10px color-mix(in srgb, #3a342f 48%, transparent),
-    -2px -2px 8px color-mix(in srgb, #5c524b 24%, #4b433d) !important;
+  box-shadow: var(--neu-flat-hover) !important;
   transform: translateY(-1px);
 }
 
@@ -7650,15 +7318,9 @@ main:has(.projects-dashboard-page-surface) {
   --workspace-panel-neu-highlight: var(--workspace-panel-neu-highlight-raised);
   --workspace-panel-neu-light: color-mix(in srgb, var(--workspace-panel-neu-highlight-inset) 55%, var(--workspace-panel-bg));
   --workspace-panel-neu-dark: var(--workspace-panel-neu-shadow);
-  --workspace-panel-neu-raised:
-    6px 6px 16px color-mix(in srgb, var(--workspace-panel-neu-shadow) 52%, transparent),
-    -4px -4px 10px color-mix(in srgb, var(--workspace-panel-neu-highlight-inset) 28%, var(--workspace-panel-bg));
-  --workspace-panel-neu-inset:
-    inset 5px 5px 10px var(--workspace-panel-neu-shadow),
-    inset -4px -4px 8px var(--workspace-panel-neu-highlight-inset);
-  --workspace-panel-neu-inset-deep:
-    inset 6px 6px 12px var(--workspace-panel-neu-shadow),
-    inset -5px -5px 10px var(--workspace-panel-neu-highlight-inset);
+  --workspace-panel-neu-raised: var(--neu-flat-shadow);
+  --workspace-panel-neu-inset: var(--neu-flat-inset);
+  --workspace-panel-neu-inset-deep: var(--neu-flat-inset);
   --workspace-panel-text: #f5f1e6;
   --workspace-panel-text-muted: rgba(245, 241, 230, 0.72);
   --workspace-panel-accent: #e65100;
@@ -7683,45 +7345,41 @@ main:has(.projects-dashboard-page-surface) {
      herdariam os hex escuros do :root e manteriam sombras/fundos escuros. */
   --workspace-panel-neu-light: color-mix(in srgb, var(--workspace-panel-neu-highlight-inset) 55%, var(--workspace-panel-bg));
   --workspace-panel-neu-dark: var(--workspace-panel-neu-shadow);
-  --workspace-panel-neu-raised:
-    6px 6px 16px color-mix(in srgb, var(--workspace-panel-neu-shadow) 45%, transparent),
-    -4px -4px 12px color-mix(in srgb, var(--workspace-panel-neu-highlight-inset) 60%, var(--workspace-panel-bg));
-  --workspace-panel-neu-inset:
-    inset 4px 4px 10px color-mix(in srgb, var(--workspace-panel-neu-shadow) 70%, transparent),
-    inset -3px -3px 8px color-mix(in srgb, var(--workspace-panel-neu-highlight-inset) 70%, var(--workspace-panel-bg));
-  --workspace-panel-neu-inset-deep:
-    inset 6px 6px 12px var(--workspace-panel-neu-shadow),
-    inset -5px -5px 10px var(--workspace-panel-neu-highlight-inset);
-  --workspace-panel-text: #4f2557;
-  --workspace-panel-text-muted: rgba(79, 37, 87, 0.7);
+  --workspace-panel-neu-raised: var(--neu-flat-shadow);
+  --workspace-panel-neu-inset: var(--neu-flat-inset);
+  --workspace-panel-neu-inset-deep: var(--neu-flat-inset);
+  --workspace-panel-text: #421d3a;
+  --workspace-panel-text-muted: rgba(66, 29, 58, 0.72);
   --workspace-panel-accent: #e65100;
-  --workspace-panel-border: color-mix(in srgb, white 55%, transparent);
-  --workspace-panel-chip: rgba(79, 37, 87, 0.05);
-  --workspace-panel-divider: rgba(79, 37, 87, 0.1);
-  --workspace-panel-badge-bg: #4f2557;
-  --workspace-panel-badge-text: #f5f1e6;
-  --workspace-panel-badge-neutral-bg: rgba(79, 37, 87, 0.08);
-  --workspace-panel-badge-neutral-text: #4f2557;
+  --workspace-panel-border: color-mix(in srgb, #421d3a 10%, transparent);
+  --workspace-panel-chip: rgba(66, 29, 58, 0.05);
+  --workspace-panel-divider: rgba(66, 29, 58, 0.1);
+  --workspace-panel-badge-bg: #e65100;
+  --workspace-panel-badge-text: oklch(98% 0 0);
+  --workspace-panel-badge-neutral-bg: rgba(66, 29, 58, 0.08);
+  --workspace-panel-badge-neutral-text: #421d3a;
 }
 
 /* Painel lateral (métricas + alertas) — superfície clara.
    Redefine as variáveis que a regra escura aplica diretamente no painel. */
 .projects-dash-page:is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dashboard-sidebar-panel {
-  --workspace-panel-bg: #f8f9fa;
-  --workspace-panel-neu-shadow: color-mix(in srgb, black 9%, #f8f9fa);
-  --workspace-panel-neu-highlight-inset: color-mix(in srgb, white 80%, #f8f9fa);
-  --workspace-panel-neu-highlight-raised: #ffffff;
-  border: 1px solid color-mix(in srgb, white 55%, transparent);
-  background-color: var(--workspace-panel-bg) !important;
+  --workspace-panel-bg: oklch(100% 0 0);
+  --workspace-panel-neu-shadow: color-mix(in srgb, black 9%, oklch(100% 0 0));
+  --workspace-panel-neu-highlight-inset: color-mix(in srgb, white 80%, oklch(100% 0 0));
+  --workspace-panel-neu-highlight-raised: oklch(100% 0 0);
+  border-radius: var(--project-card-radius, 1rem);
+  border: 1px solid oklch(95% 0 0);
+  background-color: oklch(100% 0 0) !important;
   background-image: none !important;
-  color: var(--workspace-panel-text);
-  box-shadow: var(--workspace-panel-neu-raised) !important;
+  color: #421d3a;
+  box-shadow: var(--neu-flat-shadow-sm) !important;
 }
 
 .projects-dash-page:is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dashboard-sidebar-panel .workspace-panel-neu-metric-tile {
-  background-color: color-mix(in srgb, var(--workspace-panel-neu-dark) 10%, var(--workspace-panel-bg)) !important;
+  border-radius: var(--project-card-inner-radius, 0.5rem);
+  background-color: oklch(98% 0 0) !important;
   background-image: none !important;
-  box-shadow: var(--workspace-panel-neu-inset) !important;
+  box-shadow: var(--neu-flat-inset) !important;
 }
 
 .projects-dash-page:is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dashboard-sidebar-panel .workspace-panel-neu-icon-wrap {
@@ -7747,11 +7405,12 @@ main:has(.projects-dashboard-page-surface) {
   border-bottom-color: color-mix(in srgb, var(--workspace-panel-accent) 35%, transparent);
 }
 
-/* Grupo segmentado de filtros rápidos — claro */
+/* Grupo segmentado de filtros rápidos — claro (tema leve fiel) */
 :is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dash-quick-filters-toolbar {
-  border-color: var(--workspace-panel-border);
-  background: color-mix(in srgb, var(--workspace-panel-neu-dark) 12%, var(--workspace-panel-bg));
-  box-shadow: var(--workspace-panel-neu-inset);
+  border-color: oklch(95% 0 0);
+  background: oklch(98% 0 0);
+  border-radius: var(--project-card-inner-radius, 0.5rem);
+  box-shadow: var(--neu-flat-inset);
 }
 
 :is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dash-quick-filters-divider {
@@ -7759,21 +7418,42 @@ main:has(.projects-dashboard-page-surface) {
 }
 
 :is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dash-quick-filters-pill {
-  border: 1px solid color-mix(in srgb, var(--workspace-panel-border) 80%, transparent);
-  background: var(--workspace-panel-bg);
-  color: var(--workspace-panel-text-muted);
-  box-shadow: var(--workspace-panel-neu-raised);
+  border: 1px solid #e65100;
+  background: oklch(100% 0 0);
+  color: #e65100;
+  border-radius: var(--projects-dash-radius-selector, 2rem);
+  box-shadow: var(--neu-flat-shadow-sm);
 }
 
 :is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dash-quick-filters-pill:hover:not(:disabled) {
-  color: var(--workspace-panel-text);
+  color: #e65100;
+  border-color: color-mix(in srgb, #e65100 75%, oklch(95% 0 0));
+  background: color-mix(in srgb, #e65100 6%, oklch(100% 0 0));
+  box-shadow: var(--neu-flat-hover);
 }
 
 :is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dash-quick-filters-pill--active {
-  border-color: transparent;
-  background: var(--workspace-panel-accent);
-  color: #ffffff;
-  box-shadow: var(--workspace-panel-neu-raised);
+  border-color: #e65100;
+  background: #e65100;
+  color: oklch(98% 0 0);
+  box-shadow: var(--neu-relief-sm);
+}
+
+:is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dash-quick-filters-pill--active:hover:not(:disabled) {
+  color: oklch(98% 0 0);
+  filter: brightness(1.04);
+}
+
+:is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dash-quick-filters-pill--active:active:not(:disabled) {
+  transform: translateY(1px);
+  filter: brightness(0.97);
+  box-shadow: var(--neu-relief-pressed);
+}
+
+:is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dash-quick-filters-count--active {
+  border: 1px solid color-mix(in srgb, white 35%, transparent);
+  background: #ffffff;
+  color: var(--workspace-panel-accent);
 }
 
 /* CTA / pills ativos (ex.: "Adicionar Tarefa", abas e filtros ativos) — laranja
@@ -7781,11 +7461,19 @@ main:has(.projects-dashboard-page-surface) {
 :is(.workspace-surface-light, [data-workspace-surface='light']) .workspace-chrome-pill-active {
   border-color: transparent;
   background: var(--workspace-panel-accent);
-  color: #ffffff;
+  color: oklch(98% 0 0);
+  box-shadow: var(--neu-relief-sm);
 }
 
 :is(.workspace-surface-light, [data-workspace-surface='light']) .workspace-chrome-pill-active:hover:not(:disabled) {
-  color: #ffffff;
+  color: oklch(98% 0 0);
+  filter: brightness(1.04);
+}
+
+:is(.workspace-surface-light, [data-workspace-surface='light']) .workspace-chrome-pill-active:active:not(:disabled) {
+  transform: translateY(1px);
+  filter: brightness(0.97);
+  box-shadow: var(--neu-relief-pressed);
 }
 
 /** Abas fixas do ProjectView — ritmo visual igual (Todas/Backlog, filtros). */
@@ -7798,14 +7486,17 @@ main:has(.projects-dashboard-page-surface) {
   .project-chrome-tabs-nav
   .workspace-chrome-tab-idle {
   border: 1px solid transparent;
-  border-radius: 9999px;
+  border-radius: var(--projects-dash-radius-selector, 2rem);
 }
 
 :is(.workspace-surface-light, [data-workspace-surface='light'])
   .project-chrome-neu-shell
   .project-chrome-tabs-nav
   .workspace-chrome-tab-active {
-  border: 1px solid transparent;
+  border: 1px solid #e65100;
+  border-radius: var(--projects-dash-radius-selector, 2rem);
+  background: #e65100;
+  color: oklch(98% 0 0);
 }
 
 /* Dashboard interno — Atividades recentes (shell + tiles claros) */
@@ -7825,7 +7516,608 @@ main:has(.projects-dashboard-page-surface) {
 :is(.workspace-surface-light, [data-workspace-surface='light']) .dashboard-neu-scope .recent-activity-item.workspace-panel-neu-metric-tile:hover {
   border-color: color-mix(in srgb, var(--workspace-panel-accent) 22%, transparent);
   box-shadow:
-    7px 7px 18px color-mix(in srgb, var(--workspace-panel-neu-shadow) 45%, transparent),
-    -5px -5px 12px color-mix(in srgb, var(--workspace-panel-neu-highlight-inset) 55%, var(--workspace-panel-bg)),
+    var(--neu-flat-hover),
     0 0 0 1px color-mix(in srgb, var(--workspace-panel-accent) 14%, transparent) !important;
+}
+
+/** Landing — campos, seletores e componentes DaisyUI (tema fiel). */
+:is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dash-quick-filters-count--active {
+  border: 1px solid color-mix(in srgb, white 40%, transparent);
+  background: oklch(100% 0 0);
+  color: #e65100;
+}
+
+:is(.workspace-surface-light, [data-workspace-surface='light']) .projects-dash-quick-filters-count--idle {
+  border: 1px solid oklch(95% 0 0);
+  background: oklch(98% 0 0);
+  color: rgba(66, 29, 58, 0.72);
+}
+
+.app-neu-scope .projects-dash-page[data-theme='leve'] {
+  --rounded-box: 1rem;
+  --rounded-btn: 0.5rem;
+  --rounded-badge: 2rem;
+  --tab-radius: 2rem;
+}
+
+.app-neu-scope .projects-dash-page[data-theme='leve']
+  :is(
+    .input,
+    .textarea,
+    .select,
+    .app-input,
+    .projects-dash-neu-search-input,
+    .projects-dash-neu-select,
+    input.input,
+    input:not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='file']),
+    select,
+    textarea
+  ) {
+  border-radius: 0.5rem;
+  border: 1px solid oklch(95% 0 0);
+  background-color: oklch(100% 0 0);
+  color: #421d3a;
+  box-shadow: none;
+}
+
+.app-neu-scope .projects-dash-page[data-theme='leve']
+  :is(.input, .textarea, .select, .app-input, .projects-dash-neu-search-input, input, select, textarea)::placeholder {
+  color: rgba(66, 29, 58, 0.55);
+  opacity: 1;
+}
+
+.app-neu-scope .projects-dash-page[data-theme='leve']
+  :is(.input, .textarea, .select, .app-input, .projects-dash-neu-search-input, input, select, textarea):focus,
+  :is(.input, .textarea, .select, .app-input, .projects-dash-neu-search-input, input, select, textarea):focus-visible {
+  outline: none;
+  border-color: color-mix(in srgb, #e65100 45%, oklch(95% 0 0));
+  box-shadow: 0 0 0 2px color-mix(in srgb, #e65100 22%, transparent);
+}
+
+.app-neu-scope .projects-dash-page[data-theme='leve'] .btn-primary {
+  border-radius: 0.5rem;
+  background-color: #e65100;
+  border-color: #e65100;
+  color: oklch(98% 0 0);
+}
+
+.app-neu-scope .projects-dash-page[data-theme='leve'] .btn-primary:hover:not(:disabled) {
+  background-color: color-mix(in srgb, #e65100 92%, black);
+  border-color: color-mix(in srgb, #e65100 92%, black);
+}
+
+.app-neu-scope .projects-dash-page[data-theme='leve'] .badge {
+  border-radius: 2rem;
+}
+
+/* Empty state — caixa clara + CTA/dica alinhados ao tema leve */
+.app-neu-scope .projects-dash-page .projects-dash-empty-shell {
+  border-radius: var(--project-card-radius, 1rem);
+  border: 1px solid oklch(95% 0 0);
+  background: oklch(100% 0 0);
+  box-shadow: var(--neu-flat-shadow-sm);
+}
+
+.app-neu-scope .projects-dash-page .projects-dash-empty-shell .btn-primary,
+.app-neu-scope .projects-dash-page .projects-dash-empty-shell .btn.btn-primary {
+  min-height: 2.75rem;
+  border-radius: 0.5rem;
+  background-color: #e65100;
+  border-color: #e65100;
+  color: oklch(98% 0 0);
+  box-shadow: var(--neu-relief-sm);
+}
+
+.app-neu-scope .projects-dash-page .projects-dash-empty-shell .btn-primary:hover:not(:disabled),
+.app-neu-scope .projects-dash-page .projects-dash-empty-shell .btn.btn-primary:hover:not(:disabled) {
+  background-color: color-mix(in srgb, #e65100 92%, black);
+  border-color: color-mix(in srgb, #e65100 92%, black);
+}
+
+.app-neu-scope .projects-dash-page .projects-dash-empty-shell [class*='neu-inset'] {
+  border-radius: var(--project-card-inner-radius, 0.5rem);
+  border: 1px solid color-mix(in srgb, #e65100 22%, oklch(95% 0 0));
+  background: color-mix(in srgb, #e65100 6%, oklch(98% 0 0));
+  box-shadow: var(--neu-flat-inset);
+}
+
+/* Alertas laterais — abas seletor 2rem no escopo claro */
+.projects-dash-page:is(.workspace-surface-light, [data-workspace-surface='light']) .workspace-panel-neu-inset {
+  border-radius: var(--project-card-inner-radius, 0.5rem);
+  border: 1px solid oklch(95% 0 0);
+  background: oklch(98% 0 0);
+  box-shadow: var(--neu-flat-inset);
+}
+
+.projects-dash-page:is(.workspace-surface-light, [data-workspace-surface='light']) .workspace-panel-neu-tab-active {
+  border-radius: var(--projects-dash-radius-selector, 2rem);
+  background: #e65100;
+  color: oklch(98% 0 0);
+  box-shadow: var(--neu-relief-sm);
+}
+
+.projects-dash-page:is(.workspace-surface-light, [data-workspace-surface='light']) .workspace-panel-neu-tab-idle {
+  border-radius: var(--projects-dash-radius-selector, 2rem);
+  border: 1px solid #e65100;
+  background: oklch(100% 0 0);
+  color: #e65100;
+}
+
+.projects-dash-page:is(.workspace-surface-light, [data-workspace-surface='light']) .workspace-panel-neu-tab-idle:hover {
+  color: #e65100;
+  border-color: color-mix(in srgb, #e65100 75%, oklch(95% 0 0));
+  background: color-mix(in srgb, #e65100 6%, oklch(100% 0 0));
+  box-shadow: var(--neu-flat-hover);
+}
+
+.projects-dash-page:is(.workspace-surface-light, [data-workspace-surface='light']) .workspace-panel-neu-chip {
+  border-radius: var(--project-card-inner-radius, 0.5rem);
+  border: 1px solid oklch(95% 0 0);
+  background: oklch(98% 0 0);
+  box-shadow: var(--neu-flat-inset);
+}
+
+.projects-dash-page:is(.workspace-surface-light, [data-workspace-surface='light']) .workspace-panel-neu-chip:hover {
+  color: #e65100;
+  border-color: color-mix(in srgb, #e65100 28%, oklch(95% 0 0));
+  box-shadow: var(--neu-flat-hover);
+}
+
+.app-neu-scope .landing-page-shell[data-theme='leve'] {
+  --rounded-box: 1rem;
+  --rounded-btn: 0.5rem;
+  --rounded-badge: 2rem;
+  --tab-radius: 2rem;
+}
+
+.app-neu-scope .landing-page-shell[data-theme='leve']
+  :is(
+    .input,
+    .textarea,
+    .select,
+    .app-input,
+    input.input,
+    input:not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='file']),
+    select,
+    textarea
+  ) {
+  border-radius: 0.5rem;
+  border: 1px solid oklch(95% 0 0);
+  background-color: oklch(100% 0 0);
+  color: #421d3a;
+  box-shadow: none;
+}
+
+.app-neu-scope .landing-page-shell[data-theme='leve']
+  :is(.input, .textarea, .select, .app-input, input, select, textarea)::placeholder {
+  color: rgba(66, 29, 58, 0.55);
+  opacity: 1;
+}
+
+.app-neu-scope .landing-page-shell[data-theme='leve']
+  :is(.input, .textarea, .select, .app-input, input, select, textarea):focus,
+  :is(.input, .textarea, .select, .app-input, input, select, textarea):focus-visible {
+  outline: none;
+  border-color: color-mix(in srgb, #e65100 45%, oklch(95% 0 0));
+  box-shadow: 0 0 0 2px color-mix(in srgb, #e65100 22%, transparent);
+}
+
+.app-neu-scope .landing-page-shell[data-theme='leve'] .btn-primary {
+  border-radius: 0.5rem;
+  background-color: #e65100;
+  border-color: #e65100;
+  color: oklch(98% 0 0);
+}
+
+.app-neu-scope .landing-page-shell[data-theme='leve'] .btn-primary:hover:not(:disabled) {
+  background-color: color-mix(in srgb, #e65100 92%, black);
+  border-color: color-mix(in srgb, #e65100 92%, black);
+}
+
+.app-neu-scope .landing-page-shell[data-theme='leve'] .badge {
+  border-radius: 2rem;
+}
+
+/* ==========================================================================
+   Tema DaisyUI `leve` — tokens compartilhados (data-theme="leve")
+   ========================================================================== */
+[data-theme='leve'] {
+  color-scheme: light;
+  --brand-text-strong: #421d3a;
+  --brand-text-muted: rgba(66, 29, 58, 0.72);
+  --project-card-accent: #e65100;
+  --project-card-radius: 1rem;
+  --project-card-inner-radius: 0.5rem;
+  --projects-dash-radius-selector: 2rem;
+  --projects-dash-radius-field: 0.5rem;
+  --leve-header-text: #421d3a;
+  --leve-header-text-muted: rgba(66, 29, 58, 0.72);
+  --leve-header-accent: #e65100;
+  --leve-header-cream: oklch(100% 0 0);
+  --workspace-panel-accent: #e65100;
+  --workspace-panel-badge-bg: #e65100;
+  --workspace-panel-badge-text: oklch(98% 0 0);
+  --workspace-stat-accent: #e65100;
+}
+
+[data-theme='leve'] .project-view-page-shell {
+  --leve-neu-bg: oklch(98% 0 0);
+  --leve-neu-light: oklch(100% 0 0);
+  --leve-neu-dark: oklch(95% 0 0);
+  --leve-neu-surface: oklch(100% 0 0);
+  --leve-header-cream: oklch(100% 0 0);
+  --leve-header-radius: 1rem;
+  --app-neu-bg: oklch(98% 0 0);
+  --app-neu-surface: oklch(100% 0 0);
+  --project-workspace-bg: oklch(98% 0 0);
+  --project-workspace-surface: oklch(100% 0 0);
+  --project-workspace-highlight: oklch(100% 0 0);
+  --project-workspace-light: oklch(100% 0 0);
+  --project-workspace-shadow: oklch(95% 0 0);
+  --project-dashboard-insight-bg: oklch(100% 0 0);
+  --project-dashboard-insight-radius: 1rem;
+  --project-dashboard-insight-inner-radius: 0.5rem;
+  --workspace-panel-bg: oklch(100% 0 0);
+  --workspace-panel-text: #421d3a;
+  --workspace-panel-text-muted: rgba(66, 29, 58, 0.72);
+  --workspace-panel-border: oklch(95% 0 0);
+  --workspace-panel-radius: 1rem;
+  --workspace-panel-inner-radius: 0.5rem;
+  --workspace-stat-bg: oklch(100% 0 0);
+  background: oklch(98% 0 0);
+}
+
+[data-theme='leve'] .project-tab-page-shell:not(.app-dark-page-surface) {
+  --app-neu-bg: oklch(98% 0 0);
+  --leve-neu-bg: oklch(98% 0 0);
+  --leve-neu-light: oklch(100% 0 0);
+  --leve-neu-dark: oklch(95% 0 0);
+  --leve-neu-surface: oklch(100% 0 0);
+  --leve-header-cream: oklch(100% 0 0);
+  --project-workspace-bg: oklch(98% 0 0);
+  --project-workspace-surface: oklch(100% 0 0);
+  --project-workspace-highlight: oklch(100% 0 0);
+  --project-workspace-light: oklch(100% 0 0);
+  --project-workspace-shadow: oklch(95% 0 0);
+  --project-dashboard-insight-bg: oklch(100% 0 0);
+  --project-dashboard-insight-radius: 1rem;
+  --project-dashboard-insight-inner-radius: 0.5rem;
+  --workspace-panel-bg: oklch(100% 0 0);
+  --workspace-stat-bg: oklch(100% 0 0);
+  background: oklch(98% 0 0);
+}
+
+[data-theme='leve'] .project-tab-page-shell:not(.app-dark-page-surface)::before,
+[data-theme='leve'] .project-tab-page-shell:not(.app-dark-page-surface)::after {
+  content: none;
+}
+
+/* ProjectView — chrome (breadcrumbs, abas, ações) */
+[data-theme='leve'] .project-view-page-shell .project-chrome-neu-shell {
+  border-radius: var(--project-card-radius, 1rem);
+  border: 1px solid oklch(95% 0 0);
+  background: oklch(100% 0 0);
+  color: #421d3a;
+  box-shadow: var(--neu-flat-shadow-sm);
+}
+
+[data-theme='leve'] .project-view-page-shell .project-chrome-breadcrumbs.workspace-chrome-inset,
+[data-theme='leve'] .project-view-page-shell .project-chrome-tabs-nav.workspace-chrome-inset {
+  border-radius: var(--project-card-inner-radius, 0.5rem);
+  border: 1px solid oklch(95% 0 0);
+  background: oklch(98% 0 0);
+  box-shadow: var(--neu-flat-inset);
+}
+
+[data-theme='leve'] .project-view-page-shell .workspace-chrome-tab-active {
+  border-radius: var(--projects-dash-radius-selector, 2rem);
+  background: #e65100;
+  color: oklch(98% 0 0);
+  box-shadow: var(--neu-relief-sm);
+}
+
+[data-theme='leve'] .project-view-page-shell .workspace-chrome-tab-idle {
+  border-radius: var(--projects-dash-radius-selector, 2rem);
+  color: rgba(66, 29, 58, 0.72);
+}
+
+[data-theme='leve'] .project-view-page-shell .workspace-chrome-tab-idle:hover {
+  background: color-mix(in srgb, #e65100 6%, oklch(100% 0 0));
+  color: #421d3a;
+  box-shadow: var(--neu-flat-shadow-sm);
+}
+
+[data-theme='leve'] .project-view-page-shell .workspace-chrome-pill:not(.workspace-chrome-pill-active) {
+  border-radius: var(--projects-dash-radius-selector, 2rem);
+  border: 1px solid #e65100;
+  background: oklch(100% 0 0);
+  color: #e65100;
+}
+
+[data-theme='leve'] .project-view-page-shell .workspace-chrome-pill-active {
+  border-radius: var(--projects-dash-radius-selector, 2rem);
+  background: #e65100;
+  color: oklch(98% 0 0);
+}
+
+[data-theme='leve'] .project-view-page-shell .project-chrome-sync-btn {
+  border-radius: var(--project-card-inner-radius, 0.5rem);
+  color: #e65100;
+}
+
+/* Abas internas — hero, KPIs, painéis */
+[data-theme='leve'] .project-tab-page-shell .project-tab-hero-chrome,
+[data-theme='leve'] .project-tab-page-shell .dashboard-project-hero-chrome,
+[data-theme='leve'] .project-tab-page-shell .tasks-view-hero-chrome,
+[data-theme='leve'] .project-tab-page-shell .documents-view-hero-chrome,
+[data-theme='leve'] .project-tab-page-shell .jira-solus-hero-chrome {
+  border: 1px solid oklch(95% 0 0);
+  border-radius: var(--project-card-radius, 1rem);
+  background: oklch(100% 0 0);
+  box-shadow: var(--neu-flat-shadow-sm);
+}
+
+[data-theme='leve'] .project-tab-page-shell .project-tab-hero-chrome::before,
+[data-theme='leve'] .project-tab-page-shell .dashboard-project-hero-chrome::before,
+[data-theme='leve'] .project-tab-page-shell .tasks-view-hero-chrome::before,
+[data-theme='leve'] .project-tab-page-shell .documents-view-hero-chrome::before,
+[data-theme='leve'] .project-tab-page-shell .jira-solus-hero-chrome::before {
+  content: none;
+}
+
+[data-theme='leve'] .project-tab-page-shell .project-tab-eyebrow,
+[data-theme='leve'] .project-tab-page-shell .dashboard-project-eyebrow,
+[data-theme='leve'] .project-tab-page-shell .tasks-view-eyebrow,
+[data-theme='leve'] .project-tab-page-shell .documents-view-eyebrow,
+[data-theme='leve'] .project-tab-page-shell .jira-solus-eyebrow {
+  border-radius: var(--projects-dash-radius-selector, 2rem);
+  border: 1px solid oklch(95% 0 0);
+  background: oklch(100% 0 0);
+  color: #421d3a;
+  box-shadow: var(--neu-flat-shadow-sm);
+}
+
+[data-theme='leve'] .project-tab-page-shell .project-tab-jira-badge,
+[data-theme='leve'] .project-tab-page-shell .dashboard-project-jira-badge,
+[data-theme='leve'] .project-tab-page-shell .tasks-view-jira-badge,
+[data-theme='leve'] .project-tab-page-shell .documents-view-jira-badge {
+  border-radius: var(--projects-dash-radius-selector, 2rem);
+  border: 1px solid color-mix(in srgb, #e65100 22%, oklch(95% 0 0));
+  background: color-mix(in srgb, #e65100 8%, oklch(100% 0 0));
+  color: #e65100;
+}
+
+[data-theme='leve'] .project-tab-page-shell .project-tab-panel,
+[data-theme='leve'] .project-tab-page-shell .project-tab-list-panel,
+[data-theme='leve'] .project-tab-page-shell .tasks-view-panel,
+[data-theme='leve'] .project-tab-page-shell .documents-view-panel,
+[data-theme='leve'] .project-tab-page-shell .jira-solus-inner-panel {
+  border: 1px solid oklch(95% 0 0);
+  border-radius: var(--project-card-radius, 1rem);
+  background: oklch(100% 0 0);
+  box-shadow: var(--neu-flat-shadow-sm);
+}
+
+[data-theme='leve'] .project-tab-page-shell .dashboard-project-kpi-icon-plate {
+  border-radius: var(--project-card-inner-radius, 0.5rem);
+  border: 1px solid oklch(95% 0 0);
+  background: oklch(100% 0 0);
+  box-shadow: var(--neu-flat-shadow-sm);
+}
+
+[data-theme='leve'] .project-tab-page-shell .tasks-panel-neu-search-input,
+[data-theme='leve'] .project-tab-page-shell .documents-neu-search,
+[data-theme='leve'] .project-tab-page-shell .jira-solus-search-input {
+  border-radius: var(--project-card-inner-radius, 0.5rem);
+  border: 1px solid oklch(95% 0 0);
+  background: oklch(100% 0 0);
+  color: #421d3a;
+  box-shadow: none;
+}
+
+[data-theme='leve'] .project-tab-page-shell .tasks-panel-neu-search-input:focus-visible,
+[data-theme='leve'] .project-tab-page-shell .documents-neu-search:focus-visible,
+[data-theme='leve'] .project-tab-page-shell .jira-solus-search-input:focus-visible {
+  border-color: color-mix(in srgb, #e65100 45%, oklch(95% 0 0));
+  box-shadow: 0 0 0 2px color-mix(in srgb, #e65100 22%, transparent);
+}
+
+/* Dashboard do projeto — cards, filtros, insights */
+[data-theme='leve'] .dashboard-neu-scope:not(.app-dark-page-surface) .dashboard-glass-indicator-card,
+[data-theme='leve'] .dashboard-neu-scope:not(.app-dark-page-surface) .dashboard-project-hero-chrome .dashboard-project-kpi-card {
+  border: 1px solid oklch(95% 0 0);
+  border-radius: var(--project-card-radius, 1rem);
+  background: oklch(100% 0 0);
+  box-shadow: var(--neu-flat-shadow-sm);
+}
+
+[data-theme='leve'] .dashboard-neu-scope:not(.app-dark-page-surface) .dashboard-neu-insight-card,
+[data-theme='leve'] .dashboard-neu-scope:not(.app-dark-page-surface) .leve-neu-surface {
+  border: 1px solid oklch(95% 0 0);
+  border-radius: var(--project-card-radius, 1rem);
+  background: oklch(100% 0 0);
+  box-shadow: var(--neu-flat-shadow-sm);
+}
+
+[data-theme='leve'] .dashboard-neu-scope:not(.app-dark-page-surface) .dashboard-neu-insight-inset,
+[data-theme='leve'] .dashboard-neu-scope:not(.app-dark-page-surface) .leve-neu-surface-inset {
+  border: 1px solid oklch(95% 0 0);
+  border-radius: var(--project-card-inner-radius, 0.5rem);
+  background: oklch(98% 0 0);
+  box-shadow: var(--neu-flat-inset);
+}
+
+[data-theme='leve'] .dashboard-neu-scope:not(.app-dark-page-surface) .dashboard-neu-filter-toolbar {
+  border-radius: var(--project-card-inner-radius, 0.5rem);
+  border: 1px solid oklch(95% 0 0) !important;
+  background: oklch(98% 0 0) !important;
+  box-shadow: var(--neu-flat-inset) !important;
+}
+
+[data-theme='leve'] .dashboard-neu-scope:not(.app-dark-page-surface) .dashboard-neu-filter-btn {
+  border-radius: var(--project-card-inner-radius, 0.5rem) !important;
+  border: 1px solid oklch(95% 0 0) !important;
+  background: oklch(100% 0 0) !important;
+  color: #421d3a !important;
+  box-shadow: var(--neu-flat-shadow-sm) !important;
+}
+
+[data-theme='leve'] .dashboard-neu-scope:not(.app-dark-page-surface) .dashboard-neu-filter-btn:hover:not(:disabled) {
+  color: #e65100 !important;
+  border-color: color-mix(in srgb, #e65100 30%, oklch(95% 0 0)) !important;
+  box-shadow: var(--neu-flat-hover) !important;
+}
+
+[data-theme='leve'] .dashboard-neu-scope:not(.app-dark-page-surface) .dashboard-neu-filter-btn--active,
+[data-theme='leve'] .dashboard-neu-scope:not(.app-dark-page-surface) .dashboard-neu-filter-btn.leve-neu-pill-active,
+[data-theme='leve'] .dashboard-neu-scope:not(.app-dark-page-surface) .dashboard-project-hero-chrome .dashboard-neu-filter-btn--active {
+  border-color: #e65100 !important;
+  background: #e65100 !important;
+  color: oklch(98% 0 0) !important;
+  box-shadow: var(--neu-relief-sm) !important;
+}
+
+[data-theme='leve'] .dashboard-neu-scope:not(.app-dark-page-surface) .dashboard-neu-filter-icon-wrap {
+  border-radius: var(--project-card-inner-radius, 0.5rem);
+  border: 1px solid color-mix(in srgb, #e65100 22%, oklch(95% 0 0));
+  background: oklch(100% 0 0);
+  color: #e65100;
+}
+
+[data-theme='leve'] .dashboard-neu-scope:not(.app-dark-page-surface) .dashboard-empty-state-shell {
+  border-radius: var(--project-card-radius, 1rem);
+  border: 1px solid oklch(95% 0 0);
+  background: oklch(100% 0 0);
+}
+
+.app-neu-scope .project-view-page-shell[data-theme='leve'] {
+  --rounded-box: 1rem;
+  --rounded-btn: 0.5rem;
+  --rounded-badge: 2rem;
+  --tab-radius: 2rem;
+}
+
+.app-neu-scope .project-view-page-shell[data-theme='leve']
+  :is(
+    .input,
+    .textarea,
+    .select,
+    .app-input,
+    .tasks-panel-neu-search-input,
+    .documents-neu-search,
+    input.input,
+    input:not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='file']),
+    select,
+    textarea
+  ) {
+  border-radius: 0.5rem;
+  border: 1px solid oklch(95% 0 0);
+  background-color: oklch(100% 0 0);
+  color: #421d3a;
+  box-shadow: none;
+}
+
+.app-neu-scope .project-view-page-shell[data-theme='leve']
+  :is(.input, .textarea, .select, .app-input, input, select, textarea)::placeholder {
+  color: rgba(66, 29, 58, 0.55);
+  opacity: 1;
+}
+
+.app-neu-scope .project-view-page-shell[data-theme='leve']
+  :is(.input, .textarea, .select, .app-input, input, select, textarea):focus,
+  :is(.input, .textarea, .select, .app-input, input, select, textarea):focus-visible {
+  outline: none;
+  border-color: color-mix(in srgb, #e65100 45%, oklch(95% 0 0));
+  box-shadow: 0 0 0 2px color-mix(in srgb, #e65100 22%, transparent);
+}
+
+.app-neu-scope .project-view-page-shell[data-theme='leve'] .btn-primary {
+  border-radius: 0.5rem;
+  background-color: #e65100;
+  border-color: #e65100;
+  color: oklch(98% 0 0);
+}
+
+[data-theme='leve'] .project-tab-page-shell:not(.app-dark-page-surface) {
+  --workspace-stat-accent: #e65100;
+  --project-card-accent: #e65100;
+}
+
+[data-theme='leve'] .app-filter-pill-active,
+[data-theme='leve'] .app-filter-pill[data-active='true'] {
+  border-color: transparent;
+  background: #e65100;
+  color: oklch(98% 0 0);
+  box-shadow: var(--neu-relief-sm);
+}
+
+[data-theme='leve'] .app-filter-pill-active:hover:not(:disabled),
+[data-theme='leve'] .app-filter-pill[data-active='true']:hover:not(:disabled) {
+  color: oklch(98% 0 0);
+  filter: brightness(1.04);
+}
+
+[data-theme='leve'] .app-filter-pill-active:active:not(:disabled),
+[data-theme='leve'] .app-filter-pill[data-active='true']:active:not(:disabled) {
+  transform: translateY(1px);
+  filter: brightness(0.97);
+  box-shadow: var(--neu-relief-pressed);
+}
+
+[data-theme='leve'] .app-neu-action-btn--active:active:not(:disabled),
+[data-theme='leve'] .leve-settings-tab--active:active:not(:disabled) {
+  transform: translateY(1px);
+  filter: brightness(0.97);
+  box-shadow: var(--neu-relief-pressed) !important;
+}
+
+[data-theme='leve'] .settings-view-scope .app-neu-action-btn--active,
+[data-theme='leve'] .settings-view-scope .leve-settings-tab--active {
+  border-color: transparent !important;
+  background: #e65100 !important;
+  color: oklch(98% 0 0) !important;
+  box-shadow: var(--neu-relief-sm) !important;
+}
+
+[data-theme='leve'] .settings-view-scope .app-neu-action-btn--active:hover:not(:disabled),
+[data-theme='leve'] .settings-view-scope .leve-settings-tab--active:hover:not(:disabled) {
+  color: oklch(98% 0 0) !important;
+  filter: brightness(1.04);
+}
+
+[data-theme='leve'] .workspace-chrome-count-active {
+  border: 1px solid color-mix(in srgb, white 35%, transparent);
+  background: #ffffff;
+  color: #e65100;
+}
+
+/* ==========================================================================
+   Padronização de relevo — apenas ícones e botões (fonte única --neu-relief)
+   As superfícies ficaram flat (tokens *-neu-raised/inset apontam para
+   --neu-flat-*). Este bloco, propositalmente FORA de @layer, restaura o
+   neumorfismo nos elementos interativos (ícones, pills e botões) que
+   compartilhavam os tokens de superfície, vencendo as regras em camada.
+   ========================================================================== */
+:is(
+  .landing-neu-icon-plate,
+  .dashboard-neu-filter-icon-wrap,
+  .leve-settings-section-icon-wrap,
+  .leve-neu-pill,
+  .leve-neu-btn,
+  .leve-modal-neu-close,
+  .task-details-neu-ghost-btn,
+  .help-tooltip-trigger,
+  .workspace-chrome-pill,
+  .dashboard-neu-filter-btn,
+  .app-neu-action-btn,
+  .app-filter-pill,
+  .settings-neu-action-btn,
+  .projects-dash-quick-filters-pill,
+  .projects-dash-filter-pill,
+  .projects-dash-neu-icon-btn,
+  .landing-neu-filter-btn,
+  .landing-neu-action-btn,
+  .leve-settings-tab
+):not(:active):not(:disabled) {
+  box-shadow: var(--neu-relief) !important;
 }

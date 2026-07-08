@@ -6,12 +6,11 @@ import {
 } from '../common/projectCardUi';
 
 /**
- * Tokens de texto para superfícies claras da LandingPage.
- * Não usar `--project-card-text` (branco) em cards `app-surface` — é para cards escuros.
+ * Tokens de texto para superfícies claras da LandingPage (tema leve).
  */
-export const landingTextStrongClass = 'text-[var(--brand-text-strong)]';
+export const landingTextStrongClass = 'text-base-content';
 
-/** Secundário legível no bege/creme (sem opacidade extra). */
+/** Secundário legível no fundo claro. */
 export const landingTextMutedClass =
   'text-[color-mix(in_srgb,var(--brand-text-strong)_78%,transparent)]';
 
@@ -19,7 +18,7 @@ export const landingTextMutedClass =
 export const landingTextSubtleClass =
   'text-[color-mix(in_srgb,var(--brand-text-strong)_62%,transparent)]';
 
-export const landingAccentTextClass = 'text-[var(--project-card-accent)]';
+export const landingAccentTextClass = 'text-primary';
 
 /** Container principal da home — largura total. */
 export const landingPageContainerClass =
@@ -79,23 +78,22 @@ export const landingMenuCardSecondaryGridClass = 'lg:col-span-1';
 export const landingMainGridClass =
   'grid grid-cols-1 gap-5 lg:grid-cols-12 lg:items-stretch lg:gap-6';
 
-/** Chip de integração configurada — fundo suave + texto escuro. */
+/** Chip de integração configurada. */
 export const landingStatusChipOkClass = [
-  'bg-[color-mix(in_srgb,var(--project-card-accent)_18%,white)]',
-  'text-[var(--brand-text-strong)]',
-  'ring-1 ring-[color-mix(in_srgb,var(--project-card-accent)_28%,transparent)]',
+  'badge badge-outline border-success/35 bg-success/10',
+  'text-base-content rounded-[2rem]',
 ].join(' ');
 
 /** Chip de integração pendente. */
 export const landingStatusChipIdleClass = [
-  'bg-[color-mix(in_srgb,var(--brand-text-strong)_6%,white)]',
-  'text-[color-mix(in_srgb,var(--brand-text-strong)_72%,transparent)]',
-  'ring-1 ring-[color-mix(in_srgb,var(--brand-text-strong)_12%,transparent)]',
+  'badge badge-ghost',
+  'border-base-300 bg-base-200 text-base-content/70 rounded-[2rem]',
 ].join(' ');
 
-/** Painel neumórfico elevado (Continuar / Acompanhamento). */
+/** Painel — caixa base-100 (radius-box 1rem). */
 export const landingNeuPanelClass = cn(
-  'landing-neu-panel flex w-full flex-col gap-4 p-4 sm:gap-5 sm:p-5'
+  'landing-neu-panel flex w-full flex-col gap-4 p-4 sm:gap-5 sm:p-5',
+  'bg-base-100 border border-base-300 rounded-box'
 );
 
 export const landingNeuPanelBodyClass = 'landing-neu-panel__body flex flex-col gap-4 sm:gap-5';
@@ -107,7 +105,7 @@ export const landingNeuOrbCtaClass = projectCardOrbCtaClass;
 export const landingNeuOrbHighlightClass = projectCardOrbHighlightClass;
 
 export const landingNeuSectionHeaderClass = cn(
-  'flex items-end justify-between gap-2 border-b border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pb-3'
+  'flex items-end justify-between gap-2 border-b border-base-300 pb-3'
 );
 
 export const landingNeuSectionLabelClass = 'landing-neu-section-label';
@@ -124,7 +122,7 @@ export const landingNeuLogoPlateClass = cn(
 
 export const landingNeuActionBtnClass = cn(
   'landing-neu-action-btn',
-  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--project-card-accent)]',
+  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
   'motion-reduce:transform-none'
 );
 
@@ -136,8 +134,8 @@ export function landingNeuStatusChipClass(ok: boolean): string {
 }
 
 export const landingNeuCtaBtnClass = cn(
-  'landing-neu-cta-btn',
-  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--project-card-accent)]',
+  'landing-neu-cta-btn btn btn-primary btn-sm',
+  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
   'motion-reduce:transform-none'
 );
 
@@ -147,7 +145,7 @@ export const landingNeuIconPlateClass = 'landing-neu-icon-plate';
 
 export const landingNeuLinkBtnClass = cn(
   'landing-neu-link-btn no-underline',
-  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--project-card-accent)]'
+  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
 );
 
 export const landingNeuSummaryClass = 'landing-neu-summary';
@@ -160,7 +158,7 @@ export function landingNeuFilterBtnClass(active: boolean): string {
   return cn(
     'landing-neu-filter-btn',
     active && 'landing-neu-filter-btn--active',
-    'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--project-card-accent)]',
+    'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
     'motion-reduce:transform-none'
   );
 }
@@ -173,7 +171,7 @@ export const landingNeuListClass = cn(
 
 export const landingNeuRowClass = cn(
   'landing-neu-row group cursor-pointer',
-  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--project-card-accent)]',
+  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
   'motion-reduce:transform-none sm:items-center'
 );
 
@@ -182,16 +180,16 @@ export const landingNeuEmptyClass = cn(
   landingTextMutedClass
 );
 
-/** Badge SLA compacto na linha — cores mantidas, relevo neumórfico. */
+/** Badge SLA compacto na linha — cores semânticas do tema leve. */
 export function landingNeuSlaBadgeClass(bucket: 'onTrack' | 'atRisk' | 'overdue' | 'noDueDate'): string {
   const tone =
     bucket === 'overdue'
-      ? 'text-error border border-[color-mix(in_srgb,#e54b4f_25%,transparent)] bg-[color-mix(in_srgb,#e54b4f_10%,var(--leve-neu-bg))]'
+      ? 'text-error border border-error/25 bg-error/10'
       : bucket === 'atRisk'
-        ? 'text-warning border border-[color-mix(in_srgb,#f59e0b_25%,transparent)] bg-[color-mix(in_srgb,#f59e0b_10%,var(--leve-neu-bg))]'
+        ? 'text-warning border border-warning/25 bg-warning/10'
         : bucket === 'onTrack'
-          ? 'text-success border border-[color-mix(in_srgb,#22c55e_25%,transparent)] bg-[color-mix(in_srgb,#22c55e_10%,var(--leve-neu-bg))]'
-          : 'text-[color-mix(in_srgb,var(--brand-text-strong)_72%,transparent)] border border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] bg-[color-mix(in_srgb,var(--leve-neu-dark)_6%,var(--leve-neu-bg))]';
+          ? 'text-success border border-success/25 bg-success/10'
+          : 'text-base-content/70 border border-base-300 bg-base-200';
   return cn('landing-neu-sla-badge', tone);
 }
 

@@ -307,7 +307,7 @@ export const TestReportTextPreview: React.FC<TestReportTextPreviewProps> = ({
 
       <div className="custom-scrollbar flex-1 overflow-y-auto px-4 py-4">
         {isAISummarized ? (
-          <div className="space-y-3 select-text text-sm leading-relaxed text-[var(--leve-header-text)]">
+          <div className="space-y-3 select-text text-sm leading-relaxed text-base-content">
             {reportText
               .split('\n')
               .map(line => line.trim())
@@ -322,7 +322,7 @@ export const TestReportTextPreview: React.FC<TestReportTextPreviewProps> = ({
           <pre
             className={cn(
               testReportModalPreviewFieldClass,
-              'whitespace-pre-wrap break-words font-mono text-xs leading-relaxed text-[var(--leve-header-text)]'
+              'whitespace-pre-wrap break-words font-mono text-xs leading-relaxed text-base-content'
             )}
           >
             {reportText}
@@ -336,10 +336,10 @@ export const TestReportTextPreview: React.FC<TestReportTextPreviewProps> = ({
                     key={`${row.type}-${index}`}
                     className={cn(testReportModalPreviewFieldClass, 'grid gap-1')}
                   >
-                    <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--leve-header-text-muted)]">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-base-content/72">
                       {row.label}
                     </span>
-                    <span className="text-sm font-medium text-[var(--leve-header-text)]">{row.value}</span>
+                    <span className="text-sm font-medium text-base-content">{row.value}</span>
                   </div>
                 );
               }
@@ -347,10 +347,10 @@ export const TestReportTextPreview: React.FC<TestReportTextPreviewProps> = ({
               if (row.type === 'section') {
                 return (
                   <div key={`${row.type}-${index}`} className="flex items-center gap-3 pt-1">
-                    <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--leve-header-text-muted)]">
+                    <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-base-content/72">
                       {row.title}
                     </span>
-                    <div className="h-px flex-1 bg-[var(--leve-header-border)]" />
+                    <div className="h-px flex-1 bg-base-300" />
                   </div>
                 );
               }
@@ -402,7 +402,7 @@ export const TestReportTextPreview: React.FC<TestReportTextPreviewProps> = ({
                 return (
                   <div
                     key={`${row.type}-${index}`}
-                    className={`space-y-2 rounded-[var(--leve-header-radius)] px-3 py-3 ${styles.cardClass}`}
+                    className={`space-y-2 rounded-box px-3 py-3 ${styles.cardClass}`}
                   >
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                       <div className="flex items-start gap-2.5">
@@ -411,7 +411,7 @@ export const TestReportTextPreview: React.FC<TestReportTextPreviewProps> = ({
                         >
                           <Icon className={`h-4 w-4 ${styles.iconClass}`} aria-hidden />
                         </span>
-                        <p className="break-words text-sm font-medium leading-relaxed text-[var(--leve-header-text)]">
+                        <p className="break-words text-sm font-medium leading-relaxed text-base-content">
                           {row.content}
                         </p>
                       </div>
@@ -446,10 +446,10 @@ export const TestReportTextPreview: React.FC<TestReportTextPreviewProps> = ({
                 return (
                   <div
                     key={`${row.type}-${index}`}
-                    className={`space-y-2 rounded-[var(--leve-header-radius)] px-3 py-3 ${styles.cardClass}`}
+                    className={`space-y-2 rounded-box px-3 py-3 ${styles.cardClass}`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-[var(--leve-header-text)]">{row.title}</p>
+                      <p className="text-sm font-semibold text-base-content">{row.title}</p>
                       <Badge variant={styles.badgeVariant} appearance="pill" size="sm">
                         {row.status}
                       </Badge>
@@ -464,7 +464,7 @@ export const TestReportTextPreview: React.FC<TestReportTextPreviewProps> = ({
                         {row.details.map((detail, detailIndex) => (
                           <p
                             key={`${detail}-${detailIndex}`}
-                            className="text-xs leading-relaxed text-[var(--leve-header-text)]"
+                            className="text-xs leading-relaxed text-base-content"
                           >
                             {detail}
                           </p>
@@ -479,7 +479,7 @@ export const TestReportTextPreview: React.FC<TestReportTextPreviewProps> = ({
                 return (
                   <div
                     key={`${row.type}-${index}`}
-                    className={cn(testReportModalPreviewFieldClass, 'text-xs font-medium text-[var(--leve-header-text-muted)]')}
+                    className={cn(testReportModalPreviewFieldClass, 'text-xs font-medium text-base-content/72')}
                   >
                     {row.content}
                   </div>
@@ -491,7 +491,7 @@ export const TestReportTextPreview: React.FC<TestReportTextPreviewProps> = ({
                   key={`${row.type}-${index}`}
                   className={cn(
                     testReportModalPreviewFieldClass,
-                    'text-sm leading-relaxed text-[var(--leve-header-text)]'
+                    'text-sm leading-relaxed text-base-content'
                   )}
                 >
                   {row.content}

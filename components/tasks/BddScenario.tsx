@@ -34,12 +34,12 @@ const GHERKIN_KEYWORDS = [
 ];
 
 const KEYWORD_CLASS: Record<string, string> = {
-  feature: 'font-semibold text-[var(--leve-header-text)]',
-  scenario: 'font-semibold text-[var(--leve-header-text)]',
-  given: 'font-semibold text-[color-mix(in_srgb,oklch(var(--su))_88%,var(--leve-header-text))]',
-  when: 'font-semibold text-[var(--leve-header-accent)]',
-  then: 'font-semibold text-[color-mix(in_srgb,oklch(var(--su))_88%,var(--leve-header-text))]',
-  and: 'font-semibold text-[var(--leve-header-text-muted)]',
+  feature: 'font-semibold text-base-content',
+  scenario: 'font-semibold text-base-content',
+  given: 'font-semibold text-success',
+  when: 'font-semibold text-primary',
+  then: 'font-semibold text-success',
+  and: 'font-semibold text-base-content/72',
 };
 
 /** Quebra o texto em segmentos (keyword tipada ou texto plano) para destacar palavras-chave Gherkin. */
@@ -115,7 +115,7 @@ export const BddScenarioForm: React.FC<{
       onSubmit={handleSubmit}
       className={cn(
         taskDetailsModalSectionClass,
-        'my-2 space-y-4 border-l-4 border-l-[var(--leve-header-accent)] p-5'
+        'my-2 space-y-4 border-l-4 border-l-primary p-5'
       )}
     >
       <div>
@@ -171,7 +171,7 @@ export const BddScenarioItem: React.FC<{
     <div
       className={cn(
         taskDetailsModalSectionClass,
-        'flex flex-col overflow-visible border-l-4 border-l-[var(--leve-header-accent)]'
+        'flex flex-col overflow-visible border-l-4 border-l-primary'
       )}
     >
       <div

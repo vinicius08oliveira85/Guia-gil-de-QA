@@ -33,8 +33,18 @@ export const dashboardNeuScopeClass = cn(
   'w-full min-w-0 max-w-none space-y-3 sm:space-y-4 max-md:space-y-2'
 );
 
-/** Container centralizado — alinhado às demais abas do projeto. */
+/** Container centralizado — stack vertical com ritmo entre hero, grade e atividades. */
 export const dashboardContentClass = projectTabContentClass;
+
+export const dashboardMainStackClass = cn(
+  dashboardContentClass,
+  'dashboard-main-stack flex flex-col gap-4 sm:gap-5 lg:gap-6 max-md:gap-3'
+);
+
+/** Cabeçalho da seção «Qualidade e execução». */
+export const dashboardInsightsSectionHeaderClass = cn(
+  'flex flex-col gap-0.5 border-b border-base-300 pb-3 sm:pb-3.5'
+);
 
 /** Shell externo do hero (gradiente + painel elevado). */
 export const dashboardHeroShellClass = 'dashboard-project-hero-shell w-full';
@@ -44,6 +54,7 @@ export const dashboardHeroShellClass = 'dashboard-project-hero-shell w-full';
  */
 export const dashboardHeroChromeClass = cn(
   'dashboard-project-hero-chrome',
+  'rounded-box border border-base-300 bg-base-100',
   'rounded-[var(--project-card-radius)] px-3 py-3 sm:px-5 sm:py-5',
   'flex flex-col gap-4 sm:gap-5 max-md:gap-2 max-md:px-2 max-md:py-2',
   'font-sans'
@@ -63,8 +74,8 @@ export const dashboardHeroTitleClass = cn(
 );
 
 export const dashboardHeroJiraBadgeClass = cn(
-  'dashboard-project-jira-badge inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5',
-  'font-sans text-xs font-bold'
+  'dashboard-project-jira-badge inline-flex shrink-0 items-center rounded-[2rem] px-2.5 py-0.5',
+  'font-sans text-xs font-bold text-primary'
 );
 
 export const dashboardHeroSubtitleClass = cn(
@@ -89,7 +100,7 @@ export const dashboardKpiIconPlateClass = 'dashboard-project-kpi-icon-plate';
 
 /** Grade bento dos cards de insight (ProjectDashboard). */
 export const dashboardInsightsBentoGridClass = cn(
-  'dashboard-insights-bento grid w-full grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 lg:gap-4',
+  'dashboard-insights-bento grid w-full grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-5',
   'lg:auto-rows-[minmax(11rem,auto)]'
 );
 
@@ -198,7 +209,7 @@ export const dashboardErrorBannerClass = cn(
 
 /** Empty state dentro do dashboard — painel elevado. */
 export const dashboardEmptyStateShellClass = cn(
-  'dashboard-empty-state-shell leve-neu-surface rounded-[var(--leve-header-radius)] px-4 py-6 sm:px-6 sm:py-8'
+  'dashboard-empty-state-shell rounded-box border border-base-300 bg-base-100 px-4 py-6 sm:px-6 sm:py-8'
 );
 
 /** Poço para sparkline / blocos interativos leves. */

@@ -84,18 +84,18 @@ export const JiraTaskSlaSummary: React.FC<JiraTaskSlaSummaryProps> = ({ task, cl
       >
         <ChevronDown
           className={cn(
-            'h-4 w-4 shrink-0 text-[var(--leve-header-text-muted)] transition-transform',
+            'h-4 w-4 shrink-0 text-base-content/72 transition-transform',
             isOpen ? '' : '-rotate-90'
           )}
           aria-hidden
         />
-        <span className="text-sm font-semibold text-[var(--leve-header-text)]">SLAs</span>
+        <span className="text-sm font-semibold text-base-content">SLAs</span>
       </button>
 
       {isOpen ? (
         <div className="mt-3">
           {!hasContent ? (
-            <p className="text-sm text-[var(--leve-header-text-muted)]">
+            <p className="text-sm text-base-content/72">
               Nenhum SLA retornado pelo Jira. Atualize a tarefa do Jira após importar.
             </p>
           ) : slas.length > 0 ? (
@@ -116,11 +116,11 @@ export const JiraTaskSlaSummary: React.FC<JiraTaskSlaSummaryProps> = ({ task, cl
                   >
                     <SlaTimeCell label={when ?? '—'} status={status} toneClass={toneClass} />
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold leading-snug text-[var(--leve-header-text)]">
+                      <p className="text-sm font-semibold leading-snug text-base-content">
                         {sla.name}
                       </p>
                       {sla.goalFriendly ? (
-                        <p className="mt-0.5 text-xs text-[var(--leve-header-text-muted)]">
+                        <p className="mt-0.5 text-xs text-base-content/72">
                           {sla.goalFriendly}
                         </p>
                       ) : null}
@@ -149,8 +149,8 @@ export const JiraTaskSlaSummary: React.FC<JiraTaskSlaSummaryProps> = ({ task, cl
                 }
               />
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-[var(--leve-header-text)]">Due Date</p>
-                <p className="mt-0.5 text-xs text-[var(--leve-header-text-muted)]">
+                <p className="text-sm font-semibold text-base-content">Due Date</p>
+                <p className="mt-0.5 text-xs text-base-content/72">
                   Prazo do Jira (SLA de fila indisponível)
                 </p>
               </div>

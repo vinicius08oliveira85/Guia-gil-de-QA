@@ -19,7 +19,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     <TaskDetailsView
       {...viewProps}
       presentation="modal"
-      onClose={onClose}
+        onClose={onClose}
     />
   );
 };

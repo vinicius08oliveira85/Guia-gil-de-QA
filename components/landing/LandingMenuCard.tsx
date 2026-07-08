@@ -58,7 +58,17 @@ export const LandingMenuCard = React.memo<LandingMenuCardProps>(
         <div className={projectCardOrbCtaClass} aria-hidden />
         <div className={projectCardOrbHighlightClass} aria-hidden />
 
-        <div className="relative flex items-center gap-3.5">
+        <Icon
+          className={cn(
+            'landing-menu-card__watermark',
+            isPrimary
+              ? 'landing-menu-card__watermark--primary'
+              : 'landing-menu-card__watermark--secondary'
+          )}
+          aria-hidden
+        />
+
+        <div className="relative z-[1] flex items-center gap-3.5">
           <div className={projectCardIconWrapClass} aria-hidden>
             <Icon
               className={cn(
@@ -92,14 +102,14 @@ export const LandingMenuCard = React.memo<LandingMenuCardProps>(
 
         <p
           className={cn(
-            'relative mt-3 text-[var(--project-card-text-muted)]',
+            'relative z-[1] mt-3 text-[var(--project-card-text-muted)]',
             isPrimary ? 'max-w-xl text-base' : 'text-sm sm:text-base'
           )}
         >
           {description}
         </p>
 
-        <div className="relative mt-auto flex items-center justify-between gap-2 border-t border-[color-mix(in_srgb,var(--project-card-border)_65%,transparent)] pt-4 sm:pt-5">
+        <div className="relative z-[1] mt-auto flex items-center justify-between gap-2 border-t border-[color-mix(in_srgb,var(--project-card-border)_65%,transparent)] pt-4 sm:pt-5">
           <span className="font-sans text-sm font-semibold uppercase tracking-wide text-[var(--project-card-text-subtle)] transition-colors duration-200 group-hover:text-[var(--project-card-accent)]">
             {ctaLabel}
           </span>

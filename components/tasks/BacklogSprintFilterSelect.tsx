@@ -20,7 +20,7 @@ export const BacklogSprintFilterSelect: React.FC<BacklogSprintFilterSelectProps>
   <div className="flex flex-wrap items-center gap-2">
     <label
       htmlFor="backlog-sprint-filter"
-      className="text-xs font-medium text-[var(--leve-header-text-muted)]"
+      className="text-xs font-medium text-base-content/72"
     >
       Sprint
     </label>
@@ -44,8 +44,8 @@ export const BacklogSprintFilterSelect: React.FC<BacklogSprintFilterSelectProps>
         disabled={disabled}
         onClick={() => onChange('all')}
         className={cn(
-          'text-xs font-medium text-[var(--leve-header-text-muted)] underline-offset-2',
-          'hover:text-[var(--leve-header-text)] hover:underline'
+          'text-xs font-medium text-base-content/72 underline-offset-2',
+          'hover:text-base-content hover:underline'
         )}
       >
         Limpar sprint

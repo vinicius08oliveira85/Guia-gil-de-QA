@@ -16,6 +16,7 @@ export const projectTabHeroShellClass = 'project-tab-hero-shell w-full';
 
 export const projectTabHeroChromeClass = cn(
   'project-tab-hero-chrome',
+  'rounded-box border border-base-300 bg-base-100',
   'rounded-[var(--project-card-radius)] px-3 py-3 sm:px-5 sm:py-5',
   'flex flex-col gap-4 sm:gap-5 max-md:gap-2 max-md:px-2 max-md:py-2',
   'font-sans'
@@ -24,13 +25,13 @@ export const projectTabHeroChromeClass = cn(
 export const projectTabEyebrowClass = 'project-tab-eyebrow';
 
 export const projectTabHeroTitleClass = cn(
-  'app-brand-title font-sans text-2xl font-bold tracking-tight text-[var(--brand-text-strong)] sm:text-[1.65rem]',
+  'app-brand-title font-sans text-2xl font-bold tracking-tight text-base-content sm:text-[1.65rem]',
   'max-md:text-xl'
 );
 
 export const projectTabHeroJiraBadgeClass = cn(
-  'project-tab-jira-badge inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5',
-  'font-sans text-xs font-bold'
+  'project-tab-jira-badge inline-flex shrink-0 items-center rounded-[2rem] px-2.5 py-0.5',
+  'font-sans text-xs font-bold text-primary'
 );
 
 export const projectTabHeroSubtitleClass = cn(
@@ -49,12 +50,12 @@ export const projectTabSectionDescClass = cn(
 );
 
 export const projectTabSectionHeaderClass = cn(
-  'flex flex-col gap-0.5 border-b border-[color-mix(in_srgb,var(--project-workspace-shadow)_28%,transparent)] pb-3'
+  'flex flex-col gap-0.5 border-b border-base-300 pb-3'
 );
 
 export const projectTabPanelClass = cn(
   'project-tab-panel',
-  'relative flex flex-col overflow-hidden rounded-[var(--project-card-radius)] p-3 font-sans sm:p-4',
+  'relative flex flex-col overflow-hidden rounded-box border border-base-300 bg-base-100 p-3 font-sans sm:p-4',
   'max-md:p-2'
 );
 

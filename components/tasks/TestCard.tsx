@@ -50,7 +50,7 @@ export const TestCard: React.FC<TestCardProps> = ({
       case 'Baixa':
         return 'bg-success';
       default:
-        return 'bg-[var(--leve-header-text-muted)]';
+        return 'bg-base-content/72';
     }
   };
 

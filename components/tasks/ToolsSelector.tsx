@@ -67,7 +67,7 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
       {label ? (
         <label
           className={cn(
-            'block font-semibold text-[var(--leve-header-text-muted)]',
+            'block font-semibold text-base-content/72',
             compact ? 'text-xs' : 'text-sm'
           )}
         >
@@ -117,7 +117,7 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
                   onClick={() => handleRemoveTool(tool)}
                   className={cn(
                     neuVariant === 'taskModal' ? 'task-details-neu-chip' : '',
-                    'inline-flex h-5 w-5 min-h-5 min-w-5 items-center justify-center rounded-full text-[var(--leve-header-text-muted)] transition-[box-shadow,color] hover:text-[color-mix(in_srgb,oklch(var(--er))_90%,transparent)]'
+                    'inline-flex h-5 w-5 min-h-5 min-w-5 items-center justify-center rounded-full text-base-content/72 transition-[box-shadow,color] hover:text-error/90'
                   )}
                   title="Remover"
                   aria-label={`Remover ferramenta ${tool}`}

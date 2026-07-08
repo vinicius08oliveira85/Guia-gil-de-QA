@@ -40,7 +40,7 @@ export const TaskPlanningSection: React.FC = () => {
         <div className="min-w-0 space-y-3 sm:space-y-4 lg:col-span-7">
           <section className={cn(taskDetailsModalSectionClass, 'p-3 sm:p-4')}>
             <h2 className={CARD_TITLE_CLASS}>
-              <Link className="h-4 w-4 shrink-0 text-[var(--leve-header-accent)] sm:h-5 sm:w-5" aria-hidden />
+              <Link className="h-4 w-4 shrink-0 text-primary sm:h-5 sm:w-5" aria-hidden />
               Dependências
             </h2>
             <TaskLinksView
@@ -53,7 +53,7 @@ export const TaskPlanningSection: React.FC = () => {
 
           <section className={cn(taskDetailsModalSectionClass, 'p-3 sm:p-4')}>
             <h2 className={CARD_TITLE_CLASS}>
-              <Paperclip className="h-4 w-4 shrink-0 text-[var(--leve-header-accent)] sm:h-5 sm:w-5" aria-hidden />
+              <Paperclip className="h-4 w-4 shrink-0 text-primary sm:h-5 sm:w-5" aria-hidden />
               Anexos
               <span
                 className={cn(
@@ -90,7 +90,7 @@ export const TaskPlanningSection: React.FC = () => {
         <div className="lg:col-span-5 min-w-0 self-start">
           <section className={cn(taskDetailsModalSectionClass, 'sticky top-20 p-3 sm:p-4 lg:top-24')}>
             <h2 className={CARD_TITLE_CLASS}>
-              <Timer className="h-4 w-4 shrink-0 text-[var(--leve-header-accent)] sm:h-5 sm:w-5" aria-hidden />
+              <Timer className="h-4 w-4 shrink-0 text-primary sm:h-5 sm:w-5" aria-hidden />
               Estimativas
             </h2>
             <EstimationInput

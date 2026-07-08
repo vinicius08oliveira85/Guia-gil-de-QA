@@ -71,7 +71,7 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
             : cn(
                 'btn btn-ghost btn-sm flex min-h-[44px] items-center gap-1.5 rounded-[var(--radius)] border px-3 text-xs font-semibold transition-colors duration-300 sm:min-h-0',
                 taskNeuBorderDividerClass,
-                'text-[color-mix(in_srgb,var(--foreground)_72%,transparent)] hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] hover:text-[var(--leve-header-text)]'
+                'text-base-content/72 hover:bg-base-300/25 hover:text-base-content'
               ),
           'disabled:cursor-not-allowed disabled:opacity-50'
         )}
@@ -91,7 +91,7 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
               <svg
                 className={cn(
                   grouped && groupedIconClassName ? groupedIconClassName : 'h-3.5 w-3.5',
-                  !(grouped && groupedIconClassName) && 'text-[var(--leve-header-accent)]'
+                  !(grouped && groupedIconClassName) && 'text-primary'
                 )}
                 fill="none"
                 viewBox="0 0 24 24"

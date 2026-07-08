@@ -42,8 +42,8 @@ export const BusinessRuleLinkCard: React.FC<BusinessRuleLinkCardProps> = ({
         leveTaskModalSectionClass,
         'flex overflow-hidden transition-[border-color,box-shadow,background-color]',
         checked
-          ? 'border-[color-mix(in_srgb,var(--leve-header-accent)_55%,transparent)] bg-[color-mix(in_srgb,var(--leve-header-accent)_7%,var(--leve-neu-bg))]'
-          : 'hover:border-[color-mix(in_srgb,var(--leve-header-accent)_30%,transparent)]'
+          ? 'border-primary/55 bg-primary/7'
+          : 'hover:border-primary/30'
       )}
     >
       <label className="flex shrink-0 cursor-pointer items-start p-3" htmlFor={inputId}>
@@ -56,14 +56,14 @@ export const BusinessRuleLinkCard: React.FC<BusinessRuleLinkCardProps> = ({
           aria-label={`${checked ? 'Desmarcar' : 'Marcar'} vínculo da regra: ${rule.title}`}
         />
       </label>
-      <details className="group min-w-0 flex-1 border-l border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]">
-        <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-2 py-3 pr-3 text-left text-sm font-medium text-[var(--leve-header-text)] transition-[background-color,box-shadow] hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_6%,var(--leve-neu-bg))] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] [&::-webkit-details-marker]:hidden">
+      <details className="group min-w-0 flex-1 border-l border-base-300/35">
+        <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-2 py-3 pr-3 text-left text-sm font-medium text-base-content transition-[background-color,box-shadow] hover:bg-primary/6 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/35 [&::-webkit-details-marker]:hidden">
           <span className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
             <span className="truncate">{rule.title}</span>
             <span className={leveTaskModalCategoryBadgeClass}>{rule.category ?? 'Geral'}</span>
             {coveredByCategory && (
               <span
-                className="leve-neu-pill shrink-0 px-2 py-0.5 font-sans text-[10px] font-semibold text-[var(--leve-header-text-muted)]"
+                className="leve-neu-pill shrink-0 px-2 py-0.5 font-sans text-[10px] font-semibold text-base-content/72"
                 title="Já incluída no prompt pela categoria vinculada"
               >
                 via categoria
@@ -71,13 +71,13 @@ export const BusinessRuleLinkCard: React.FC<BusinessRuleLinkCardProps> = ({
             )}
           </span>
           <ChevronDown
-            className="h-5 w-5 shrink-0 text-[var(--leve-header-text-muted)] transition-transform group-open:rotate-180"
+            className="h-5 w-5 shrink-0 text-base-content/72 transition-transform group-open:rotate-180"
             aria-hidden
           />
         </summary>
         <div
           className={cn(
-            'whitespace-pre-wrap border-t border-[var(--leve-header-border)] pb-3 pr-3 pt-2 text-sm',
+            'whitespace-pre-wrap border-t border-base-300 pb-3 pr-3 pt-2 text-sm',
             leveTaskModalMutedClass
           )}
         >

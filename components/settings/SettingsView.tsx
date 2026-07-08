@@ -111,7 +111,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   );
 
   return (
-    <div className={leveSettingsPageClass}>
+    <div className={leveSettingsPageClass} data-theme="leve">
       <div className={leveSettingsHeaderStickyClass}>
         <div className={cn(settingsContentShell, 'py-5 sm:py-6 max-md:py-3')}>
           <div className="flex flex-col gap-6 max-md:gap-3">

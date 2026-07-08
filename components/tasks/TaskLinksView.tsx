@@ -175,9 +175,9 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
         className={cn(
           leveTaskModalSectionClass,
           'group relative cursor-pointer border-2 p-4 transition-all duration-200',
-          'hover:border-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] hover:shadow-[0_4px_18px_rgba(252,76,2,0.1)]',
+          'hover:border-primary/35 hover:shadow-[0_4px_18px_color-mix(in_oklch,oklch(var(--p))_10%,transparent)]',
           statusColor,
-          isHovered && 'ring-2 ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)]'
+          isHovered && 'ring-2 ring-primary/35'
         )}
         onClick={() => handleTaskClick(relatedTask)}
         onMouseEnter={() => setHoveredCardId(relatedTask.id)}

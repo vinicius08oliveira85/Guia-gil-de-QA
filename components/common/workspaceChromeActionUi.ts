@@ -31,7 +31,7 @@ export const appNeuActionBtnClass = cn(
   'inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5',
   'font-sans text-sm font-semibold',
   'transition-[box-shadow,color,border-color] duration-200',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--workspace-panel-accent)_35%,transparent)]',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
   'disabled:cursor-not-allowed disabled:opacity-50'
 );
 
@@ -42,7 +42,7 @@ export const appNeuActionBtnActiveClass = cn(
   'font-sans text-sm font-bold',
   'transition-[filter,transform,box-shadow] duration-150',
   'hover:brightness-110',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--workspace-panel-accent)_45%,transparent)]',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45',
   'disabled:cursor-not-allowed disabled:opacity-50'
 );
 

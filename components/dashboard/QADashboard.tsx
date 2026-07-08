@@ -15,10 +15,11 @@ import { cn } from '../../utils/cn';
 import {
   dashboardEmptyStateShellClass,
   dashboardErrorBannerClass,
-  dashboardContentClass,
+  dashboardMainStackClass,
   dashboardHeroChromeClass,
   dashboardHeroShellClass,
   dashboardInsightsSectionDescClass,
+  dashboardInsightsSectionHeaderClass,
   dashboardInsightsSectionLabelClass,
   dashboardLoadingBannerClass,
   dashboardNeuScopeClass,
@@ -177,7 +178,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
       role="main"
       aria-label="Dashboard do projeto"
     >
-      <div className={dashboardContentClass}>
+      <div className={dashboardMainStackClass}>
       {showLoadingBanner && (
         <div className={dashboardLoadingBannerClass} role="status" aria-live="polite">
           <Loader2
@@ -211,7 +212,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
             {showLoadingBanner && !filteredProject.tasks?.length ? (
               <div
                 className={cn(
-                  'grid grid-cols-2 gap-1.5 sm:gap-2',
+                  'grid grid-cols-2 gap-2 sm:gap-3',
                   showBacklogCard ? 'sm:grid-cols-3 lg:grid-cols-5' : 'sm:grid-cols-2 lg:grid-cols-4'
                 )}
               >
@@ -236,7 +237,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
         </div>
       </div>
 
-      <div className="flex flex-col gap-0.5 border-b border-[color-mix(in_srgb,var(--project-workspace-shadow)_28%,transparent)] pb-3">
+      <div className={dashboardInsightsSectionHeaderClass}>
         <h2 className={dashboardInsightsSectionLabelClass}>Qualidade e execução</h2>
         <p className={dashboardInsightsSectionDescClass}>
           Cobertura, bugs, automação e tendências — respeitam os filtros do dashboard.

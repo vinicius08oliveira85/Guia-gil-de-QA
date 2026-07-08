@@ -24,8 +24,8 @@ export const FilterChip: React.FC<FilterChipProps> = ({
 }) => {
   const colorClasses = {
     default: isActive
-      ? 'leve-neu-pill leve-neu-pill-active border-0 text-[var(--leve-header-text)]'
-      : 'leve-neu-pill border-0 text-[var(--leve-header-text-muted)]',
+      ? 'leve-neu-pill leve-neu-pill-active border-0 text-base-content'
+      : 'leve-neu-pill border-0 text-base-content/72',
     error: isActive
       ? 'bg-error text-error-content border-error'
       : 'bg-error/10 text-error border-error/30',
@@ -49,7 +49,7 @@ export const FilterChip: React.FC<FilterChipProps> = ({
         border transition-all duration-200 text-xs font-semibold
         hover:scale-105 active:scale-95
         ${colorClasses[color]}
-        ${isActive ? 'ring-2 ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] ring-offset-1 ring-offset-[var(--leve-neu-bg)]' : ''}
+        ${isActive ? 'ring-2 ring-primary/35 ring-offset-1 ring-offset-base-100' : ''}
       `}
       aria-pressed={isActive}
       aria-label={`Filtro ${label} ${isActive ? 'ativo' : 'inativo'}`}

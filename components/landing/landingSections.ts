@@ -7,8 +7,7 @@ export const LANDING_SECTIONS = {
   },
   jiraSolus: {
     title: 'Acompanhamento',
-    description:
-      'Acompanhe tarefas com status, SLA e indicadores de progresso (Jira × Solus).',
+    description: 'Acompanhe tarefas com status, SLA e indicadores de progresso.',
   },
   settings: {
     title: 'Configurações',

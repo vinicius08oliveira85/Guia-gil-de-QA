@@ -166,7 +166,7 @@ export const TaskTestsSection: React.FC = () => {
             {onTaskToolsChange && (
               <>
                 <h3 className={cn(leveTaskModalFieldLabelClass, 'mb-3 flex items-center gap-2 !normal-case')}>
-                  <Wrench className="h-5 w-5 text-[var(--leve-header-accent)]" aria-hidden />
+                  <Wrench className="h-5 w-5 text-primary" aria-hidden />
                   Ferramentas Utilizadas (Geral)
                 </h3>
                 <ToolsSelector
@@ -180,7 +180,7 @@ export const TaskTestsSection: React.FC = () => {
             )}
             {!onTaskToolsChange && <div className="h-0" />}
           </div>
-          <div className="flex min-w-0 flex-col gap-4 border-t border-[color-mix(in_srgb,var(--leve-header-border)_55%,transparent)] pt-5 lg:w-80 lg:shrink-0 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+          <div className="flex min-w-0 flex-col gap-4 border-t border-base-300/55 pt-5 lg:w-80 lg:shrink-0 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
             <TestCaseDetailLevelControl
               idPrefix={task.id}
               value={detailLevel}

@@ -18,7 +18,7 @@ export const BacklogItemFilterSelect: React.FC<BacklogItemFilterSelectProps> = (
   <div className="flex flex-wrap items-center gap-2">
     <label
       htmlFor="backlog-item-filter"
-      className="text-xs font-medium text-[var(--leve-header-text-muted)]"
+      className="text-xs font-medium text-base-content/72"
     >
       Exibir
     </label>

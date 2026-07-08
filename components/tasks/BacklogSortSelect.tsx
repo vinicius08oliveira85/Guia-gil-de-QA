@@ -16,7 +16,7 @@ export const BacklogSortSelect: React.FC<BacklogSortSelectProps> = ({
   disabled = false,
 }) => (
   <div className="flex flex-wrap items-center gap-2">
-    <label htmlFor="backlog-sort-by" className="text-xs font-medium text-[var(--leve-header-text-muted)]">
+    <label htmlFor="backlog-sort-by" className="text-xs font-medium text-base-content/72">
       Ordenar backlog
     </label>
     <AppSelect

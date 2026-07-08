@@ -167,7 +167,7 @@ export const TaskJiraStatusDropdown: React.FC<TaskJiraStatusDropdownProps> = ({
               className="h-3 w-3 shrink-0 rounded-full"
               style={{ backgroundColor: statusColor || 'oklch(var(--b3))' }}
             />
-            <span className="text-[var(--leve-header-text)]">{statusName}</span>
+            <span className="text-base-content">{statusName}</span>
           </button>
         );
       });

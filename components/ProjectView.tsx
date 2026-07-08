@@ -500,9 +500,11 @@ export const ProjectView: React.FC<{
       <div
         className={cn(
           workspaceSurfaceLightClass,
+          'project-view-page-shell',
           'animate-fade-in w-full min-w-0 max-w-none py-3 sm:py-4 max-md:py-2 non-printable',
           appContentPaddingX
         )}
+        data-theme="leve"
       >
         <div className={projectChromeHeaderShellClass}>
           <div className={cn('flex min-w-0 flex-col gap-1', projectChromeHeaderInnerClass)}>

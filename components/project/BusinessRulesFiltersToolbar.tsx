@@ -36,7 +36,7 @@ export const BusinessRulesFiltersToolbar: React.FC<BusinessRulesFiltersToolbarPr
       <span className={tasksPanelFilterLabelClass}>Buscar</span>
       <div className="relative">
         <Search
-          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--workspace-panel-text-muted)]"
+          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-base-content/72"
           aria-hidden
         />
         <input

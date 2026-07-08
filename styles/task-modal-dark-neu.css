@@ -4,15 +4,15 @@
  */
 
 :is(.task-details-neu-modal, .test-report-neu-modal) {
-  --td-neu-bg: var(--modal-neu-bg, #f2eee8);
-  --td-neu-shell-bg: var(--modal-neu-shell-bg, #ebe6de);
-  --td-neu-surface: var(--modal-neu-surface, #e5dfd5);
-  --td-neu-dark: var(--modal-neu-border, #ded7cd);
-  --td-neu-light: var(--modal-neu-light, #ffffff);
-  --td-neu-accent: var(--modal-neu-accent, #ff5c1b);
-  --td-neu-accent-contrast: var(--modal-neu-accent-contrast, #ffffff);
-  --td-neu-text: var(--modal-neu-text, #401c31);
-  --td-neu-text-muted: color-mix(in srgb, var(--td-neu-text) 72%, transparent);
+  --td-neu-bg: var(--modal-neu-bg, oklch(var(--b1)));
+  --td-neu-shell-bg: var(--modal-neu-shell-bg, oklch(var(--b2)));
+  --td-neu-surface: var(--modal-neu-surface, oklch(var(--b2)));
+  --td-neu-dark: var(--modal-neu-border, oklch(var(--b3)));
+  --td-neu-light: var(--modal-neu-light, oklch(var(--b1)));
+  --td-neu-accent: var(--modal-neu-accent, oklch(var(--p)));
+  --td-neu-accent-contrast: var(--modal-neu-accent-contrast, oklch(var(--pc)));
+  --td-neu-text: var(--modal-neu-text, oklch(var(--bc)));
+  --td-neu-text-muted: var(--modal-neu-text-muted, oklch(var(--bc) / 0.72));
   --td-neu-raised: var(--modal-neu-raised);
   --td-neu-inset: var(--modal-neu-inset);
   --td-neu-inset-deep: var(--modal-neu-inset-deep);
@@ -209,7 +209,7 @@
   .select.select-bordered
 ) {
   border: 1px solid color-mix(in srgb, var(--td-neu-dark) 48%, transparent) !important;
-  border-radius: var(--leve-header-radius) !important;
+  border-radius: var(--rounded-field, 0.5rem) !important;
   background-color: color-mix(in srgb, var(--td-neu-dark) 28%, var(--td-neu-bg)) !important;
   background-image: none !important;
   color: var(--td-neu-text) !important;
@@ -295,6 +295,46 @@
   color: color-mix(in srgb, var(--td-neu-text) 88%, transparent) !important;
 }
 
+:is(.task-details-neu-modal, .test-report-neu-modal) .test-strategy-neu-toggle {
+  position: relative;
+  display: inline-block;
+  height: 1.5rem;
+  width: 2.75rem;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in oklch, var(--td-neu-dark) 48%, transparent);
+  background: color-mix(in oklch, var(--td-neu-dark) 24%, var(--td-neu-bg));
+  box-shadow: var(--td-neu-inset-deep) !important;
+  transition:
+    background-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .test-strategy-neu-toggle::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  height: 1.25rem;
+  width: 1.25rem;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in oklch, var(--td-neu-dark) 42%, transparent);
+  background: color-mix(in oklch, var(--td-neu-dark) 10%, var(--td-neu-bg));
+  box-shadow: var(--td-neu-raised) !important;
+  transition: transform 200ms ease;
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .peer:checked + .test-strategy-neu-toggle::after {
+  transform: translateX(1.25rem);
+}
+
+:is(.task-details-neu-modal, .test-report-neu-modal) .peer:focus-visible + .test-strategy-neu-toggle {
+  outline: none;
+  box-shadow:
+    var(--td-neu-inset-deep),
+    0 0 0 2px color-mix(in oklch, var(--td-neu-accent) 28%, transparent) !important;
+}
+
 :is(.task-details-neu-modal) label:has(.checkbox),
 :is(.task-details-neu-modal) .leve-neu-surface-inset.leve-neu-inset-content:has(.checkbox),
 :is(.task-details-neu-modal) .leve-neu-surface-inset.inline-flex.rounded-full,
@@ -342,17 +382,11 @@
   box-shadow: var(--td-neu-raised) !important;
 }
 
-:is(.task-details-neu-modal, .test-report-neu-modal) .test-strategy-neu-toggle::after {
-  border: 1px solid color-mix(in srgb, var(--td-neu-dark) 42%, transparent) !important;
-  background: color-mix(in srgb, var(--td-neu-dark) 10%, var(--td-neu-bg)) !important;
-  box-shadow: var(--td-neu-raised) !important;
-}
-
 :is(.task-details-neu-modal, .test-report-neu-modal) .peer:checked + .test-strategy-neu-toggle,
 :is(.task-details-neu-modal) .task-details-neu-status-btn.task-details-neu-chip--active.text-success {
-  border-color: color-mix(in srgb, #10b981 35%, var(--td-neu-dark)) !important;
-  background: color-mix(in srgb, #10b981 14%, var(--td-neu-bg)) !important;
-  color: #047857 !important;
+  border-color: color-mix(in oklch, oklch(var(--su)) 35%, var(--td-neu-dark)) !important;
+  background: color-mix(in oklch, oklch(var(--su)) 14%, var(--td-neu-bg)) !important;
+  color: oklch(var(--su)) !important;
 }
 
 :is(.task-details-neu-modal) .task-details-neu-status-btn.task-details-neu-chip--active.text-error {
@@ -364,7 +398,7 @@
 :is(.task-details-neu-modal) .task-details-neu-status-btn.task-details-neu-chip--active.text-warning {
   border-color: color-mix(in srgb, oklch(var(--wa)) 35%, var(--td-neu-dark)) !important;
   background: color-mix(in srgb, oklch(var(--wa)) 12%, var(--td-neu-bg)) !important;
-  color: #b45309 !important;
+  color: oklch(var(--wa)) !important;
 }
 
 /* Resumo — tipografia e espaçamento mais compactos na descrição rica do Jira */

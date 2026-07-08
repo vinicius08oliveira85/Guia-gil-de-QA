@@ -53,7 +53,7 @@ export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
     <div className={testStrategyCardClass}>
       <div className="flex-grow p-5">
         <div className="mb-3 flex items-start justify-between gap-3">
-          <h2 className="flex-1 pr-2 font-sans text-base font-bold leading-tight text-[var(--leve-header-accent)]">
+          <h2 className="flex-1 pr-2 font-sans text-base font-bold leading-tight text-primary">
             {strategy.testType}
           </h2>
           {onToggleExecuted && (

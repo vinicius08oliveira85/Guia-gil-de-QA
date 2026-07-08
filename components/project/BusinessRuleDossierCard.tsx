@@ -214,7 +214,7 @@ export const BusinessRuleDossierCard: React.FC<BusinessRuleDossierCardProps> = (
               </div>
             </section>
           ) : (
-            <p className="text-sm italic text-[var(--leve-header-text-muted)]">
+            <p className="text-sm italic text-base-content/72">
               Sem análise gerada.
             </p>
           )}
@@ -232,7 +232,7 @@ export const BusinessRuleDossierCard: React.FC<BusinessRuleDossierCardProps> = (
                         key={`${h.version}-${h.generatedAt}`}
                         className="flex flex-wrap items-baseline gap-x-2 text-xs leading-relaxed"
                       >
-                        <span className="font-semibold text-[var(--leve-header-text)]">
+                        <span className="font-semibold text-base-content">
                           v{h.version}
                         </span>
                         <span aria-hidden>·</span>

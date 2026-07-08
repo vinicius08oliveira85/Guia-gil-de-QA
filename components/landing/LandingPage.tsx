@@ -54,7 +54,7 @@ export const LandingPage = React.memo(() => {
   }, []);
 
   return (
-    <div className={landingPageShellClass}>
+    <div className={landingPageShellClass} data-theme="leve">
       <header className={landingTopBarClass}>
         <Link to="/" className={landingTopBarBrandClass} aria-label={`${APP_BRAND.title} — início`}>
           <span className={landingTopBarLogoClass}>

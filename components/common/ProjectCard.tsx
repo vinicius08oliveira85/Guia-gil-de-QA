@@ -206,6 +206,7 @@ export const ProjectCard = React.memo<ProjectCardProps>(
         }}
         className={cn(
           projectCardShellClass,
+          'project-card-warm-dark',
           'cursor-pointer p-4 sm:p-[1.125rem]',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--project-card-accent)_55%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--project-card-bg)]',
           'active:scale-[0.99] motion-reduce:active:scale-100',

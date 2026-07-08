@@ -154,7 +154,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
   if (!task.id) return null;
 
   return (
-    <div className="font-sans tracking-[var(--letter-spacing)] text-[var(--leve-header-text)]">
+    <div className="font-sans tracking-[var(--letter-spacing)] text-base-content">
       <header className="mb-4 flex flex-col gap-3">
         <div
           className={cn(

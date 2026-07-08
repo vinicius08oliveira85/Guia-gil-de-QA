@@ -18,7 +18,7 @@ export const TaskSprintBadge: React.FC<TaskSprintBadgeProps> = ({ sprint, classN
         'badge-task-format shrink-0 border px-2 py-0.5 normal-case tracking-wide',
         active
           ? 'border-[color-mix(in_srgb,var(--brand-highlight)_35%,transparent)] bg-[color-mix(in_srgb,var(--brand-highlight)_12%,transparent)] text-[var(--brand-highlight)]'
-          : 'border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))] text-[var(--leve-header-text-muted)]',
+          : 'border-base-300/35 bg-base-300/25 text-base-content/72',
         className
       )}
       title={active ? `Sprint ativa: ${name}` : `Sprint: ${name}`}

@@ -160,7 +160,7 @@ import {
 
 /** Destaque da ação IA principal — halo via tokens Daisy (oklch) + animação existente. */
 const gerarTudoDestaqueClass =
-  `animate-ai-card-border glow-primary ring-2 ring-[color-mix(in_srgb,#FF5C1B_32%,transparent)] ring-offset-2 ring-offset-[#EBE6DE] hover:ring-[color-mix(in_srgb,#FF5C1B_45%,transparent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C1B] transition-[color,box-shadow,filter,background-color]`;
+  `animate-ai-card-border glow-primary ring-2 ring-primary/32 ring-offset-2 ring-offset-base-200 hover:ring-primary/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-[color,box-shadow,filter,background-color]`;
 
 // Componente para renderizar descrição com formatação rica do Jira
 const DescriptionRenderer: React.FC<{
@@ -1809,12 +1809,12 @@ export const JiraTaskItem: React.FC<{
               tasksListCardHoverClass,
               level > 0 ? taskCardNestedListBgClass : '',
               activeTaskId === task.id &&
-                'ring-2 ring-[color-mix(in_srgb,#FF5C1B_40%,transparent)]',
+                'ring-2 ring-primary/40',
               isSelected && tasksListCardSelectedClass,
               task.isFavorite && 'ring-1 ring-amber-500/35',
               taskCardLeftAccentClass,
               showBulkGenerateFeedback &&
-                'animate-pulse ring-2 ring-[color-mix(in_srgb,#FF5C1B_50%,transparent)]',
+                'animate-pulse ring-2 ring-primary/50',
               isAiProcessing && 'animate-ai-card-border',
               onOpenModal && tasksListCardOpenModalClass,
               onOpenModal && 'hover:translate-x-0.5'
@@ -1959,7 +1959,7 @@ export const JiraTaskItem: React.FC<{
                         className={cn(
                           'btn btn-ghost btn-xs flex h-full min-h-0 w-full min-w-0 items-center justify-center gap-0.5 rounded-[inherit] border-0 bg-transparent px-0 py-0 shadow-none',
                           tasksListIconHoverClass,
-                          'text-[#6B5E5E]',
+                          'text-base-content/72',
                           '[&_svg:first-child]:size-[18px] sm:[&_svg:first-child]:size-4'
                         )}
                         aria-label={

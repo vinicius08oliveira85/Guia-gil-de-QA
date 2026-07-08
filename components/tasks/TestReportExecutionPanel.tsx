@@ -87,7 +87,7 @@ const ExecutedCaseRow: React.FC<ExecutedCaseRowProps> = ({ testCase, index }) =>
     <div className={`p-4 transition-colors ${statusData.accentClass}`}>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
         <div className="min-w-0 flex-1">
-          <p className="whitespace-pre-wrap break-words text-sm font-medium text-[var(--leve-header-text)]">
+          <p className="whitespace-pre-wrap break-words text-sm font-medium text-base-content">
             {headline}
           </p>
           {!expanded && poSummary !== headline ? (
@@ -101,7 +101,7 @@ const ExecutedCaseRow: React.FC<ExecutedCaseRowProps> = ({ testCase, index }) =>
             <button
               type="button"
               onClick={() => setExpanded(current => !current)}
-              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-[var(--leve-header-text-muted)] transition-colors hover:bg-[color-mix(in_srgb,var(--leve-header-text)_6%,transparent)]"
+              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-base-content/72 transition-colors hover:bg-base-content/5"
               aria-expanded={expanded}
               aria-label={expanded ? `Recolher detalhes do caso ${index + 1}` : `Expandir detalhes do caso ${index + 1}`}
             >
@@ -125,22 +125,22 @@ const ExecutedCaseRow: React.FC<ExecutedCaseRowProps> = ({ testCase, index }) =>
       </div>
 
       {expanded ? (
-        <div className="mt-3 space-y-2 rounded-[var(--leve-header-radius)] border border-[var(--leve-header-border)] bg-[color-mix(in_srgb,var(--leve-header-text)_4%,transparent)] p-3">
+        <div className="mt-3 space-y-2 rounded-box border border-base-300 bg-base-content/5 p-3">
           <div>
-            <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-[var(--leve-header-text-muted)]">
+            <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-base-content/72">
               O que foi validado
             </p>
-            <p className="whitespace-pre-wrap break-words text-xs text-[var(--leve-header-text)]">
+            <p className="whitespace-pre-wrap break-words text-xs text-base-content">
               {poSummary}
             </p>
           </div>
 
           {actionSteps.length > 0 ? (
             <div>
-              <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-[var(--leve-header-text-muted)]">
+              <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-base-content/72">
                 Como foi testado
               </p>
-              <ol className="list-decimal space-y-1 pl-4 text-xs text-[var(--leve-header-text)]">
+              <ol className="list-decimal space-y-1 pl-4 text-xs text-base-content">
                 {actionSteps.map((step, stepIndex) => (
                   <li key={`${testCase.id}-step-${stepIndex}`} className="break-words">
                     {step}
@@ -150,26 +150,26 @@ const ExecutedCaseRow: React.FC<ExecutedCaseRowProps> = ({ testCase, index }) =>
             </div>
           ) : actionSummary ? (
             <div>
-              <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-[var(--leve-header-text-muted)]">
+              <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-base-content/72">
                 Como foi testado
               </p>
-              <p className="text-xs text-[var(--leve-header-text)]">{actionSummary}</p>
+              <p className="text-xs text-base-content">{actionSummary}</p>
             </div>
           ) : null}
 
           {contextLine ? (
             <div>
-              <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-[var(--leve-header-text-muted)]">
+              <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-base-content/72">
                 Dados / contexto
               </p>
-              <p className="whitespace-pre-wrap break-words text-xs text-[var(--leve-header-text)]">
+              <p className="whitespace-pre-wrap break-words text-xs text-base-content">
                 {contextLine}
               </p>
             </div>
           ) : null}
 
           <div>
-            <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-[var(--leve-header-text-muted)]">
+            <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-base-content/72">
               Resultado obtido
             </p>
             <p className={`whitespace-pre-wrap break-words text-xs ${statusData.textClass}`}>
@@ -180,7 +180,7 @@ const ExecutedCaseRow: React.FC<ExecutedCaseRowProps> = ({ testCase, index }) =>
         </div>
       ) : testCase.observedResult && testCase.observedResult.trim() ? (
         <div className="mt-2">
-          <p className="mb-0.5 text-xs font-medium text-[var(--leve-header-text-muted)]">
+          <p className="mb-0.5 text-xs font-medium text-base-content/72">
             Resultado Obtido:
           </p>
           <p className={`text-xs whitespace-pre-wrap break-words ${statusData.textClass}`}>
@@ -206,7 +206,7 @@ export const TestReportExecutionPanel: React.FC<TestReportExecutionPanelProps> =
               Indicadores rápidos para leitura do resultado.
             </p>
           </div>
-          <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-[var(--leve-header-text-muted)] sm:justify-end">
+          <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-base-content/72 sm:justify-end">
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-success" aria-hidden />
               <span className="whitespace-nowrap">Aprovado</span>
@@ -239,7 +239,7 @@ export const TestReportExecutionPanel: React.FC<TestReportExecutionPanelProps> =
       </div>
 
       <div className={cn(testReportModalSectionClass, 'flex min-h-0 flex-1 flex-col overflow-hidden')}>
-        <div className="border-b border-[var(--leve-header-border)] px-4 py-3">
+        <div className="border-b border-base-300 px-4 py-3">
           <p className={leveSettingsHeadingXsClass}>Casos executados</p>
           <p className={leveSettingsMutedTextXsClass}>
             Expanda cada caso para ver critério, passos e contexto antes de copiar.
@@ -247,7 +247,7 @@ export const TestReportExecutionPanel: React.FC<TestReportExecutionPanelProps> =
         </div>
 
         {executedTestCases.length > 0 ? (
-          <div className="custom-scrollbar max-h-[360px] overflow-y-auto divide-y divide-[var(--leve-header-border)]">
+          <div className="custom-scrollbar max-h-[360px] overflow-y-auto divide-y divide-base-300">
             {executedTestCases.map((testCase, index) => (
               <ExecutedCaseRow key={`${testCase.id}-${index}`} testCase={testCase} index={index} />
             ))}

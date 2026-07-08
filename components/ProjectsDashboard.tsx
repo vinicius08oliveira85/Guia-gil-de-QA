@@ -46,6 +46,8 @@ import { useAriaLive } from '../hooks/useAriaLive';
 import { projectsListShell } from './common/viewUi';
 import {
   projectsDashboardFilterPillClass,
+  projectsDashboardClearFiltersBtnClass,
+  projectsDashboardEmptyPanelClass,
   projectsDashboardGlobalEfficiencyGridClass,
   projectsDashboardHeroShellClass,
   projectsDashboardSectionDescClass,
@@ -308,7 +310,7 @@ export const ProjectsDashboard: React.FC<{
 
   return (
     <>
-      <div className={projectsDashboardPageClass}>
+      <div className={projectsDashboardPageClass} data-theme="leve">
         <div className={projectsDashboardContentClass}>
           <div className={projectsListShell}>
             <div className={projectsDashboardHeroShellClass}>
@@ -378,7 +380,7 @@ export const ProjectsDashboard: React.FC<{
           <div ref={listRef} className={cn(projects.length > 0 && projectsDashboardMainGridClass)}>
             <div className="min-w-0">
               {projects.length > 0 && !isLoading ? (
-                <div className="mb-3 flex flex-col gap-0.5 border-b border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pb-3 sm:mb-4">
+                <div className="mb-3 flex flex-col gap-0.5 border-b border-base-300 pb-3 sm:mb-4">
                   <h2 className={projectsDashboardSectionLabelClass}>Seus projetos</h2>
                   <p className={projectsDashboardSectionDescClass}>
                     {filteredProjects.length}{' '}
@@ -392,7 +394,7 @@ export const ProjectsDashboard: React.FC<{
 
               {isLoading && projects.length === 0 ? (
                 <div
-                  className={cn(projectsDashboardMessagePanelClass, 'sm:p-8')}
+                  className={projectsDashboardEmptyPanelClass}
                   role="status"
                   aria-live="polite"
                 >
@@ -437,7 +439,7 @@ export const ProjectsDashboard: React.FC<{
               ) : (
                 <>
                   {projects.length === 0 ? (
-                    <div className={cn(projectsDashboardMessagePanelClass, 'sm:p-8')}>
+                    <div className={projectsDashboardEmptyPanelClass}>
                       <EmptyState
                         icon="🚀"
                         title="Nenhum projeto ainda"
@@ -471,7 +473,8 @@ export const ProjectsDashboard: React.FC<{
                           setQuickFilter('all');
                           setSearchQuery('');
                         }}
-                        className={cn(projectsDashboardFilterPillClass(false), 'mx-auto')}
+                        className={projectsDashboardClearFiltersBtnClass}
+                        aria-label="Mostrar todos os projetos"
                       >
                         Mostrar todos os projetos
                       </button>

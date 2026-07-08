@@ -45,7 +45,7 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
           <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-2.5">
             <h1
               id={headingId}
-              className="app-brand-title font-sans text-2xl font-bold tracking-tight text-[var(--brand-text-strong)] max-md:text-xl sm:text-[1.75rem]"
+              className="app-brand-title font-sans text-2xl font-bold tracking-tight text-base-content max-md:text-xl sm:text-[1.75rem]"
             >
               {LANDING_SECTIONS.projects.title}
             </h1>

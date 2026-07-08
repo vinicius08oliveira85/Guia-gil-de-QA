@@ -21,10 +21,10 @@ export const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
   }
 
   return (
-    <div className="leve-neu-surface sticky top-0 z-20 border-0 border-b border-[color-mix(in_srgb,var(--leve-header-accent)_25%,transparent)] px-md py-sm">
+    <div className="leve-neu-surface sticky top-0 z-20 border-0 border-b border-primary/25 px-md py-sm">
       <div className="flex items-center justify-between gap-md">
         <div className="flex items-center gap-sm">
-          <span className="text-sm font-semibold text-[var(--leve-header-text)]">
+          <span className="text-sm font-semibold text-base-content">
             {selectedCount} {selectedCount === 1 ? 'teste selecionado' : 'testes selecionados'}
           </span>
         </div>

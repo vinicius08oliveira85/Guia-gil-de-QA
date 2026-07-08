@@ -541,7 +541,7 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
           className={cn(
             taskDetailsModalShellClass,
             taskDetailsModalBodyClass,
-            'rounded-[var(--leve-header-radius)] p-3 sm:p-4'
+            'rounded-box p-3 sm:p-4'
           )}
         >
           <div className="mb-3 flex min-w-0 flex-col gap-1 border-b border-[color-mix(in_srgb,var(--workspace-panel-divider)_80%,transparent)] pb-3">

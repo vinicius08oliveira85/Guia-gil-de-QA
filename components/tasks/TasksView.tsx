@@ -2265,7 +2265,7 @@ export const TasksView: React.FC<{
             </div>
           </div>
 
-          <div className="flex flex-col gap-0.5 border-b border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pb-3">
+          <div className="flex flex-col gap-0.5 border-b border-base-300/35 pb-3">
             <h2 className={tasksViewSectionLabelClass}>Explorar tarefas</h2>
             <p className={tasksViewSectionDescClass}>
               Alterne entre todas as tarefas e o backlog, filtre por sprint e busque por ID ou título.
@@ -2304,7 +2304,7 @@ export const TasksView: React.FC<{
             </div>
           </section>
 
-          <div className="flex flex-col gap-0.5 border-b border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] pb-3 pt-1">
+          <div className="flex flex-col gap-0.5 border-b border-base-300/35 pb-3 pt-1">
             <h2 className={tasksViewSectionLabelClass}>Lista de tarefas</h2>
             <p className={tasksViewSectionDescClass}>
               {listModeProp === 'backlog'
@@ -2421,7 +2421,7 @@ export const TasksView: React.FC<{
                   </div>
                 )}
                 {(generatingTestsTaskId || generatingBddTaskId) && (
-                  <div className="p-4 bg-primary/10 border border-primary/40 rounded-[var(--radius)] text-sm text-[var(--leve-header-text)] flex items-center gap-2">
+                  <div className="flex items-center gap-2 rounded-field border border-primary/40 bg-primary/10 p-4 text-sm text-base-content">
                     <span className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent"></span>
                     {generatingTestsTaskId && (
                       <span>
@@ -2627,7 +2627,7 @@ export const TasksView: React.FC<{
                     <div className="space-y-6">
                       {groupedTasksEntriesWithA11y.map(([groupLabel, tasksInGroup, groupA11y]) => (
                         <section key={groupLabel} aria-label={`Grupo: ${groupLabel}`}>
-                          <h3 className="mb-3 flex items-center gap-2 font-heading text-xs font-bold uppercase tracking-wider text-[var(--leve-header-text-muted)]">
+                          <h3 className="mb-3 flex items-center gap-2 font-heading text-xs font-bold uppercase tracking-wider text-base-content/72">
                             <List className="w-4 h-4" aria-hidden />
                             {groupLabel}
                           </h3>
@@ -2647,7 +2647,7 @@ export const TasksView: React.FC<{
                           title="Favoritos"
                           icon={
                             <Star
-                              className="h-4 w-4 shrink-0 fill-[#d85414] text-[#d85414]"
+                              className="h-4 w-4 shrink-0 fill-primary text-primary"
                               aria-hidden
                             />
                           }
@@ -2668,7 +2668,7 @@ export const TasksView: React.FC<{
                           sectionId={`tasks-other-${project.id}`}
                           title="Outras Tarefas"
                           icon={
-                            <List className="h-4 w-4 shrink-0 text-[#d85414]" aria-hidden />
+                            <List className="h-4 w-4 shrink-0 text-primary" aria-hidden />
                           }
                           count={countTasksInBacklogTree(otherRoots)}
                           isOpen={otherTasksSectionOpen}
@@ -2688,7 +2688,7 @@ export const TasksView: React.FC<{
                 </BacklogListSurface>
               ) : listTasks.length === 0 && project.tasks.length > 0 ? (
                 <EmptyState
-                  icon={<Search className="mx-auto h-12 w-12 text-[var(--leve-header-text-muted)]" aria-hidden />}
+                  icon={<Search className="mx-auto h-12 w-12 text-base-content/72" aria-hidden />}
                   title="Nenhuma tarefa corresponde aos filtros"
                   description="Ajuste os filtros ou a busca para ver mais tarefas."
                   action={{
@@ -2704,7 +2704,7 @@ export const TasksView: React.FC<{
               ) : (
                 <EmptyState
                   icon={
-                    <ClipboardList className="mx-auto h-12 w-12 text-[var(--leve-header-text-muted)]" aria-hidden />
+                    <ClipboardList className="mx-auto h-12 w-12 text-base-content/72" aria-hidden />
                   }
                   title="Nenhuma tarefa criada ainda"
                   description="Comece criando sua primeira tarefa para organizar seu trabalho de QA."
@@ -2762,7 +2762,7 @@ export const TasksView: React.FC<{
               onChange={e => setFailModalState({ ...failModalState, createBug: e.target.checked })}
               className="checkbox checkbox-highlight"
             />
-            <label htmlFor="create-bug-task" className="block text-sm text-[var(--leve-header-text)]">
+            <label htmlFor="create-bug-task" className="block text-sm text-base-content">
               Criar tarefa de Bug automaticamente
             </label>
           </div>

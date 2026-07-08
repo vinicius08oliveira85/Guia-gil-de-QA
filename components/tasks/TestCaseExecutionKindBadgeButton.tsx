@@ -23,7 +23,7 @@ export const TestCaseExecutionKindBadgeButton: React.FC<
     className={cn(
       'w-fit shrink-0 rounded-full transition-[transform,opacity,filter]',
       !disabled &&
-        'cursor-pointer hover:brightness-105 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_40%,transparent)]',
+        'cursor-pointer hover:brightness-105 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
       disabled && 'cursor-not-allowed opacity-70',
       className
     )}
@@ -40,7 +40,7 @@ export const TestCaseExecutionKindBadgeButton: React.FC<
       appearance="pill"
       className={cn(
         taskDetailsModalExecBadgeClass,
-        variant === 'info' && 'border-[color-mix(in_srgb,var(--leve-header-accent)_45%,#ded7cd)]',
+        variant === 'info' && 'border-primary/45',
         variant === 'warning' && 'border-amber-400/55'
       )}
     >

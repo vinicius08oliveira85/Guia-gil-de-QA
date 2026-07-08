@@ -294,7 +294,7 @@ export const JiraSolusView = React.memo(() => {
   }, [activeTab, breadcrumbTaskTitle]);
 
   return (
-    <div className={jiraSolusViewPageShellClass}>
+    <div className={jiraSolusViewPageShellClass} data-theme="leve">
       <div className={jiraSolusViewContentClass}>
         <div className={jiraSolusChromeHeaderClass}>
           <div className={cn('flex min-w-0 flex-col gap-1', projectChromeHeaderInnerClass)}>

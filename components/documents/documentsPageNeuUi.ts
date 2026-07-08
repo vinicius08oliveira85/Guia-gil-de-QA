@@ -10,7 +10,7 @@ import {
   appNeuActionTrackWrapClass,
 } from '../common/workspaceChromeActionUi';
 
-/** Escopo da aba Documentos — tokens escuros em index.css (`.documents-view-scope`). */
+/** Escopo da aba Documentos — tokens DaisyUI `leve` via `.documents-view-scope`. */
 export const documentsViewScopeClass = 'documents-view-scope';
 
 export const documentsPageHeaderClass = cn(
@@ -19,63 +19,62 @@ export const documentsPageHeaderClass = cn(
 );
 
 export const documentsPageTitleClass =
-  'font-sans text-2xl font-bold tracking-tight text-[var(--leve-header-text)] sm:text-[1.65rem]';
+  'font-sans text-2xl font-bold tracking-tight text-base-content sm:text-[1.65rem]';
 
 export const documentsPageSubtitleClass =
-  'mt-1 font-sans text-sm leading-relaxed text-[var(--leve-header-text-muted)]';
+  'mt-1 font-sans text-sm leading-relaxed text-base-content/72';
 
 export const documentsJiraBadgeClass = cn(
   'documents-neu-chip inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5',
-  'font-sans text-xs font-bold text-[var(--leve-header-accent)]'
+  'font-sans text-xs font-bold text-primary'
 );
 
-export const documentsPageMutedClass = 'font-sans text-sm text-[var(--leve-header-text-muted)]';
+export const documentsPageMutedClass = 'font-sans text-sm text-base-content/72';
 
 /** Painel de filtros / resumo — superfície elevada. */
 export const documentsFiltersPanelClass = cn(
   'documents-neu-panel',
   neuSurfaceClass,
-  'relative flex flex-col overflow-visible rounded-[var(--leve-header-radius)] p-3 font-sans sm:p-4',
+  'relative flex flex-col overflow-visible rounded-box p-3 font-sans sm:p-4',
   'max-md:p-2'
 );
 
 export const documentsEyebrowClass = cn(
-  'documents-eyebrow inline-block border-b border-[var(--leve-header-accent)] pb-1',
-  'font-sans text-[10px] font-extrabold uppercase tracking-wider text-[var(--leve-header-accent)] sm:text-[11px]'
+  'documents-eyebrow inline-block border-b border-primary pb-1',
+  'font-sans text-[10px] font-extrabold uppercase tracking-wider text-primary sm:text-[11px]'
 );
 
 /** Documento de especificação — card elevado. */
 export const documentsSectionShellClass = cn(
   'documents-neu-section',
   neuSurfaceClass,
-  'rounded-[var(--leve-header-radius)] p-3 font-sans sm:p-4',
+  'rounded-box p-3 font-sans sm:p-4',
   'max-md:p-2'
 );
 
 export const documentsSectionHeaderDividerClass =
-  'documents-section-header border-b border-[color-mix(in_srgb,var(--leve-neu-light)_38%,transparent)]';
+  'documents-section-header border-b border-base-300/38';
 
 export const documentsSectionHeaderClass = cn(documentsSectionHeaderDividerClass, 'pb-2');
 
 export const documentsSectionTitleClass = cn(
-  'documents-section-title mt-1 font-sans text-base font-bold text-[var(--leve-header-text)] sm:text-lg'
+  'documents-section-title mt-1 font-sans text-base font-bold text-base-content sm:text-lg'
 );
 
 /** Faixa de resumo — trilho inset. */
 export const documentsSummaryStripClass = cn(
   'documents-neu-summary-track',
   neuSurfaceInsetClass,
-  'mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[var(--leve-header-radius)] px-3 py-2.5 sm:px-3.5',
+  'mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-box px-3 py-2.5 sm:px-3.5',
   'max-md:mb-2 max-md:gap-x-2 max-md:gap-y-1 max-md:px-2 max-md:py-1.5'
 );
 
 export const documentsSummaryStatsClass =
-  'flex flex-wrap items-center gap-x-4 gap-y-1 font-sans text-sm text-[var(--leve-header-text-muted)]';
+  'flex flex-wrap items-center gap-x-4 gap-y-1 font-sans text-sm text-base-content/72';
 
-export const documentsSummaryStatStrongClass =
-  'font-semibold text-[var(--leve-header-text)]';
+export const documentsSummaryStatStrongClass = 'font-semibold text-base-content';
 
-export const documentsSummaryStatIconAccentClass = 'h-4 w-4 text-[var(--leve-header-accent)]';
+export const documentsSummaryStatIconAccentClass = 'h-4 w-4 text-primary';
 
 export const documentsSummaryStatIconSuccessClass = 'h-4 w-4 text-success';
 
@@ -83,24 +82,24 @@ export const documentsAlertSuccessClass = cn(
   'documents-neu-alert-success',
   neuSurfaceInsetClass,
   neuInsetContentClass,
-  'flex items-start gap-2 rounded-[var(--leve-header-radius)]',
-  'border border-[color-mix(in_srgb,oklch(var(--su))_32%,var(--leve-neu-dark))]'
+  'flex items-start gap-2 rounded-box',
+  'border border-success/32'
 );
 
 export const documentsAlertInfoClass = cn(
   'documents-neu-alert-info',
   neuSurfaceInsetClass,
   neuInsetContentClass,
-  'flex items-start gap-2 rounded-[var(--leve-header-radius)]',
-  'border border-[color-mix(in_srgb,var(--leve-header-accent)_28%,var(--leve-neu-dark))]'
+  'flex items-start gap-2 rounded-box',
+  'border border-primary/28'
 );
 
 export const documentsBodyTextClass =
-  'font-sans text-sm font-medium leading-snug text-[var(--leve-header-text)]';
+  'font-sans text-sm font-medium leading-snug text-base-content';
 
-export const documentsMutedTextClass = 'documents-muted font-sans text-xs text-[var(--leve-header-text-muted)]';
+export const documentsMutedTextClass = 'documents-muted font-sans text-xs text-base-content/72';
 
-export const documentsStrongTextClass = 'font-semibold text-[var(--leve-header-text)]';
+export const documentsStrongTextClass = 'font-semibold text-base-content';
 
 export const documentsProgressTrackClass = cn(
   'documents-neu-progress-track',
@@ -110,7 +109,7 @@ export const documentsProgressTrackClass = cn(
 export const documentsProgressFillClass = 'documents-neu-progress-fill h-full w-full rounded-full';
 
 export const documentsProgressPercentClass =
-  'shrink-0 font-sans text-xs font-bold tabular-nums text-[var(--leve-header-text-muted)]';
+  'shrink-0 font-sans text-xs font-bold tabular-nums text-base-content/72';
 
 export const documentsPrimaryBtnClass = cn(
   'documents-neu-btn-primary',
@@ -133,12 +132,12 @@ export const documentsSearchInputClass = cn(
   'documents-neu-search',
   'app-input h-11 w-full min-w-[200px] flex-1 rounded-full border-0 py-2 pl-10 pr-10 font-sans text-sm',
   'max-md:h-10 max-md:pl-9 max-md:pr-9 max-md:text-xs sm:h-10',
-  'text-[var(--leve-header-text)] placeholder:text-[var(--leve-header-text-muted)]',
-  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_22%,transparent)]'
+  'text-base-content placeholder:text-base-content/72',
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/22'
 );
 
 export const documentsSearchIconClass =
-  'pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--leve-header-text-muted)]';
+  'pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-base-content/72';
 
 export const documentsFilterPillClass = (active: boolean) =>
   cn(

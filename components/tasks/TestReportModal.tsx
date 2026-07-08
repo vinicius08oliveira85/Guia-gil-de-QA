@@ -308,7 +308,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
               )}
             >
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--leve-header-text-muted)]">
+                <p className="text-xs font-semibold uppercase tracking-wide text-base-content/72">
                   Atalhos de cópia
                 </p>
                 <p className={leveSettingsMutedTextXsClass}>
@@ -369,19 +369,16 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
                     className={cn(
                       'mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2',
                       isSelected
-                        ? 'border-[#E65100] bg-[color-mix(in_srgb,#E65100_18%,#4B433D)]'
-                        : 'border-[color-mix(in_srgb,#5C524B_55%,transparent)] bg-[color-mix(in_srgb,#3A342F_28%,#4B433D)]'
+                        ? 'border-primary bg-primary/18'
+                        : 'border-base-300/55 bg-base-300'
                     )}
                   >
                     {isSelected ? (
-                      <div
-                        className="h-2.5 w-2.5 rounded-full bg-[var(--leve-header-accent)]"
-                        aria-hidden
-                      />
+                      <div className="h-2.5 w-2.5 rounded-full bg-primary" aria-hidden />
                     ) : null}
                   </div>
                   <div className="min-w-0 text-left">
-                    <p className="font-medium text-[var(--leve-header-text)]">{option.label}</p>
+                    <p className="font-medium text-base-content">{option.label}</p>
                     <p className={cn('mt-1', leveSettingsMutedTextClass)}>{option.description}</p>
                   </div>
                 </button>

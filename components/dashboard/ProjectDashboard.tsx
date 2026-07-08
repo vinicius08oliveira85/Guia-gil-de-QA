@@ -366,7 +366,7 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
               />
             </div>
           </Tooltip>
-          <p className={cn('mt-2 text-xs', LABEL_CLASS)}>Tarefas cobertas no escopo atual do dashboard</p>
+          <p className={cn('mt-3 text-xs', LABEL_CLASS)}>Tarefas cobertas no escopo atual do dashboard</p>
         </InsightCard>
 
         <InsightCard
@@ -661,7 +661,7 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
               )}
             </div>
           </Tooltip>
-          <p className={cn('mt-2 text-xs', LABEL_CLASS)}>
+          <p className={cn('mt-3 text-xs', LABEL_CLASS)}>
             Média sobre bugs com{' '}
             <code className={projectDashboardInsightCodeClass}>createdAt</code> e{' '}
             <code className={projectDashboardInsightCodeClass}>completedAt</code>

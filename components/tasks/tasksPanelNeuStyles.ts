@@ -26,7 +26,7 @@ const badgeRaised =
 
 export const tasksPanelCardClass = cn(
   'project-chrome-neu-shell tasks-panel-dark-surface tasks-panel-neu-card',
-  'relative flex flex-col overflow-hidden rounded-[var(--leve-header-radius)] p-3 font-sans sm:p-4',
+  'relative flex flex-col overflow-hidden rounded-box p-3 font-sans sm:p-4',
   'max-md:p-2'
 );
 
@@ -118,113 +118,108 @@ export const tasksPanelModeCountIdleClass = cn(
 /* ── Busca rápida ────────────────────────────────────────────── */
 
 export const tasksPanelSearchLabelClass =
-  'mb-2 block font-sans text-sm font-medium text-[var(--workspace-panel-text-muted)]';
+  'mb-2 block font-sans text-sm font-medium text-base-content/72';
 
 export const tasksPanelSearchInputClass = cn(
-  'tasks-panel-neu-search-input workspace-chrome-inset h-11 w-full border-0 py-2 pl-10 pr-10 font-sans text-sm',
+  'tasks-panel-neu-search-input workspace-chrome-inset h-11 w-full rounded-field border-0 py-2 pl-10 pr-10 font-sans text-sm',
   'max-md:h-10 max-md:pl-9 max-md:pr-9 max-md:text-xs sm:h-10',
-  'text-[var(--workspace-panel-text)] placeholder:text-[var(--workspace-panel-text-muted)]',
-  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--workspace-panel-accent)_40%,transparent)]'
+  'text-base-content placeholder:text-base-content/72',
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40'
 );
 
 export const tasksPanelSearchIconClass =
-  'pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--workspace-panel-text-muted)] opacity-80';
+  'pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-base-content/72 opacity-80';
 
 export const tasksPanelSearchClearBtnClass = cn(
   'workspace-chrome-pill absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center',
-  'text-[var(--workspace-panel-text-muted)] transition-[box-shadow,color]',
-  'hover:text-[var(--workspace-panel-accent)]'
+  'text-base-content/72 transition-[box-shadow,color]',
+  'hover:text-primary'
 );
 
 export const tasksPanelSearchHintClass =
-  'mt-1.5 font-sans text-xs text-[var(--workspace-panel-text-muted)] max-md:hidden';
+  'mt-1.5 font-sans text-xs text-base-content/72 max-md:hidden';
 
 /* ── Chips de filtros ativos (lista de tarefas) ──────────────── */
 
 export const tasksPanelActiveFiltersBarClass = cn(
-  'tasks-panel-dark-surface flex flex-wrap items-center gap-2 rounded-[var(--leve-header-radius)] px-2.5 py-2.5 sm:px-3 sm:py-3',
-  'border border-[var(--workspace-panel-border)]',
-  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))]',
+  'tasks-panel-dark-surface flex flex-wrap items-center gap-2 rounded-box px-2.5 py-2.5 sm:px-3 sm:py-3',
+  'border border-base-300 bg-base-300/30',
   neuInset
 );
 
 export const tasksPanelActiveFilterChipClass = cn(
-  'inline-flex items-center gap-1 rounded-full px-2.5 py-1',
-  'border border-[var(--workspace-panel-border)]',
-  'bg-[var(--workspace-panel-bg)] font-sans text-xs font-medium text-[var(--workspace-panel-text-muted)]',
+  'inline-flex items-center gap-1 rounded-selector border border-base-300 bg-base-100 px-2.5 py-1',
+  'font-sans text-xs font-medium text-base-content/72',
   neuRaised
 );
 
 export const tasksPanelActiveFilterChipBtnClass = cn(
-  'flex h-5 w-5 items-center justify-center rounded-full text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]',
-  'transition-colors hover:text-[var(--workspace-panel-accent)]'
+  'flex h-5 w-5 items-center justify-center rounded-full text-base-content/55',
+  'transition-colors hover:text-primary'
 );
 
 export const tasksPanelActiveFiltersClearClass = cn(
-  'ml-1 inline-flex items-center gap-1 rounded-full px-2.5 py-1',
-  'font-sans text-xs font-semibold text-[var(--workspace-panel-accent)]',
-  'transition-colors hover:text-[var(--workspace-panel-text)] hover:underline'
+  'ml-1 inline-flex items-center gap-1 rounded-selector px-2.5 py-1',
+  'font-sans text-xs font-semibold text-primary',
+  'transition-colors hover:text-base-content hover:underline'
 );
 
-export const tasksPanelListCountClass = 'font-sans text-sm text-[var(--workspace-panel-text-muted)]';
+export const tasksPanelListCountClass = 'font-sans text-sm text-base-content/72';
 
-/* ── Modais neumórficos escuros (compartilhado) ───────────────── */
+/* ── Modais neumórficos (filtros / exportar) — tokens DaisyUI `leve` ─ */
 
 export const tasksPanelNeuModalPanelClass = cn(
   'tasks-panel-neu-modal tasks-panel-dark-surface',
-  'border border-[var(--workspace-panel-border)] bg-[var(--workspace-panel-bg)]',
+  'border border-base-300 bg-base-200',
   neuRaised,
-  'shadow-[var(--workspace-panel-neu-raised),0_20px_50px_color-mix(in_srgb,#000_18%,transparent)]',
-  '[&_.leve-modal-neu-header]:border-[var(--workspace-panel-border)]',
-  '[&_.leve-modal-neu-header]:bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))]',
-  '[&>div.custom-scrollbar]:bg-[var(--workspace-panel-bg)] [&>div.custom-scrollbar]:text-[var(--workspace-panel-text-muted)]',
-  '[&_.leve-modal-neu-close]:border [&_.leve-modal-neu-close]:border-[var(--workspace-panel-border)]',
-  '[&_.leve-modal-neu-close]:bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))] [&_.leve-modal-neu-close]:text-[var(--workspace-panel-text-muted)]',
-  '[&_.leve-modal-neu-close:hover]:text-[var(--workspace-panel-accent)]',
-  '[&_.leve-modal-neu-header>div_span]:bg-[var(--workspace-panel-border)]'
+  'shadow-[var(--modal-neu-shell-shadow,var(--workspace-panel-neu-raised)),0_20px_50px_color-mix(in_oklch,oklch(var(--bc))_14%,transparent)]',
+  '[&_.leve-modal-neu-header]:border-base-300',
+  '[&_.leve-modal-neu-header]:bg-base-300/25',
+  '[&>div.custom-scrollbar]:bg-base-200 [&>div.custom-scrollbar]:text-base-content/72',
+  '[&_.leve-modal-neu-close]:border [&_.leve-modal-neu-close]:border-base-300',
+  '[&_.leve-modal-neu-close]:bg-base-300/25 [&_.leve-modal-neu-close]:text-base-content/72',
+  '[&_.leve-modal-neu-close:hover]:text-primary',
+  '[&_.leve-modal-neu-header>div_span]:bg-base-300'
 );
 
 /** @deprecated Use `tasksPanelNeuModalPanelClass` */
 export const tasksPanelFiltersModalPanelClass = tasksPanelNeuModalPanelClass;
 
 export const tasksPanelNeuModalTitleClass =
-  '!text-[var(--workspace-panel-text)] font-sans font-bold [font-family:var(--font-sans)]';
+  '!text-base-content font-sans font-bold [font-family:var(--font-sans)]';
 
 /** @deprecated Use `tasksPanelNeuModalTitleClass` */
 export const tasksPanelFiltersModalTitleClass = tasksPanelNeuModalTitleClass;
 
 export const tasksPanelFiltersModalSectionLabelClass = cn(
-  'mb-2 flex items-center gap-1.5 font-sans text-[10px] font-extrabold uppercase tracking-wider text-[var(--workspace-panel-accent)]',
-  'border-b border-[color-mix(in_srgb,var(--workspace-panel-accent)_35%,transparent)] pb-1'
+  'mb-2 flex items-center gap-1.5 font-sans text-[10px] font-extrabold uppercase tracking-wider text-primary',
+  'border-b border-primary/35 pb-1'
 );
 
-export const tasksPanelFiltersModalHintClass = 'mb-2 font-sans text-[11px] text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]';
+export const tasksPanelFiltersModalHintClass =
+  'mb-2 font-sans text-[11px] text-base-content/55';
 
-export const tasksPanelFiltersModalDividerClass =
-  'mb-5 border-b border-[var(--workspace-panel-border)] pb-5';
+export const tasksPanelFiltersModalDividerClass = 'mb-5 border-b border-base-300 pb-5';
 
 export const tasksPanelFiltersModalSaveLinkClass = cn(
-  'inline-flex items-center gap-1 font-sans text-xs font-semibold text-[var(--workspace-panel-accent)]',
-  'transition-colors hover:text-[var(--workspace-panel-text)]'
+  'inline-flex items-center gap-1 font-sans text-xs font-semibold text-primary',
+  'transition-colors hover:text-base-content'
 );
 
-export const tasksPanelFiltersModalEmptyClass =
-  'font-sans text-xs italic text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]';
+export const tasksPanelFiltersModalEmptyClass = 'font-sans text-xs italic text-base-content/55';
 
 export const tasksPanelFiltersModalChipClass = (active: boolean) =>
   cn(
-    'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-sans text-xs transition-[box-shadow,color] sm:gap-2 sm:px-3 sm:py-1.5',
+    'inline-flex items-center gap-1.5 rounded-selector px-2.5 py-1 font-sans text-xs transition-[box-shadow,color] sm:gap-2 sm:px-3 sm:py-1.5',
     active
       ? cn(
-          'border border-[color-mix(in_srgb,#ffffff_35%,transparent)]',
-          'bg-[var(--workspace-panel-accent)] font-semibold text-[#ffffff]',
+          'border border-primary/35 bg-primary font-semibold text-primary-content',
           badgeRaised
         )
       : cn(
-          'border border-[var(--workspace-panel-border)]',
-          'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))] font-medium text-[var(--workspace-panel-text-muted)]',
+          'border border-base-300 bg-base-300/25 font-medium text-base-content/72',
           neuInset,
-          'hover:text-[var(--workspace-panel-text)]'
+          'hover:text-base-content'
         )
   );
 
@@ -232,8 +227,8 @@ export const tasksPanelFiltersModalChipCountClass = (active: boolean) =>
   cn(
     'rounded-full px-1.5 py-0.5 font-sans text-[10px] font-bold tabular-nums leading-none',
     active
-      ? 'bg-[#ffffff] text-[var(--workspace-panel-accent)]'
-      : 'border border-[var(--workspace-panel-border)] bg-[var(--workspace-panel-accent)] text-[#ffffff]'
+      ? 'bg-primary-content text-primary'
+      : 'border border-base-300 bg-primary text-primary-content'
   );
 
 export const tasksPanelFiltersModalPresetClass = cn(
@@ -242,17 +237,16 @@ export const tasksPanelFiltersModalPresetClass = cn(
 );
 
 export const tasksPanelFiltersModalPresetNameClass =
-  'text-[var(--workspace-panel-text-muted)] transition-colors hover:text-[var(--workspace-panel-text)]';
+  'text-base-content/72 transition-colors hover:text-base-content';
 
 export const tasksPanelFiltersModalPresetDeleteClass =
-  'text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)] opacity-0 transition-[color,opacity] group-hover:opacity-100 hover:text-error';
+  'text-base-content/55 opacity-0 transition-[color,opacity] group-hover:opacity-100 hover:text-error';
 
 export const tasksPanelFiltersModalInputClass = cn(
-  'h-9 flex-1 rounded-full border pl-3 font-sans text-xs',
-  'border-[var(--workspace-panel-border)]',
-  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))] text-[var(--workspace-panel-text)] placeholder:text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]',
+  'h-9 flex-1 rounded-selector border pl-3 font-sans text-xs',
+  'border-base-300 bg-base-300/25 text-base-content placeholder:text-base-content/55',
   neuInset,
-  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--workspace-panel-accent)_40%,transparent)]'
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40'
 );
 
 export const tasksPanelFiltersModalSaveBtnClass = cn(
@@ -269,31 +263,30 @@ export const tasksPanelFiltersModalCancelIconBtnClass = cn(
 
 export const tasksPanelExportModalContentClass = 'space-y-4 p-1 font-sans';
 
-export const tasksPanelExportModalInfoClass = 'font-sans text-sm text-[var(--workspace-panel-text-muted)]';
+export const tasksPanelExportModalInfoClass = 'font-sans text-sm text-base-content/72';
 
-export const tasksPanelExportModalInfoStrongClass = 'font-semibold text-[var(--workspace-panel-text)]';
+export const tasksPanelExportModalInfoStrongClass = 'font-semibold text-base-content';
 
 export const tasksPanelExportModalFieldLabelClass = tasksPanelFiltersModalSectionLabelClass;
 
 export const tasksPanelExportFormatStripClass = cn(
-  'grid grid-cols-2 gap-1 rounded-[var(--leve-header-radius)] p-1.5 sm:grid-cols-3',
-  'border border-[var(--workspace-panel-border)] bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))]',
+  'grid grid-cols-2 gap-1 rounded-box p-1.5 sm:grid-cols-3',
+  'border border-base-300 bg-base-300/25',
   neuInset
 );
 
 export const tasksPanelExportFormatOptionClass = (active: boolean) =>
   cn(
-    'min-h-[44px] rounded-full px-3 py-2 text-center font-sans text-sm font-semibold transition-[box-shadow,color] sm:min-h-9',
+    'min-h-[44px] rounded-selector px-3 py-2 text-center font-sans text-sm font-semibold transition-[box-shadow,color] sm:min-h-9',
     active
       ? cn(
-          'border border-[color-mix(in_srgb,#ffffff_35%,transparent)]',
-          'bg-[var(--workspace-panel-accent)] text-[#ffffff]',
+          'border border-primary/35 bg-primary text-primary-content',
           badgeRaised
         )
-      : 'text-[var(--workspace-panel-text-muted)] hover:text-[var(--workspace-panel-text)]'
+      : 'text-base-content/72 hover:text-base-content'
   );
 
-export const tasksPanelExportModalHintClass = 'font-sans text-xs text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]';
+export const tasksPanelExportModalHintClass = 'font-sans text-xs text-base-content/55';
 
 export const tasksPanelExportModalSubmitClass = cn(
   tasksViewHeaderPrimaryBtnClass,
@@ -303,19 +296,18 @@ export const tasksPanelExportModalSubmitClass = cn(
 /* ── Formulários em modais (tarefa, regras) ──────────────────── */
 
 export const tasksPanelFormFieldLabelClass =
-  'mb-2 block font-sans text-[10px] font-bold uppercase tracking-widest text-[var(--workspace-panel-text-muted)]';
+  'mb-2 block font-sans text-[10px] font-bold uppercase tracking-widest text-base-content/72';
 
 export const tasksPanelFormFieldLabelAccentClass = cn(
   tasksPanelFormFieldLabelClass,
-  'flex items-center gap-2 !text-[var(--workspace-panel-accent)]'
+  'flex items-center gap-2 !text-primary'
 );
 
 export const tasksPanelFormInputClass = cn(
-  'w-full min-h-[44px] rounded-[var(--leve-header-radius)] border px-3 font-sans text-sm',
-  'border-[var(--workspace-panel-border)]',
-  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))] text-[var(--workspace-panel-text)] placeholder:text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]',
+  'w-full min-h-[44px] rounded-field border px-3 font-sans text-sm',
+  'border-base-300 bg-base-300/25 text-base-content placeholder:text-base-content/55',
   neuInset,
-  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--workspace-panel-accent)_40%,transparent)]'
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40'
 );
 
 export const tasksPanelFormTextareaClass = cn(
@@ -324,27 +316,26 @@ export const tasksPanelFormTextareaClass = cn(
 );
 
 export const tasksPanelFormSelectClass = cn(
-  'tasks-panel-neu-select w-full min-h-[44px] font-sans text-sm text-[var(--workspace-panel-text)]',
-  'border-[var(--workspace-panel-border)]'
+  'tasks-panel-neu-select w-full min-h-[44px] font-sans text-sm text-base-content',
+  'border-base-300'
 );
 
-export const tasksPanelFormMutedClass = 'font-sans text-xs text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]';
+export const tasksPanelFormMutedClass = 'font-sans text-xs text-base-content/55';
 
-export const tasksPanelFormLinkAccentClass = 'text-[var(--workspace-panel-accent)]';
+export const tasksPanelFormLinkAccentClass = 'text-primary';
 
-export const tasksPanelFormDividerClass =
-  'border-t border-[var(--workspace-panel-border)]';
+export const tasksPanelFormDividerClass = 'border-t border-base-300';
 
 export const tasksPanelFormListShellClass = cn(
-  'max-h-48 overflow-y-auto divide-y rounded-[var(--leve-header-radius)]',
-  'border border-[var(--workspace-panel-border)] bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))]',
+  'max-h-48 overflow-y-auto divide-y rounded-box',
+  'border border-base-300 bg-base-300/25',
   neuInset,
-  'divide-[var(--workspace-panel-border)]'
+  'divide-base-300'
 );
 
-export const tasksPanelFormListItemTitleClass = 'font-medium text-[var(--workspace-panel-text)]';
+export const tasksPanelFormListItemTitleClass = 'font-medium text-base-content';
 
-export const tasksPanelFormListItemMetaClass = 'block text-xs text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]';
+export const tasksPanelFormListItemMetaClass = 'block text-xs text-base-content/55';
 
 export const tasksPanelFormFooterClass = cn(
   tasksPanelFormDividerClass,
@@ -360,13 +351,13 @@ export const tasksPanelFormSaveBtnClass = cn(tasksViewHeaderPrimaryBtnClass, 'mi
 export const tasksPanelToolbarShellClass = cn(
   'tasks-panel-toolbar-compact',
   appNeuActionTrackClass,
-  'flex flex-wrap items-center justify-end gap-1 px-1 py-0.5 sm:gap-1.5 sm:px-1.5 sm:py-1',
+  'flex flex-wrap items-center justify-end gap-1 rounded-selector border border-base-300/55 bg-base-300/25 px-1 py-0.5 sm:gap-1.5 sm:px-1.5 sm:py-1',
   'w-full'
 );
 
 export const tasksPanelToolbarExportBtnClass = cn(
   appNeuActionBtnClass,
-  'tasks-panel-toolbar-export-btn min-h-7 gap-1 px-2 py-0.5 text-[11px] font-semibold',
+  'tasks-panel-toolbar-export-btn min-h-7 gap-1 px-2 py-0.5 text-[11px] font-semibold text-base-content/72 hover:text-primary',
   '[&_svg]:h-3.5 [&_svg]:w-3.5'
 );
 
@@ -375,51 +366,50 @@ export const tasksPanelToolbarFieldClass = cn(
 );
 
 export const tasksPanelToolbarLabelClass = cn(
-  'shrink-0 font-sans text-[9px] font-semibold uppercase leading-none tracking-wide text-[var(--workspace-panel-text-muted)]'
+  'shrink-0 font-sans text-[9px] font-semibold uppercase leading-none tracking-wide text-base-content/72'
 );
 
 export const tasksPanelToolbarSelectClass = cn(
   'tasks-panel-neu-select tasks-panel-toolbar-select app-element-typography h-7 min-h-7 w-auto min-w-[4.75rem]',
-  'border-0 px-2 text-[11px] text-[var(--workspace-panel-text)]'
+  'border-0 px-2 text-[11px] text-base-content'
 );
 
 /* ── Seções colapsáveis (Favoritos / Outras) ─────────────────── */
 
 export const tasksPanelSectionToggleClass = cn(
   'app-element-typography flex w-full min-w-0 items-center justify-between gap-2',
-  'rounded-[var(--leve-header-radius)] px-3 py-2.5 max-md:px-2 max-md:py-1.5',
-  'border border-[var(--workspace-panel-border)]',
-  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))] text-[var(--workspace-panel-text-muted)]',
+  'rounded-box px-3 py-2.5 max-md:px-2 max-md:py-1.5',
+  'border border-base-300 bg-base-300/25 text-base-content/72',
   neuInset,
   'transition-[box-shadow,color] duration-200',
-  'hover:text-[var(--workspace-panel-text)]',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--workspace-panel-accent)_35%,transparent)]',
+  'hover:text-base-content',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35',
   'active:shadow-[var(--workspace-panel-neu-inset)]'
 );
 
-export const tasksPanelSectionTitleClass = 'text-[var(--workspace-panel-accent)]';
+export const tasksPanelSectionTitleClass = 'text-primary';
 
 export const tasksPanelSectionCountClass =
-  'shrink-0 font-medium normal-case tracking-normal text-[var(--workspace-panel-text-muted)]';
+  'shrink-0 font-medium normal-case tracking-normal text-base-content/72';
 
 export const tasksPanelSectionChevronClass =
-  'h-4 w-4 shrink-0 text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)] transition-transform duration-200';
+  'h-4 w-4 shrink-0 text-base-content/55 transition-transform duration-200';
 
 /* ── Chrome do ProjectView (breadcrumbs, abas, backlog) ──────── */
 
 export const projectChromeHeaderShellClass = cn(
-  'project-chrome-neu-shell tasks-panel-dark-surface',
+  'project-chrome-neu-shell',
   'mb-3 min-w-0 max-w-full font-sans px-3 py-2 sm:mb-4 sm:px-4 sm:py-3',
   'max-md:mb-1.5 max-md:px-1.5 max-md:py-1',
-  'rounded-[var(--leve-header-radius)]'
+  'rounded-box rounded-[var(--project-card-radius)] border border-base-300 bg-base-100'
 );
 
 export const projectChromeHeaderInnerClass = 'max-md:gap-0';
 
 export const projectChromeBreadcrumbsClass = cn(
   'project-chrome-breadcrumbs workspace-chrome-inset',
-  'rounded-full px-2.5 py-1.5 sm:px-3 sm:py-2',
-  'max-md:rounded-lg max-md:px-1.5 max-md:py-0.5'
+  'rounded-[0.5rem] px-2.5 py-1.5 sm:px-3 sm:py-2',
+  'max-md:rounded-[0.5rem] max-md:px-1.5 max-md:py-0.5'
 );
 
 export const projectChromeToolbarClass = cn(
@@ -482,7 +472,7 @@ export const projectChromeTaskTabDividerClass =
 export const projectChromeTaskTabCloseBtnClass = cn(
   'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full',
   'text-[var(--workspace-panel-text-muted)] hover:bg-[color-mix(in_srgb,var(--workspace-panel-text)_8%,transparent)]',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--leve-header-accent)]'
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40'
 );
 
 export const projectChromeScrollFadeFromClass =
@@ -559,18 +549,17 @@ export const tasksViewPageSubtitleClass = cn(
   'max-md:text-xs max-md:leading-snug'
 );
 
-/* ── Backlog (filtros + lista) ───────────────────────────────── */
+/* ── Backlog (filtros + lista) — tokens DaisyUI `leve` ───────── */
 
 export const backlogToolbarPanelClass = cn(
-  'app-element-typography w-full min-w-0 rounded-[var(--leve-header-radius)] px-2 py-1.5 sm:px-2.5',
-  'border border-[var(--workspace-panel-border)]',
-  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))]',
+  'app-element-typography w-full min-w-0 rounded-box px-2 py-1.5 sm:px-2.5',
+  'border border-base-300 bg-base-300/25',
   neuInset
 );
 
 export const backlogToolbarHelpClass = cn(
-  'text-[10px] leading-snug text-[var(--workspace-panel-text-muted)] sm:text-[11px]',
-  '[&_strong]:font-semibold [&_strong]:text-[var(--workspace-panel-text)]'
+  'text-[10px] leading-snug text-base-content/72 sm:text-[11px]',
+  '[&_strong]:font-semibold [&_strong]:text-base-content'
 );
 
 export const backlogToolbarGridClass = cn(
@@ -579,56 +568,50 @@ export const backlogToolbarGridClass = cn(
 
 export const backlogToolbarSelectClass = cn(
   'tasks-panel-neu-select backlog-toolbar-select app-element-typography h-7 w-full min-w-0',
-  'text-[11px] font-semibold leading-tight text-[var(--workspace-panel-text)]',
-  'border-[var(--workspace-panel-border)]'
+  'text-[11px] font-semibold leading-tight text-base-content',
+  'border-base-300'
 );
 
-export const backlogToolbarLabelClass = 'text-[10px] font-medium leading-none text-[var(--workspace-panel-text-muted)]';
+export const backlogToolbarLabelClass = 'text-[10px] font-medium leading-none text-base-content/72';
 
 export const backlogToolbarFieldClass = 'flex min-w-0 w-full flex-col gap-0.5';
 
 export const backlogToolbarFieldHeaderClass = 'flex min-w-0 items-center justify-between gap-1';
 
 export const backlogToolbarClearLinkClass = cn(
-  'shrink-0 text-[10px] font-medium leading-none text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]',
-  'underline-offset-2 hover:text-[var(--workspace-panel-accent)] hover:underline disabled:opacity-50'
+  'shrink-0 text-[10px] font-medium leading-none text-base-content/55',
+  'underline-offset-2 hover:text-primary hover:underline disabled:opacity-50'
 );
 
 export const backlogListSurfaceClass = cn(
   'backlog-list-surface tasks-panel-dark-surface app-element-typography overflow-hidden',
-  'rounded-[var(--leve-header-radius)]',
-  'border border-[var(--workspace-panel-border)]',
-  'bg-[var(--workspace-panel-bg)]',
+  'rounded-box border border-base-300 bg-base-100',
   neuRaised
 );
 
 export const backlogListSurfaceHeaderClass = cn(
   'flex flex-wrap items-center justify-between gap-2 border-0 px-3 py-2 sm:px-4',
-  'border-b border-[var(--workspace-panel-border)]',
-  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))]',
+  'border-b border-base-300 bg-base-300/25',
   neuInset
 );
 
 export const backlogListSurfaceTitleClass =
-  'text-xs font-semibold uppercase tracking-wider text-[var(--workspace-panel-text-muted)]';
+  'text-xs font-semibold uppercase tracking-wider text-base-content/72';
 
-export const backlogListSurfaceMetaClass = 'text-xs font-medium text-[var(--workspace-panel-text)]';
+export const backlogListSurfaceMetaClass = 'text-xs font-medium text-base-content';
 
-export const backlogListSurfaceMetaMutedClass = 'text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]';
+export const backlogListSurfaceMetaMutedClass = 'text-base-content/55';
 
-export const backlogListSurfaceBodyClass = cn(
-  'min-w-0 bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_14%,var(--workspace-panel-bg))] p-2 sm:p-4'
-);
+export const backlogListSurfaceBodyClass = cn('min-w-0 bg-base-300/15 p-2 sm:p-4');
 
 export const backlogActiveChipClass = cn(
-  'inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium text-[var(--workspace-panel-text-muted)]',
-  'border border-[var(--workspace-panel-border)]',
-  'bg-[var(--workspace-panel-bg)]',
+  'inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium text-base-content/72',
+  'border border-base-300 bg-base-100',
   neuRaised
 );
 
 export const backlogToolbarChipsRowClass = cn(
-  'mt-1 flex flex-wrap items-center gap-1 border-t border-[var(--workspace-panel-border)] pt-1'
+  'mt-1 flex flex-wrap items-center gap-1 border-t border-base-300 pt-1'
 );
 
 export const backlogClearFiltersLinkClass =
@@ -636,45 +619,44 @@ export const backlogClearFiltersLinkClass =
 
 export const backlogChipRemoveBtnClass = cn(
   'flex h-4 w-4 items-center justify-center rounded-full',
-  'hover:bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_30%,var(--workspace-panel-bg))]'
+  'hover:bg-base-300/40'
 );
 
 export const tasksPanelBacklogSprintHeadingClass = (active: boolean) =>
   cn(
     'mb-3 flex flex-wrap items-center gap-2 font-heading text-xs font-bold uppercase tracking-wider',
-    active ? 'text-[var(--workspace-panel-accent)]' : 'text-[var(--workspace-panel-text-muted)]'
+    active ? 'text-primary' : 'text-base-content/72'
   );
 
 export const tasksPanelBacklogSprintCountClass =
-  'font-medium normal-case tracking-normal text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]';
+  'font-medium normal-case tracking-normal text-base-content/55';
 
 export const tasksPanelBacklogSprintActiveBadgeClass = cn(
-  'rounded-full border border-[color-mix(in_srgb,#ffffff_30%,transparent)]',
-  'bg-[var(--workspace-panel-accent)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-[#ffffff]',
+  'rounded-full border border-primary-content/30',
+  'bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-primary-content',
   badgeRaised
 );
 
-/* ── Barra de filtros compartilhada (Documentos, Regras) ───────── */
+/* ── Barra de filtros compartilhada (Documentos, Regras) — tokens DaisyUI `leve` ─ */
 
 export const tasksPanelFiltersBarClass = cn(
-  'tasks-panel-filters-bar tasks-panel-dark-surface flex flex-col gap-3 rounded-[var(--leve-header-radius)] p-3 font-sans sm:flex-row sm:flex-wrap sm:items-end lg:gap-4',
-  'border border-[var(--workspace-panel-border)]',
-  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))]',
+  'tasks-panel-filters-bar tasks-panel-dark-surface flex flex-col gap-3 rounded-box p-3 font-sans sm:flex-row sm:flex-wrap sm:items-end lg:gap-4',
+  'border border-base-300 bg-base-300/25',
   'max-md:gap-2 max-md:p-2',
   neuInset
 );
 
 export const tasksPanelFilterLabelClass =
-  'mb-1.5 block font-sans text-xs font-medium text-[var(--workspace-panel-text-muted)]';
+  'mb-1.5 block font-sans text-xs font-medium text-base-content/72';
 
 export const tasksPanelFilterSelectClass = cn(
-  'tasks-panel-neu-select app-element-typography h-10 min-h-0 w-full font-sans text-sm text-[var(--workspace-panel-text)]',
-  'border-[var(--workspace-panel-border)]',
+  'tasks-panel-neu-select app-element-typography h-10 min-h-0 w-full font-sans text-sm text-base-content',
+  'border-base-300',
   'max-md:h-9 max-md:text-xs'
 );
 
 export const tasksPanelFilterManageLinkClass = cn(
-  'shrink-0 font-sans text-xs font-semibold text-[var(--workspace-panel-accent)] hover:underline'
+  'shrink-0 font-sans text-xs font-semibold text-primary hover:underline'
 );
 
 export const tasksPanelFilterPillClass = (active: boolean) =>
@@ -682,17 +664,16 @@ export const tasksPanelFilterPillClass = (active: boolean) =>
     'rounded-full px-3 py-1.5 font-sans text-xs transition-[box-shadow,color]',
     active
       ? cn(
-          'border border-[color-mix(in_srgb,#ffffff_35%,transparent)]',
-          'bg-[var(--workspace-panel-accent)] font-semibold text-[#ffffff]',
+          'border border-primary-content/35 bg-primary font-semibold text-primary-content',
           badgeRaised
         )
       : cn(
-          'border border-transparent font-medium text-[var(--workspace-panel-text-muted)]',
-          'hover:text-[var(--workspace-panel-text)]'
+          'border border-transparent font-medium text-base-content/72',
+          'hover:text-base-content'
         )
   );
 
-/* ── Documentos ──────────────────────────────────────────────── */
+/* ── Documentos — tokens DaisyUI `leve` ──────────────────────── */
 
 export const documentsPageHeaderClass = tasksViewPageHeaderShellClass;
 
@@ -702,84 +683,78 @@ export const documentsJiraBadgeClass = tasksViewPageJiraBadgeClass;
 
 export const documentsPageSubtitleClass = tasksViewPageSubtitleClass;
 
-export const documentsPageMutedClass = 'font-sans text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]';
+export const documentsPageMutedClass = 'font-sans text-base-content/55';
 
 export const documentsFiltersPanelClass = tasksPanelCardClass;
 
 export const documentsEyebrowClass = cn(
-  'inline-block border-b border-[var(--workspace-panel-accent)] pb-1',
-  'font-sans text-[10px] font-extrabold uppercase tracking-wider text-[var(--workspace-panel-accent)] sm:text-[11px]'
+  'inline-block border-b border-primary pb-1',
+  'font-sans text-[10px] font-extrabold uppercase tracking-wider text-primary sm:text-[11px]'
 );
 
 export const documentsSectionShellClass = cn(
-  'tasks-panel-dark-surface rounded-[var(--leve-header-radius)] font-sans p-3 sm:p-3.5',
-  'border border-[var(--workspace-panel-border)]',
-  'bg-[var(--workspace-panel-bg)]',
+  'tasks-panel-dark-surface rounded-box font-sans p-3 sm:p-3.5',
+  'border border-base-300 bg-base-100',
   neuRaised
 );
 
-export const documentsSectionHeaderDividerClass =
-  'border-b border-[var(--workspace-panel-border)]';
+export const documentsSectionHeaderDividerClass = 'border-b border-base-300';
 
 export const documentsSectionHeaderClass = cn(documentsSectionHeaderDividerClass, 'pb-2');
 
 export const documentsSectionTitleClass =
-  'mt-1 font-sans text-base font-bold text-[var(--workspace-panel-text)] sm:text-lg';
+  'mt-1 font-sans text-base font-bold text-base-content sm:text-lg';
 
 export const documentsSummaryStripClass = cn(
-  'mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[var(--leve-header-radius)] px-3 py-2.5 sm:px-3.5',
-  'border border-[var(--workspace-panel-border)]',
-  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))]',
+  'mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-box px-3 py-2.5 sm:px-3.5',
+  'border border-base-300 bg-base-300/25',
   neuInset
 );
 
 export const documentsSummaryStatsClass =
-  'flex flex-wrap items-center gap-x-4 gap-y-1 font-sans text-sm text-[var(--workspace-panel-text-muted)]';
+  'flex flex-wrap items-center gap-x-4 gap-y-1 font-sans text-sm text-base-content/72';
 
-export const documentsSummaryStatStrongClass = 'text-[var(--workspace-panel-text)]';
+export const documentsSummaryStatStrongClass = 'text-base-content';
 
-export const documentsSummaryStatIconAccentClass = 'h-4 w-4 text-[var(--workspace-panel-accent)]';
+export const documentsSummaryStatIconAccentClass = 'h-4 w-4 text-primary';
 
 export const documentsSummaryStatIconSuccessClass = 'h-4 w-4 text-success';
 
 export const documentsAlertSuccessClass = cn(
-  'flex items-start gap-2 rounded-[var(--leve-header-radius)] px-3 py-2',
-  'border border-[color-mix(in_srgb,#10b981_35%,transparent)]',
-  'bg-[color-mix(in_srgb,#10b981_12%,var(--workspace-panel-bg))]',
+  'flex items-start gap-2 rounded-box px-3 py-2',
+  'border border-success/35 bg-success/12',
   neuInset
 );
 
 export const documentsAlertInfoClass = cn(
-  'flex items-start gap-2 rounded-[var(--leve-header-radius)] px-3 py-2',
-  'border border-[color-mix(in_srgb,var(--workspace-panel-accent)_35%,transparent)]',
-  'bg-[color-mix(in_srgb,var(--workspace-panel-accent)_10%,var(--workspace-panel-bg))]',
+  'flex items-start gap-2 rounded-box px-3 py-2',
+  'border border-primary/35 bg-primary/10',
   neuInset
 );
 
-export const documentsBodyTextClass = 'font-sans text-sm font-medium leading-snug text-[var(--workspace-panel-text)]';
+export const documentsBodyTextClass = 'font-sans text-sm font-medium leading-snug text-base-content';
 
-export const documentsMutedTextClass = 'font-sans text-xs text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]';
+export const documentsMutedTextClass = 'font-sans text-xs text-base-content/55';
 
-export const documentsStrongTextClass = 'font-semibold text-[var(--workspace-panel-text)]';
+export const documentsStrongTextClass = 'font-semibold text-base-content';
 
 export const documentsProgressTrackClass = cn(
-  'relative h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_45%,var(--workspace-panel-bg))]',
+  'relative h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-base-300/45',
   neuInset
 );
 
 export const documentsProgressFillClass = 'h-full w-full rounded-full bg-success';
 
 export const documentsProgressPercentClass =
-  'shrink-0 font-sans text-xs font-bold tabular-nums text-[var(--workspace-panel-text-muted)]';
+  'shrink-0 font-sans text-xs font-bold tabular-nums text-base-content/72';
 
 export const documentsPrimaryBtnClass = tasksViewHeaderPrimaryBtnClass;
 
 export const documentsOutlineBtnClass = cn(
   'inline-flex min-h-9 items-center gap-1.5 rounded-full px-4 py-2 font-sans text-sm font-semibold',
-  'border border-[var(--workspace-panel-border)]',
-  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))] text-[var(--workspace-panel-text-muted)]',
+  'border border-base-300 bg-base-300/25 text-base-content/72',
   neuInset,
-  'hover:text-[var(--workspace-panel-text)]'
+  'hover:text-base-content'
 );
 
 export const documentsSpecRemoveBtnClass = cn(
@@ -798,30 +773,28 @@ export const documentsFilterRowClass =
 
 export const documentsFilterPillsStripClass = cn(
   'inline-flex max-w-full flex-wrap items-center gap-1.5 rounded-full p-1.5',
-  'border border-[var(--workspace-panel-border)]',
-  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))]',
+  'border border-base-300 bg-base-300/25',
   neuInsetDeep
 );
 
 export const documentsFilterPillsGroupClass = cn(documentsFilterPillsStripClass, 'sm:gap-2');
 
 export const documentsCardClass = cn(
-  'tasks-panel-dark-surface rounded-[var(--leve-header-radius)] p-3 sm:p-3.5',
-  'border border-[var(--workspace-panel-border)]',
-  'bg-[var(--workspace-panel-bg)]',
+  'tasks-panel-dark-surface rounded-box p-3 sm:p-3.5',
+  'border border-base-300 bg-base-100',
   neuRaised,
   'transition-[box-shadow] duration-200 hover:brightness-[1.02]'
 );
 
 export const documentsCardTitleClass = cn(
-  'line-clamp-2 border-b border-[var(--workspace-panel-border)] pb-2',
-  'font-heading text-sm font-bold leading-snug text-[var(--workspace-panel-text)] sm:text-base'
+  'line-clamp-2 border-b border-base-300 pb-2',
+  'font-heading text-sm font-bold leading-snug text-base-content sm:text-base'
 );
 
-export const documentsCardMetaClass = 'mt-1.5 text-[11px] leading-relaxed text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]';
+export const documentsCardMetaClass = 'mt-1.5 text-[11px] leading-relaxed text-base-content/55';
 
 export const documentsCardActionsClass = cn(
-  'mt-2.5 flex flex-wrap gap-1.5 border-t border-[var(--workspace-panel-border)] pt-2.5'
+  'mt-2.5 flex flex-wrap gap-1.5 border-t border-base-300 pt-2.5'
 );
 
 export const documentsActionOutlineClass = cn(
@@ -842,14 +815,10 @@ export const documentsActionRemoveClass = cn(
 export type DocumentCategoryId = 'requisitos' | 'testes' | 'arquitetura' | 'outros';
 
 const documentsCategoryBadgeMap: Record<DocumentCategoryId, string> = {
-  requisitos:
-    'border-[var(--workspace-panel-border)] bg-[color-mix(in_srgb,var(--workspace-panel-text)_6%,var(--workspace-panel-bg))] text-[var(--workspace-panel-text)]',
-  testes:
-    'border-[color-mix(in_srgb,#10b981_35%,transparent)] bg-[color-mix(in_srgb,#10b981_15%,var(--workspace-panel-bg))] text-success',
-  arquitetura:
-    'border-[color-mix(in_srgb,var(--workspace-panel-accent)_35%,transparent)] bg-[color-mix(in_srgb,var(--workspace-panel-accent)_12%,var(--workspace-panel-bg))] text-[var(--workspace-panel-accent)]',
-  outros:
-    'border-[var(--workspace-panel-border)] bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))] text-[var(--workspace-panel-text-muted)]',
+  requisitos: 'border-base-300 bg-base-content/6 text-base-content',
+  testes: 'border-success/35 bg-success/15 text-success',
+  arquitetura: 'border-primary/35 bg-primary/12 text-primary',
+  outros: 'border-base-300 bg-base-300/25 text-base-content/72',
 };
 
 export const documentsCategoryBadgeClass = (category: DocumentCategoryId) =>
@@ -859,40 +828,38 @@ export const documentsCategoryBadgeClass = (category: DocumentCategoryId) =>
   );
 
 export const documentsAnalysisBadgeClass = cn(
-  'inline-flex rounded-full border border-[color-mix(in_srgb,#10b981_35%,transparent)]',
-  'bg-[color-mix(in_srgb,#10b981_12%,var(--workspace-panel-bg))] px-2 py-0.5 text-[10px] font-semibold text-success'
+  'inline-flex rounded-full border border-success/35',
+  'bg-success/12 px-2 py-0.5 text-[10px] font-semibold text-success'
 );
 
 export const documentsModalSectionLabelClass = documentsEyebrowClass;
 
-export const documentsModalMetaClass = 'text-sm text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]';
+export const documentsModalMetaClass = 'text-sm text-base-content/55';
 
-export const documentsModalPreClass = 'whitespace-pre-wrap font-mono text-sm text-[var(--workspace-panel-text)]';
+export const documentsModalPreClass = 'whitespace-pre-wrap font-mono text-sm text-base-content';
 
 export const documentsModalPreviewInsetClass = cn(
-  'max-h-96 overflow-y-auto rounded-[var(--leve-header-radius)] p-4',
-  'border border-[var(--workspace-panel-border)]',
-  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))] text-[var(--workspace-panel-text)]',
+  'max-h-96 overflow-y-auto rounded-box p-4',
+  'border border-base-300 bg-base-300/25 text-base-content',
   neuInset
 );
 
 export const documentsModalMediaClass = cn(
-  'h-auto max-w-full rounded-[var(--leve-header-radius)]',
-  'border border-[var(--workspace-panel-border)]'
+  'h-auto max-w-full rounded-box',
+  'border border-base-300'
 );
 
 export const documentsModalIframeClass = cn(
-  'h-96 w-full rounded-[var(--leve-header-radius)]',
-  'border border-[var(--workspace-panel-border)]'
+  'h-96 w-full rounded-box',
+  'border border-base-300'
 );
 
 export const documentsModalFieldLabelClass =
-  'mb-2 block font-sans text-sm font-semibold text-[var(--workspace-panel-text-muted)]';
+  'mb-2 block font-sans text-sm font-semibold text-base-content/72';
 
 export const documentsModalInputClass = cn(
-  'app-input w-full rounded-[var(--leve-header-radius)] border',
-  'border-[var(--workspace-panel-border)]',
-  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))] text-[var(--workspace-panel-text)] placeholder:text-[color-mix(in_srgb,var(--workspace-panel-text-muted)_75%,transparent)]',
+  'app-input w-full rounded-field border border-base-300',
+  'bg-base-300/25 text-base-content placeholder:text-base-content/55',
   neuInset
 );
 
@@ -902,7 +869,7 @@ export const documentsModalTextareaClass = cn(
 );
 
 export const documentsModalFooterClass = cn(
-  'flex justify-end gap-2 border-t border-[var(--workspace-panel-border)] pt-4'
+  'flex justify-end gap-2 border-t border-base-300 pt-4'
 );
 
 export const documentsModalFooterCancelClass = cn(documentsOutlineBtnClass, 'min-h-10 px-5');
@@ -911,12 +878,11 @@ export const documentsModalFooterSaveClass = cn(documentsPrimaryBtnClass, 'min-h
 
 export const documentsAnalysisBodyClass = cn(
   'document-analysis-body jira-rich-content prose prose-sm max-w-none break-words',
-  'rounded-[var(--leve-header-radius)] px-4 py-5 sm:px-6 sm:py-6',
-  'border border-[var(--workspace-panel-border)]',
-  'bg-[color-mix(in_srgb,var(--workspace-panel-neu-dark)_22%,var(--workspace-panel-bg))] text-[var(--workspace-panel-text)]',
+  'rounded-box px-4 py-5 sm:px-6 sm:py-6',
+  'border border-base-300 bg-base-300/25 text-base-content',
   neuInset,
-  'prose-headings:font-heading prose-headings:text-[var(--workspace-panel-text)]',
-  'prose-p:mb-3 prose-p:leading-relaxed prose-p:text-[var(--workspace-panel-text-muted)]',
-  'prose-strong:font-bold prose-strong:text-[var(--workspace-panel-text)]',
-  '[&_a]:text-[var(--workspace-panel-accent)] [&_a]:underline-offset-2'
+  'prose-headings:font-heading prose-headings:text-base-content',
+  'prose-p:mb-3 prose-p:leading-relaxed prose-p:text-base-content/72',
+  'prose-strong:font-bold prose-strong:text-base-content',
+  '[&_a]:text-primary [&_a]:underline-offset-2'
 );

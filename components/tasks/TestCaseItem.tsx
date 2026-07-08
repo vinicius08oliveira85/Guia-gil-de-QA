@@ -62,8 +62,8 @@ function RoteiroStructuredBody({ view }: { view: RoteiroFieldView }) {
             key={`${i}-${row.key}`}
             className="grid gap-1 sm:grid-cols-[minmax(8rem,auto)_1fr] sm:gap-x-3 sm:items-baseline"
           >
-            <dt className="shrink-0 font-semibold text-[var(--leve-header-accent)]">{row.key}</dt>
-            <dd className="leading-relaxed text-[var(--leve-header-text)] [overflow-wrap:anywhere]">
+            <dt className="shrink-0 font-semibold text-primary">{row.key}</dt>
+            <dd className="leading-relaxed text-base-content [overflow-wrap:anywhere]">
               {row.value}
             </dd>
           </div>
@@ -75,8 +75,8 @@ function RoteiroStructuredBody({ view }: { view: RoteiroFieldView }) {
   const ListTag = view.listStyle === 'decimal' ? 'ol' : 'ul';
   const listClass =
     view.listStyle === 'decimal'
-      ? 'list-decimal list-outside ml-5 space-y-2 pl-1 marker:font-semibold marker:text-[var(--leve-header-accent)]'
-      : 'list-disc list-outside ml-4 space-y-2 pl-1 marker:text-[var(--leve-header-accent)]';
+      ? 'list-decimal list-outside ml-5 space-y-2 pl-1 marker:font-semibold marker:text-primary'
+      : 'list-disc list-outside ml-4 space-y-2 pl-1 marker:text-primary';
 
   return (
     <ListTag className={listClass}>
@@ -239,9 +239,9 @@ export const TestCaseItem: React.FC<{
         taskDetailsModalTestCaseCardClass,
         'border-l-4',
         TEST_CASE_STATUS_BORDER[testCase.status],
-        'hover:border-[color-mix(in_srgb,var(--leve-header-accent)_30%,transparent)]',
+        'hover:border-primary/30',
         selected &&
-          'ring-2 ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] ring-offset-2 ring-offset-[var(--leve-header-bg)]'
+          'ring-2 ring-primary/35 ring-offset-2 ring-offset-base-100'
       )}
     >
       <div className="flex min-w-0 items-start gap-2 md:gap-2">
@@ -261,7 +261,7 @@ export const TestCaseItem: React.FC<{
 
         <div className="flex min-w-0 flex-1 flex-col">
           <p
-            className="min-w-0 line-clamp-2 break-words font-sans text-sm font-semibold leading-snug text-[var(--leve-header-text)] sm:text-base"
+            className="min-w-0 line-clamp-2 break-words font-sans text-sm font-semibold leading-snug text-base-content sm:text-base"
             title={listRowTitleAttr || undefined}
           >
             <span className="sr-only">Título do roteiro: </span>
@@ -285,7 +285,7 @@ export const TestCaseItem: React.FC<{
             <button
               type="button"
               onClick={onEdit}
-              className={cn(taskDetailsModalToolbarIconClass, 'text-[var(--leve-header-accent)]')}
+              className={cn(taskDetailsModalToolbarIconClass, 'text-primary')}
               aria-label="Editar caso de teste"
               title="Editar"
             >
@@ -305,7 +305,7 @@ export const TestCaseItem: React.FC<{
           )}
           {onDelete && (
             <>
-              <div className="mx-0.5 h-4 w-px bg-[var(--leve-header-border)]" aria-hidden />
+              <div className="mx-0.5 h-4 w-px bg-base-300" aria-hidden />
               <button
                 type="button"
                 onClick={onDelete}
@@ -411,7 +411,7 @@ export const TestCaseItem: React.FC<{
         >
           <div className="flex min-w-0 items-center gap-2">
             <ListIcon className="h-4 w-4 shrink-0 task-card-muted" />
-            <span className="font-sans text-xs font-semibold text-[var(--leve-header-text)]">
+            <span className="font-sans text-xs font-semibold text-base-content">
               Roteiro completo
             </span>
           </div>
@@ -427,11 +427,11 @@ export const TestCaseItem: React.FC<{
               </h3>
               <div className={taskDetailsModalRoteiroBlockClass}>
                 {hasStructuredSteps ? (
-                  <ol className="list-decimal list-outside ml-5 space-y-2 pl-1 text-sm font-medium leading-snug marker:font-bold marker:text-[var(--leve-header-accent)]">
+                  <ol className="list-decimal list-outside ml-5 space-y-2 pl-1 text-sm font-medium leading-snug marker:font-bold marker:text-primary">
                     {actionSteps.map((step, i) => (
                       <li
                         key={`action-step-${i}`}
-                        className="break-words pl-0.5 text-[var(--leve-header-text)] [overflow-wrap:anywhere]"
+                        className="break-words pl-0.5 text-base-content [overflow-wrap:anywhere]"
                       >
                         {stripLeadingStepIndex(step)}
                       </li>

@@ -80,7 +80,7 @@ export const TaskCardQaInsights: React.FC<TaskCardQaInsightsProps> = ({
         >
           <div
             className={cn(
-              'flex shrink-0 overflow-hidden rounded-full border border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))]',
+              'flex shrink-0 overflow-hidden rounded-full border border-base-content/10 bg-base-300/25',
               isInline ? 'h-2 w-[4.5rem] shrink-0 sm:w-[5.5rem]' : 'h-2 w-full'
             )}
             role="progressbar"
@@ -110,7 +110,7 @@ export const TaskCardQaInsights: React.FC<TaskCardQaInsightsProps> = ({
           </div>
           <div
             className={cn(
-              'flex shrink-0 items-center font-sans font-semibold tabular-nums leading-none tracking-[var(--letter-spacing)] text-[var(--leve-header-text-muted)]',
+              'flex shrink-0 items-center font-sans font-semibold tabular-nums leading-none tracking-[var(--letter-spacing)] text-base-content/72',
               isInline ? 'gap-1.5 text-[10px]' : 'gap-1.5 text-[10px]'
             )}
           >
@@ -134,7 +134,7 @@ export const TaskCardQaInsights: React.FC<TaskCardQaInsightsProps> = ({
       ) : (
         <span
           className={cn(
-            'shrink-0 rounded-md bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))] font-medium text-[var(--leve-header-text-muted)]',
+            'shrink-0 rounded-md bg-base-300/25 font-medium text-base-content/72',
             isInline ? 'px-1.5 py-0.5 text-[10px]' : 'px-1.5 py-0.5 text-[10px]'
           )}
         >
@@ -165,7 +165,7 @@ export const TaskCardQaInsights: React.FC<TaskCardQaInsightsProps> = ({
               <span
                 className={cn(
                   ALERT_BTN_CLASS,
-                  'bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))] text-[var(--leve-header-text-muted)] ring-1 ring-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]'
+                  'bg-base-300/25 text-base-content/72 ring-1 ring-base-300/35'
                 )}
               >
                 {ALERT_ICONS[alert.id] ?? (

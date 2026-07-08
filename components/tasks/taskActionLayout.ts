@@ -24,6 +24,8 @@ export const TASK_ACTION_SLOT_CLASSNAMES = {
     'max-md:min-w-[6.75rem] max-md:justify-center md:flex md:justify-center md:min-h-[1.5rem] md:items-center',
 } as const;
 
+const taskListChipShadow = 'shadow-[var(--task-list-chip-raised,var(--leve-neu-raised))]';
+
 /** Shell visual do card na listagem (tokens em index.css `.task-card-shell`). */
 export const taskCardShellClass =
   'task-card-shell px-1.5 py-2 transition-[box-shadow] duration-200 max-sm:min-w-0 sm:px-3 sm:py-2';
@@ -58,45 +60,53 @@ export const taskUiTagSuccessClass = 'task-ui-tag-success';
 export const taskToolbarPillGroupClass = 'task-toolbar-pill-group';
 
 /** Borda + raio padrão para painéis compactos (filtros, colapsáveis, anexos). */
-export const taskPanelBorderClass = 'leve-neu-surface-inset rounded-[var(--leve-header-radius)]';
+export const taskPanelBorderClass = cn('task-details-neu-inset rounded-box');
 
 /** Select/input compacto em modais de tarefa. */
 export const taskSelectControlClass = 'app-select';
 
 /** Toolbar da lista de tarefas (exportar, ordenar, agrupar). */
 export const taskListToolbarShellClass = cn(
-  'leve-neu-surface-inset flex flex-wrap items-end justify-end gap-3 rounded-[var(--leve-header-radius)] p-2.5 sm:p-3'
+  'task-details-neu-inset flex flex-wrap items-end justify-end gap-3 rounded-box p-2.5 sm:p-3'
 );
 
 export const taskListToolbarFieldClass = 'flex flex-col gap-1';
 
 export const taskListToolbarLabelClass =
-  'font-sans text-[10px] font-semibold uppercase tracking-wide text-[var(--leve-header-text-muted)]';
+  'font-sans text-[10px] font-semibold uppercase tracking-wide text-base-content/72';
 
 export const taskListToolbarSelectClass = cn(
   'app-select app-element-typography h-9 min-h-0 w-auto min-w-[6.5rem] cursor-pointer',
-  'rounded-full px-3 py-1.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50'
+  'rounded-selector px-3 py-1.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50'
 );
 
 /** Textarea em formulários de caso de teste / modais densos. */
-export const taskTextareaClass =
-  'textarea textarea-bordered app-input w-full font-mono whitespace-pre-wrap text-[var(--leve-header-text)]';
+export const taskTextareaClass = cn(
+  'textarea textarea-bordered app-input w-full rounded-field font-mono whitespace-pre-wrap text-base-content'
+);
 
 /** Painel interno de formulário (prévia, opcionais). */
-export const taskFormInsetPanelClass = `${taskModalSectionClass} leve-neu-surface-inset space-y-3 p-3`;
+export const taskFormInsetPanelClass = cn(
+  taskModalSectionClass,
+  'task-details-neu-inset space-y-3 p-3'
+);
 
 export const taskFormPreviewBoxClass = `${taskPanelBorderClass} mt-2 p-3 text-xs`;
 
-export const taskChipSurfaceClass = 'leve-neu-surface-inset hover:shadow-[var(--leve-neu-raised)]';
+export const taskChipSurfaceClass = cn(
+  'task-details-neu-inset hover:shadow-[var(--leve-neu-hover)]'
+);
 
 export const taskLabelMutedClass = 'task-card-muted';
 
-export const taskTextStrongClass = 'text-[var(--leve-header-text)]';
+export const taskTextStrongClass = 'text-base-content';
 
 export const taskCollapsibleShellClass = `${taskPanelBorderClass} overflow-hidden`;
 
-export const taskCollapsibleHeaderClass =
-  'leve-neu-surface-inset flex w-full items-center justify-between px-sm py-xs transition-[box-shadow] hover:shadow-[var(--leve-neu-raised)]';
+export const taskCollapsibleHeaderClass = cn(
+  'task-details-neu-inset flex w-full items-center justify-between px-sm py-xs',
+  'transition-[box-shadow] hover:shadow-[var(--leve-neu-hover)]'
+);
 
 /** Título da tarefa na linha do card (12px, sem escalar para sm). */
 export const taskCardTitleTypography = `${taskCardTypography} text-xs font-semibold leading-tight`;
@@ -118,7 +128,7 @@ export const taskCardBadgePillShape = `${taskCardMetadataPillLayout} rounded-ful
 /** Story Points e etiquetas técnicas. */
 export const taskCardBadgeTechTypography = `${taskCardTypography} text-[9px] font-bold tabular-nums leading-none`;
 
-export const taskCardBadgeTechShape = `${taskCardMetadataPillLayout} rounded-[var(--radius)] px-1.5`;
+export const taskCardBadgeTechShape = `${taskCardMetadataPillLayout} rounded-selector px-1.5`;
 
 /** Botões da faixa de ações (compactos, alinhados ao texto 10px). */
 export const taskCardButtonTypography = `${taskCardTypography} text-[10px] font-semibold leading-none`;
@@ -127,19 +137,18 @@ export const taskCardButtonShape = 'rounded-full px-2 py-0';
 
 /** Relevo neumórfico — chips da faixa de ações do card (Gerar Tudo, status de teste). */
 export const taskNeuChipRaisedClass = cn(
-  'border border-[color-mix(in_srgb,var(--leve-neu-light)_45%,transparent)]',
-  'bg-[color-mix(in_srgb,var(--leve-neu-dark)_4%,var(--task-card-surface-bg,var(--leve-neu-bg)))]',
-  'shadow-[var(--leve-neu-raised)] transition-[box-shadow,color] duration-200',
-  'hover:shadow-[var(--leve-neu-hover)] active:shadow-[var(--leve-neu-inset)]'
+  'border border-base-300/45 bg-base-100',
+  taskListChipShadow,
+  'transition-[box-shadow,color] duration-200',
+  'hover:shadow-[var(--leve-neu-hover)] active:shadow-[var(--task-list-inset,var(--leve-neu-inset))]'
 );
 
 export const taskNeuStatusToneClass = {
-  testar:
-    'text-[color-mix(in_srgb,var(--color-primary-deep)_92%,var(--leve-header-text))]',
+  testar: 'text-base-content',
   testando: 'text-warning',
   pendente: 'text-error',
   teste_concluido: 'text-success',
-  sem_testes: 'text-[var(--leve-header-text-muted)]',
+  sem_testes: 'text-base-content/72',
 } as const;
 
 const taskCardActionChipBase = cn(
@@ -152,12 +161,11 @@ const taskCardActionChipBase = cn(
 
 export const taskCardActionChipCta = cn(
   taskCardActionChipBase,
-  'text-[var(--leve-header-text)] hover:text-[var(--leve-header-accent)]',
-  'focus-visible:ring-[color-mix(in_srgb,var(--leve-header-accent)_30%,transparent)]'
+  'text-base-content/72 hover:text-primary',
+  'focus-visible:ring-primary/30'
 );
 
-export const taskCardActionChipBusy =
-  'ring-1 ring-[color-mix(in_srgb,var(--leve-header-accent)_28%,transparent)]';
+export const taskCardActionChipBusy = 'ring-1 ring-primary/28';
 
 export const taskCardTestStatusChipLayout = cn(
   'inline-flex h-6 max-h-6 min-h-6 min-w-0 w-full justify-center gap-0.5',
@@ -178,12 +186,11 @@ export const taskCardListHoverClass = 'hover:shadow-[var(--leve-neu-hover)]';
 /** Hierarquia por indentação — mesma cor de fundo do card pai. */
 export const taskCardNestedListBgClass = '';
 export const taskCardSelectedClass = cn(
-  'ring-1 ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)]',
+  'ring-1 ring-primary/35',
   'shadow-[var(--leve-neu-hover)]'
 );
 
-export const taskNeuDividerClass =
-  'border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]';
+export const taskNeuDividerClass = 'border-base-300/35';
 
 export const taskTestActionsBarClass = `${taskPanelBorderClass} mt-1.5 flex items-center gap-2 p-2.5`;
 
@@ -210,11 +217,13 @@ export const taskModalIconBtnClass = leveTaskModalIconBtnClass;
 
 export const taskToolsSectionClass = `${taskModalSectionClass} mt-6 overflow-hidden`;
 
-export const taskCountBadgeClass =
-  'leve-neu-pill text-xs font-normal text-[var(--leve-header-text-muted)] px-2 py-0.5';
+export const taskCountBadgeClass = cn(
+  'task-details-neu-chip text-xs font-normal text-base-content/72 px-2 py-0.5'
+);
 
-export const taskDetailsExpandClass =
-  'leve-neu-surface-inset overflow-visible rounded-b-[var(--rounded-box)] border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]';
+export const taskDetailsExpandClass = cn(
+  'task-details-neu-inset overflow-visible rounded-b-box border-t border-base-300/35'
+);
 
 export const taskMetadataStripClass = 'task-card-metadata-strip [scrollbar-width:thin]';
 
@@ -224,18 +233,18 @@ export const taskSubtreeChildrenClass = [
   'ml-0 pl-2 max-sm:ml-0 max-sm:pl-2',
   'sm:ml-3 sm:pl-2.5 md:ml-6 md:pl-3',
   'max-md:rounded-r-lg max-md:pr-1',
-  'border-[color-mix(in_srgb,var(--leve-neu-light)_40%,transparent)]',
+  'border-base-300/40',
 ].join(' ');
 
 export const taskNavFooterClass = cn(leveTaskModalNavFooterClass, 'mt-5');
 
-export const taskIconHoverClass =
-  'hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_12%,var(--leve-neu-bg))]';
+export const taskIconHoverClass = 'hover:bg-base-300/25';
 
-export const taskChipCountClass =
-  'rounded-full bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] px-1.5 py-0.5 text-[10px] tabular-nums text-[var(--leve-header-text-muted)]';
+export const taskChipCountClass = cn(
+  'rounded-full bg-base-300/25 px-1.5 py-0.5 text-[10px] tabular-nums text-base-content/72'
+);
 
-export const gerarTudoRingOffsetClass = 'ring-offset-[var(--leve-neu-bg)]';
+export const gerarTudoRingOffsetClass = 'ring-offset-base-200';
 
 /** Item de menu/dropdown na área de tarefas. */
 export const taskMenuItemClass = 'app-menu-item text-left';
@@ -243,50 +252,55 @@ export const taskMenuItemClass = 'app-menu-item text-left';
 export const taskMenuItemSelectedClass = 'app-menu-item-active';
 
 /** Status neutro (To Do / padrão) em pills e badges. */
-export const taskStatusNeutralClass =
-  'border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] bg-[color-mix(in_srgb,var(--leve-neu-dark)_8%,var(--leve-neu-bg))] text-[var(--leve-header-text-muted)]';
+export const taskStatusNeutralClass = cn(
+  'border-base-300/35 bg-base-300/20 text-base-content/72'
+);
 
-export const taskTypeDefaultStripeClass =
-  'bg-[color-mix(in_srgb,var(--leve-neu-dark)_22%,var(--leve-neu-bg))]';
+export const taskTypeDefaultStripeClass = 'bg-base-300/45';
 
-export const taskTypeDefaultBadgeClass =
-  'badge badge-sm border-0 bg-[color-mix(in_srgb,var(--leve-neu-dark)_18%,var(--leve-neu-bg))] text-[var(--leve-header-text-muted)]';
+export const taskTypeDefaultBadgeClass = cn(
+  'badge badge-sm border-0 bg-base-300/35 text-base-content/72'
+);
 
 /** Bloco mono compacto (prévia de teste, logs). */
 export const taskMonoInsetClass = cn(
-  'leve-neu-surface-inset rounded-[var(--leve-header-radius)] p-xs font-mono text-xs',
-  'text-[var(--leve-header-text-muted)]'
+  'task-details-neu-inset rounded-field p-xs font-mono text-xs text-base-content/72'
 );
 
 export const taskNeuTrackClass = 'workspace-stat-neu-track';
 
 export const taskNeuTrackFillMutedClass =
-  'h-full shrink-0 rounded-r-full bg-[color-mix(in_srgb,var(--leve-neu-dark)_18%,var(--leve-neu-bg))]';
+  'h-full shrink-0 rounded-r-full bg-base-300/35';
 
 /** Chip de ferramenta não selecionado. */
-export const taskToolChipIdleClass =
-  'leve-neu-surface-inset border border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)] text-base-content hover:border-primary/30 hover:shadow-[var(--leve-neu-hover)]';
+export const taskToolChipIdleClass = cn(
+  'task-details-neu-inset border border-base-300/35 text-base-content',
+  'hover:border-primary/30 hover:shadow-[var(--leve-neu-hover)]'
+);
 
 export const taskSegmentedControlClass = cn(
-  'leve-neu-surface-inset flex w-full gap-1 rounded-full p-1'
+  'task-details-neu-inset flex w-full gap-1 rounded-selector p-1'
 );
 
 export const taskSegmentedOptionIdleClass = cn(
-  'inline-flex flex-1 items-center justify-center rounded-full px-2 py-1.5',
-  'font-sans text-xs font-medium text-[var(--leve-header-text-muted)] transition-colors',
-  'hover:text-[var(--leve-header-text)]'
+  'inline-flex flex-1 items-center justify-center rounded-selector px-2 py-1.5',
+  'font-sans text-xs font-medium text-base-content/72 transition-colors',
+  'hover:text-base-content'
 );
 
 export const taskSegmentedOptionActiveClass = cn(
-  'inline-flex flex-1 items-center justify-center rounded-full px-2 py-1.5',
-  'font-sans text-xs font-semibold text-white',
-  'bg-[var(--leve-header-accent)] shadow-[2px_2px_6px_rgba(252,76,2,0.2)]'
+  'inline-flex flex-1 items-center justify-center rounded-selector px-2 py-1.5',
+  'font-sans text-xs font-semibold text-primary-content',
+  'bg-primary',
+  taskListChipShadow
 );
 
-export const taskCardSelectedSurfaceClass =
-  'border-[var(--color-primary)] bg-[color-mix(in_srgb,var(--color-primary)_10%,var(--leve-neu-bg))] shadow-md ring-2 ring-[color-mix(in_srgb,var(--color-primary)_22%,transparent)]';
+export const taskCardSelectedSurfaceClass = cn(
+  'border-primary bg-primary/10 shadow-md ring-2 ring-primary/22'
+);
 
-export const taskCardIdleSurfaceClass =
-  'bg-[color-mix(in_srgb,var(--leve-neu-dark)_4%,var(--leve-neu-bg))] hover:border-[color-mix(in_srgb,var(--color-primary)_40%,transparent)] hover:shadow-[var(--leve-neu-hover)]';
+export const taskCardIdleSurfaceClass = cn(
+  'bg-base-300/10 hover:border-primary/40 hover:shadow-[var(--leve-neu-hover)]'
+);
 
-export const taskNeuBorderDividerClass = 'border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]';
+export const taskNeuBorderDividerClass = 'border-base-300/35';

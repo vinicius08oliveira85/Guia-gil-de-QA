@@ -28,6 +28,7 @@ export const projectsDashboardHeroShellClass = cn(
 
 export const projectsDashboardHeroChromeClass = cn(
   'projects-dashboard-hero-chrome',
+  'rounded-box border border-base-300 bg-base-100',
   'rounded-[var(--project-card-radius)] px-3 py-3 sm:px-5 sm:py-5',
   'flex flex-col gap-4 sm:gap-5 max-md:gap-2 max-md:px-2 max-md:py-2',
   'font-sans'
@@ -39,7 +40,7 @@ export const projectsDashboardEyebrowClass = 'projects-dashboard-eyebrow';
 /** Cabeçalho de seção (grade de projetos). */
 export const projectsDashboardSectionLabelClass = cn(
   'projects-dashboard-section-label font-sans text-xs font-bold uppercase tracking-wider',
-  'text-[var(--brand-text-strong)]'
+  'text-base-content'
 );
 
 export const projectsDashboardSectionDescClass = cn(
@@ -57,17 +58,17 @@ export const projectsDashboardSearchBtnClass = cn(
   'projects-dash-neu-icon-btn shrink-0'
 );
 
-/** Campo de busca local — inset neumórfico (mesmo padrão do select / TasksView). */
+/** Campo de busca local — radius-field 0.5rem (tema leve fiel). */
 export const projectsDashboardSearchFieldClass = cn(
   'projects-dash-neu-search-input',
-  'h-11 w-full rounded-full border-0 py-2 pl-10 pr-3 font-sans text-sm font-medium',
+  'h-11 w-full rounded-[0.5rem] border py-2 pl-10 pr-3 font-sans text-sm font-medium',
   'max-md:h-10 max-md:pl-9 max-md:text-xs',
-  'text-[var(--brand-text-strong)] placeholder:text-[color-mix(in_srgb,var(--brand-text-strong)_62%,transparent)]',
-  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--project-card-accent)_40%,transparent)]'
+  'text-base-content placeholder:text-[color-mix(in_srgb,var(--brand-text-strong)_62%,transparent)]',
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40'
 );
 
 export const projectsDashboardSearchIconClass =
-  'pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color-mix(in_srgb,var(--brand-text-strong)_62%,transparent)]';
+  'pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-base-content/60';
 
 /** Toggle mobile do resumo — mesmo padrão dos filtros rápidos. */
 export function projectsDashboardSummaryToggleClass(expanded: boolean): string {
@@ -79,9 +80,9 @@ export function projectsDashboardSummaryToggleClass(expanded: boolean): string {
 }
 
 export const projectsDashboardSelectClass = cn(
-  'projects-dash-neu-select select select-sm h-9 min-h-[44px] rounded-full border-0',
-  'bg-[var(--workspace-stat-bg)] py-1 pl-2 pr-8 text-xs font-medium text-[var(--workspace-stat-text)]',
-  'focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--workspace-stat-accent)_35%,transparent)]',
+  'projects-dash-neu-select select select-sm h-9 min-h-[44px] rounded-[0.5rem] border border-base-300',
+  'bg-base-100 py-1 pl-2 pr-8 text-xs font-medium text-base-content',
+  'focus:outline-none focus:ring-2 focus:ring-primary/35',
   'max-md:min-h-8 max-md:h-8 sm:min-h-8 sm:h-8'
 );
 
@@ -119,9 +120,23 @@ export function projectsDashboardQuickFiltersCountClass(active: boolean): string
   );
 }
 
-/** Painéis vazios / mensagens na grade — relevo elevado (evitar bg-surface plano). */
+/** Painéis vazios / mensagens na grade — caixa radius-box 1rem. */
 export const projectsDashboardMessagePanelClass = cn(
-  'projects-dash-surface-raised rounded-[var(--projects-dash-radius)] p-4 text-center sm:p-5'
+  'projects-dash-surface-raised rounded-box border border-base-300 bg-base-100',
+  'rounded-[var(--projects-dash-radius)] p-4 text-center sm:p-5'
+);
+
+/** Empty state principal (sem projetos / carregando). */
+export const projectsDashboardEmptyPanelClass = cn(
+  'projects-dash-empty-shell',
+  projectsDashboardMessagePanelClass,
+  'sm:p-8'
+);
+
+/** CTA para limpar filtros no empty state filtrado. */
+export const projectsDashboardClearFiltersBtnClass = cn(
+  projectsDashboardFilterPillClass(false),
+  'mx-auto min-h-[44px] px-4 text-sm'
 );
 
 /** Selects e filtros do dashboard — inset/raised via CSS em index.css (projects-dash-neu-*). */
@@ -131,14 +146,14 @@ export const projectsDashboardNeuFieldHintClass =
 /** Banner de sincronização */
 export function projectsDashboardSyncAlertClass(variant: 'warning' | 'error'): string {
   return cn(
-    'projects-dash-alert mb-4 flex flex-col gap-2 rounded-[var(--projects-dash-radius)] p-3 text-sm sm:flex-row sm:items-center sm:justify-between',
+    'projects-dash-alert mb-4 flex flex-col gap-2 rounded-box border p-3 text-sm sm:flex-row sm:items-center sm:justify-between',
     variant === 'error' ? 'projects-dash-alert-error' : 'projects-dash-alert-warning'
   );
 }
 
 export const projectsDashboardSyncAlertBtnClass = (variant: 'warning' | 'error') =>
   cn(
-    'projects-dash-neu-btn shrink-0 px-3 py-1.5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50',
+    'projects-dash-neu-btn shrink-0 rounded-[0.5rem] px-3 py-1.5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50',
     variant === 'error' ? 'projects-dash-alert-btn-error' : 'projects-dash-alert-btn-warning'
   );
 
