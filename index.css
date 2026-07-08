@@ -572,8 +572,12 @@
   .rounded-selector {
     border-radius: var(--rounded-selector, 2rem);
   }
+  .rounded-t-selector {
+    border-top-left-radius: var(--rounded-selector, 2rem);
+    border-top-right-radius: var(--rounded-selector, 2rem);
+  }
   .rounded-field {
-    border-radius: var(--rounded-field, 1rem);
+    border-radius: var(--rounded-field, 2rem);
   }
 
   /* Scrollbar fina para painéis (ex.: Detalhes do Projeto) */

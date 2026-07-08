@@ -24,7 +24,7 @@ export const notepadMenuTriggerClass = cn(
 
 /** Dropdown do menu. */
 export const notepadMenuDropdownClass = cn(
-  'absolute left-0 top-full z-30 min-w-[11rem] rounded-md border border-base-300',
+  'absolute left-0 top-full z-30 min-w-[11rem] rounded-selector border border-base-300',
   'bg-base-100 py-1',
   neuRaised
 );
@@ -83,7 +83,7 @@ export const notepadPageTabsRowClass = cn(
 );
 
 export const notepadPageTabClass = cn(
-  'group inline-flex max-w-[9rem] shrink-0 items-center gap-1 rounded-t-md border border-b-0 px-3 py-1.5',
+  'group inline-flex max-w-[9rem] shrink-0 items-center gap-1 rounded-t-selector border border-b-0 px-3 py-1.5',
   'font-sans text-xs leading-none text-base-content/72',
   'border-base-300',
   'hover:bg-primary/8'
@@ -104,13 +104,13 @@ export const notepadPageTabCloseClass = cn(
 );
 
 export const notepadPageTabAddClass = cn(
-  'mb-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md',
+  'mb-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-selector',
   'text-base-content/72',
   'hover:bg-primary/10 hover:text-base-content'
 );
 
 export const notepadPageTabRenameInputClass = cn(
-  'w-full min-w-0 rounded border border-base-300 bg-base-100',
+  'w-full min-w-0 rounded-field border border-base-300 bg-base-100',
   'px-1 py-0 font-sans text-xs text-base-content outline-none',
   'focus-visible:ring-1 focus-visible:ring-primary/35'
 );

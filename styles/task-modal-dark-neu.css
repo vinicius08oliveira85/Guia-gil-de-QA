@@ -130,7 +130,7 @@
 
 :is(.task-details-neu-modal, .test-report-neu-modal) :is(.task-details-neu-track, .task-details-neu-tabs-track, .task-details-neu-status-track) {
   border: 1px solid color-mix(in srgb, var(--td-neu-dark) 55%, transparent) !important;
-  border-radius: 9999px !important;
+  border-radius: var(--rounded-selector, 2rem) !important;
   background: color-mix(in srgb, var(--td-neu-dark) 32%, var(--td-neu-bg)) !important;
   box-shadow: var(--td-neu-inset-deep) !important;
 }
@@ -148,7 +148,7 @@
   .btn-outline
 ):not(.task-details-neu-chip--active):not(.task-details-neu-chip--status-active):not(.leve-neu-pill-active):not(.task-details-neu-tab--active) {
   border: 1px solid color-mix(in srgb, var(--td-neu-dark) 42%, transparent) !important;
-  border-radius: 9999px;
+  border-radius: var(--rounded-selector, 2rem);
   background: color-mix(in srgb, var(--td-neu-dark) 10%, var(--td-neu-bg)) !important;
   color: var(--td-neu-text-muted) !important;
   box-shadow: var(--td-neu-raised) !important;
@@ -177,6 +177,7 @@
   .test-case-detail-level-option--active
 ) {
   border: 1px solid color-mix(in srgb, var(--td-neu-accent) 45%, var(--td-neu-dark)) !important;
+  border-radius: var(--rounded-selector, 2rem);
   background: var(--td-neu-accent) !important;
   color: var(--td-neu-accent-contrast) !important;
   box-shadow:
@@ -191,6 +192,7 @@
   .test-report-neu-format-option--active
 ) {
   border: 1px solid color-mix(in srgb, var(--td-neu-accent) 38%, var(--td-neu-dark)) !important;
+  border-radius: var(--rounded-selector, 2rem);
   background: color-mix(in srgb, var(--td-neu-accent) 12%, var(--td-neu-bg)) !important;
   color: var(--td-neu-accent) !important;
   box-shadow: var(--td-neu-inset) !important;
@@ -209,7 +211,7 @@
   .select.select-bordered
 ) {
   border: 1px solid color-mix(in srgb, var(--td-neu-dark) 48%, transparent) !important;
-  border-radius: var(--rounded-field, 0.5rem) !important;
+  border-radius: var(--rounded-field, 2rem) !important;
   background-color: color-mix(in srgb, var(--td-neu-dark) 28%, var(--td-neu-bg)) !important;
   background-image: none !important;
   color: var(--td-neu-text) !important;
