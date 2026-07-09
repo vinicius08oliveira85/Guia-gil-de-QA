@@ -25,7 +25,7 @@ function toggleItem(list: string[], value: string): string[] {
 const SUGGESTED_LANGUAGES = ['TypeScript', 'JavaScript', 'Python', 'Java', 'C#', 'Go'];
 const SUGGESTED_FRAMEWORKS = ['React', 'Vite', 'NestJS', 'FastAPI', 'Next.js', 'Express'];
 const SUGGESTED_DATABASES = ['PostgreSQL', 'MySQL', 'MongoDB', 'Supabase', 'Redis'];
-const SUGGESTED_TOOLS = ['Docker', 'Prisma', 'ESLint', 'Vitest', 'Jest', 'GitHub Actions'];
+const SUGGESTED_TOOLS = ['Cursor AI', 'Docker', 'Prisma', 'ESLint', 'Vitest', 'Jest', 'GitHub Actions'];
 
 function ChipGroup({
   label,
@@ -113,7 +113,8 @@ export const DevStackConfigPanel: React.FC<DevStackConfigPanelProps> = ({
             Stack do projeto
           </h2>
           <p className="text-sm text-base-content/70">
-            A IA usa esta configuração para orientar a implementação. {formatDevStackSummary(stack)}
+            A IA usa esta configuração para orientar a implementação via{' '}
+            <strong className="font-semibold">Cursor AI (Agente)</strong>. {formatDevStackSummary(stack)}
           </p>
         </div>
         <div className="mt-2 sm:mt-0 sm:min-w-[14rem]">

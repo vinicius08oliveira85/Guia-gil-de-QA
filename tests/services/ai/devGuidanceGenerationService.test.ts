@@ -15,8 +15,13 @@ vi.mock('../../../services/ai/geminiApiWrapper', () => ({
           order: 1,
           title: 'Modelar entidade',
           description: 'Criar tabela e DTO.',
+          cursorAgentAction: 'create',
+          cursorAgentPrompt:
+            'Crie o módulo de cadastro em src/modules/user com entidade, DTO e migration conforme a stack do projeto.',
         },
       ],
+      cursorAgentMasterPrompt:
+        'Implemente o cadastro de usuário completo: modelagem, API e validações. Siga a stack TypeScript/React do projeto.',
       suggestedTests: ['Validar campo obrigatório'],
     }),
   })),
@@ -84,6 +89,9 @@ describe('devGuidanceGenerationService', () => {
 
     expect(result.overview).toContain('cadastro');
     expect(result.implementationSteps).toHaveLength(1);
+    expect(result.implementationSteps[0].cursorAgentPrompt).toContain('cadastro');
+    expect(result.implementationSteps[0].cursorAgentAction).toBe('create');
+    expect(result.cursorAgentMasterPrompt).toContain('cadastro');
     expect(result.snapshotHash).toBeTruthy();
     expect(result.generatedAt).toBeTruthy();
   });

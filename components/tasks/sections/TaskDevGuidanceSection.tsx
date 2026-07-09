@@ -1,9 +1,14 @@
-import React, { useMemo } from 'react';
-import type { JiraTask, Project } from '../../../types';
+import React, { useMemo, useCallback } from 'react';
+import type { CursorAgentAction, JiraTask, Project } from '../../../types';
 import { devGuidanceToMarkdown } from '../../../utils/devGuidanceExport';
 import { isDevGuidanceOutdated } from '../../../services/ai/devGuidanceGenerationService';
 import { cn } from '../../../utils/cn';
-import { Sparkles, Copy, Download, AlertTriangle } from 'lucide-react';
+import {
+  CURSOR_AGENT_ACTION_BADGE_CLASS,
+  CURSOR_AGENT_ACTION_LABELS,
+  CURSOR_IMPLEMENTATION_TOOL_LABEL,
+} from '../../../utils/cursorAgentUi';
+import { Sparkles, Copy, Download, AlertTriangle, Bot } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { dashboardPanelClass } from '../../dashboard/dashboardNeuUi';
 
@@ -14,25 +19,62 @@ export interface TaskDevGuidanceSectionProps {
   isGenerating: boolean;
 }
 
+async function copyText(label: string, text: string): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast.success(`${label} copiado para a área de transferência.`);
+  } catch {
+    toast.error('Não foi possível copiar.');
+  }
+}
+
+const CursorPromptPanel: React.FC<{
+  title: string;
+  prompt: string;
+  action?: CursorAgentAction;
+  copyLabel?: string;
+}> = ({ title, prompt, action, copyLabel = 'Copiar prompt' }) => (
+  <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
+    <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <Bot className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+        <span className="text-xs font-semibold uppercase tracking-wide text-primary">
+          {title}
+        </span>
+        {action ? (
+          <span className={cn('badge badge-sm', CURSOR_AGENT_ACTION_BADGE_CLASS[action])}>
+            {CURSOR_AGENT_ACTION_LABELS[action]}
+          </span>
+        ) : null}
+      </div>
+      <button
+        type="button"
+        onClick={() => void copyText('Prompt', prompt)}
+        className="btn btn-primary btn-xs gap-1"
+        aria-label={copyLabel}
+      >
+        <Copy className="h-3.5 w-3.5" aria-hidden />
+        {copyLabel}
+      </button>
+    </div>
+    <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-md bg-base-100/90 p-3 text-xs leading-relaxed text-base-content/90">
+      {prompt}
+    </pre>
+  </div>
+);
+
 export const TaskDevGuidanceSection: React.FC<TaskDevGuidanceSectionProps> = ({
   task,
-  project,
   onGenerate,
   isGenerating,
 }) => {
   const guidance = task.devGuidance;
   const outdated = useMemo(() => isDevGuidanceOutdated(task), [task]);
 
-  const handleCopy = async () => {
+  const handleCopyAll = useCallback(async () => {
     if (!guidance) return;
-    const md = devGuidanceToMarkdown(task, guidance);
-    try {
-      await navigator.clipboard.writeText(md);
-      toast.success('Guia copiado como Markdown.');
-    } catch {
-      toast.error('Não foi possível copiar.');
-    }
-  };
+    await copyText('Guia completo', devGuidanceToMarkdown(task, guidance));
+  }, [guidance, task]);
 
   const handleDownload = () => {
     if (!guidance) return;
@@ -46,13 +88,18 @@ export const TaskDevGuidanceSection: React.FC<TaskDevGuidanceSectionProps> = ({
     URL.revokeObjectURL(url);
   };
 
+  const hasCursorPrompts =
+    Boolean(guidance?.cursorAgentMasterPrompt?.trim()) ||
+    guidance?.implementationSteps.some(s => s.cursorAgentPrompt?.trim());
+
   return (
     <div className="space-y-4">
       <div className={cn(dashboardPanelClass, 'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between')}>
         <div>
           <h3 className="text-base font-bold text-base-content">Guia de implementação (IA)</h3>
           <p className="text-sm text-base-content/70">
-            Instruções alinhadas à stack do projeto e às regras de negócio vinculadas.
+            Gera passos técnicos e prompts prontos para colar no{' '}
+            <strong className="font-semibold">{CURSOR_IMPLEMENTATION_TOOL_LABEL}</strong>.
           </p>
           {task.devGuidanceGeneratedAt ? (
             <p className="mt-1 text-xs text-base-content/55">
@@ -78,9 +125,9 @@ export const TaskDevGuidanceSection: React.FC<TaskDevGuidanceSectionProps> = ({
           </button>
           {guidance ? (
             <>
-              <button type="button" onClick={() => void handleCopy()} className="btn btn-ghost btn-sm gap-1">
+              <button type="button" onClick={() => void handleCopyAll()} className="btn btn-ghost btn-sm gap-1">
                 <Copy className="h-4 w-4" aria-hidden />
-                Copiar MD
+                Copiar tudo
               </button>
               <button type="button" onClick={handleDownload} className="btn btn-ghost btn-sm gap-1">
                 <Download className="h-4 w-4" aria-hidden />
@@ -93,11 +140,33 @@ export const TaskDevGuidanceSection: React.FC<TaskDevGuidanceSectionProps> = ({
 
       {!guidance ? (
         <p className="text-sm text-base-content/65">
-          Nenhum guia gerado ainda. Configure a stack no dashboard do projeto e vincule regras de
-          negócio se necessário.
+          Nenhum guia gerado ainda. Configure a stack no dashboard do projeto e clique em{' '}
+          <strong className="font-medium">Gerar guia com IA</strong> para receber prompts prontos
+          para o Agente do Cursor (criar, modificar ou excluir código).
         </p>
       ) : (
         <div className="space-y-4">
+          {guidance.cursorAgentMasterPrompt?.trim() ? (
+            <article className={cn(dashboardPanelClass, 'border-primary/25')}>
+              <h4 className="font-semibold text-base-content">Prompt mestre — Agente do Cursor</h4>
+              <p className="mt-1 text-sm text-base-content/70">
+                Cole este prompt no chat do Cursor para implementar a tarefa completa de uma vez.
+              </p>
+              <CursorPromptPanel
+                title="Implementação completa"
+                prompt={guidance.cursorAgentMasterPrompt.trim()}
+                copyLabel="Copiar prompt mestre"
+              />
+            </article>
+          ) : null}
+
+          {!hasCursorPrompts ? (
+            <p className="rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-base-content/80">
+              Este guia foi gerado antes da integração com Cursor. Regenerar para obter prompts
+              prontos para o Agente.
+            </p>
+          ) : null}
+
           <article className={dashboardPanelClass}>
             <h4 className="mb-2 font-semibold text-base-content">Visão geral</h4>
             <p className="whitespace-pre-wrap text-sm leading-relaxed text-base-content/85">
@@ -118,9 +187,21 @@ export const TaskDevGuidanceSection: React.FC<TaskDevGuidanceSectionProps> = ({
 
           {guidance.implementationSteps.map(step => (
             <article key={step.order} className={dashboardPanelClass}>
-              <h4 className="font-semibold text-base-content">
-                {step.order}. {step.title}
-              </h4>
+              <div className="flex flex-wrap items-center gap-2">
+                <h4 className="font-semibold text-base-content">
+                  {step.order}. {step.title}
+                </h4>
+                {step.cursorAgentAction ? (
+                  <span
+                    className={cn(
+                      'badge badge-sm',
+                      CURSOR_AGENT_ACTION_BADGE_CLASS[step.cursorAgentAction]
+                    )}
+                  >
+                    {CURSOR_AGENT_ACTION_LABELS[step.cursorAgentAction]}
+                  </span>
+                ) : null}
+              </div>
               <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-base-content/85">
                 {step.description}
               </p>
@@ -137,6 +218,14 @@ export const TaskDevGuidanceSection: React.FC<TaskDevGuidanceSectionProps> = ({
                 <pre className="mt-2 overflow-x-auto rounded-lg bg-base-200/80 p-3 text-xs">
                   {step.codeHints}
                 </pre>
+              ) : null}
+              {step.cursorAgentPrompt?.trim() ? (
+                <CursorPromptPanel
+                  title={`Passo ${step.order} — Cursor Agent`}
+                  prompt={step.cursorAgentPrompt.trim()}
+                  action={step.cursorAgentAction}
+                  copyLabel="Copiar prompt do passo"
+                />
               ) : null}
               {step.validationChecklist?.length ? (
                 <ul className="mt-2 space-y-1 text-sm text-base-content/80">

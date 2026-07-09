@@ -40,12 +40,15 @@ describe('devGuidanceExport', () => {
     const guidance: DevGuidanceArtifact = {
       overview: 'Visão geral do fluxo.',
       prerequisites: ['Configurar .env'],
+      cursorAgentMasterPrompt: 'Implemente o cadastro completo no projeto.',
       implementationSteps: [
         {
           order: 1,
           title: 'Criar endpoint',
           description: 'Implementar POST /api/items',
           filesOrModules: ['src/routes/items.ts'],
+          cursorAgentAction: 'create',
+          cursorAgentPrompt: 'Crie o endpoint POST /api/items em src/routes/items.ts.',
         },
       ],
     };
@@ -53,5 +56,15 @@ describe('devGuidanceExport', () => {
     expect(md).toContain('# Guia de implementação — Cadastro');
     expect(md).toContain('Criar endpoint');
     expect(md).toContain('src/routes/items.ts');
+    expect(md).toContain('Prompt mestre — Agente do Cursor');
+    expect(md).toContain('Crie o endpoint POST /api/items');
+  });
+});
+
+describe('cursorAgentUi', () => {
+  it('normaliza ação do agente', async () => {
+    const { normalizeCursorAgentAction } = await import('../../utils/cursorAgentUi');
+    expect(normalizeCursorAgentAction('modify')).toBe('modify');
+    expect(normalizeCursorAgentAction('invalid')).toBe('create');
   });
 });

@@ -8,6 +8,7 @@ export const EMPTY_DEV_STACK: DevStackConfig = {
   architectureStyle: '',
   testingApproach: '',
   notes: '',
+  implementationTool: 'cursor',
 };
 
 export interface DevStackPreset {
@@ -26,7 +27,7 @@ export const DEV_STACK_PRESETS: DevStackPreset[] = [
       languages: ['TypeScript'],
       frameworks: ['React', 'Vite'],
       databases: ['PostgreSQL (Supabase)'],
-      tools: ['Supabase CLI', 'ESLint', 'Vitest'],
+      tools: ['Supabase CLI', 'ESLint', 'Vitest', 'Cursor AI'],
       architectureStyle: 'Componentes + hooks + services',
       testingApproach: 'Vitest + testes de integração',
     },
@@ -39,7 +40,7 @@ export const DEV_STACK_PRESETS: DevStackPreset[] = [
       languages: ['TypeScript'],
       frameworks: ['NestJS'],
       databases: ['PostgreSQL'],
-      tools: ['Docker', 'Swagger', 'Jest'],
+      tools: ['Docker', 'Swagger', 'Jest', 'Cursor AI'],
       architectureStyle: 'Clean Architecture / módulos Nest',
       testingApproach: 'TDD com Jest (unit + e2e)',
     },
@@ -52,7 +53,7 @@ export const DEV_STACK_PRESETS: DevStackPreset[] = [
       languages: ['Python'],
       frameworks: ['FastAPI'],
       databases: ['PostgreSQL'],
-      tools: ['Docker', 'Poetry', 'pytest'],
+      tools: ['Docker', 'Poetry', 'pytest', 'Cursor AI'],
       architectureStyle: 'Camadas router → service → repository',
       testingApproach: 'pytest + TestClient',
     },
@@ -71,6 +72,7 @@ export function normalizeDevStackConfig(
     architectureStyle: stack.architectureStyle?.trim() ?? '',
     testingApproach: stack.testingApproach?.trim() ?? '',
     notes: stack.notes?.trim() ?? '',
+    implementationTool: 'cursor',
   };
 }
 

@@ -1,4 +1,8 @@
 import type { DevGuidanceArtifact, JiraTask } from '../types';
+import {
+  CURSOR_AGENT_ACTION_LABELS,
+  CURSOR_IMPLEMENTATION_TOOL_LABEL,
+} from './cursorAgentUi';
 
 /** Converte o guia Dev em Markdown para cópia/exportação. */
 export function devGuidanceToMarkdown(task: Pick<JiraTask, 'title' | 'id'>, guidance: DevGuidanceArtifact): string {
@@ -6,12 +10,26 @@ export function devGuidanceToMarkdown(task: Pick<JiraTask, 'title' | 'id'>, guid
     `# Guia de implementação — ${task.title}`,
     '',
     `**Tarefa:** ${task.id}`,
+    `**Ferramenta:** ${CURSOR_IMPLEMENTATION_TOOL_LABEL}`,
     '',
     '## Visão geral',
     '',
     guidance.overview.trim(),
     '',
   ];
+
+  if (guidance.cursorAgentMasterPrompt?.trim()) {
+    lines.push(
+      '## Prompt mestre — Agente do Cursor',
+      '',
+      'Cole no chat do Agente do Cursor para implementar a tarefa completa:',
+      '',
+      '```text',
+      guidance.cursorAgentMasterPrompt.trim(),
+      '```',
+      ''
+    );
+  }
 
   if (guidance.prerequisites.length > 0) {
     lines.push('## Pré-requisitos', '');
@@ -35,6 +53,12 @@ export function devGuidanceToMarkdown(task: Pick<JiraTask, 'title' | 'id'>, guid
         lines.push('**Validação:**', '');
         step.validationChecklist.forEach(c => lines.push(`- [ ] ${c}`));
         lines.push('');
+      }
+      if (step.cursorAgentPrompt?.trim()) {
+        const actionLabel = step.cursorAgentAction
+          ? CURSOR_AGENT_ACTION_LABELS[step.cursorAgentAction]
+          : 'Executar';
+        lines.push(`**Prompt Cursor (${actionLabel}):**`, '', '```text', step.cursorAgentPrompt.trim(), '```', '');
       }
     }
   }

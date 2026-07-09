@@ -40,11 +40,20 @@ ${docSection ? `\n### DOCUMENTAÇÃO COMPLEMENTAR ###\n${docSection}\n` : ''}
 
 INSTRUÇÕES:
 1. Gere um GUIA DE IMPLEMENTAÇÃO prático para o desenvolvedor — não gere casos de teste formais (isso é fluxo QA).
-2. Alinhe passos, módulos e contratos à stack configurada acima.
-3. Use as regras de negócio vinculadas; não invente escopo fora delas.
-4. Inclua passos ordenados, arquivos/módulos sugeridos, dicas de código quando útil e checklist de validação por passo.
-5. Sugira testes que o desenvolvedor deve escrever (lista curta), sem formato de caso de teste QA.
-6. Responda em português brasileiro.${imageNote}
+2. O desenvolvedor SEMPRE implementa código com o **Agente do Cursor (Cursor AI)**. Cada passo deve incluir um prompt pronto para colar no chat do Agente.
+3. Alinhe passos, módulos e contratos à stack configurada acima.
+4. Use as regras de negócio vinculadas; não invente escopo fora delas.
+5. Inclua passos ordenados, arquivos/módulos sugeridos, dicas de código quando útil e checklist de validação por passo.
+6. Sugira testes que o desenvolvedor deve escrever (lista curta), sem formato de caso de teste QA.
+7. Para CADA item em implementationSteps, inclua obrigatoriamente:
+   - cursorAgentAction: "create" (arquivo/módulo novo), "modify" (alterar existente) ou "delete" (remover código/arquivo).
+   - cursorAgentPrompt: prompt completo em português, auto-suficiente, pronto para colar no Agente do Cursor. Deve:
+     * Começar indicando a ação (criar, modificar ou excluir) e os caminhos de arquivo afetados.
+     * Descrever o comportamento esperado, stack, regras de negócio relevantes e critérios de conclusão.
+     * Pedir que o agente siga convenções do projeto e não altere arquivos fora do escopo do passo.
+     * Ser imperativo e específico — o agente não terá outro contexto além deste prompt.
+8. Inclua cursorAgentMasterPrompt: um único prompt consolidado para implementar a tarefa inteira em uma sessão do Agente do Cursor (referenciando os passos na ordem, sem repetir texto desnecessário).
+9. Responda em português brasileiro.${imageNote}
 
 ${DEV_GUIDANCE_JSON_FOOTER}
 `.trim();

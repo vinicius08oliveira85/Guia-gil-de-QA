@@ -449,7 +449,8 @@ export const TaskOverviewSection: React.FC = () => {
                   {isGeneratingDevGuidance ? 'Gerando…' : task.devGuidance ? 'Regenerar guia' : 'Gerar guia com IA'}
                 </Button>
                 <p className={cn(leveTaskModalMutedXsClass, 'mt-2')}>
-                  Monta passos de implementação, ferramentas e dicas alinhados à stack do projeto.
+                  Monta passos de implementação e prompts prontos para o Agente do Cursor (criar,
+                  modificar ou excluir código), alinhados à stack do projeto.
                 </p>
                 {task.devGuidanceGeneratedAt ? (
                   <p className={cn(leveTaskModalMutedXsClass, 'mt-1.5')} title={task.devGuidanceGeneratedAt}>

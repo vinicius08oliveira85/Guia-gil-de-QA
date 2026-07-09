@@ -1,5 +1,6 @@
 import type { DevStackConfig } from '../types';
 import { normalizeDevStackConfig } from './devStackPresets';
+import { CURSOR_IMPLEMENTATION_TOOL_LABEL } from './cursorAgentUi';
 
 function listOrDash(items: string[]): string {
   return items.length > 0 ? items.join(', ') : '(não informado)';
@@ -9,6 +10,7 @@ function listOrDash(items: string[]): string {
 export function formatDevStackForPrompt(stack: DevStackConfig | undefined | null): string {
   const s = normalizeDevStackConfig(stack);
   return [
+    `Ferramenta de implementação: ${CURSOR_IMPLEMENTATION_TOOL_LABEL} (sempre — prompts devem ser para o Agente do Cursor)`,
     `Linguagens: ${listOrDash(s.languages)}`,
     `Frameworks: ${listOrDash(s.frameworks)}`,
     `Bancos de dados: ${listOrDash(s.databases)}`,

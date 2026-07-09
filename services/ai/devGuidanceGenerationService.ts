@@ -12,6 +12,7 @@ import {
   validateTaskAiContext,
 } from './taskAiContext';
 import { formatDevStackForPrompt } from '../../utils/devStackFormat';
+import { normalizeCursorAgentAction } from '../../utils/cursorAgentUi';
 
 function buildMultimodalContents(
   prompt: string,
@@ -59,16 +60,19 @@ const devGuidanceSchema = {
           filesOrModules: { type: Type.ARRAY, items: { type: Type.STRING } },
           codeHints: { type: Type.STRING },
           validationChecklist: { type: Type.ARRAY, items: { type: Type.STRING } },
+          cursorAgentAction: { type: Type.STRING },
+          cursorAgentPrompt: { type: Type.STRING },
         },
-        required: ['order', 'title', 'description'],
+        required: ['order', 'title', 'description', 'cursorAgentAction', 'cursorAgentPrompt'],
       },
     },
     dataModel: { type: Type.STRING },
     apiContracts: { type: Type.STRING },
     risksAndEdgeCases: { type: Type.ARRAY, items: { type: Type.STRING } },
     suggestedTests: { type: Type.ARRAY, items: { type: Type.STRING } },
+    cursorAgentMasterPrompt: { type: Type.STRING },
   },
-  required: ['overview', 'prerequisites', 'implementationSteps'],
+  required: ['overview', 'prerequisites', 'implementationSteps', 'cursorAgentMasterPrompt'],
 };
 
 function computeDevGuidanceHash(
@@ -97,6 +101,9 @@ function normalizeSteps(raw: unknown): DevGuidanceStep[] {
         validationChecklist: Array.isArray(o.validationChecklist)
           ? o.validationChecklist.filter((x): x is string => typeof x === 'string')
           : undefined,
+        cursorAgentAction: normalizeCursorAgentAction(o.cursorAgentAction),
+        cursorAgentPrompt:
+          typeof o.cursorAgentPrompt === 'string' ? o.cursorAgentPrompt.trim() : undefined,
       };
     })
     .sort((a, b) => a.order - b.order);
@@ -117,6 +124,10 @@ function normalizeGuidance(parsed: Record<string, unknown>): DevGuidanceArtifact
     suggestedTests: Array.isArray(parsed.suggestedTests)
       ? parsed.suggestedTests.filter((x): x is string => typeof x === 'string')
       : undefined,
+    cursorAgentMasterPrompt:
+      typeof parsed.cursorAgentMasterPrompt === 'string'
+        ? parsed.cursorAgentMasterPrompt.trim()
+        : undefined,
   };
 }
 

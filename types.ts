@@ -637,6 +637,8 @@ export interface ChecklistItem {
   required: boolean;
 }
 
+export type CursorAgentAction = 'create' | 'modify' | 'delete';
+
 export interface DevGuidanceStep {
   order: number;
   title: string;
@@ -644,6 +646,10 @@ export interface DevGuidanceStep {
   filesOrModules?: string[];
   codeHints?: string;
   validationChecklist?: string[];
+  /** Ação que o Agente do Cursor deve executar neste passo. */
+  cursorAgentAction?: CursorAgentAction;
+  /** Prompt pronto para colar no Agente do Cursor (chat/composer). */
+  cursorAgentPrompt?: string;
 }
 
 /** Artefato de guia de implementação para desenvolvedores (Projetos Dev). */
@@ -655,6 +661,8 @@ export interface DevGuidanceArtifact {
   apiContracts?: string;
   risksAndEdgeCases?: string[];
   suggestedTests?: string[];
+  /** Prompt consolidado para implementar a tarefa inteira no Agente do Cursor. */
+  cursorAgentMasterPrompt?: string;
 }
 
 /** Stack técnica configurável por projeto Dev. */
@@ -666,6 +674,8 @@ export interface DevStackConfig {
   architectureStyle?: string;
   testingApproach?: string;
   notes?: string;
+  /** Ferramenta usada para implementar código (padrão: Cursor AI). */
+  implementationTool?: 'cursor';
 }
 
 /** Análise IA completa do projeto Dev (stack, backlog técnico, riscos). */
