@@ -76,7 +76,9 @@ export const JiraSolusView = React.memo(() => {
     () => initialSnapshot.selectedProjectKey
   );
 
-  const workspaceScopeId = selectedProjectKey || 'global';
+  /** Estado das abas é global no Acompanhamento — não muda ao selecionar projeto Jira. */
+  const jiraSolusTabScopeId = 'global';
+
   const {
     activeTab,
     openTaskTabIds,
@@ -88,7 +90,7 @@ export const JiraSolusView = React.memo(() => {
     focusTaskTab,
   } = useWorkspaceTabs({
     scope: 'jira-solus',
-    scopeId: workspaceScopeId,
+    scopeId: jiraSolusTabScopeId,
     defaultActiveTab: 'dashboard',
     fallbackFixedTab: 'filas',
   });
