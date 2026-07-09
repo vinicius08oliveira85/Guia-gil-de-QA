@@ -7,9 +7,9 @@ import {
   projectsDashboardSearchFieldClass,
   projectsDashboardSearchIconClass,
 } from './projectsDashboardUi';
-import { LANDING_SECTIONS } from '../landing/landingSections';
 
 export interface ProjectsDashboardHeaderProps {
+  title: string;
   projectCount: number;
   lastActivityText: string | null;
   searchQuery: string;
@@ -20,6 +20,7 @@ export interface ProjectsDashboardHeaderProps {
  * Cabeçalho do workspace: eyebrow, título, meta e busca local.
  */
 export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = ({
+  title,
   projectCount,
   lastActivityText,
   searchQuery,
@@ -47,7 +48,7 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
               id={headingId}
               className="app-brand-title font-sans text-2xl font-bold tracking-tight text-base-content max-md:text-xl sm:text-[1.75rem]"
             >
-              {LANDING_SECTIONS.projects.title}
+              {title}
             </h1>
             <span className={projectsDashboardHeaderBadgeClass} role="status">
               {projectCount}

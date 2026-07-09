@@ -113,6 +113,7 @@ export const ProjectSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1, 'Nome do projeto é obrigatório').max(100, 'Nome muito longo'),
   description: z.string().max(1000, 'Descrição muito longa'),
+  workflow: z.enum(['qa', 'dev']).optional().default('qa'),
   documents: z.array(ProjectDocumentSchema).default([]),
   businessRules: z.array(BusinessRuleSchema).default([]),
   businessRuleCategoryPresets: z.array(z.string()).optional(),

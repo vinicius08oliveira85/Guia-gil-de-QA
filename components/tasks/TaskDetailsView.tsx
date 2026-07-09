@@ -39,11 +39,13 @@ import {
   FileText,
   FlaskConical,
   Scale,
+  Code2,
   type LucideIcon,
 } from 'lucide-react';
 import { TaskOverviewSection } from './sections/TaskOverviewSection';
 import { TaskBddSection } from './sections/TaskBddSection';
 import { TaskTestsSection } from './sections/TaskTestsSection';
+import { TaskDevGuidanceSection } from './sections/TaskDevGuidanceSection';
 import { TaskPlanningSection } from './sections/TaskPlanningSection';
 import { TaskDetailProvider, type TaskDetailContextValue } from './sections/TaskDetailContext';
 
@@ -92,6 +94,10 @@ interface TaskDetailsViewProps {
    * sem testes, BDD ou colaboração.
    */
   hideTestFeatures?: boolean;
+  /** Fluxo Projetos Dev: guia de implementação em vez de BDD/testes. */
+  devMode?: boolean;
+  onGenerateDevGuidance?: (taskId: string) => Promise<void>;
+  isGeneratingDevGuidance?: boolean;
   /** Seção inicial restaurada da sessão do workspace. */
   initialSection?: DetailSection;
   onSectionChange?: (section: DetailSection) => void;
@@ -133,6 +139,9 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
   onUpdateFromJira,
   isUpdatingFromJira,
   hideTestFeatures = false,
+  devMode = false,
+  onGenerateDevGuidance,
+  isGeneratingDevGuidance = false,
   initialSection,
   onSectionChange,
   openTaskNav,
@@ -174,7 +183,16 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
       { id: 'overview', label: 'Resumo', icon: FileText },
     ];
 
-    if (task.type === 'Tarefa' || task.type === 'Bug') {
+    if (devMode && (task.type === 'Tarefa' || task.type === 'Bug')) {
+      tabs.push({
+        id: 'guidance',
+        label: 'Guia Dev',
+        badge: task.devGuidance ? 1 : undefined,
+        icon: Code2,
+      });
+    }
+
+    if (!devMode && (task.type === 'Tarefa' || task.type === 'Bug')) {
       tabs.push({
         id: 'bdd',
         label: 'Cenários BDD',
@@ -183,7 +201,7 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
       });
     }
 
-    if (task.type === 'Tarefa' || task.type === 'Bug') {
+    if (!devMode && (task.type === 'Tarefa' || task.type === 'Bug')) {
       tabs.push({
         id: 'tests',
         label: 'Testes',
@@ -224,7 +242,9 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
     return tabs;
   }, [
     hideTestFeatures,
+    devMode,
     task.type,
+    task.devGuidance,
     task.bddScenarios,
     task.testCases,
     task.dependencies,
@@ -250,13 +270,16 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
       return;
     }
     if (
-      (activeSection === 'tests' || activeSection === 'bdd') &&
+      (activeSection === 'tests' || activeSection === 'bdd' || activeSection === 'guidance') &&
       task.type !== 'Tarefa' &&
       task.type !== 'Bug'
     ) {
       setActiveSection('overview');
     }
-  }, [sectionTabs, activeSection, task.type, project, onUpdateProject, setActiveSection]);
+    if (activeSection === 'guidance' && !devMode) {
+      setActiveSection('overview');
+    }
+  }, [sectionTabs, activeSection, task.type, project, onUpdateProject, setActiveSection, devMode]);
 
   const handleShowTestReport = useCallback(() => setShowTestReport(true), []);
 
@@ -266,6 +289,9 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
       project,
       onUpdateProject,
       hideTestFeatures,
+      devMode,
+      onGenerateDevGuidance,
+      isGeneratingDevGuidance,
       detailLevel,
       onDetailLevelChange: setDetailLevel,
       isGenerating,
@@ -302,6 +328,9 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
       project,
       onUpdateProject,
       hideTestFeatures,
+      devMode,
+      onGenerateDevGuidance,
+      isGeneratingDevGuidance,
       detailLevel,
       isGenerating,
       isGeneratingBdd,
@@ -356,6 +385,15 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
         return <TaskBddSection />;
       case 'tests':
         return <TaskTestsSection />;
+      case 'guidance':
+        return (
+          <TaskDevGuidanceSection
+            task={task}
+            project={project}
+            isGenerating={isGeneratingDevGuidance}
+            onGenerate={() => onGenerateDevGuidance?.(task.id) ?? Promise.resolve()}
+          />
+        );
       case 'businessRules':
         return renderBusinessRulesSection();
       case 'planning':
@@ -574,7 +612,11 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
         </Modal>
       )}
 
-      <TestReportModal isOpen={showTestReport} onClose={() => setShowTestReport(false)} task={task} />
+      <TestReportModal
+        isOpen={showTestReport && !devMode && !hideTestFeatures}
+        onClose={() => setShowTestReport(false)}
+        task={task}
+      />
 
       {/* Modal de Visualização de Anexo do Jira */}
       {viewingJiraAttachment && viewingJiraAttachment.content && (

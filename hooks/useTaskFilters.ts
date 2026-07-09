@@ -23,6 +23,8 @@ export interface UseTaskFiltersOptions {
    */
   executionStatusNavKey?: number;
   executionStatusNavStatuses?: TestCaseExecutionStatus[];
+  /** Projeto Dev: oculta filtros de QA e habilita filtros de guia de implementação. */
+  devMode?: boolean;
 }
 
 export interface UseTaskFiltersResult {
@@ -67,6 +69,7 @@ export function useTaskFilters(
   project: Project,
   options?: UseTaskFiltersOptions
 ): UseTaskFiltersResult {
+  const devMode = options?.devMode === true;
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [priorityFilter, setPriorityFilter] = useState<string[]>([]);
@@ -230,6 +233,10 @@ export function useTaskFilters(
               return hasAutomated;
             case 'manual':
               return hasManual;
+            case 'with-guidance':
+              return Boolean(task.devGuidance);
+            case 'without-guidance':
+              return !task.devGuidance;
             default:
               return false;
           }
@@ -278,6 +285,10 @@ export function useTaskFilters(
             return allTasks.filter(t => t.testCases?.some(tc => testCaseLooksAutomated(tc))).length;
           case 'manual':
             return allTasks.filter(t => t.testCases?.some(tc => !testCaseLooksAutomated(tc))).length;
+          case 'with-guidance':
+            return allTasks.filter(t => Boolean(t.devGuidance)).length;
+          case 'without-guidance':
+            return allTasks.filter(t => !t.devGuidance).length;
           default:
             return 0;
         }
@@ -285,13 +296,14 @@ export function useTaskFilters(
     };
   }, [project.tasks, jiraStatuses, jiraPriorities]);
 
-  const chipFiltersCount =
-    statusFilter.length +
-    priorityFilter.length +
-    typeFilter.length +
-    testStatusFilter.length +
-    testCaseExecutionStatusFilter.length +
-    qualityFilter.length;
+  const chipFiltersCount = devMode
+    ? statusFilter.length + priorityFilter.length + typeFilter.length + qualityFilter.length
+    : statusFilter.length +
+      priorityFilter.length +
+      typeFilter.length +
+      testStatusFilter.length +
+      testCaseExecutionStatusFilter.length +
+      qualityFilter.length;
 
   const activeFiltersCount = chipFiltersCount + (searchQuery.trim() ? 1 : 0);
 

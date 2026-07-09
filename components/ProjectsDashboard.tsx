@@ -2,7 +2,7 @@ import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Project } from '../types';
+import { Project, type ProjectWorkflow } from '../types';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import {
   AlertTriangle,
@@ -33,6 +33,8 @@ import {
 } from '../utils/workspaceAnalytics';
 import { applyManualProjectOrder } from '../utils/projectListOrder';
 import { getLastOpenedProjectIds } from '../utils/landingRecentProjects';
+import { filterProjectsByWorkflow } from '../utils/projectWorkflow';
+import { LANDING_SECTIONS } from './landing/landingSections';
 import { ProjectsDashboardHeader } from './projectsDashboard/ProjectsDashboardHeader';
 import {
   WorkspaceDaisyStats,
@@ -96,9 +98,22 @@ function sortProjectsByLastOpened(list: Project[], lastOpenedIds: string[]): Pro
 }
 
 export const ProjectsDashboard: React.FC<{
+  workflow: ProjectWorkflow;
   projects: Project[];
-  onCreateProject: (name: string, description: string, templateId?: string) => Promise<void>;
-}> = ({ projects, onCreateProject }) => {
+  onCreateProject: (
+    name: string,
+    description: string,
+    templateId?: string,
+    workflow?: ProjectWorkflow
+  ) => Promise<void>;
+}> = ({ workflow, projects: allProjects, onCreateProject }) => {
+  const projects = useMemo(
+    () => filterProjectsByWorkflow(allProjects, workflow),
+    [allProjects, workflow]
+  );
+  const sectionMeta =
+    workflow === 'dev' ? LANDING_SECTIONS.projectsDev : LANDING_SECTIONS.projectsQa;
+  const isQaWorkflow = workflow === 'qa';
   const navigate = useNavigate();
   const [isCreating, setIsCreating] = useState(false);
   const [isCreateSubmitting, setIsCreateSubmitting] = useState(false);
@@ -236,7 +251,7 @@ export const ProjectsDashboard: React.FC<{
     [projects]
   );
   const showWorkspaceAlerts =
-    projectsNeedingAttention.length > 0 || projectsTestAlertList.length > 0;
+    projectsNeedingAttention.length > 0 || (isQaWorkflow && projectsTestAlertList.length > 0);
 
   const scrollToList = useCallback(() => {
     listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -284,6 +299,13 @@ export const ProjectsDashboard: React.FC<{
     scrollToList();
   }, [projectsTestAlertList.length, scrollToList]);
 
+  const handleCreateProjectForWorkflow = useCallback(
+    async (name: string, description: string, templateId?: string) => {
+      await onCreateProject(name, description, templateId, workflow);
+    },
+    [onCreateProject, workflow]
+  );
+
   const statsBlock =
     projects.length > 0 ? (
       <div
@@ -295,17 +317,20 @@ export const ProjectsDashboard: React.FC<{
           className="contents"
           projectCount={projects.length}
           testSuccessPercent={workspaceTestMetrics.testSuccessPercent}
+          showTestSuccessStat={isQaWorkflow}
           taskDonePercent={taskDonePercentGlobal}
           localBackupStatus={localBackupStatus}
           onStatClick={handleStatClick}
         />
-        <GlobalEfficiencyMetric
-          className={projectsDashboardGlobalEfficiencyGridClass}
-          percent={workspaceTestMetrics.executionEfficiencyPercent}
-          executedCount={workspaceTestMetrics.executedTestCases}
-          totalCount={workspaceTestMetrics.totalTestCases}
-          onClick={handleEfficiencyClick}
-        />
+        {isQaWorkflow ? (
+          <GlobalEfficiencyMetric
+            className={projectsDashboardGlobalEfficiencyGridClass}
+            percent={workspaceTestMetrics.executionEfficiencyPercent}
+            executedCount={workspaceTestMetrics.executedTestCases}
+            totalCount={workspaceTestMetrics.totalTestCases}
+            onClick={handleEfficiencyClick}
+          />
+        ) : null}
       </div>
     ) : null;
 
@@ -317,6 +342,7 @@ export const ProjectsDashboard: React.FC<{
             <div className={projectsDashboardHeroShellClass}>
               <div className={cn(projectsDashboardHeroChromeClass, 'gap-3 sm:gap-4')}>
                 <ProjectsDashboardHeader
+                  title={sectionMeta.title}
                   projectCount={projects.length}
                   lastActivityText={lastActivityText}
                   searchQuery={searchQuery}
@@ -360,7 +386,7 @@ export const ProjectsDashboard: React.FC<{
                     totalCount={projects.length}
                     showBugsFilter={projectsWithBugs.length > 0}
                     showAttentionFilter={projectsNeedingAttention.length > 0}
-                    showTestAlertsFilter={projectsTestAlertList.length > 0}
+                    showTestAlertsFilter={isQaWorkflow && projectsTestAlertList.length > 0}
                     bugsCount={projectsWithBugs.length}
                     attentionCount={projectsNeedingAttention.length}
                     testAlertsCount={projectsTestAlertList.length}
@@ -372,7 +398,8 @@ export const ProjectsDashboard: React.FC<{
             <CreateProjectModal
             isOpen={isCreating}
             onClose={() => setIsCreating(false)}
-            onCreateProject={onCreateProject}
+            workflow={workflow}
+            onCreateProject={handleCreateProjectForWorkflow}
             onOpenSettings={() => navigate('/settings')}
             onProjectImported={project => navigate(`/projects/${project.id}`)}
             onCreateBusyChange={setIsCreateSubmitting}

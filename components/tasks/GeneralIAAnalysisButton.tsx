@@ -23,6 +23,9 @@ interface GeneralIAAnalysisButtonProps {
   groupedIconWrapClassName?: string;
   groupedProgressTrackClassName?: string;
   groupedProgressFillClassName?: string;
+  label?: string;
+  tooltip?: string;
+  ariaLabel?: string;
 }
 
 export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = ({
@@ -35,6 +38,9 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
   groupedIconWrapClassName,
   groupedProgressTrackClassName,
   groupedProgressFillClassName,
+  label = 'Análise geral com IA',
+  tooltip = 'Executa análise de risco e recomendações e pode gerar BDD e casos de teste para tarefas sem eles.',
+  ariaLabel,
 }) => {
   const handleClick = async () => {
     if (isAnalyzing) return;
@@ -55,8 +61,8 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
         ? `~${progress.estimatedSeconds}s`
         : `~${Math.ceil(progress.estimatedSeconds / 60)} min`
       : null;
-  const defaultTooltip =
-    'Executa análise de risco e recomendações e pode gerar BDD e casos de teste para tarefas sem eles.';
+  const defaultTooltip = tooltip;
+  const resolvedAriaLabel = ariaLabel ?? label;
 
   return (
     <div className="flex flex-col items-start gap-1">
@@ -75,7 +81,7 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
               ),
           'disabled:cursor-not-allowed disabled:opacity-50'
         )}
-        aria-label={isAnalyzing ? 'Analisando' : 'Análise geral com IA'}
+        aria-label={isAnalyzing ? 'Analisando' : resolvedAriaLabel}
       >
         {isAnalyzing ? (
           grouped && groupedIconWrapClassName ? (
@@ -123,7 +129,7 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
               ? progress?.message
                 ? progress.message
                 : 'Analisando…'
-              : 'Análise geral com IA'}
+              : label}
           </span>
         ) : (
           <>
@@ -132,7 +138,7 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
                 ? progress?.message
                   ? progress.message
                   : 'Analisando…'
-                : 'Análise geral com IA'}
+                : label}
             </span>
             <span className="sm:hidden">{isAnalyzing ? '…' : 'IA'}</span>
           </>

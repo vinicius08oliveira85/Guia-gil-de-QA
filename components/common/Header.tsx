@@ -44,6 +44,7 @@ import {
 } from './headerNeuUi';
 import { APP_BRAND } from '../landing/landingSections';
 import { resolveHeaderBackNavigation } from '../../utils/headerBackNavigation';
+import { normalizeProjectWorkflow } from '../../utils/projectWorkflow';
 
 interface HeaderProps {
   onProjectImported?: (project: Project) => void;
@@ -154,7 +155,14 @@ export const Header: React.FC<HeaderProps> = ({
   }, [selectedProject]);
 
   const generalAnalysisStatusLabel = useMemo(() => {
-    if (!selectedProject || !generalAnalysisOutdated) return '';
+    if (!selectedProject) return '';
+    if (normalizeProjectWorkflow(selectedProject.workflow) === 'dev') {
+      if ((selectedProject.devProjectFullAnalyses?.length ?? 0) === 0) {
+        return 'Assistência Dev com IA ainda não foi executada neste projeto';
+      }
+      return '';
+    }
+    if (!generalAnalysisOutdated) return '';
     if (!selectedProject.generalIAAnalysis) {
       return 'Análise geral com IA ainda não foi executada neste projeto';
     }
@@ -265,19 +273,27 @@ export const Header: React.FC<HeaderProps> = ({
     handleSyncLocal,
   ]);
 
+  const selectedProjectWorkflow = selectedProject
+    ? normalizeProjectWorkflow(selectedProject.workflow)
+    : undefined;
+
   /** Volta para a tela anterior conforme a rota atual (Menu ou Projetos). */
   const handleHeaderBack = useCallback(() => {
-    const back = resolveHeaderBackNavigation(location.pathname);
+    const back = resolveHeaderBackNavigation(location.pathname, {
+      projectWorkflow: selectedProjectWorkflow,
+    });
     if (!back) return;
-    if (back.targetPath === '/projects') {
+    if (back.targetPath.startsWith('/projects/')) {
       selectProject(null);
     }
     navigate(back.targetPath);
-  }, [location.pathname, navigate, selectProject]);
+  }, [location.pathname, navigate, selectProject, selectedProjectWorkflow]);
 
   const headerBackNavItem = useMemo((): NavigationMenuItem | null => {
     if (!onLogoClick) return null;
-    const back = resolveHeaderBackNavigation(location.pathname);
+    const back = resolveHeaderBackNavigation(location.pathname, {
+      projectWorkflow: selectedProjectWorkflow,
+    });
     if (!back) return null;
     return {
       id: 'header-back',
@@ -286,7 +302,7 @@ export const Header: React.FC<HeaderProps> = ({
       icon: <ChevronLeft className="h-4 w-4" aria-hidden />,
       onClick: handleHeaderBack,
     };
-  }, [onLogoClick, location.pathname, handleHeaderBack]);
+  }, [onLogoClick, location.pathname, handleHeaderBack, selectedProjectWorkflow]);
 
   const resolvedBrandTitle = brandTitle ?? APP_BRAND.title;
   const resolvedBrandSubtitle = brandSubtitle ?? APP_BRAND.subtitle;

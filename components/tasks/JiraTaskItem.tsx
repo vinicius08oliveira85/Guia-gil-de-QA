@@ -195,7 +195,7 @@ const DescriptionRenderer: React.FC<{
 
 export type TaskWithChildren = JiraTask & { children: TaskWithChildren[] };
 
-type DetailSection = 'overview' | 'bdd' | 'tests' | 'planning';
+type DetailSection = 'overview' | 'bdd' | 'tests' | 'planning' | 'guidance';
 type TestSubSection = 'strategy' | 'test-cases';
 
 const normalizeStatusName = (value: string) =>
@@ -264,6 +264,8 @@ export const JiraTaskItem: React.FC<{
    * de Criação). Usado na aba Filas (Jira).
    */
   hideTestFeatures?: boolean;
+  /** Projeto Dev: oculta QA e destaca guia de implementação. */
+  devMode?: boolean;
 }> = React.memo(
   ({
     task,
@@ -310,7 +312,9 @@ export const JiraTaskItem: React.FC<{
     onToggleFavorite,
     onDetailsOpenChange,
     hideTestFeatures = false,
+    devMode = false,
   }) => {
+    const hideQaUi = hideTestFeatures || devMode;
     const reduceMotion = useReducedMotion();
     const [isDetailsOpen, setIsDetailsOpen] = useState(false); // Colapsado por padrão para compactar
     const [mobileTaskActionsOpen, setMobileTaskActionsOpen] = useState(false);
@@ -359,7 +363,8 @@ export const JiraTaskItem: React.FC<{
     }, [mobileTaskActionsOpen]);
     const taskTypeNorm = (task.type || '').toLowerCase();
     const showTestExecutionSummary = task.type === 'Tarefa' || task.type === 'Bug';
-    const showGenerateAllAction = ['tarefa', 'bug', 'task'].includes(taskTypeNorm) && !!onGenerateAll;
+    const showGenerateAllAction =
+      !hideQaUi && ['tarefa', 'bug', 'task'].includes(taskTypeNorm) && !!onGenerateAll;
     const standaloneContainerIssue = useMemo(
       () => isStandaloneContainerIssue(task, project?.tasks ?? []),
       [task, project?.tasks]
@@ -713,6 +718,28 @@ export const JiraTaskItem: React.FC<{
         return [{ id: 'overview' as const, label: 'Resumo' }];
       }
 
+      if (devMode) {
+        const tabs: { id: DetailSection; label: string; badge?: number }[] = [
+          { id: 'overview', label: 'Resumo' },
+        ];
+        if (task.type === 'Tarefa' || task.type === 'Bug') {
+          tabs.push({
+            id: 'guidance',
+            label: 'Guia IA',
+            badge: task.devGuidance ? 1 : 0,
+          });
+        }
+        if (project && onUpdateProject) {
+          const planningBadge =
+            (task.dependencies?.length || 0) +
+            (task.attachments?.length || 0) +
+            (task.checklist?.length || 0) +
+            (task.estimatedHours ? 1 : 0);
+          tabs.push({ id: 'planning', label: 'Planejamento', badge: planningBadge });
+        }
+        return tabs;
+      }
+
       const tabs: { id: DetailSection; label: string; badge?: number }[] = [
         { id: 'overview', label: 'Resumo' },
       ];
@@ -739,9 +766,11 @@ export const JiraTaskItem: React.FC<{
       return tabs;
     }, [
       hideTestFeatures,
+      devMode,
       task.type,
       task.bddScenarios,
       task.testCases,
+      task.devGuidance,
       task.dependencies,
       task.attachments,
       task.checklist,
@@ -885,7 +914,7 @@ export const JiraTaskItem: React.FC<{
         )}
 
         {/* Botão para Gerar Registro de Testes - para tipos "Tarefa" e "Bug" */}
-        {!hideTestFeatures &&
+        {!hideQaUi &&
         (task.type === 'Tarefa' || task.type === 'Bug') &&
           (task.testCases?.length > 0 || (task.testStrategy?.length ?? 0) > 0) ? (
             <div className="flex justify-end">
@@ -949,7 +978,7 @@ export const JiraTaskItem: React.FC<{
         ) : null}
 
         {/* Ações de Teste */}
-        {!hideTestFeatures && taskTestStatus && (taskTestStatus === 'testar' || taskTestStatus === 'testando') && (
+        {!hideQaUi && taskTestStatus && (taskTestStatus === 'testar' || taskTestStatus === 'testando') && (
           <div className={taskTestActionsBarClass}>
             <p className="text-sm font-medium flex-1">Ações de Teste:</p>
             {taskTestStatus === 'testar' && (
@@ -1062,7 +1091,7 @@ export const JiraTaskItem: React.FC<{
           );
         })()}
 
-        {(task.type === 'Tarefa' || task.type === 'Bug') && !hideTestFeatures && testTypeBadges.length > 0 && (
+        {(task.type === 'Tarefa' || task.type === 'Bug') && !hideQaUi && testTypeBadges.length > 0 && (
           <div>
             <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">
               Estratégias de Teste
@@ -1625,6 +1654,31 @@ export const JiraTaskItem: React.FC<{
       );
     };
 
+    const renderGuidanceSection = () => (
+      <div className={cn(taskModalSectionClass, 'space-y-3 p-4')}>
+        <h3 className="text-sm font-semibold text-base-content">Guia de implementação</h3>
+        {task.devGuidance ? (
+          <p className="text-sm leading-relaxed text-base-content/85 line-clamp-6">
+            {task.devGuidance.overview}
+          </p>
+        ) : (
+          <p className="text-sm text-base-content/70">
+            Ainda não há guia gerado. Abra a tarefa em aba dedicada para a IA montar passos,
+            ferramentas e orientações com base na stack e nas regras de negócio.
+          </p>
+        )}
+        {onOpenModal ? (
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={() => onOpenModal(task)}
+          >
+            Abrir implementação
+          </button>
+        ) : null}
+      </div>
+    );
+
     const renderSectionContent = () => {
       switch (activeSection) {
         case 'overview':
@@ -1635,6 +1689,8 @@ export const JiraTaskItem: React.FC<{
           return renderTestsSection();
         case 'planning':
           return renderPlanningSection();
+        case 'guidance':
+          return renderGuidanceSection();
         default:
           return null;
       }
@@ -1990,7 +2046,7 @@ export const JiraTaskItem: React.FC<{
               }
               titleTrailing={
                 <>
-                  {!hideTestFeatures && (task.type === 'Tarefa' || task.type === 'Bug') && (
+                  {!hideTestFeatures && !devMode && (task.type === 'Tarefa' || task.type === 'Bug') && (
                     <TestCasesFreshnessIndicator
                       task={task}
                       project={project}
@@ -1999,7 +2055,7 @@ export const JiraTaskItem: React.FC<{
                       className="inline-flex shrink-0"
                     />
                   )}
-                  {!hideTestFeatures && showTaskQaInsights ? (
+                  {!hideTestFeatures && !devMode && showTaskQaInsights ? (
                     <TaskCardQaInsights
                       variant="inline"
                       counts={{
@@ -2012,6 +2068,18 @@ export const JiraTaskItem: React.FC<{
                       iaAnalysisStale={iaAnalysisStale}
                       className="shrink-0"
                     />
+                  ) : null}
+                  {devMode && (task.type === 'Tarefa' || task.type === 'Bug') ? (
+                    <span
+                      className={cn(
+                        'inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-semibold',
+                        task.devGuidance
+                          ? 'bg-info/15 text-info'
+                          : 'bg-base-200 text-base-content/60'
+                      )}
+                    >
+                      {task.devGuidance ? 'Guia IA' : 'Sem guia'}
+                    </span>
                   ) : null}
                   {hideTestFeatures ? <JiraQueueMetaChips task={task} /> : null}
                 </>
@@ -2060,7 +2128,7 @@ export const JiraTaskItem: React.FC<{
                         </span>
                       </li>
                     ) : null}
-                    {!hideTestFeatures && (task.type === 'Tarefa' || task.type === 'Bug') && (
+                    {!hideQaUi && (task.type === 'Tarefa' || task.type === 'Bug') && (
                       <li className="menu-title">
                         <span className="font-body text-xs font-normal text-muted">
                           Métricas: ✓ {testExecutionSummary.passed} · ✗ {testExecutionSummary.failed}{' '}
@@ -2068,7 +2136,7 @@ export const JiraTaskItem: React.FC<{
                         </span>
                       </li>
                     )}
-                    {['tarefa', 'bug', 'task'].includes(taskTypeNorm) && onGenerateAll ? (
+                    {!hideQaUi && ['tarefa', 'bug', 'task'].includes(taskTypeNorm) && onGenerateAll ? (
                       <li>
                         <button
                           type="button"
@@ -2086,7 +2154,7 @@ export const JiraTaskItem: React.FC<{
                         </button>
                       </li>
                     ) : null}
-                    {!hideTestFeatures && (
+                    {!hideQaUi && (
                     <li>
                       <button
                         type="button"
@@ -2196,7 +2264,7 @@ export const JiraTaskItem: React.FC<{
               )}
               onClick={e => e.stopPropagation()}
             >
-              {hideTestFeatures ? null : (
+              {hideTestFeatures || devMode ? null : (
               <TaskActionStrip
                 aiPhaseMessage={aiPhaseMessage}
                 isAiProcessing={isAiProcessing}
@@ -2246,7 +2314,7 @@ export const JiraTaskItem: React.FC<{
                     )}
                   >
                     {/* Ação primária */}
-                    {!hideTestFeatures && (task.type === 'Tarefa' || task.type === 'Bug') && onGenerateAll && (
+                    {!hideQaUi && (task.type === 'Tarefa' || task.type === 'Bug') && onGenerateAll && (
                       <button
                         type="button"
                         className={cn(
@@ -2576,7 +2644,7 @@ export const JiraTaskItem: React.FC<{
         />
 
         <TestReportModal
-          isOpen={showTestReport}
+          isOpen={showTestReport && !devMode}
           onClose={() => setShowTestReport(false)}
           task={task}
         />

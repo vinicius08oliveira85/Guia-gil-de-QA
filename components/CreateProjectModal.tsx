@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Project } from '../types';
+import { Project, type ProjectWorkflow } from '../types';
 import { Modal } from './common/Modal';
 import { Input } from './common/Input';
 import { ProjectTemplateSelector } from './common/ProjectTemplateSelector';
@@ -13,6 +13,7 @@ import {
 import { useErrorHandler } from '../hooks/useErrorHandler';
 import { useProjectsStore } from '../store/projectsStore';
 import { logger } from '../utils/logger';
+import { normalizeProjectWorkflow, PROJECT_WORKFLOW_LABELS } from '../utils/projectWorkflow';
 import { RefreshCw } from 'lucide-react';
 import { BackButton } from './common/BackButton';
 import { cn } from '../utils/cn';
@@ -40,6 +41,7 @@ import {
 export interface CreateProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
+  workflow?: ProjectWorkflow;
   onCreateProject: (name: string, description: string, templateId?: string) => Promise<void>;
   onOpenSettings?: () => void;
   onProjectImported?: (project: Project) => void;
@@ -50,6 +52,7 @@ export interface CreateProjectModalProps {
 export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   isOpen,
   onClose,
+  workflow = 'qa',
   onCreateProject,
   onOpenSettings,
   onProjectImported,
@@ -169,7 +172,8 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
         selectedJiraProjectKey,
         (current, total) => {
           setImportProgress({ current, total });
-        }
+        },
+        { workflow: normalizeProjectWorkflow(workflow) }
       );
       await importProject(importedProject);
       handleSuccess('Projeto importado do Jira com sucesso!');
@@ -191,6 +195,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     onProjectImported,
     handleError,
     handleSuccess,
+    workflow,
   ]);
 
   const handleCreate = useCallback(async () => {
@@ -206,12 +211,16 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
 
   const handleImportFromFile = useCallback(
     async (project: Project) => {
-      await importProject(project);
+      const normalizedProject = {
+        ...project,
+        workflow: normalizeProjectWorkflow(project.workflow ?? workflow),
+      };
+      await importProject(normalizedProject);
       handleSuccess('Projeto importado com sucesso!');
       handleClose();
-      onProjectImported?.(project);
+      onProjectImported?.(normalizedProject);
     },
-    [importProject, handleSuccess, handleClose, onProjectImported]
+    [importProject, handleSuccess, handleClose, onProjectImported, workflow]
   );
 
   return (
@@ -219,7 +228,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        title="Criar Novo Projeto"
+        title={`Criar projeto — ${PROJECT_WORKFLOW_LABELS[normalizeProjectWorkflow(workflow)]}`}
         size="2xl"
         panelClassName={createProjectModalShellClass}
         bodyClassName={createProjectModalBodyClass}
@@ -252,7 +261,9 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
           {!showTemplates && !showJiraImport ? (
             <>
               <p id="create-project-desc" className={createProjectModalDescClass}>
-                Crie um projeto do zero, use um template ou importe do Jira ou de um arquivo.
+                {normalizeProjectWorkflow(workflow) === 'dev'
+                  ? 'Crie um projeto Dev do zero, use um template ou importe do Jira ou de um arquivo.'
+                  : 'Crie um projeto do zero, use um template ou importe do Jira ou de um arquivo.'}
               </p>
               <div className="space-y-3">
                 <button

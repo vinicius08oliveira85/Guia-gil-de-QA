@@ -41,7 +41,7 @@ export const exportBusinessRulesToJSON = (projectName: string, rules: BusinessRu
       projectName,
       exportedAt: new Date().toISOString(),
       readme:
-        'Cada item em businessRules: id, title, createdAt, linkedTaskIds; searchKeywords, analysis, screenshots e demais campos do dossiê IA são opcionais.',
+        'Cada item em businessRules: id, title, category, createdAt, linkedTaskIds; searchKeywords, analysis, screenshots e demais campos do dossiê IA são opcionais.',
       businessRules: rules,
     },
     null,
@@ -80,6 +80,28 @@ export const exportProjectToCSV = (project: Project): string => {
       passed.toString(),
       failed.toString(),
       bugs.toString(),
+    ];
+    rows.push(row.join(','));
+  });
+
+  return rows.join('\n');
+};
+
+/** CSV de tarefas para projetos Dev (sem colunas de QA). */
+export const exportDevTasksToCSV = (tasks: JiraTask[]): string => {
+  const headers = ['ID', 'Título', 'Tipo', 'Status', 'Com guia IA', 'Guia gerado em'];
+  const rows: string[] = [headers.join(',')];
+
+  tasks.forEach(task => {
+    const row = [
+      task.id,
+      `"${task.title.replace(/"/g, '""')}"`,
+      task.type,
+      task.status,
+      task.devGuidance ? 'Sim' : 'Não',
+      task.devGuidanceGeneratedAt
+        ? `"${new Date(task.devGuidanceGeneratedAt).toLocaleString('pt-BR')}"`
+        : '—',
     ];
     rows.push(row.join(','));
   });

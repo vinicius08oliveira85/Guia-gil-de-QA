@@ -72,6 +72,8 @@ export const landingMenuGridClass = cn(
 
 export const landingMenuCardPrimaryGridClass = 'sm:col-span-2 lg:col-span-2 lg:row-span-2';
 
+export const landingMenuCardDualPrimaryGridClass = 'sm:col-span-1 lg:col-span-1';
+
 export const landingMenuCardSecondaryGridClass = 'lg:col-span-1';
 
 /** Grid principal aside + nav. */

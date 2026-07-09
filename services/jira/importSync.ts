@@ -1,4 +1,4 @@
-import type { Project, JiraTask } from '../../types';
+import type { Project, JiraTask, ProjectWorkflow } from '../../types';
 import type { JiraConfig } from './types';
 import { EPIC_LINK_FIELD_KEYS } from './types';
 import { getJiraProjects, getJiraStatuses, getJiraPriorities } from './metadata';
@@ -18,11 +18,17 @@ import { normalizeTasksParentIdsAcyclic } from '../../utils/taskParentCycle';
 import { assignStoryPointsToTask } from '../../utils/taskStoryPoints';
 import { assignSprintsToTaskSync } from '../../utils/jiraSprintFields';
 import { buildJiraSprintSyncContext } from './sprintSync';
+import { DEFAULT_PROJECT_WORKFLOW, normalizeProjectWorkflow } from '../../utils/projectWorkflow';
+
+export interface ImportJiraProjectOptions {
+  workflow?: ProjectWorkflow;
+}
 
 export const importJiraProject = async (
   config: JiraConfig,
   jiraProjectKey: string,
-  onProgress?: (current: number, total?: number) => void
+  onProgress?: (current: number, total?: number) => void,
+  options?: ImportJiraProjectOptions
 ): Promise<Project> => {
   const jiraProjects = await getJiraProjects(config);
   const jiraProject = jiraProjects.find(p => p.key === jiraProjectKey);
@@ -275,6 +281,7 @@ export const importJiraProject = async (
     id: `jira-${jiraProject.id}-${Date.now()}`,
     name: jiraProject.name,
     description: jiraProject.description || `Projeto importado do Jira: ${jiraProjectKey}`,
+    workflow: normalizeProjectWorkflow(options?.workflow ?? DEFAULT_PROJECT_WORKFLOW),
     documents: [],
     businessRules: [],
     tasks: tasksNormalized,

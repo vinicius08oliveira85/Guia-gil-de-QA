@@ -82,7 +82,7 @@ describe('Testes de Integração End-to-End', () => {
       render(<App />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Projetos \(Testes\)/i)).toBeInTheDocument();
+        expect(screen.getByText(/Projetos QA/i)).toBeInTheDocument();
       });
 
       await useProjectsStore.getState().createProject('Projeto E2E', 'Descrição do projeto E2E');

@@ -5,6 +5,7 @@ import { useProjectMetrics } from '../hooks/useProjectMetrics';
 import { PrintableReport } from './PrintableReport';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
 import { QADashboard } from './dashboard/QADashboard';
+import { DevDashboard } from './dashboard/DevDashboard';
 import { lazyWithRetry } from '../utils/lazyWithRetry';
 
 const TasksView = lazyWithRetry(() =>
@@ -63,6 +64,7 @@ import { ProjectWorkspaceTabBar } from './project/ProjectWorkspaceTabBar';
 import { NotepadDockPanel } from './project/NotepadDockPanel';
 import { TaskWorkspacePanel } from './tasks/TaskWorkspacePanel';
 import type { JiraTask } from '../types';
+import { getProjectListPathForProject, PROJECT_WORKFLOW_LABELS, normalizeProjectWorkflow } from '../utils/projectWorkflow';
 
 const TAB_LABELS: Record<string, string> = {
   dashboard: 'Dashboard',
@@ -70,6 +72,11 @@ const TAB_LABELS: Record<string, string> = {
   documents: 'Documentos',
   notepad: 'Bloco de Notas',
   businessRules: 'Regras de negócio',
+};
+
+const TAB_LABELS_DEV: Record<string, string> = {
+  ...TAB_LABELS,
+  tasks: 'Tarefas & Implementação',
 };
 
 export const ProjectView: React.FC<{
@@ -117,13 +124,15 @@ export const ProjectView: React.FC<{
   const storeProject = useProjectsStore(s => s.projects.find(p => p.id === project.id));
   const navigate = useNavigate();
 
-  const goToProjectsList = useCallback(() => {
-    selectProject(null);
-    navigate('/projects');
-  }, [selectProject, navigate]);
-
   // Projeto mais recente do store (mesmo id do prop); fallback ao prop se ainda não estiver na lista
   const currentProject = storeProject ?? project;
+  const isDevProject = normalizeProjectWorkflow(currentProject.workflow) === 'dev';
+  const tabLabels = isDevProject ? TAB_LABELS_DEV : TAB_LABELS;
+
+  const goToProjectsList = useCallback(() => {
+    selectProject(null);
+    navigate(getProjectListPathForProject(currentProject));
+  }, [selectProject, navigate, currentProject]);
 
   const analyzingBusinessRuleIds = useBusinessRuleDossierSync(currentProject, onUpdateProject);
 
@@ -269,11 +278,11 @@ export const ProjectView: React.FC<{
   }, [currentProject.id, focusTaskTab]);
 
   const tabs: Array<{ id: ProjectFixedTabId; label: string }> = [
-    { id: 'dashboard', label: 'Dashboard' },
-    { id: 'tasks', label: 'Tarefas & Testes' },
-    { id: 'documents', label: 'Documentos' },
-    { id: 'businessRules', label: 'Regras de negócio' },
-    { id: 'notepad', label: 'Bloco de Notas' },
+    { id: 'dashboard', label: tabLabels.dashboard },
+    { id: 'tasks', label: tabLabels.tasks },
+    { id: 'documents', label: tabLabels.documents },
+    { id: 'businessRules', label: tabLabels.businessRules },
+    { id: 'notepad', label: tabLabels.notepad },
   ];
 
   const taskTabLabels = useMemo(
@@ -442,7 +451,10 @@ export const ProjectView: React.FC<{
   );
 
   const breadcrumbItems = useMemo((): BreadcrumbItem[] => {
-    const items: BreadcrumbItem[] = [{ label: 'Projetos', onClick: goToProjectsList }];
+    const workflow = normalizeProjectWorkflow(currentProject.workflow);
+    const items: BreadcrumbItem[] = [
+      { label: PROJECT_WORKFLOW_LABELS[workflow], onClick: goToProjectsList },
+    ];
 
     const onlyProjectHome =
       isProjectFixedTabId(activeTab) && activeTab === 'dashboard' && !breadcrumbTaskId;
@@ -467,31 +479,33 @@ export const ProjectView: React.FC<{
         const raw = task?.title?.trim() || 'Tarefa';
         const label = raw.length > 56 ? `${raw.slice(0, 53)}…` : raw;
         items.push({
-          label: tasksListMode === 'backlog' ? 'Backlog' : TAB_LABELS.tasks,
+          label: tasksListMode === 'backlog' ? 'Backlog' : tabLabels.tasks,
           onClick: () => handleTabClick('tasks'),
         });
         items.push({ label });
       } else {
         items.push({
-          label: tasksListMode === 'backlog' ? `${TAB_LABELS.tasks} · Backlog` : TAB_LABELS.tasks,
+          label: tasksListMode === 'backlog' ? `${tabLabels.tasks} · Backlog` : tabLabels.tasks,
         });
       }
     } else if (isProjectFixedTabId(activeTab) && activeTab === 'documents') {
-      items.push({ label: TAB_LABELS.documents });
+      items.push({ label: tabLabels.documents });
     } else if (isProjectFixedTabId(activeTab) && activeTab === 'notepad') {
-      items.push({ label: TAB_LABELS.notepad });
+      items.push({ label: tabLabels.notepad });
     } else if (isProjectFixedTabId(activeTab) && activeTab === 'businessRules') {
-      items.push({ label: TAB_LABELS.businessRules });
+      items.push({ label: tabLabels.businessRules });
     }
 
     return items;
   }, [
     goToProjectsList,
     currentProject.name,
+    currentProject.workflow,
     currentProject.tasks,
     activeTab,
     breadcrumbTaskId,
     tasksListMode,
+    tabLabels,
     handleTabClick,
   ]);
 
@@ -685,7 +699,7 @@ export const ProjectView: React.FC<{
                     tasksListMode === 'backlog'
                 )}
                 aria-label={`Abrir backlog (${backlogCount} itens)`}
-                title="Ver backlog em Tarefas & Testes"
+                title={`Ver backlog em ${tabLabels.tasks}`}
               >
                 <Layers className="h-3 w-3 shrink-0" aria-hidden />
                 <span className="hidden sm:inline">Backlog</span>
@@ -745,15 +759,23 @@ export const ProjectView: React.FC<{
               lazy={false}
             >
               <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
-                <QADashboard
-                  project={currentProject}
-                  onUpdateProject={onUpdateProject}
-                  onNavigateToTab={tabId => handleTabClick(tabId)}
-                  onNavigateToBacklog={handleNavigateToBacklog}
-                  onNavigateToTasksWithExecutionStatuses={
-                    handleNavigateToTasksWithExecutionStatuses
-                  }
-                />
+                {isDevProject ? (
+                  <DevDashboard
+                    project={currentProject}
+                    onUpdateProject={onUpdateProject}
+                    onNavigateToTab={tabId => handleTabClick(tabId)}
+                  />
+                ) : (
+                  <QADashboard
+                    project={currentProject}
+                    onUpdateProject={onUpdateProject}
+                    onNavigateToTab={tabId => handleTabClick(tabId)}
+                    onNavigateToBacklog={handleNavigateToBacklog}
+                    onNavigateToTasksWithExecutionStatuses={
+                      handleNavigateToTasksWithExecutionStatuses
+                    }
+                  />
+                )}
               </Suspense>
             </KeepAlivePanel>
             <KeepAlivePanel

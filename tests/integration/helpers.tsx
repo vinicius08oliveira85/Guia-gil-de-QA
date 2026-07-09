@@ -96,7 +96,7 @@ export function simulateNavigation(
       store.selectProject(null);
       break;
     case 'dashboard':
-      window.history.pushState({}, '', '/projects');
+      window.history.pushState({}, '', '/projects/qa');
       window.dispatchEvent(new PopStateEvent('popstate'));
       store.selectProject(null);
       break;

@@ -20,6 +20,7 @@ export type TaskDetailSectionId =
   | 'overview'
   | 'bdd'
   | 'tests'
+  | 'guidance'
   | 'businessRules'
   | 'planning';
 
@@ -64,6 +65,7 @@ function sanitizeSession(
       'overview',
       'bdd',
       'tests',
+      'guidance',
       'businessRules',
       'planning',
     ];

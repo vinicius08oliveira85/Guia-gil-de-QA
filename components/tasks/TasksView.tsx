@@ -31,6 +31,7 @@ import {
   Layers,
   Download,
   Search,
+  Sparkles,
 } from 'lucide-react';
 import { logger } from '../../utils/logger';
 import { cn } from '../../utils/cn';
@@ -78,7 +79,10 @@ import { TasksViewSearch } from './TasksViewSearch';
 import { TasksViewFiltersModalContent } from './TasksViewFiltersModal';
 import { TasksViewList } from './TasksViewList';
 import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
-import { FailedTestsReportModal } from './FailedTestsReportModal';
+import { generateAndAppendDevProjectAnalysis } from '../../services/ai/projectDevFullAnalysisService';
+import { generateDevGuidanceForTask } from '../../services/ai/devGuidanceGenerationService';
+import { normalizeProjectWorkflow } from '../../utils/projectWorkflow';
+import { DEV_TASKS_COPY } from '../../utils/devTasksUi';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useTaskFilters } from '../../hooks/useTaskFilters';
 import { GlassIndicatorCards } from '../dashboard/GlassIndicatorCards';
@@ -166,6 +170,7 @@ export const TasksView: React.FC<{
   onListModeChange,
   onOpenTaskTab,
 }) => {
+  const isDevProject = normalizeProjectWorkflow(project.workflow) === 'dev';
   const backlogOnly = listModeProp === 'backlog';
   const backlogTaskCount = useMemo(
     () => filterBacklogTasks(project.tasks).length,
@@ -229,6 +234,9 @@ export const TasksView: React.FC<{
   const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
   const [generatingBddTaskId, setGeneratingBddTaskId] = useState<string | null>(null);
   const [generatingAllTaskId, setGeneratingAllTaskId] = useState<string | null>(null);
+  const [generatingDevGuidanceTaskId, setGeneratingDevGuidanceTaskId] = useState<string | null>(
+    null
+  );
 
   /** Evita spam de log ao reconstruir a árvore com o mesmo ciclo parentId. */
   const parentCycleWarnedRef = useRef(new Set<string>());
@@ -360,6 +368,7 @@ export const TasksView: React.FC<{
   } = useTaskFilters(filterScopeProject, {
     executionStatusNavKey: tasksExecutionNavKey,
     executionStatusNavStatuses: tasksExecutionNavStatuses,
+    devMode: isDevProject,
   });
 
   const backlogSprintFilterOptions = useMemo(
@@ -427,7 +436,6 @@ export const TasksView: React.FC<{
     message: string;
     estimatedSeconds?: number;
   } | null>(null);
-  const [showFailedTestsReport, setShowFailedTestsReport] = useState(false);
   const [modalTask, setModalTask] = useState<JiraTask | null>(null);
 
   const handleOpenTaskDetails = useCallback(
@@ -724,6 +732,47 @@ export const TasksView: React.FC<{
       });
     },
     [project, onUpdateProject, handleError, handleSuccess, enqueueGeminiOperation]
+  );
+
+  const handleGenerateDevGuidance = useCallback(
+    async (taskId: string) => {
+      return enqueueGeminiOperation(async () => {
+        setGeneratingDevGuidanceTaskId(taskId);
+        try {
+          const task = project.tasks.find(t => t.id === taskId);
+          if (!task) throw new Error('Task not found');
+
+          const ctx = await resolveTaskAiContext(task, { project });
+          const result = await generateDevGuidanceForTask(task, {
+            project,
+            taskAiContext: ctx,
+          });
+          const { snapshotHash, generatedAt, ...guidance } = result;
+          const updatedTask = {
+            ...task,
+            devGuidance: guidance,
+            devGuidanceSnapshotHash: snapshotHash,
+            devGuidanceGeneratedAt: generatedAt,
+          };
+          const newTasks = project.tasks.map(t => (t.id === updatedTask.id ? updatedTask : t));
+          onUpdateProject({ ...project, tasks: newTasks });
+          propagateTaskUpdate(updatedTask);
+          handleSuccess('Guia de implementação gerado com sucesso!');
+        } catch (error) {
+          notifyAiError(error, 'Gerar guia Dev');
+        } finally {
+          setGeneratingDevGuidanceTaskId(null);
+        }
+      });
+    },
+    [
+      project,
+      onUpdateProject,
+      handleSuccess,
+      enqueueGeminiOperation,
+      notifyAiError,
+      propagateTaskUpdate,
+    ]
   );
 
   const handleSyncTaskToJira = useCallback(
@@ -1440,6 +1489,123 @@ export const TasksView: React.FC<{
     enqueueGeminiOperation,
   ]);
 
+  const handleDevAssistWithIA = useCallback(async () => {
+    return enqueueGeminiOperation(async () => {
+      const taskCount = project.tasks.length;
+      const adaptiveTimeout = Math.min(120000 + taskCount * 5000, 180000);
+      const estimatedSeconds = Math.round(adaptiveTimeout / 1000);
+
+      setIsRunningGeneralAnalysis(true);
+      setAnalysisProgress({
+        current: 0,
+        total: 2,
+        message: 'Iniciando assistência Dev…',
+        estimatedSeconds,
+      });
+
+      try {
+        setAnalysisProgress({
+          current: 1,
+          total: 2,
+          message: 'Analisando projeto (stack, backlog técnico, riscos)…',
+          estimatedSeconds,
+        });
+
+        const { project: withAnalysis } = await withTimeout(
+          generateAndAppendDevProjectAnalysis(project),
+          adaptiveTimeout
+        );
+
+        let updatedTasks = [...withAnalysis.tasks];
+        const tasksNeedingGuidance = updatedTasks
+          .filter(
+            task =>
+              (task.type === 'Tarefa' || task.type === 'Bug') &&
+              !task.devGuidance &&
+              task.title?.trim()
+          )
+          .slice(0, 10);
+
+        let guidanceSuccess = 0;
+        let guidanceFail = 0;
+
+        if (tasksNeedingGuidance.length > 0) {
+          setAnalysisProgress({
+            current: 2,
+            total: 2,
+            message: `Gerando guias de implementação (0/${tasksNeedingGuidance.length})…`,
+            estimatedSeconds,
+          });
+
+          for (let i = 0; i < tasksNeedingGuidance.length; i++) {
+            const task = tasksNeedingGuidance[i];
+            setAnalysisProgress({
+              current: 2,
+              total: 2,
+              message: `Gerando guia para "${task.title.substring(0, 30)}…" (${i + 1}/${tasksNeedingGuidance.length})`,
+              estimatedSeconds,
+            });
+
+            try {
+              const result = await withTimeout(
+                generateDevGuidanceForTask(task, { project: withAnalysis }),
+                90000
+              );
+              const taskIndex = updatedTasks.findIndex(t => t.id === task.id);
+              if (taskIndex !== -1) {
+                updatedTasks[taskIndex] = {
+                  ...updatedTasks[taskIndex],
+                  devGuidance: result,
+                  devGuidanceSnapshotHash: result.snapshotHash,
+                  devGuidanceGeneratedAt: result.generatedAt,
+                };
+              }
+              guidanceSuccess++;
+            } catch (error) {
+              guidanceFail++;
+              logger.error(`Erro ao gerar guia Dev para tarefa ${task.id}`, 'TasksView', error);
+            }
+
+            if (i < tasksNeedingGuidance.length - 1) {
+              await delay(300);
+            }
+          }
+        }
+
+        onUpdateProject({ ...withAnalysis, tasks: updatedTasks });
+        setAnalysisProgress(null);
+
+        const parts: string[] = ['Análise Dev do projeto concluída'];
+        if (guidanceSuccess > 0) {
+          parts.push(`${guidanceSuccess} guia(s) de implementação gerado(s)`);
+        }
+        if (guidanceFail > 0) {
+          parts.push(`${guidanceFail} falha(s) ao gerar guias`);
+        }
+        handleSuccess(parts.join('. ') + '.');
+
+        if (onNavigateToTab) {
+          setTimeout(() => onNavigateToTab('dashboard'), 500);
+        }
+      } catch (error) {
+        setAnalysisProgress(null);
+        notifyAiError(error, 'Assistência Dev com IA');
+      } finally {
+        setIsRunningGeneralAnalysis(false);
+        setAnalysisProgress(null);
+      }
+    });
+  }, [
+    project,
+    onUpdateProject,
+    handleSuccess,
+    notifyAiError,
+    onNavigateToTab,
+    enqueueGeminiOperation,
+  ]);
+
+  const handleProjectAiAnalysis = isDevProject ? handleDevAssistWithIA : handleGeneralIAAnalysis;
+
   const handleSaveTask = (
     taskData: Omit<
       JiraTask,
@@ -1815,94 +1981,125 @@ export const TasksView: React.FC<{
     [statusFilter]
   );
 
+  const withDevGuidanceCount = useMemo(
+    () => (project.tasks ?? []).filter(t => t.devGuidance).length,
+    [project.tasks]
+  );
+
+  const clearDevTaskFilters = useCallback(() => {
+    setSearchQuery('');
+    setStatusFilter([]);
+    setTypeFilter([]);
+    setQualityFilter([]);
+    setPriorityFilter([]);
+    setTestStatusFilter([]);
+    setTestCaseExecutionStatusFilter([]);
+  }, [
+    setSearchQuery,
+    setStatusFilter,
+    setTypeFilter,
+    setQualityFilter,
+    setPriorityFilter,
+    setTestStatusFilter,
+    setTestCaseExecutionStatusFilter,
+  ]);
+
   const indicatorItems = useMemo(
-    () => [
-      {
-        label: 'Total de Tarefas',
-        value: stats.total,
-        modifier: 'no escopo',
-        icon: ClipboardList,
-        colorTheme: 'primary' as const,
-      },
-      {
-        label: 'Tarefas Pendentes',
-        value: stats.pending,
-        modifier: '-',
-        icon: Clock,
-        colorTheme: 'warning' as const,
-        onClick: () => {
-          setSearchQuery('');
-          setStatusFilter(toDoLabels);
-          setTypeFilter([]);
-          setTestStatusFilter([]);
-          setQualityFilter([]);
-          setPriorityFilter([]);
-          setTestCaseExecutionStatusFilter([]);
+    () => {
+      const baseItems = [
+        {
+          label: 'Total de Tarefas',
+          value: stats.total,
+          modifier: 'no escopo',
+          icon: ClipboardList,
+          colorTheme: 'primary' as const,
         },
-        isActive: typeFilter.length === 0 && sameStatusSet(toDoLabels),
-      },
-      {
-        label: 'Em Andamento',
-        value: stats.inProgress,
-        modifier: 'active',
-        icon: Zap,
-        colorTheme: 'info' as const,
-        onClick: () => {
-          setSearchQuery('');
-          setStatusFilter(inProgressLabels);
-          setTypeFilter([]);
-          setTestStatusFilter([]);
-          setQualityFilter([]);
-          setPriorityFilter([]);
-          setTestCaseExecutionStatusFilter([]);
+        {
+          label: 'Tarefas Pendentes',
+          value: stats.pending,
+          modifier: '-',
+          icon: Clock,
+          colorTheme: 'warning' as const,
+          onClick: () => {
+            clearDevTaskFilters();
+            setStatusFilter(toDoLabels);
+          },
+          isActive: typeFilter.length === 0 && sameStatusSet(toDoLabels),
         },
-        isActive: typeFilter.length === 0 && sameStatusSet(inProgressLabels),
-      },
-      {
-        label: 'Concluídas',
-        value: stats.done,
-        modifier: stats.total > 0 ? `${Math.round((stats.done / stats.total) * 100)}%` : '0%',
-        icon: CheckCircle,
-        colorTheme: 'success' as const,
-        onClick: () => {
-          setSearchQuery('');
-          setStatusFilter(doneLabels);
-          setTypeFilter([]);
-          setTestStatusFilter([]);
-          setQualityFilter([]);
-          setPriorityFilter([]);
-          setTestCaseExecutionStatusFilter([]);
+        {
+          label: 'Em Andamento',
+          value: stats.inProgress,
+          modifier: 'active',
+          icon: Zap,
+          colorTheme: 'info' as const,
+          onClick: () => {
+            clearDevTaskFilters();
+            setStatusFilter(inProgressLabels);
+          },
+          isActive: typeFilter.length === 0 && sameStatusSet(inProgressLabels),
         },
-        isActive: typeFilter.length === 0 && sameStatusSet(doneLabels),
-      },
-      {
-        label: 'Bugs Abertos',
-        value: stats.bugsOpen,
-        modifier: (metrics.bugsBySeverity?.['Crítico'] ?? 0) > 0 ? 'Critical' : 'Abertos',
-        icon: AlertTriangle,
-        colorTheme: 'error' as const,
-        onClick: () => {
-          setSearchQuery('');
-          setTypeFilter(['Bug']);
-          setStatusFilter(nonDoneLabels);
-          setTestStatusFilter([]);
-          setQualityFilter([]);
-          setPriorityFilter([]);
-          setTestCaseExecutionStatusFilter([]);
+        {
+          label: 'Concluídas',
+          value: stats.done,
+          modifier: stats.total > 0 ? `${Math.round((stats.done / stats.total) * 100)}%` : '0%',
+          icon: CheckCircle,
+          colorTheme: 'success' as const,
+          onClick: () => {
+            clearDevTaskFilters();
+            setStatusFilter(doneLabels);
+          },
+          isActive: typeFilter.length === 0 && sameStatusSet(doneLabels),
         },
-        isActive:
-          typeFilter.length === 1 &&
-          typeFilter[0] === 'Bug' &&
-          statusFilter.length === nonDoneLabels.length &&
-          statusFilter.every(s => nonDoneLabels.includes(s)),
-      },
-    ],
+      ];
+
+      if (isDevProject) {
+        return [
+          ...baseItems,
+          {
+            label: 'Com guia IA',
+            value: withDevGuidanceCount,
+            modifier: 'implementação',
+            icon: Sparkles,
+            colorTheme: 'info' as const,
+            onClick: () => {
+              clearDevTaskFilters();
+              setQualityFilter(['with-guidance']);
+            },
+            isActive:
+              qualityFilter.length === 1 && qualityFilter[0] === 'with-guidance',
+          },
+        ];
+      }
+
+      return [
+        ...baseItems,
+        {
+          label: 'Bugs Abertos',
+          value: stats.bugsOpen,
+          modifier: (metrics.bugsBySeverity?.['Crítico'] ?? 0) > 0 ? 'Critical' : 'Abertos',
+          icon: AlertTriangle,
+          colorTheme: 'error' as const,
+          onClick: () => {
+            clearDevTaskFilters();
+            setTypeFilter(['Bug']);
+            setStatusFilter(nonDoneLabels);
+          },
+          isActive:
+            typeFilter.length === 1 &&
+            typeFilter[0] === 'Bug' &&
+            statusFilter.length === nonDoneLabels.length &&
+            statusFilter.every(s => nonDoneLabels.includes(s)),
+        },
+      ];
+    },
     [
+      isDevProject,
       stats.total,
       stats.pending,
       stats.inProgress,
       stats.done,
       stats.bugsOpen,
+      withDevGuidanceCount,
       metrics.bugsBySeverity,
       toDoLabels,
       inProgressLabels,
@@ -1911,8 +2108,11 @@ export const TasksView: React.FC<{
       sameStatusSet,
       statusFilter,
       typeFilter,
-      setSearchQuery,
-      setTestCaseExecutionStatusFilter,
+      qualityFilter,
+      clearDevTaskFilters,
+      setStatusFilter,
+      setTypeFilter,
+      setQualityFilter,
     ]
   );
 
@@ -2138,6 +2338,7 @@ export const TasksView: React.FC<{
               onOpenModal={handleOpenTaskDetails}
               onToggleFavorite={() => handleToggleFavorite(task.id)}
               onDetailsOpenChange={onTaskDetailsOpenChange}
+              devMode={isDevProject}
             >
               {task.children.length > 0 &&
                 task.children.map((child, cidx) =>
@@ -2187,6 +2388,7 @@ export const TasksView: React.FC<{
       toggleTaskSelection,
       handleToggleFavorite,
       onTaskDetailsOpenChange,
+      isDevProject,
     ]
   );
 
@@ -2242,8 +2444,12 @@ export const TasksView: React.FC<{
         role="main"
         aria-label={
           backlogOnly
-            ? 'Tarefas e testes — backlog do projeto'
-            : 'Tarefas e casos de teste do projeto'
+            ? isDevProject
+              ? DEV_TASKS_COPY.backlogAriaLabel
+              : 'Tarefas e testes — backlog do projeto'
+            : isDevProject
+              ? DEV_TASKS_COPY.pageAriaLabel
+              : 'Tarefas e casos de teste do projeto'
         }
       >
         <div className={tasksViewContentClass}>
@@ -2253,10 +2459,11 @@ export const TasksView: React.FC<{
                 jiraProjectKey={jiraProjectKey}
                 onAddTask={() => openTaskFormForNew()}
                 onOpenFilters={() => setIsFiltersModalOpen(true)}
-                onAnalyze={handleGeneralIAAnalysis}
+                onAnalyze={handleProjectAiAnalysis}
                 isRunningGeneralAnalysis={isRunningGeneralAnalysis}
                 analysisProgress={analysisProgress}
                 activeFiltersCount={activeFiltersCount}
+                devMode={isDevProject}
               />
 
               {!backlogOnly ? (
@@ -2270,7 +2477,9 @@ export const TasksView: React.FC<{
           <div className={tasksViewSectionHeaderClass}>
             <h2 className={tasksViewSectionLabelClass}>Explorar tarefas</h2>
             <p className={tasksViewSectionDescClass}>
-              Alterne entre todas as tarefas e o backlog, filtre por sprint e busque por ID ou título.
+              {isDevProject
+                ? DEV_TASKS_COPY.exploreSectionDesc
+                : 'Alterne entre todas as tarefas e o backlog, filtre por sprint e busque por ID ou título.'}
             </p>
           </div>
 
@@ -2311,7 +2520,9 @@ export const TasksView: React.FC<{
             <p className={tasksViewSectionDescClass}>
               {listModeProp === 'backlog'
                 ? 'Itens do backlog ordenados por prioridade e sprint.'
-                : 'Todas as tarefas do projeto com filtros, agrupamento e ações em lote.'}
+                : isDevProject
+                  ? DEV_TASKS_COPY.listSectionDesc
+                  : 'Todas as tarefas do projeto com filtros, agrupamento e ações em lote.'}
             </p>
           </div>
 
@@ -2354,15 +2565,18 @@ export const TasksView: React.FC<{
                 setStatusFilter(preset.filters.statusFilter);
                 setPriorityFilter(preset.filters.priorityFilter);
                 setTypeFilter(preset.filters.typeFilter);
-                setTestStatusFilter(preset.filters.testStatusFilter);
-                setTestCaseExecutionStatusFilter(
-                  preset.filters.testCaseExecutionStatusFilter ?? []
-                );
+                if (!isDevProject) {
+                  setTestStatusFilter(preset.filters.testStatusFilter);
+                  setTestCaseExecutionStatusFilter(
+                    preset.filters.testCaseExecutionStatusFilter ?? []
+                  );
+                }
                 setQualityFilter(preset.filters.qualityFilter);
                 setSortBy(preset.filters.sortBy);
                 setGroupBy(preset.filters.groupBy);
                 setIsFiltersModalOpen(false);
               }}
+              devMode={isDevProject}
             />
           </Modal>
 
@@ -2393,6 +2607,7 @@ export const TasksView: React.FC<{
             hasActiveFiltersOrSearch={
               activeFiltersCount > 0 || (backlogOnly && hasBacklogToolbarFiltersActive)
             }
+            devMode={isDevProject}
           >
             <div className="space-y-4 min-w-0">
               <div className="flex flex-col gap-4">
@@ -2422,7 +2637,7 @@ export const TasksView: React.FC<{
                     </button>
                   </div>
                 )}
-                {(generatingTestsTaskId || generatingBddTaskId) && (
+                {(generatingTestsTaskId || generatingBddTaskId) && !isDevProject && (
                   <div className="flex items-center gap-2 rounded-field border border-primary/40 bg-primary/10 p-4 text-sm text-base-content">
                     <span className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent"></span>
                     {generatingTestsTaskId && (
@@ -2709,7 +2924,11 @@ export const TasksView: React.FC<{
                     <ClipboardList className="mx-auto h-12 w-12 text-base-content/72" aria-hidden />
                   }
                   title="Nenhuma tarefa criada ainda"
-                  description="Comece criando sua primeira tarefa para organizar seu trabalho de QA."
+                  description={
+                    isDevProject
+                      ? 'Comece criando sua primeira tarefa para organizar o backlog de implementação.'
+                      : 'Comece criando sua primeira tarefa para organizar seu trabalho de QA.'
+                  }
                   action={{
                     label: 'Adicionar Tarefa',
                     onClick: () => openTaskFormForNew(),
@@ -2730,64 +2949,67 @@ export const TasksView: React.FC<{
         exportType="tasks"
         project={project}
         tasks={listTasks}
+        devMode={isDevProject}
       />
 
-      <Modal
-        isOpen={failModalState.isOpen}
-        onClose={() => setFailModalState({ ...failModalState, isOpen: false })}
-        title="Registrar Falha no Teste"
-        size="xl"
-      >
-        <div className="space-y-4">
-          <div>
-            <label
-              htmlFor="observed-result"
-              className="task-card-muted block text-sm font-medium mb-1"
-            >
-              Resultado Obtido (O que aconteceu de errado?)
-            </label>
-            <textarea
-              id="observed-result"
-              value={failModalState.observedResult}
-              onChange={e =>
-                setFailModalState({ ...failModalState, observedResult: e.target.value })
-              }
-              rows={4}
-              className="textarea textarea-bordered w-full"
-            ></textarea>
+      {!isDevProject ? (
+        <Modal
+          isOpen={failModalState.isOpen}
+          onClose={() => setFailModalState({ ...failModalState, isOpen: false })}
+          title="Registrar Falha no Teste"
+          size="xl"
+        >
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="observed-result"
+                className="task-card-muted block text-sm font-medium mb-1"
+              >
+                Resultado Obtido (O que aconteceu de errado?)
+              </label>
+              <textarea
+                id="observed-result"
+                value={failModalState.observedResult}
+                onChange={e =>
+                  setFailModalState({ ...failModalState, observedResult: e.target.value })
+                }
+                rows={4}
+                className="textarea textarea-bordered w-full"
+              ></textarea>
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                id="create-bug-task"
+                type="checkbox"
+                checked={failModalState.createBug}
+                onChange={e => setFailModalState({ ...failModalState, createBug: e.target.checked })}
+                className="checkbox checkbox-highlight"
+              />
+              <label htmlFor="create-bug-task" className="block text-sm text-base-content">
+                Criar tarefa de Bug automaticamente
+              </label>
+            </div>
+            <div className="flex justify-end gap-3 pt-4">
+              <button
+                type="button"
+                onClick={() => setFailModalState({ ...failModalState, isOpen: false })}
+                className={cn(leveViewOutlineBtnClass, 'btn-sm flex items-center gap-1.5')}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmFail}
+                className="btn btn-error btn-sm rounded-full flex items-center gap-1.5 shadow-sm transition-all active:scale-95"
+              >
+                Confirmar Reprovação
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <input
-              id="create-bug-task"
-              type="checkbox"
-              checked={failModalState.createBug}
-              onChange={e => setFailModalState({ ...failModalState, createBug: e.target.checked })}
-              className="checkbox checkbox-highlight"
-            />
-            <label htmlFor="create-bug-task" className="block text-sm text-base-content">
-              Criar tarefa de Bug automaticamente
-            </label>
-          </div>
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={() => setFailModalState({ ...failModalState, isOpen: false })}
-              className={cn(leveViewOutlineBtnClass, 'btn-sm flex items-center gap-1.5')}
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              onClick={handleConfirmFail}
-              className="btn btn-error btn-sm rounded-full flex items-center gap-1.5 shadow-sm transition-all active:scale-95"
-            >
-              Confirmar Reprovação
-            </button>
-          </div>
-        </div>
-      </Modal>
+        </Modal>
+      ) : null}
 
-      {testCaseEditorRef && (
+      {!isDevProject && testCaseEditorRef ? (
         <TestCaseEditorModal
           testCase={testCaseEditorRef.testCase}
           isOpen={!!testCaseEditorRef}
@@ -2797,14 +3019,7 @@ export const TasksView: React.FC<{
             handleDeleteTestCase(testCaseEditorRef.taskId, testCaseEditorRef.testCase.id)
           }
         />
-      )}
-
-      {/* Modal de Relatório de Testes Reprovados */}
-      <FailedTestsReportModal
-        isOpen={showFailedTestsReport}
-        onClose={() => setShowFailedTestsReport(false)}
-        project={project}
-      />
+      ) : null}
 
       <ConfirmDialog
         isOpen={!!confirmDeleteState}
@@ -2867,6 +3082,11 @@ export const TasksView: React.FC<{
           onOpenTask={handleOpenTaskDetails}
           onUpdateFromJira={handleUpdateTaskFromJira}
           isUpdatingFromJira={modalTask ? updatingFromJiraTaskId === modalTask.id : false}
+          devMode={isDevProject}
+          onGenerateDevGuidance={isDevProject ? handleGenerateDevGuidance : undefined}
+          isGeneratingDevGuidance={
+            modalTask ? generatingDevGuidanceTaskId === modalTask.id : false
+          }
         />
       )}
     </>

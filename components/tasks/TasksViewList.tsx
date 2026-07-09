@@ -36,6 +36,7 @@ export interface TasksViewListProps {
   totalCount: number;
   hasActiveFiltersOrSearch: boolean;
   children: React.ReactNode;
+  devMode?: boolean;
 }
 
 const CASE_EXECUTION_LABEL: Record<TestCase['status'], string> = {
@@ -52,6 +53,11 @@ const QUALITY_LABELS: Record<string, string> = {
   'without-tests': 'Sem Testes',
   automated: 'Automatizados',
   manual: 'Manuais',
+};
+
+const DEV_GUIDANCE_LABELS: Record<string, string> = {
+  'with-guidance': 'Com guia IA',
+  'without-guidance': 'Sem guia IA',
 };
 
 export const TasksViewList: React.FC<TasksViewListProps> = ({
@@ -76,6 +82,7 @@ export const TasksViewList: React.FC<TasksViewListProps> = ({
   totalCount,
   hasActiveFiltersOrSearch,
   children,
+  devMode = false,
 }) => (
   <>
     {hasActiveFiltersOrSearch && (
@@ -129,57 +136,64 @@ export const TasksViewList: React.FC<TasksViewListProps> = ({
             </button>
           </span>
         ))}
-        {testStatusFilter.map(ts => {
-          const opt = TEST_STATUS_FILTER_OPTIONS.find(o => o.value === ts);
-          return (
+        {!devMode &&
+          testStatusFilter.map(ts => {
+            const opt = TEST_STATUS_FILTER_OPTIONS.find(o => o.value === ts);
+            return (
+              <span
+                key={`testStatus-${ts}`}
+                className={tasksPanelActiveFilterChipClass}
+              >
+                Teste: {opt?.label ?? ts}
+                <button
+                  type="button"
+                  onClick={() => setTestStatusFilter(prev => prev.filter(x => x !== ts))}
+                  className={tasksPanelActiveFilterChipBtnClass}
+                  aria-label={`Remover filtro Teste: ${opt?.label ?? ts}`}
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            );
+          })}
+        {!devMode &&
+          testCaseExecutionStatusFilter.map(st => (
             <span
-              key={`testStatus-${ts}`}
+              key={`caseExec-${st}`}
               className={tasksPanelActiveFilterChipClass}
             >
-              Teste: {opt?.label ?? ts}
+              {CASE_EXECUTION_LABEL[st]}
               <button
                 type="button"
-                onClick={() => setTestStatusFilter(prev => prev.filter(x => x !== ts))}
+                onClick={() => setTestCaseExecutionStatusFilter(prev => prev.filter(x => x !== st))}
                 className={tasksPanelActiveFilterChipBtnClass}
-                aria-label={`Remover filtro Teste: ${opt?.label ?? ts}`}
+                aria-label={`Remover filtro ${CASE_EXECUTION_LABEL[st]}`}
               >
                 <X className="w-3 h-3" />
               </button>
             </span>
-          );
-        })}
-        {testCaseExecutionStatusFilter.map(st => (
-          <span
-            key={`caseExec-${st}`}
-            className={tasksPanelActiveFilterChipClass}
-          >
-            {CASE_EXECUTION_LABEL[st]}
-            <button
-              type="button"
-              onClick={() => setTestCaseExecutionStatusFilter(prev => prev.filter(x => x !== st))}
-              className={tasksPanelActiveFilterChipBtnClass}
-              aria-label={`Remover filtro ${CASE_EXECUTION_LABEL[st]}`}
-            >
-              <X className="w-3 h-3" />
-            </button>
-          </span>
-        ))}
-        {qualityFilter.map(q => (
+          ))}
+        {qualityFilter.map(q => {
+          const qualityLabel = devMode
+            ? (DEV_GUIDANCE_LABELS[q] ?? q)
+            : (QUALITY_LABELS[q] ?? q);
+          return (
           <span
             key={`quality-${q}`}
             className={tasksPanelActiveFilterChipClass}
           >
-            Qualidade: {QUALITY_LABELS[q] ?? q}
+            {devMode ? qualityLabel : `Qualidade: ${qualityLabel}`}
             <button
               type="button"
               onClick={() => setQualityFilter(prev => prev.filter(x => x !== q))}
               className={tasksPanelActiveFilterChipBtnClass}
-              aria-label={`Remover filtro Qualidade: ${QUALITY_LABELS[q] ?? q}`}
+              aria-label={`Remover filtro ${qualityLabel}`}
             >
               <X className="w-3 h-3" />
             </button>
           </span>
-        ))}
+        );
+        })}
         {searchQuery && (
           <span className={tasksPanelActiveFilterChipClass}>
             Busca: {searchQuery.length > 20 ? `${searchQuery.slice(0, 20)}…` : searchQuery}

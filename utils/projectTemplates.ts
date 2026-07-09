@@ -1,6 +1,7 @@
-import { Project, PhaseName } from '../types';
+import { Project, PhaseName, type ProjectWorkflow } from '../types';
 import { PHASE_NAMES } from './constants';
 import { DEFAULT_BUSINESS_RULE_CATEGORY_PRESETS } from './businessRuleCategoryPresets';
+import { DEFAULT_PROJECT_WORKFLOW, normalizeProjectWorkflow } from './projectWorkflow';
 
 export interface ProjectTemplate {
   id: string;
@@ -226,7 +227,8 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
 export const createProjectFromTemplate = (
   templateId: string,
   projectName: string,
-  description: string
+  description: string,
+  workflow: ProjectWorkflow = DEFAULT_PROJECT_WORKFLOW
 ): Project => {
   const template = PROJECT_TEMPLATES.find(t => t.id === templateId);
 
@@ -261,6 +263,7 @@ export const createProjectFromTemplate = (
     id: `proj-${Date.now()}`,
     name: projectName,
     description: description || template.description,
+    workflow: normalizeProjectWorkflow(workflow),
     documents: [],
     businessRules: [],
     businessRuleCategoryPresets: [...DEFAULT_BUSINESS_RULE_CATEGORY_PRESETS],

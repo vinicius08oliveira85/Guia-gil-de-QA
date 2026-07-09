@@ -20,6 +20,8 @@ export interface WorkspaceDaisyStatsProps {
   testSuccessPercent: number;
   taskDonePercent: number;
   localBackupStatus: LocalBackupStatStatus;
+  /** Oculta o KPI de sucesso de testes (ex.: workspace Projetos Dev). */
+  showTestSuccessStat?: boolean;
   /** Use `contents` quando o pai define o grid (faixa de 5 métricas). */
   className?: string;
   onStatClick?: (key: WorkspaceStatKey) => void;
@@ -32,6 +34,7 @@ export const WorkspaceDaisyStats: React.FC<WorkspaceDaisyStatsProps> = ({
   testSuccessPercent,
   taskDonePercent,
   localBackupStatus,
+  showTestSuccessStat = true,
   className,
   onStatClick,
 }) => {
@@ -75,16 +78,20 @@ export const WorkspaceDaisyStats: React.FC<WorkspaceDaisyStatsProps> = ({
       progress: undefined as number | undefined,
       progressLabel: '',
     },
-    {
-      key: 'success' as const,
-      icon: <CircleCheck className={iconClass} strokeWidth={1.75} aria-hidden />,
-      label: 'Sucesso',
-      value: formatWorkspaceStatPercent(testSuccessPercent),
-      valueClass: workspaceDaisyStatValueClass,
-      title: 'Taxa de sucesso dos casos de teste executados no workspace',
-      progress: testSuccessPercent,
-      progressLabel: 'Sucesso dos testes',
-    },
+    ...(showTestSuccessStat
+      ? [
+          {
+            key: 'success' as const,
+            icon: <CircleCheck className={iconClass} strokeWidth={1.75} aria-hidden />,
+            label: 'Sucesso',
+            value: formatWorkspaceStatPercent(testSuccessPercent),
+            valueClass: workspaceDaisyStatValueClass,
+            title: 'Taxa de sucesso dos casos de teste executados no workspace',
+            progress: testSuccessPercent,
+            progressLabel: 'Sucesso dos testes',
+          },
+        ]
+      : []),
     {
       key: 'progress' as const,
       icon: <ListTodo className={iconClass} strokeWidth={1.75} aria-hidden />,

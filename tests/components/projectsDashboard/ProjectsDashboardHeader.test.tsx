@@ -5,6 +5,7 @@ import { ProjectsDashboardHeader } from '../../../components/projectsDashboard/P
 
 describe('ProjectsDashboardHeader', () => {
   const baseProps = {
+    title: 'Projetos QA',
     projectCount: 2,
     lastActivityText: 'há cerca de 1 hora',
     searchQuery: '',

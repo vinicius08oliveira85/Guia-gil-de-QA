@@ -25,6 +25,7 @@ import {
   tasksPanelFiltersModalSaveLinkClass,
   tasksPanelFiltersModalSectionLabelClass,
 } from './tasksPanelNeuStyles';
+import { DEV_GUIDANCE_QUALITY_FILTERS } from '../../utils/devTasksUi';
 
 const FilterChip = ({
   label,
@@ -91,6 +92,7 @@ export interface TasksViewFiltersModalProps {
   sortBy?: TaskSortBy;
   groupBy?: TaskGroupBy;
   onLoadPreset?: (preset: SavedFilterPreset) => void;
+  devMode?: boolean;
 }
 
 export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> = ({
@@ -115,6 +117,7 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
   sortBy,
   groupBy,
   onLoadPreset,
+  devMode = false,
 }) => {
   const [savedPresets, setSavedPresets] = useState<SavedFilterPreset[]>(() =>
     projectId ? getSavedFilters(projectId) : []
@@ -313,72 +316,98 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
           </div>
         </div>
 
-        <div className="min-w-0">
-          <p className={tasksPanelFiltersModalSectionLabelClass}>Status de teste</p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {TEST_STATUS_FILTER_OPTIONS.map(({ value, label }) => (
-              <FilterChip
-                key={value}
-                label={label}
-                count={counts.testStatus(value)}
-                isActive={testStatusFilter.includes(value)}
-                onClick={() =>
-                  setTestStatusFilter(prev =>
-                    prev.includes(value) ? prev.filter(s => s !== value) : [...prev, value]
-                  )
-                }
-              />
-            ))}
+        {devMode ? (
+          <div className="min-w-0 md:col-span-2 xl:col-span-3">
+            <p className={tasksPanelFiltersModalSectionLabelClass}>Guia de implementação (IA)</p>
+            <p className={tasksPanelFiltersModalHintClass}>
+              Filtra tarefas que já possuem ou ainda não possuem guia Dev gerado pela IA.
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {DEV_GUIDANCE_QUALITY_FILTERS.map(q => (
+                <FilterChip
+                  key={q.id}
+                  label={q.label}
+                  count={counts.quality(q.id)}
+                  isActive={qualityFilter.includes(q.id)}
+                  onClick={() =>
+                    setQualityFilter(prev =>
+                      prev.includes(q.id) ? prev.filter(i => i !== q.id) : [...prev, q.id]
+                    )
+                  }
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        ) : (
+          <>
+            <div className="min-w-0">
+              <p className={tasksPanelFiltersModalSectionLabelClass}>Status de teste</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {TEST_STATUS_FILTER_OPTIONS.map(({ value, label }) => (
+                  <FilterChip
+                    key={value}
+                    label={label}
+                    count={counts.testStatus(value)}
+                    isActive={testStatusFilter.includes(value)}
+                    onClick={() =>
+                      setTestStatusFilter(prev =>
+                        prev.includes(value) ? prev.filter(s => s !== value) : [...prev, value]
+                      )
+                    }
+                  />
+                ))}
+              </div>
+            </div>
 
-        <div className="min-w-0 md:col-span-2 xl:col-span-3">
-          <p className={tasksPanelFiltersModalSectionLabelClass}>Resultado do caso de teste</p>
-          <p className={tasksPanelFiltersModalHintClass}>
-            Filtra tarefas que possuem ao menos um caso neste status (Passou, Falhou, etc.).
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {CASE_EXECUTION_OPTIONS.map(({ value, label }) => (
-              <FilterChip
-                key={value}
-                label={label}
-                count={counts.caseExecution(value)}
-                isActive={testCaseExecutionStatusFilter.includes(value)}
-                onClick={() =>
-                  setTestCaseExecutionStatusFilter(prev =>
-                    prev.includes(value) ? prev.filter(s => s !== value) : [...prev, value]
-                  )
-                }
-              />
-            ))}
-          </div>
-        </div>
+            <div className="min-w-0 md:col-span-2 xl:col-span-3">
+              <p className={tasksPanelFiltersModalSectionLabelClass}>Resultado do caso de teste</p>
+              <p className={tasksPanelFiltersModalHintClass}>
+                Filtra tarefas que possuem ao menos um caso neste status (Passou, Falhou, etc.).
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {CASE_EXECUTION_OPTIONS.map(({ value, label }) => (
+                  <FilterChip
+                    key={value}
+                    label={label}
+                    count={counts.caseExecution(value)}
+                    isActive={testCaseExecutionStatusFilter.includes(value)}
+                    onClick={() =>
+                      setTestCaseExecutionStatusFilter(prev =>
+                        prev.includes(value) ? prev.filter(s => s !== value) : [...prev, value]
+                      )
+                    }
+                  />
+                ))}
+              </div>
+            </div>
 
-        <div className="min-w-0 md:col-span-2 xl:col-span-3">
-          <p className={tasksPanelFiltersModalSectionLabelClass}>Estado de qualidade</p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {[
-              { id: 'with-bdd', label: 'Com BDD' },
-              { id: 'without-bdd', label: 'Sem BDD' },
-              { id: 'with-tests', label: 'Com Testes' },
-              { id: 'without-tests', label: 'Sem Testes' },
-              { id: 'automated', label: 'Automatizados' },
-              { id: 'manual', label: 'Manuais' },
-            ].map(q => (
-              <FilterChip
-                key={q.id}
-                label={q.label}
-                count={counts.quality(q.id)}
-                isActive={qualityFilter.includes(q.id)}
-                onClick={() =>
-                  setQualityFilter(prev =>
-                    prev.includes(q.id) ? prev.filter(i => i !== q.id) : [...prev, q.id]
-                  )
-                }
-              />
-            ))}
-          </div>
-        </div>
+            <div className="min-w-0 md:col-span-2 xl:col-span-3">
+              <p className={tasksPanelFiltersModalSectionLabelClass}>Estado de qualidade</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {[
+                  { id: 'with-bdd', label: 'Com BDD' },
+                  { id: 'without-bdd', label: 'Sem BDD' },
+                  { id: 'with-tests', label: 'Com Testes' },
+                  { id: 'without-tests', label: 'Sem Testes' },
+                  { id: 'automated', label: 'Automatizados' },
+                  { id: 'manual', label: 'Manuais' },
+                ].map(q => (
+                  <FilterChip
+                    key={q.id}
+                    label={q.label}
+                    count={counts.quality(q.id)}
+                    isActive={qualityFilter.includes(q.id)}
+                    onClick={() =>
+                      setQualityFilter(prev =>
+                        prev.includes(q.id) ? prev.filter(i => i !== q.id) : [...prev, q.id]
+                      )
+                    }
+                  />
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </>
   );

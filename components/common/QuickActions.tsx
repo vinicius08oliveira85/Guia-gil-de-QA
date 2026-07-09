@@ -19,9 +19,15 @@ interface QuickActionsProps {
   task: JiraTask;
   project: Project;
   onUpdateProject: (project: Project) => void;
+  devMode?: boolean;
 }
 
-export const QuickActions: React.FC<QuickActionsProps> = ({ task, project, onUpdateProject }) => {
+export const QuickActions: React.FC<QuickActionsProps> = ({
+  task,
+  project,
+  onUpdateProject,
+  devMode = false,
+}) => {
   const blockedTasks = getBlockedTasks(project);
   const isBlocked = blockedTasks.some(t => t.id === task.id);
   const estimation = calculateTaskEstimation(task);
@@ -85,7 +91,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ task, project, onUpd
           onClick={handleComplete}
           className={leveTaskModalSecondaryBtnClass}
         >
-          Concluir Teste
+          {devMode ? 'Marcar como concluída' : 'Concluir Teste'}
         </button>
       )}
 

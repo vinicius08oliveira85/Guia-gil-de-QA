@@ -1,8 +1,9 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { LayoutGrid, GitCompare, Settings, Sparkles } from 'lucide-react';
+import { LayoutGrid, GitCompare, Settings, Sparkles, Code2 } from 'lucide-react';
 import { useProjectsStore } from '../../store/projectsStore';
 import { getRecentProjectsForLanding } from '../../utils/landingRecentProjects';
+import { filterProjectsByWorkflow, getProjectsListPath } from '../../utils/projectWorkflow';
 import { cn } from '../../utils/cn';
 import { LandingMenuCard } from './LandingMenuCard';
 import { LandingRecentProjects } from './LandingRecentProjects';
@@ -17,7 +18,7 @@ import {
   landingHeroClass,
   landingHeroShellClass,
   landingMainGridClass,
-  landingMenuCardPrimaryGridClass,
+  landingMenuCardDualPrimaryGridClass,
   landingMenuCardSecondaryGridClass,
   landingMenuGridClass,
   landingNavClass,
@@ -47,6 +48,8 @@ export const LandingPage = React.memo(() => {
   const isLoading = useProjectsStore(s => s.isLoading);
 
   const recentProjects = useMemo(() => getRecentProjectsForLanding(projects), [projects]);
+  const qaProjects = useMemo(() => filterProjectsByWorkflow(projects, 'qa'), [projects]);
+  const devProjects = useMemo(() => filterProjectsByWorkflow(projects, 'dev'), [projects]);
   const hasProjects = projects.length > 0;
   const showAside = !isLoading;
 
@@ -145,21 +148,32 @@ export const LandingPage = React.memo(() => {
                 Acesso rápido
               </h2>
               <p className={landingNeuSectionDescClass}>
-                Projetos, acompanhamento Jira × Solus e preferências do workspace.
+                Projetos QA e Dev, acompanhamento Jira × Solus e preferências do workspace.
               </p>
             </div>
 
             <div className={landingMenuGridClass}>
               <LandingMenuCard
-                to="/projects"
-                ariaLabel={`Acessar ${LANDING_SECTIONS.projects.title}`}
-                title={LANDING_SECTIONS.projects.title}
-                description={LANDING_SECTIONS.projects.description}
+                to={getProjectsListPath('qa')}
+                ariaLabel={`Acessar ${LANDING_SECTIONS.projectsQa.title}`}
+                title={LANDING_SECTIONS.projectsQa.title}
+                description={LANDING_SECTIONS.projectsQa.description}
                 icon={LayoutGrid}
                 variant="primary"
-                badge={LANDING_SECTIONS.projects.badge}
-                ctaLabel={hasProjects ? 'Abrir projetos' : 'Criar projeto'}
-                className={landingMenuCardPrimaryGridClass}
+                badge={LANDING_SECTIONS.projectsQa.badge}
+                ctaLabel={qaProjects.length > 0 ? 'Abrir projetos QA' : 'Criar projeto QA'}
+                className={landingMenuCardDualPrimaryGridClass}
+              />
+              <LandingMenuCard
+                to={getProjectsListPath('dev')}
+                ariaLabel={`Acessar ${LANDING_SECTIONS.projectsDev.title}`}
+                title={LANDING_SECTIONS.projectsDev.title}
+                description={LANDING_SECTIONS.projectsDev.description}
+                icon={Code2}
+                variant="primary"
+                badge={LANDING_SECTIONS.projectsDev.badge}
+                ctaLabel={devProjects.length > 0 ? 'Abrir projetos Dev' : 'Criar projeto Dev'}
+                className={landingMenuCardDualPrimaryGridClass}
               />
               <LandingMenuCard
                 to="/jira-solus"

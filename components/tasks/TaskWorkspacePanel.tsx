@@ -6,6 +6,7 @@ import { ConfirmDialog } from '../common/ConfirmDialog';
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
 import { buildTaskWithChildren } from '../../utils/buildTaskWithChildren';
+import { normalizeProjectWorkflow } from '../../utils/projectWorkflow';
 import { useTaskDetailActions } from '../../hooks/useTaskDetailActions';
 import {
   tasksPanelNeuModalPanelClass,
@@ -59,6 +60,8 @@ export const TaskWorkspacePanel: React.FC<TaskWorkspacePanelProps> = ({
     if (!task) return null;
     return buildTaskWithChildren(project.tasks, task);
   }, [project.tasks, task]);
+
+  const isDevProject = normalizeProjectWorkflow(project.workflow) === 'dev';
 
   if (!task || !taskWithChildren) {
     return (
@@ -125,12 +128,15 @@ export const TaskWorkspacePanel: React.FC<TaskWorkspacePanelProps> = ({
           isUpdatingFromJira ?? actions.updatingFromJiraTaskId === taskId
         }
         hideTestFeatures={hideTestFeatures}
+        devMode={isDevProject && !hideTestFeatures}
+        onGenerateDevGuidance={actions.handleGenerateDevGuidance}
+        isGeneratingDevGuidance={actions.generatingDevGuidanceTaskId === taskId}
         initialSection={initialSection}
         onSectionChange={onSectionChange}
         openTaskNav={openTaskNav}
       />
 
-      {actions.testCaseEditorRef ? (
+      {actions.testCaseEditorRef && !isDevProject ? (
         <TestCaseEditorModal
           isOpen
           testCase={actions.testCaseEditorRef.testCase}
@@ -141,78 +147,82 @@ export const TaskWorkspacePanel: React.FC<TaskWorkspacePanelProps> = ({
         />
       ) : null}
 
-      <ConfirmDialog
-        isOpen={!!actions.confirmDeleteState}
-        onClose={() => actions.setConfirmDeleteState(null)}
-        onConfirm={actions.handleConfirmDelete}
-        title={
-          actions.confirmDeleteState?.type === 'testcase'
-            ? 'Excluir caso de teste'
-            : 'Excluir cenário BDD'
-        }
-        message={`Tem certeza que deseja excluir ${actions.confirmDeleteState?.label ?? 'este item'}? Esta ação não pode ser desfeita.`}
-        confirmText="Excluir"
-        cancelText="Cancelar"
-        variant="danger"
-      />
+      {!isDevProject ? (
+        <>
+          <ConfirmDialog
+            isOpen={!!actions.confirmDeleteState}
+            onClose={() => actions.setConfirmDeleteState(null)}
+            onConfirm={actions.handleConfirmDelete}
+            title={
+              actions.confirmDeleteState?.type === 'testcase'
+                ? 'Excluir caso de teste'
+                : 'Excluir cenário BDD'
+            }
+            message={`Tem certeza que deseja excluir ${actions.confirmDeleteState?.label ?? 'este item'}? Esta ação não pode ser desfeita.`}
+            confirmText="Excluir"
+            cancelText="Cancelar"
+            variant="danger"
+          />
 
-      <Modal
-        isOpen={actions.failModalState.isOpen}
-        onClose={() =>
-          actions.setFailModalState({ ...actions.failModalState, isOpen: false })
-        }
-        title="Marcar teste como reprovado"
-        size="md"
-        panelClassName={tasksPanelNeuModalPanelClass}
-        titleClassName={tasksPanelNeuModalTitleClass}
-        footer={
-          <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() =>
-                actions.setFailModalState({ ...actions.failModalState, isOpen: false })
-              }
-            >
-              Cancelar
-            </Button>
-            <Button type="button" variant="destructive" onClick={actions.handleConfirmFail}>
-              Confirmar reprovação
-            </Button>
-          </div>
-        }
-      >
-        <div className="space-y-4">
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="font-medium">Resultado observado</span>
-            <textarea
-              className="textarea textarea-bordered min-h-[5rem] w-full"
-              value={actions.failModalState.observedResult}
-              onChange={e =>
-                actions.setFailModalState({
-                  ...actions.failModalState,
-                  observedResult: e.target.value,
-                })
-              }
-              placeholder="Descreva o que foi observado na execução..."
-            />
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              className="checkbox checkbox-sm"
-              checked={actions.failModalState.createBug}
-              onChange={e =>
-                actions.setFailModalState({
-                  ...actions.failModalState,
-                  createBug: e.target.checked,
-                })
-              }
-            />
-            Criar bug automaticamente
-          </label>
-        </div>
-      </Modal>
+          <Modal
+            isOpen={actions.failModalState.isOpen}
+            onClose={() =>
+              actions.setFailModalState({ ...actions.failModalState, isOpen: false })
+            }
+            title="Marcar teste como reprovado"
+            size="md"
+            panelClassName={tasksPanelNeuModalPanelClass}
+            titleClassName={tasksPanelNeuModalTitleClass}
+            footer={
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() =>
+                    actions.setFailModalState({ ...actions.failModalState, isOpen: false })
+                  }
+                >
+                  Cancelar
+                </Button>
+                <Button type="button" variant="destructive" onClick={actions.handleConfirmFail}>
+                  Confirmar reprovação
+                </Button>
+              </div>
+            }
+          >
+            <div className="space-y-4">
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="font-medium">Resultado observado</span>
+                <textarea
+                  className="textarea textarea-bordered min-h-[5rem] w-full"
+                  value={actions.failModalState.observedResult}
+                  onChange={e =>
+                    actions.setFailModalState({
+                      ...actions.failModalState,
+                      observedResult: e.target.value,
+                    })
+                  }
+                  placeholder="Descreva o que foi observado na execução..."
+                />
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-sm"
+                  checked={actions.failModalState.createBug}
+                  onChange={e =>
+                    actions.setFailModalState({
+                      ...actions.failModalState,
+                      createBug: e.target.checked,
+                    })
+                  }
+                />
+                Criar bug automaticamente
+              </label>
+            </div>
+          </Modal>
+        </>
+      ) : null}
     </section>
   );
 };

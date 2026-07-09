@@ -253,6 +253,12 @@ export interface JiraTask {
    * Calculado por `services/ai/testCaseGenerationService.ts`.
    */
   testCasesSnapshotHash?: string;
+  /** Guia de implementação gerado pela IA (fluxo Projetos Dev). */
+  devGuidance?: DevGuidanceArtifact;
+  /** ISO date da última geração do guia Dev. */
+  devGuidanceGeneratedAt?: string;
+  /** Hash do snapshot usado na última geração do guia Dev. */
+  devGuidanceSnapshotHash?: string;
   /** SLAs do Jira Service Management (Time to resolution, Time to first response, etc.). */
   jiraSlas?: JiraTaskSla[];
   /** Nome do serviço / projeto JSM (quando disponível na API). */
@@ -556,10 +562,15 @@ export interface MetricsSnapshot {
   activePhasesCount?: number;
 }
 
+/** Fluxo do workspace: QA (testes) ou Dev (implementação). */
+export type ProjectWorkflow = 'qa' | 'dev';
+
 export interface Project {
   id: string;
   name: string;
   description: string;
+  /** QA (testes) ou Dev (implementação). Projetos legados sem campo são tratados como `qa`. */
+  workflow?: ProjectWorkflow;
   createdAt?: string;
   updatedAt?: string;
   documents: ProjectDocument[];
@@ -581,6 +592,8 @@ export interface Project {
   specificationDocument?: string; // Conteúdo processado do documento de especificação
   /** Histórico de análises IA completas do projeto (persistido no Supabase com o projeto) */
   projectFullAnalyses?: ProjectFullAnalysis[];
+  /** Histórico de análises IA do projeto Dev (implementação e stack). */
+  devProjectFullAnalyses?: ProjectDevFullAnalysis[];
   /** Páginas do Bloco de Notas (abas internas com texto puro). */
   notepadPages?: NotepadPage[];
   /**
@@ -624,6 +637,50 @@ export interface ChecklistItem {
   required: boolean;
 }
 
+export interface DevGuidanceStep {
+  order: number;
+  title: string;
+  description: string;
+  filesOrModules?: string[];
+  codeHints?: string;
+  validationChecklist?: string[];
+}
+
+/** Artefato de guia de implementação para desenvolvedores (Projetos Dev). */
+export interface DevGuidanceArtifact {
+  overview: string;
+  prerequisites: string[];
+  implementationSteps: DevGuidanceStep[];
+  dataModel?: string;
+  apiContracts?: string;
+  risksAndEdgeCases?: string[];
+  suggestedTests?: string[];
+}
+
+/** Stack técnica configurável por projeto Dev. */
+export interface DevStackConfig {
+  languages: string[];
+  frameworks: string[];
+  databases: string[];
+  tools: string[];
+  architectureStyle?: string;
+  testingApproach?: string;
+  notes?: string;
+}
+
+/** Análise IA completa do projeto Dev (stack, backlog técnico, riscos). */
+export interface ProjectDevFullAnalysis {
+  summary: string;
+  stackAlignment: string;
+  implementationBacklog: string;
+  architectureNotes: string;
+  strengths: string[];
+  weaknesses: string[];
+  risks: string[];
+  recommendations: string[];
+  generatedAt: string;
+}
+
 export interface ProjectSettings {
   theme?: 'light' | 'dark' | 'auto';
   notifications?: NotificationSettings;
@@ -631,6 +688,8 @@ export interface ProjectSettings {
   jiraStatuses?: Array<{ name: string; color: string } | string>; // Lista de status disponíveis no Jira com suas cores
   jiraPriorities?: Array<{ name: string } | string>; // Lista de prioridades disponíveis no Jira
   jiraProjectKey?: string; // Chave do projeto Jira associado
+  /** Stack técnica do projeto (fluxo Dev). */
+  devStack?: DevStackConfig;
 }
 
 export interface NotificationSettings {

@@ -2,6 +2,7 @@ import * as XLSX from 'xlsx';
 import { Project, JiraTask, TestCase, ProjectDocument, JiraTaskType, TeamRole } from '../types';
 import { logger } from '../utils/logger';
 import { migrateTestCase } from '../utils/testCaseMigration';
+import { normalizeProjectWorkflowFields } from '../utils/projectWorkflow';
 
 const MAX_DOCUMENT_SIZE = 50 * 1024 * 1024; // 50MB
 
@@ -74,10 +75,11 @@ export const importProjectFromJSON = async (file: File): Promise<ImportResult<Pr
       };
     }
 
-    const project: Project = {
+    const project: Project = normalizeProjectWorkflowFields({
       id: projectData.id,
       name: projectData.name,
       description: projectData.description || '',
+      workflow: projectData.workflow,
       createdAt: projectData.createdAt,
       updatedAt: projectData.updatedAt,
       businessRules: projectData.businessRules || [],
@@ -95,7 +97,8 @@ export const importProjectFromJSON = async (file: File): Promise<ImportResult<Pr
       metricsHistory: projectData.metricsHistory,
       specificationDocument: projectData.specificationDocument,
       projectFullAnalyses: projectData.projectFullAnalyses,
-    };
+      devProjectFullAnalyses: projectData.devProjectFullAnalyses,
+    });
 
     logger.info(`Projeto importado do JSON: ${project.name}`, 'FileImportService');
 

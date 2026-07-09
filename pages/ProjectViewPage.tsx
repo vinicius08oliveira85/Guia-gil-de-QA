@@ -40,7 +40,7 @@ export const ProjectViewPage: React.FC<ProjectViewPageProps> = ({
   }
 
   if (!id || !project) {
-    return <Navigate to="/projects" replace />;
+    return <Navigate to="/projects/qa" replace />;
   }
 
   return (

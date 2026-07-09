@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { appendScreenshotsFromFiles } from '../../../components/project/BusinessRuleScreenshotUpload';
+import { MAX_BUSINESS_RULE_SCREENSHOTS } from '../../../utils/businessRuleDefaults';
 
 function makeImageFile(name: string, sizeBytes: number, type = 'image/png'): File {
   const buffer = new Uint8Array(sizeBytes);
@@ -24,8 +25,8 @@ describe('appendScreenshotsFromFiles', () => {
     expect(screenshots).toHaveLength(0);
   });
 
-  it('respeita limite de 5 imagens', async () => {
-    const existing = Array.from({ length: 5 }, (_, i) => ({
+  it(`respeita limite de ${MAX_BUSINESS_RULE_SCREENSHOTS} imagens`, async () => {
+    const existing = Array.from({ length: MAX_BUSINESS_RULE_SCREENSHOTS }, (_, i) => ({
       id: `id-${i}`,
       name: `s${i}.png`,
       dataUrl: 'data:image/png;base64,AA==',
@@ -34,6 +35,6 @@ describe('appendScreenshotsFromFiles', () => {
     const files = [makeImageFile('extra.png', 50)];
     const { screenshots, added } = await appendScreenshotsFromFiles(files, existing);
     expect(added).toBe(0);
-    expect(screenshots).toHaveLength(5);
+    expect(screenshots).toHaveLength(MAX_BUSINESS_RULE_SCREENSHOTS);
   });
 });

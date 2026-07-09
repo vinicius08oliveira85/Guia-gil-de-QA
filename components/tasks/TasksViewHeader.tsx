@@ -24,12 +24,13 @@ import {
   tasksViewPageTitleClass,
 } from './tasksPanelNeuStyles';
 import { tasksViewEyebrowClass } from './tasksViewNeuUi';
+import { DEV_TASKS_COPY } from '../../utils/devTasksUi';
 
 export interface TasksViewHeaderProps {
   jiraProjectKey?: string;
   onAddTask: () => void;
   onOpenFilters: () => void;
-  onAnalyze: () => void;
+  onAnalyze: () => void | Promise<void>;
   isRunningGeneralAnalysis: boolean;
   analysisProgress: {
     current: number;
@@ -38,6 +39,7 @@ export interface TasksViewHeaderProps {
     estimatedSeconds?: number;
   } | null;
   activeFiltersCount: number;
+  devMode?: boolean;
 }
 
 export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
@@ -48,8 +50,17 @@ export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
   isRunningGeneralAnalysis,
   analysisProgress,
   activeFiltersCount,
+  devMode = false,
 }) => {
   const [showActionsMenu, setShowActionsMenu] = useState(false);
+  const copy = devMode
+    ? DEV_TASKS_COPY
+    : {
+        eyebrow: 'Projeto · Tarefas & Testes',
+        title: 'Tarefas & Casos de Teste',
+        subtitle: 'Progresso das atividades, casos de teste e resultados de QA do projeto.',
+        aiMobileMenuLabel: 'Análise geral com IA',
+      };
 
   return (
     <header className={tasksViewPageHeaderShellClass}>
@@ -57,17 +68,15 @@ export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
         <div className="min-w-0">
           <p className={tasksViewEyebrowClass}>
             <ClipboardList className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            Projeto · Tarefas & Testes
+            {copy.eyebrow}
           </p>
           <div className="mb-1.5 mt-2 flex flex-wrap items-center gap-2 sm:mt-2.5">
-            <h1 className={tasksViewPageTitleClass}>Tarefas & Casos de Teste</h1>
+            <h1 className={tasksViewPageTitleClass}>{copy.title}</h1>
             {jiraProjectKey ? (
               <span className={tasksViewPageJiraBadgeClass}>Jira: {jiraProjectKey}</span>
             ) : null}
           </div>
-          <p className={cn(tasksViewPageSubtitleClass, 'max-w-2xl')}>
-            Progresso das atividades, casos de teste e resultados de QA do projeto.
-          </p>
+          <p className={cn(tasksViewPageSubtitleClass, 'max-w-2xl')}>{copy.subtitle}</p>
         </div>
 
         <div className={tasksViewHeaderActionsClass}>
@@ -94,6 +103,9 @@ export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
               isAnalyzing={isRunningGeneralAnalysis}
               progress={analysisProgress}
               grouped
+              label={devMode ? DEV_TASKS_COPY.aiButtonLabel : undefined}
+              tooltip={devMode ? DEV_TASKS_COPY.aiButtonTooltip : undefined}
+              ariaLabel={devMode ? DEV_TASKS_COPY.aiButtonLabel : undefined}
               groupedBtnClassName={tasksViewHeaderSecondaryBtnClass}
               groupedIconClassName={tasksViewHeaderIaIconClass}
               groupedIconWrapClassName={tasksViewHeaderIconWrapClass}
@@ -163,7 +175,7 @@ export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
                     }}
                     disabled={isRunningGeneralAnalysis}
                   >
-                    Análise geral com IA
+                    {copy.aiMobileMenuLabel}
                   </button>
                   <button
                     type="button"

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Modal } from './Modal';
 import { Spinner } from './Spinner';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
@@ -10,6 +10,7 @@ import {
   exportProjectToWord,
   exportTasksToExcel,
   exportTestCasesToCSV,
+  exportDevTasksToCSV,
   generateProjectReport,
 } from '../../utils/exportService';
 import { Project, JiraTask } from '../../types';
@@ -38,29 +39,38 @@ export interface FileExportModalProps {
   project?: Project;
   tasks?: JiraTask[];
   onExport?: () => void;
+  /** Projeto Dev: exportação sem colunas/planilhas de QA. */
+  devMode?: boolean;
 }
 
 /**
  * Modal para exportar dados em diferentes formatos
  */
 export const FileExportModal: React.FC<FileExportModalProps> = React.memo(
-  ({ isOpen, onClose, exportType, project, tasks, onExport }) => {
+  ({ isOpen, onClose, exportType, project, tasks, onExport, devMode = false }) => {
     const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('excel');
     const [isExporting, setIsExporting] = useState(false);
     const { handleError, handleSuccess } = useErrorHandler();
 
-    const getAvailableFormats = (): ExportFormat[] => {
+    const availableFormats = useMemo((): ExportFormat[] => {
       switch (exportType) {
         case 'project':
           return ['json', 'csv', 'excel', 'pdf', 'word', 'markdown'];
         case 'tasks':
-          return ['csv', 'excel'];
+          return devMode ? ['csv'] : ['csv', 'excel'];
         case 'test-cases':
           return ['csv'];
         default:
           return ['json', 'csv', 'excel'];
       }
-    };
+    }, [exportType, devMode]);
+
+    useEffect(() => {
+      if (!isOpen) return;
+      if (!availableFormats.includes(selectedFormat)) {
+        setSelectedFormat(availableFormats[0] ?? 'csv');
+      }
+    }, [isOpen, availableFormats, selectedFormat]);
 
     const handleExport = useCallback(async () => {
       if (!project && exportType === 'project') {
@@ -128,18 +138,22 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(
 
             switch (selectedFormat) {
               case 'csv': {
-                const csvContent = exportProjectToCSV({
-                  ...project!,
-                  tasks: tasks,
-                } as Project);
-                fileName = `Tarefas_${dateStr}.csv`;
+                const csvContent = devMode
+                  ? exportDevTasksToCSV(tasks)
+                  : exportProjectToCSV({
+                      ...project!,
+                      tasks: tasks,
+                    } as Project);
+                fileName = devMode ? `Tarefas_Dev_${dateStr}.csv` : `Tarefas_${dateStr}.csv`;
                 mimeType = 'text/csv';
                 downloadFile(csvContent, fileName, mimeType);
                 break;
               }
 
               case 'excel':
-                await exportTasksToExcel(tasks);
+                if (!devMode) {
+                  await exportTasksToExcel(tasks);
+                }
                 break;
             }
             break;
@@ -167,9 +181,7 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(
       } finally {
         setIsExporting(false);
       }
-    }, [exportType, selectedFormat, project, tasks, onExport, onClose, handleError, handleSuccess]);
-
-    const availableFormats = getAvailableFormats();
+    }, [exportType, selectedFormat, project, tasks, onExport, onClose, handleError, handleSuccess, devMode]);
 
     const formatLabels: Record<ExportFormat, string> = {
       json: 'JSON',
@@ -211,6 +223,7 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(
                 Exportando{' '}
                 <strong className={tasksPanelExportModalInfoStrongClass}>{tasks.length}</strong>{' '}
                 tarefa(s)
+                {devMode ? ' (visão Dev, sem dados de QA)' : ''}
               </p>
             )}
             {exportType === 'test-cases' && tasks && (

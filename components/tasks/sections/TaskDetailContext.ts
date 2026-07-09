@@ -20,6 +20,10 @@ export interface TaskDetailContextValue {
   project?: Project;
   onUpdateProject?: (project: Project) => void;
   hideTestFeatures: boolean;
+  devMode: boolean;
+
+  onGenerateDevGuidance?: (taskId: string) => Promise<void>;
+  isGeneratingDevGuidance?: boolean;
 
   detailLevel: TestCaseDetailLevel;
   onDetailLevelChange: (level: TestCaseDetailLevel) => void;

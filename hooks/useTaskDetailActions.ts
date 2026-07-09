@@ -4,6 +4,7 @@ import { useProjectsStore } from '../store/projectsStore';
 import { useErrorHandler } from './useErrorHandler';
 import { getAIService } from '../services/ai/aiServiceFactory';
 import { generateTestArtifactsForTask } from '../services/ai/testCaseGenerationService';
+import { generateDevGuidanceForTask } from '../services/ai/devGuidanceGenerationService';
 import { resolveTaskAiContext } from '../services/ai/taskAiContext';
 import { toToastableAiError } from '../utils/aiErrorMapper';
 import { getJiraConfig, updateSingleTaskFromJira } from '../services/jiraService';
@@ -40,6 +41,7 @@ export function useTaskDetailActions(
   const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
   const [generatingBddTaskId, setGeneratingBddTaskId] = useState<string | null>(null);
   const [generatingAllTaskId, setGeneratingAllTaskId] = useState<string | null>(null);
+  const [generatingDevGuidanceTaskId, setGeneratingDevGuidanceTaskId] = useState<string | null>(null);
   const [updatingFromJiraTaskId, setUpdatingFromJiraTaskId] = useState<string | null>(null);
   const [testCaseEditorRef, setTestCaseEditorRef] = useState<{
     taskId: string;
@@ -231,6 +233,40 @@ export function useTaskDetailActions(
           notifyAiError(error, 'Gerar BDD, estratégias e testes');
         } finally {
           setGeneratingAllTaskId(null);
+        }
+      }),
+    [project, onUpdateProject, handleSuccess, enqueueGeminiOperation, notifyAiError, propagateTaskUpdate]
+  );
+
+  const handleGenerateDevGuidance = useCallback(
+    async (taskId: string) =>
+      enqueueGeminiOperation(async () => {
+        setGeneratingDevGuidanceTaskId(taskId);
+        try {
+          const task = project.tasks.find(t => t.id === taskId);
+          if (!task) throw new Error('Task not found');
+          const ctx = await resolveTaskAiContext(task, { project });
+          const result = await generateDevGuidanceForTask(task, {
+            project,
+            taskAiContext: ctx,
+          });
+          const { snapshotHash, generatedAt, ...guidance } = result;
+          const updatedTask = {
+            ...task,
+            devGuidance: guidance,
+            devGuidanceSnapshotHash: snapshotHash,
+            devGuidanceGeneratedAt: generatedAt,
+          };
+          onUpdateProject({
+            ...project,
+            tasks: project.tasks.map(t => (t.id === updatedTask.id ? updatedTask : t)),
+          });
+          propagateTaskUpdate(updatedTask);
+          handleSuccess('Guia de implementação gerado com sucesso!');
+        } catch (error) {
+          notifyAiError(error, 'Gerar guia Dev');
+        } finally {
+          setGeneratingDevGuidanceTaskId(null);
         }
       }),
     [project, onUpdateProject, handleSuccess, enqueueGeminiOperation, notifyAiError, propagateTaskUpdate]
@@ -558,6 +594,7 @@ export function useTaskDetailActions(
     generatingTestsTaskId,
     generatingBddTaskId,
     generatingAllTaskId,
+    generatingDevGuidanceTaskId,
     updatingFromJiraTaskId,
     testCaseEditorRef,
     setTestCaseEditorRef,
@@ -571,6 +608,7 @@ export function useTaskDetailActions(
     handleGenerateBddScenarios,
     handleGenerateTests,
     handleGenerateAll,
+    handleGenerateDevGuidance,
     handleUpdateTaskFromJira,
     handleSaveBddScenario,
     handleDeleteBddScenario,

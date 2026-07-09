@@ -1,5 +1,6 @@
 import { Phase, PhaseName, Project } from '../types';
 import { normalizeProjectBusinessRules } from '../utils/businessRuleDefaults';
+import { normalizeProjectWorkflowFields } from '../utils/projectWorkflow';
 import {
   DB_NAME,
   DB_VERSION,
@@ -112,14 +113,16 @@ export const loadProjectsFromIndexedDB = async (): Promise<Project[]> => {
 
   // Migrar TestCases dos projetos do IndexedDB (otimizado)
   const migratedIndexedDBProjects = indexedDBProjects.map(project =>
-    normalizeProjectBusinessRules({
-      ...project,
-      businessRules: project.businessRules ?? [],
-      tasks: (project.tasks || []).map(task => ({
-        ...task,
-        testCases: migrateTestCases(task.testCases || []),
-      })),
-    })
+    normalizeProjectWorkflowFields(
+      normalizeProjectBusinessRules({
+        ...project,
+        businessRules: project.businessRules ?? [],
+        tasks: (project.tasks || []).map(task => ({
+          ...task,
+          testCases: migrateTestCases(task.testCases || []),
+        })),
+      })
+    )
   );
 
   // Limpar casos de teste de tipos não permitidos (Bug, Epic, História)
@@ -142,14 +145,16 @@ export const getProjectById = async (projectId: string): Promise<Project | null>
     request.onsuccess = () => resolve(request.result);
   });
   if (!raw) return null;
-  const migrated = normalizeProjectBusinessRules({
-    ...raw,
-    businessRules: raw.businessRules ?? [],
-    tasks: raw.tasks.map(task => ({
-      ...task,
-      testCases: migrateTestCases(task.testCases || []),
-    })),
-  });
+  const migrated = normalizeProjectWorkflowFields(
+    normalizeProjectBusinessRules({
+      ...raw,
+      businessRules: raw.businessRules ?? [],
+      tasks: raw.tasks.map(task => ({
+        ...task,
+        testCases: migrateTestCases(task.testCases || []),
+      })),
+    })
+  );
   const [cleaned] = cleanupTestCasesForProjects([migrated]);
   if (!cleaned) return null;
   return withAcyclicTaskParents(normalizeProjectBusinessRules(cleaned), { silent: true });
@@ -255,7 +260,7 @@ function normalizeImportedProject(raw: unknown): Project | null {
   }
   const now = new Date().toISOString();
   const partial = raw as Partial<Project>;
-  const base: Project = {
+  const base: Project = normalizeProjectWorkflowFields({
     ...partial,
     id: o.id.trim(),
     name: o.name,
@@ -271,7 +276,7 @@ function normalizeImportedProject(raw: unknown): Project | null {
         : defaultPhasesForImport(),
     createdAt: typeof o.createdAt === 'string' ? o.createdAt : now,
     updatedAt: typeof o.updatedAt === 'string' ? o.updatedAt : now,
-  };
+  });
   return withAcyclicTaskParents(normalizeProjectBusinessRules(base));
 }
 

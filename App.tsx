@@ -3,12 +3,13 @@ import {
   BrowserRouter,
   Routes,
   Route,
+  Navigate,
   useNavigate,
   useLocation,
 } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { LAYER_Z_INDEX } from './utils/layerZIndex';
-import { Project } from './types';
+import { Project, type ProjectWorkflow } from './types';
 import { Header } from './components/common/Header';
 import { OfflineBanner } from './components/common/OfflineBanner';
 import { useProjectsStore } from './store/projectsStore';
@@ -31,6 +32,16 @@ import { LandingPage } from './pages/LandingPage';
 import { ProjectViewPage } from './pages/ProjectViewPage';
 import { JiraSolusView } from './components/jiraSolus/JiraSolusView';
 import { LANDING_SECTIONS } from './components/landing/landingSections';
+import {
+  getProjectListPathForProject,
+  getProjectsListPath,
+  isProjectsListPath,
+  parseProjectsListWorkflow,
+} from './utils/projectWorkflow';
+import {
+  resolveProjectsListSectionDescription,
+  resolveProjectsListSectionTitle,
+} from './utils/headerBackNavigation';
 import { ProjectsDashboardSkeleton } from './components/projectsDashboard/ProjectsDashboardSkeleton';
 import { useAriaLive } from './hooks/useAriaLive';
 import { cn } from './utils/cn';
@@ -192,7 +203,7 @@ const AppContent: React.FC = () => {
     if (selectedProjectId) {
       const p = projects.find(x => x.id === selectedProjectId);
       announce(p ? `Projeto aberto: ${p.name}.` : 'Projeto selecionado.', 'polite');
-    } else if (location.pathname === '/projects') {
+    } else if (isProjectsListPath(location.pathname)) {
       announce('Lista de projetos.', 'polite');
     }
   }, [isLoading, isSettings, selectedProjectId, projects, announce, location.pathname]);
@@ -233,7 +244,12 @@ const AppContent: React.FC = () => {
     const currentView = pathParts[0];
     const currentId = pathParts[1];
 
-    if (currentView === 'projects' && currentId) {
+    if (
+      currentView === 'projects' &&
+      currentId &&
+      currentId !== 'qa' &&
+      currentId !== 'dev'
+    ) {
       if (selectedProjectId !== currentId) {
         selectProject(currentId);
       }
@@ -294,9 +310,9 @@ const AppContent: React.FC = () => {
   }, []);
 
   const handleCreateProject = useCallback(
-    async (name: string, description: string, templateId?: string) => {
+    async (name: string, description: string, templateId?: string, workflow?: ProjectWorkflow) => {
       try {
-        await createProject(name, description, templateId);
+        await createProject(name, description, templateId, workflow);
         handleSuccess('Projeto criado com sucesso!');
       } catch (error) {
         handleError(error, 'Criar projeto');
@@ -349,14 +365,15 @@ const AppContent: React.FC = () => {
   const handleDeleteProject = useCallback(
     async (projectId: string) => {
       try {
+        const project = projects.find(p => p.id === projectId);
         await deleteProject(projectId);
         handleSuccess('Projeto deletado com sucesso!');
-        navigate('/projects');
+        navigate(project ? getProjectListPathForProject(project) : getProjectsListPath('qa'));
       } catch (error) {
         handleError(error, 'Deletar projeto');
       }
     },
-    [deleteProject, handleError, handleSuccess, navigate]
+    [deleteProject, handleError, handleSuccess, navigate, projects]
   );
 
   const handleImportJiraProject = useCallback(
@@ -405,18 +422,19 @@ const AppContent: React.FC = () => {
   }, []);
 
   const isLanding = location.pathname === '/';
-  const isDashboard = location.pathname === '/projects';
+  const projectsListWorkflow = parseProjectsListWorkflow(location.pathname);
+  const isDashboard = projectsListWorkflow !== null;
   const isJiraSolus = location.pathname === '/jira-solus';
   const shouldShowHeader = !isLanding;
 
   const headerBrandTitle = isDashboard
-    ? LANDING_SECTIONS.projects.title
+    ? resolveProjectsListSectionTitle(location.pathname)
     : isJiraSolus
       ? LANDING_SECTIONS.jiraSolus.title
       : undefined;
 
   const headerBrandSubtitle = isDashboard
-    ? LANDING_SECTIONS.projects.description
+    ? resolveProjectsListSectionDescription(location.pathname)
     : isJiraSolus
       ? LANDING_SECTIONS.jiraSolus.description
       : undefined;
@@ -507,11 +525,25 @@ const AppContent: React.FC = () => {
         ) : (
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/projects" element={<Navigate to="/projects/qa" replace />} />
             <Route
-              path="/projects"
+              path="/projects/qa"
               element={
                 <Suspense fallback={<ProjectsDashboardSkeleton />}>
                   <ProjectsDashboard
+                    workflow="qa"
+                    projects={projects}
+                    onCreateProject={handleCreateProject}
+                  />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/projects/dev"
+              element={
+                <Suspense fallback={<ProjectsDashboardSkeleton />}>
+                  <ProjectsDashboard
+                    workflow="dev"
                     projects={projects}
                     onCreateProject={handleCreateProject}
                   />

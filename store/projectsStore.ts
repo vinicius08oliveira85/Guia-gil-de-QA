@@ -14,6 +14,9 @@ import { DEFAULT_BUSINESS_RULE_CATEGORY_PRESETS } from '../utils/businessRuleCat
 import { PHASE_NAMES } from '../utils/constants';
 import { addAuditLog } from '../utils/auditLog';
 import { logger } from '../utils/logger';
+import type { ProjectWorkflow } from '../types';
+import { EMPTY_DEV_STACK } from '../utils/devStackPresets';
+import { normalizeProjectWorkflow } from '../utils/projectWorkflow';
 import {
   getGeneralIAAnalysisSnapshotHash,
   invalidateGeneralAnalysisCache,
@@ -30,7 +33,7 @@ interface ProjectsState {
   loadProjects: () => Promise<void>;
   syncLocalBackup: () => Promise<void>;
   saveProjectLocally: (projectId: string) => Promise<void>;
-  createProject: (name: string, description: string, templateId?: string) => Promise<Project>;
+  createProject: (name: string, description: string, templateId?: string, workflow?: ProjectWorkflow) => Promise<Project>;
   updateProject: (
     project: Project,
     options?: { silent?: boolean; syncRemote?: boolean }
@@ -110,15 +113,16 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
     logger.debug(`Projeto "${project.name}" salvo localmente`, 'ProjectsStore');
   },
 
-  createProject: async (name: string, description: string, templateId?: string) => {
+  createProject: async (name: string, description: string, templateId?: string, workflow?: ProjectWorkflow) => {
     try {
-      logger.debug(`Criando projeto: ${name}`, 'ProjectsStore', { templateId });
+      const projectWorkflow = normalizeProjectWorkflow(workflow);
+      logger.debug(`Criando projeto: ${name}`, 'ProjectsStore', { templateId, workflow: projectWorkflow });
       let newProject: Project;
 
       const now = new Date().toISOString();
       if (templateId) {
         newProject = {
-          ...createProjectFromTemplate(templateId, name, description),
+          ...createProjectFromTemplate(templateId, name, description, projectWorkflow),
           createdAt: now,
           updatedAt: now,
         };
@@ -127,11 +131,16 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
           id: `proj-${Date.now()}`,
           name,
           description,
+          workflow: projectWorkflow,
           documents: [],
           businessRules: [],
           businessRuleCategoryPresets: [...DEFAULT_BUSINESS_RULE_CATEGORY_PRESETS],
           tasks: [],
           phases: PHASE_NAMES.map(name => ({ name, status: 'Não Iniciado' })),
+          settings:
+            projectWorkflow === 'dev'
+              ? { devStack: { ...EMPTY_DEV_STACK } }
+              : undefined,
           createdAt: now,
           updatedAt: now,
         };

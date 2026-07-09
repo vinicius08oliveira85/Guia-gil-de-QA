@@ -108,7 +108,7 @@ describe('Testes de UX', () => {
       setInitialRoute('/projects');
       render(<App />);
       await waitFor(() => {
-        expect(screen.getByText(/Projetos \(Testes\)/i)).toBeInTheDocument();
+        expect(screen.getByText(/Projetos QA/i)).toBeInTheDocument();
       });
 
       const store = useProjectsStore.getState();
@@ -181,7 +181,7 @@ describe('Testes de UX', () => {
       setInitialRoute('/projects');
       render(<App />);
       await waitFor(() => {
-        expect(screen.getByText(/Projetos \(Testes\)/i)).toBeInTheDocument();
+        expect(screen.getByText(/Projetos QA/i)).toBeInTheDocument();
       });
 
       await useProjectsStore.getState().createProject('Projeto Acessível', 'Descrição');

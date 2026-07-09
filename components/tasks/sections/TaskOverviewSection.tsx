@@ -119,6 +119,9 @@ export const TaskOverviewSection: React.FC = () => {
     project,
     onUpdateProject,
     hideTestFeatures,
+    devMode,
+    onGenerateDevGuidance,
+    isGeneratingDevGuidance,
     detailLevel,
     isGenerating,
     isGeneratingBdd,
@@ -142,9 +145,14 @@ export const TaskOverviewSection: React.FC = () => {
     () => formatRelativeTimestamp(task.testCasesGeneratedAt),
     [task.testCasesGeneratedAt]
   );
+  const hideQaUi = hideTestFeatures || devMode;
   const showJiraSync = Boolean(onUpdateFromJira && /^[A-Z]+-\d+$/.test(task.id));
-  const showGenerateAll = Boolean(onGenerateAll && !hideTestFeatures);
-  const isAiBusy = Boolean(isGenerating || isGeneratingBdd || isGeneratingAll);
+  const showGenerateAll = Boolean(onGenerateAll && !hideQaUi);
+  const showDevGuidanceAction =
+    devMode &&
+    Boolean(onGenerateDevGuidance) &&
+    (task.type === 'Tarefa' || task.type === 'Bug');
+  const isAiBusy = Boolean(isGenerating || isGeneratingBdd || isGeneratingAll || isGeneratingDevGuidance);
 
   const jiraAttachmentItems = useMemo(() => {
     const jiraUrl = getJiraConfig()?.url ?? '';
@@ -250,7 +258,7 @@ export const TaskOverviewSection: React.FC = () => {
           </div>
         )}
 
-        {!hideTestFeatures &&
+        {!hideQaUi &&
         (task.type === 'Tarefa' || task.type === 'Bug') &&
           (task.testCases?.length > 0 || (task.testStrategy?.length ?? 0) > 0) && (
             <div className="flex justify-end">
@@ -360,7 +368,7 @@ export const TaskOverviewSection: React.FC = () => {
 
       {/* Sidebar: Atualizar do Jira + Gerar Tudo + Campos do Jira + Ações Rápidas */}
       <aside className="space-y-3">
-        {(showJiraSync || showGenerateAll) && (
+        {(showJiraSync || showGenerateAll || showDevGuidanceAction) && (
           <div className={cn(taskDetailsModalSectionClass, 'space-y-4 p-4')}>
             {showJiraSync && (
               <div>
@@ -416,6 +424,42 @@ export const TaskOverviewSection: React.FC = () => {
                   </p>
                 ) : (
                   <p className={cn(leveTaskModalMutedXsClass, 'mt-1.5 italic')}>Ainda não gerado com IA</p>
+                )}
+              </div>
+            )}
+
+            {showDevGuidanceAction && (
+              <div>
+                {(showJiraSync || showGenerateAll) && (
+                  <div className="mb-4 border-t border-[color-mix(in_srgb,var(--leve-purple)_12%,transparent)]" />
+                )}
+                <Button
+                  variant="brandOutline"
+                  size="sm"
+                  className={taskDetailsModalJiraBtnClass}
+                  onClick={() => void onGenerateDevGuidance!(task.id)}
+                  disabled={isAiBusy}
+                  aria-label="Gerar guia de implementação com IA"
+                >
+                  {isGeneratingDevGuidance ? (
+                    <Spinner small />
+                  ) : (
+                    <Sparkles className="h-4 w-4" aria-hidden />
+                  )}
+                  {isGeneratingDevGuidance ? 'Gerando…' : task.devGuidance ? 'Regenerar guia' : 'Gerar guia com IA'}
+                </Button>
+                <p className={cn(leveTaskModalMutedXsClass, 'mt-2')}>
+                  Monta passos de implementação, ferramentas e dicas alinhados à stack do projeto.
+                </p>
+                {task.devGuidanceGeneratedAt ? (
+                  <p className={cn(leveTaskModalMutedXsClass, 'mt-1.5')} title={task.devGuidanceGeneratedAt}>
+                    Última geração{' '}
+                    {formatRelativeTimestamp(task.devGuidanceGeneratedAt) ?? task.devGuidanceGeneratedAt}
+                  </p>
+                ) : (
+                  <p className={cn(leveTaskModalMutedXsClass, 'mt-1.5 italic')}>
+                    Ainda sem guia — abra a aba Guia Dev para ver o resultado
+                  </p>
                 )}
               </div>
             )}
@@ -537,7 +581,12 @@ export const TaskOverviewSection: React.FC = () => {
         {project && onUpdateProject && (
           <div className={cn(taskDetailsModalSectionClass, 'p-4')}>
             <h4 className={cn(leveTaskModalSectionTitleClass, 'mb-3')}>Ações Rápidas</h4>
-            <QuickActions task={task} project={project} onUpdateProject={onUpdateProject} />
+            <QuickActions
+              task={task}
+              project={project}
+              onUpdateProject={onUpdateProject}
+              devMode={devMode}
+            />
           </div>
         )}
       </aside>

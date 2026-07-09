@@ -60,7 +60,7 @@ describe('Testes de Navegação', () => {
       render(<App />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Projetos \(Testes\)/i)).toBeInTheDocument();
+        expect(screen.getByText(/Projetos QA/i)).toBeInTheDocument();
       });
     });
 
@@ -182,7 +182,7 @@ describe('Testes de Navegação', () => {
         name: /trilha de navegação|breadcrumb/i,
       });
       expect(breadcrumbs).toBeInTheDocument();
-      expect(within(breadcrumbs).getByRole('button', { name: 'Projetos' })).toBeInTheDocument();
+      expect(within(breadcrumbs).getByRole('button', { name: 'Projetos QA' })).toBeInTheDocument();
     });
 
     it('deve navegar para o dashboard ao clicar em Projetos no breadcrumb', async () => {
@@ -198,11 +198,11 @@ describe('Testes de Navegação', () => {
       const breadcrumbs = await screen.findByRole('navigation', {
         name: /trilha de navegação|breadcrumb/i,
       });
-      await user.click(within(breadcrumbs).getByRole('button', { name: 'Projetos' }));
+      await user.click(within(breadcrumbs).getByRole('button', { name: 'Projetos QA' }));
 
       await waitFor(() => {
         expect(useProjectsStore.getState().selectedProjectId).toBeNull();
-        expect(window.location.pathname).toBe('/projects');
+        expect(window.location.pathname).toBe('/projects/qa');
       });
     });
   });

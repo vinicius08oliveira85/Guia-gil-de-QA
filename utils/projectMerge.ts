@@ -137,6 +137,14 @@ export const mergeProjects = (localProject: Project, remoteProject: Project): Pr
             : remoteProject.projectFullAnalyses
           : localProject.projectFullAnalyses || remoteProject.projectFullAnalyses,
 
+      devProjectFullAnalyses:
+        localProject.devProjectFullAnalyses && remoteProject.devProjectFullAnalyses
+          ? localProject.devProjectFullAnalyses.length >=
+            remoteProject.devProjectFullAnalyses.length
+            ? localProject.devProjectFullAnalyses
+            : remoteProject.devProjectFullAnalyses
+          : localProject.devProjectFullAnalyses || remoteProject.devProjectFullAnalyses,
+
       // Preservar tags e settings do mais recente
       tags: timestampComparison >= 0 ? localProject.tags : remoteProject.tags,
       settings: timestampComparison >= 0 ? localProject.settings : remoteProject.settings,
@@ -237,6 +245,22 @@ const mergeTasks = (
                 ? localTask.testStrategy
                 : remoteTask.testStrategy
               : localTask.testStrategy || remoteTask.testStrategy,
+          // Preservar guia Dev mais recente
+          devGuidance:
+            compareTimestamps(localTask.devGuidanceGeneratedAt, remoteTask.devGuidanceGeneratedAt) >=
+            0
+              ? localTask.devGuidance || remoteTask.devGuidance
+              : remoteTask.devGuidance || localTask.devGuidance,
+          devGuidanceGeneratedAt:
+            compareTimestamps(localTask.devGuidanceGeneratedAt, remoteTask.devGuidanceGeneratedAt) >=
+            0
+              ? localTask.devGuidanceGeneratedAt || remoteTask.devGuidanceGeneratedAt
+              : remoteTask.devGuidanceGeneratedAt || localTask.devGuidanceGeneratedAt,
+          devGuidanceSnapshotHash:
+            compareTimestamps(localTask.devGuidanceGeneratedAt, remoteTask.devGuidanceGeneratedAt) >=
+            0
+              ? localTask.devGuidanceSnapshotHash || remoteTask.devGuidanceSnapshotHash
+              : remoteTask.devGuidanceSnapshotHash || localTask.devGuidanceSnapshotHash,
           // Preservar análises mais recentes
           iaAnalysis:
             taskComparison >= 0
