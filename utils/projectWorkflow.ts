@@ -52,3 +52,57 @@ export function isProjectsListPath(pathname: string): boolean {
 export function getProjectListPathForProject(project: Pick<Project, 'workflow'>): `/projects/${ProjectWorkflow}` {
   return getProjectsListPath(normalizeProjectWorkflow(project.workflow));
 }
+
+function normalizeJiraProjectKey(jiraProjectKey: string | undefined | null): string | null {
+  const trimmed = jiraProjectKey?.trim();
+  return trimmed ? trimmed.toUpperCase() : null;
+}
+
+/** Localiza projeto local vinculado à mesma chave Jira (opcionalmente filtrando por workflow). */
+export function findProjectByJiraKey(
+  projects: Project[],
+  jiraProjectKey: string,
+  options?: { workflow?: ProjectWorkflow; excludeProjectId?: string }
+): Project | undefined {
+  const normalizedKey = normalizeJiraProjectKey(jiraProjectKey);
+  if (!normalizedKey) return undefined;
+
+  const targetWorkflow =
+    options?.workflow !== undefined ? normalizeProjectWorkflow(options.workflow) : undefined;
+
+  return projects.find(project => {
+    if (options?.excludeProjectId && project.id === options.excludeProjectId) return false;
+    if (normalizeJiraProjectKey(project.settings?.jiraProjectKey) !== normalizedKey) return false;
+    if (targetWorkflow === undefined) return true;
+    return normalizeProjectWorkflow(project.workflow) === targetWorkflow;
+  });
+}
+
+/**
+ * Impede vincular a mesma chave Jira em QA e Dev ao mesmo tempo.
+ * @throws Error quando a chave já existe no outro workflow.
+ */
+export function assertJiraProjectNotLinkedToOtherWorkflow(
+  projects: Project[],
+  jiraProjectKey: string,
+  targetWorkflow: ProjectWorkflow,
+  excludeProjectId?: string
+): void {
+  const normalizedKey = normalizeJiraProjectKey(jiraProjectKey);
+  if (!normalizedKey) return;
+
+  const normalizedTarget = normalizeProjectWorkflow(targetWorkflow);
+  const conflict = projects.find(project => {
+    if (excludeProjectId && project.id === excludeProjectId) return false;
+    if (normalizeJiraProjectKey(project.settings?.jiraProjectKey) !== normalizedKey) return false;
+    return normalizeProjectWorkflow(project.workflow) !== normalizedTarget;
+  });
+
+  if (!conflict) return;
+
+  const otherWorkflow = normalizeProjectWorkflow(conflict.workflow);
+  throw new Error(
+    `O projeto Jira "${jiraProjectKey}" já está em ${PROJECT_WORKFLOW_LABELS[otherWorkflow]} ("${conflict.name}"). ` +
+      `Importe ou vincule apenas em um workspace (QA ou Dev).`
+  );
+}

@@ -3,6 +3,7 @@ import type { JiraTask } from '../../../types';
 import {
   formatJiraAttachedFormsForPrompt,
   validateTaskAiContext,
+  validateDevGuidanceContext,
   computeTaskAiContextHash,
   type TaskAiContext,
 } from '../../../services/ai/taskAiContext';
@@ -72,6 +73,32 @@ describe('validateTaskAiContext', () => {
         })
       )
     ).toThrow(/sem conteúdo analisável/i);
+  });
+});
+
+describe('validateDevGuidanceContext', () => {
+  it('aceita tarefa só com título (fluxo Dev)', () => {
+    expect(() =>
+      validateDevGuidanceContext(
+        baseCtx({
+          hasAttachedForms: false,
+          attachedFormsContext: '(sem formulários anexados)',
+          title: 'Implementar login',
+        }),
+        null
+      )
+    ).not.toThrow();
+  });
+
+  it('rejeita tarefa sem título', () => {
+    expect(() =>
+      validateDevGuidanceContext(
+        baseCtx({
+          title: '',
+        }),
+        null
+      )
+    ).toThrow(/título/i);
   });
 });
 

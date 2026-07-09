@@ -1551,13 +1551,14 @@ export const TasksView: React.FC<{
                 generateDevGuidanceForTask(task, { project: withAnalysis }),
                 90000
               );
+              const { snapshotHash, generatedAt, ...guidance } = result;
               const taskIndex = updatedTasks.findIndex(t => t.id === task.id);
               if (taskIndex !== -1) {
                 updatedTasks[taskIndex] = {
                   ...updatedTasks[taskIndex],
-                  devGuidance: result,
-                  devGuidanceSnapshotHash: result.snapshotHash,
-                  devGuidanceGeneratedAt: result.generatedAt,
+                  devGuidance: guidance,
+                  devGuidanceSnapshotHash: snapshotHash,
+                  devGuidanceGeneratedAt: generatedAt,
                 };
               }
               guidanceSuccess++;

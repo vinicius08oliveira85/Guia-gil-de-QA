@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useProjectsStore } from '../../store/projectsStore';
 import { Project } from '../../types';
 import * as dbService from '../../services/dbService';
+import { filterProjectsByWorkflow } from '../../utils/projectWorkflow';
 
 vi.mock('../../services/localSaveService', () => ({
   saveProjectLocally: vi.fn(),
@@ -105,6 +106,19 @@ describe('useProjectsStore', () => {
 
       expect(created.name).toBe('Projeto Template');
       expect(dbService.addProject).toHaveBeenCalled();
+    });
+
+    it('cria projeto Dev sem aparecer na listagem QA', async () => {
+      vi.mocked(dbService.addProject).mockResolvedValue({ savedToSupabase: false });
+
+      await useProjectsStore.getState().createProject('Somente Dev', 'Desc', undefined, 'dev');
+      await useProjectsStore.getState().createProject('Somente QA', 'Desc', undefined, 'qa');
+
+      const { projects } = useProjectsStore.getState();
+      expect(filterProjectsByWorkflow(projects, 'dev')).toHaveLength(1);
+      expect(filterProjectsByWorkflow(projects, 'qa')).toHaveLength(1);
+      expect(filterProjectsByWorkflow(projects, 'dev')[0]?.name).toBe('Somente Dev');
+      expect(filterProjectsByWorkflow(projects, 'qa')[0]?.name).toBe('Somente QA');
     });
   });
 

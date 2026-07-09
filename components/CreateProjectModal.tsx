@@ -211,10 +211,10 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
 
   const handleImportFromFile = useCallback(
     async (project: Project) => {
-      const normalizedProject = {
+      const normalizedProject = normalizeProjectWorkflowFields({
         ...project,
-        workflow: normalizeProjectWorkflow(project.workflow ?? workflow),
-      };
+        workflow: normalizeProjectWorkflow(workflow),
+      });
       await importProject(normalizedProject);
       handleSuccess('Projeto importado com sucesso!');
       handleClose();

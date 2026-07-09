@@ -169,7 +169,9 @@ export const getAllProjects = async (): Promise<Project[]> => {
 
 export const addProject = async (project: Project): Promise<SaveResult> => {
   const cleanedProject = withAcyclicTaskParents(
-    cleanupTestCasesForNonTaskTypesSync(normalizeProjectBusinessRules(project))
+    cleanupTestCasesForNonTaskTypesSync(
+      normalizeProjectWorkflowFields(normalizeProjectBusinessRules(project))
+    )
   );
 
   const db = await openDB();
@@ -192,7 +194,9 @@ export const updateProject = async (
   _options?: { syncRemote?: boolean }
 ): Promise<SaveResult> => {
   const cleanedProject = withAcyclicTaskParents(
-    cleanupTestCasesForNonTaskTypesSync(normalizeProjectBusinessRules(project))
+    cleanupTestCasesForNonTaskTypesSync(
+      normalizeProjectWorkflowFields(normalizeProjectBusinessRules(project))
+    )
   );
 
   const totalStrategies = cleanedProject.tasks.reduce(

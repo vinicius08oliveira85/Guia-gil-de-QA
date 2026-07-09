@@ -9,7 +9,7 @@ import { buildDevGuidancePrompt } from './devGuidancePrompts';
 import {
   computeTaskAiContextHash,
   resolveTaskAiContext,
-  validateTaskAiContext,
+  validateDevGuidanceContext,
 } from './taskAiContext';
 import { formatDevStackForPrompt } from '../../utils/devStackFormat';
 import { normalizeCursorAgentAction } from '../../utils/cursorAgentUi';
@@ -179,7 +179,7 @@ export async function generateDevGuidanceForTask(
 ): Promise<DevGuidanceGenerationResult> {
   validateTaskTitle(task);
   const ctx = options.taskAiContext ?? (await resolveTaskAiContext(task, { project: options.project }));
-  validateTaskAiContext(ctx);
+  validateDevGuidanceContext(ctx, options.project);
 
   const snapshotHash = computeDevGuidanceHash(task, ctx, options.project);
   if (!options.forceRefresh) {

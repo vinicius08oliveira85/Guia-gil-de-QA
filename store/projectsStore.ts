@@ -16,7 +16,7 @@ import { addAuditLog } from '../utils/auditLog';
 import { logger } from '../utils/logger';
 import type { ProjectWorkflow } from '../types';
 import { EMPTY_DEV_STACK } from '../utils/devStackPresets';
-import { normalizeProjectWorkflow } from '../utils/projectWorkflow';
+import { normalizeProjectWorkflow, normalizeProjectWorkflowFields, assertJiraProjectNotLinkedToOtherWorkflow } from '../utils/projectWorkflow';
 import {
   getGeneralIAAnalysisSnapshotHash,
   invalidateGeneralAnalysisCache,
@@ -121,13 +121,13 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
 
       const now = new Date().toISOString();
       if (templateId) {
-        newProject = {
+        newProject = normalizeProjectWorkflowFields({
           ...createProjectFromTemplate(templateId, name, description, projectWorkflow),
           createdAt: now,
           updatedAt: now,
-        };
+        });
       } else {
-        newProject = {
+        newProject = normalizeProjectWorkflowFields({
           id: `proj-${Date.now()}`,
           name,
           description,
@@ -143,7 +143,16 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
               : undefined,
           createdAt: now,
           updatedAt: now,
-        };
+        });
+      }
+
+      const jiraProjectKey = newProject.settings?.jiraProjectKey;
+      if (jiraProjectKey) {
+        assertJiraProjectNotLinkedToOtherWorkflow(
+          get().projects,
+          jiraProjectKey,
+          projectWorkflow
+        );
       }
 
       await addProject(newProject);
@@ -260,7 +269,21 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         }
       }
 
-      finalProject = { ...finalProject, updatedAt: new Date().toISOString() };
+      finalProject = normalizeProjectWorkflowFields({
+        ...finalProject,
+        workflow: normalizeProjectWorkflow(finalProject.workflow ?? oldProject?.workflow),
+        updatedAt: new Date().toISOString(),
+      });
+
+      const jiraProjectKey = finalProject.settings?.jiraProjectKey;
+      if (jiraProjectKey) {
+        assertJiraProjectNotLinkedToOtherWorkflow(
+          state.projects,
+          jiraProjectKey,
+          finalProject.workflow,
+          finalProject.id
+        );
+      }
 
       if (oldProject) {
         const prevSnapshot = getGeneralIAAnalysisSnapshotHash(oldProject);
@@ -412,36 +435,47 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
   importProject: async (project: Project) => {
     try {
       const state = get();
-      const existsInState = state.projects.some(p => p.id === project.id);
-      const existingInDb = await getProjectById(project.id);
+      const normalizedProject = normalizeProjectWorkflowFields(project);
+      const jiraProjectKey = normalizedProject.settings?.jiraProjectKey;
+      if (jiraProjectKey) {
+        assertJiraProjectNotLinkedToOtherWorkflow(
+          state.projects,
+          jiraProjectKey,
+          normalizedProject.workflow,
+          normalizedProject.id
+        );
+      }
+
+      const existsInState = state.projects.some(p => p.id === normalizedProject.id);
+      const existingInDb = await getProjectById(normalizedProject.id);
       const exists = existsInState || existingInDb != null;
 
       if (exists) {
-        const result = await updateProjectInDatabase(project);
+        const result = await updateProjectInDatabase(normalizedProject);
         set(s => {
-          const inList = s.projects.some(p => p.id === project.id);
+          const inList = s.projects.some(p => p.id === normalizedProject.id);
           return {
             projects: inList
-              ? s.projects.map(p => (p.id === project.id ? project : p))
-              : [...s.projects, project],
+              ? s.projects.map(p => (p.id === normalizedProject.id ? normalizedProject : p))
+              : [...s.projects, normalizedProject],
           };
         });
         addAuditLog({
           action: 'UPDATE',
           entityType: 'project',
-          entityId: project.id,
-          entityName: project.name,
+          entityId: normalizedProject.id,
+          entityName: normalizedProject.name,
         });
       } else {
-        await addProject(project);
+        await addProject(normalizedProject);
         set(s => ({
-          projects: [...s.projects, project],
+          projects: [...s.projects, normalizedProject],
         }));
         addAuditLog({
           action: 'CREATE',
           entityType: 'project',
-          entityId: project.id,
-          entityName: project.name,
+          entityId: normalizedProject.id,
+          entityName: normalizedProject.name,
         });
       }
     } catch (error) {

@@ -119,7 +119,7 @@ export const ProjectsDashboard: React.FC<{
   const [isCreating, setIsCreating] = useState(false);
   const [isCreateSubmitting, setIsCreateSubmitting] = useState(false);
   const [localBackupStatus, setLocalBackupStatus] = useState<LocalBackupStatStatus>('unconfigured');
-  const [manualOrder] = useLocalStorage<string[]>('projectsManualOrder', []);
+  const [manualOrder] = useLocalStorage<string[]>(`projectsManualOrder:${workflow}`, []);
   const [quickFilter, setQuickFilter] = useState<QuickFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [summaryExpanded, setSummaryExpanded] = useState(() =>

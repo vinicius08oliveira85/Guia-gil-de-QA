@@ -95,4 +95,37 @@ describe('devGuidanceGenerationService', () => {
     expect(result.snapshotHash).toBeTruthy();
     expect(result.generatedAt).toBeTruthy();
   });
+
+  it('gera guia Dev com tarefa só com título (sem descrição)', async () => {
+    const { resolveTaskAiContext } = await import('../../../services/ai/taskAiContext');
+    vi.mocked(resolveTaskAiContext).mockResolvedValueOnce({
+      title: 'Endpoint de health check',
+      description: '(sem descrição)',
+      taskType: 'Tarefa',
+      attachedFormsContext: '(sem formulários)',
+      businessRulesBlock: '',
+      imageParts: [],
+      imageSummary: '',
+      imageFingerprint: '',
+      attachmentsContext: '',
+      hasRealDescription: false,
+      hasAttachedForms: false,
+      hasImages: false,
+      hasBusinessRules: false,
+    });
+
+    const result = await generateDevGuidanceForTask(
+      {
+        id: 'TASK-2',
+        title: 'Endpoint de health check',
+        status: 'To Do',
+        type: 'Tarefa',
+        testCases: [],
+      },
+      { project: null }
+    );
+
+    expect(result.overview).toBeTruthy();
+    expect(result.implementationSteps.length).toBeGreaterThan(0);
+  });
 });

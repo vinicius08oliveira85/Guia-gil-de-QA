@@ -12,6 +12,7 @@ import { formatBusinessRulesForPrompt } from './promptUtils';
 import type { GeminiContentPart } from './geminiApiWrapper';
 import { logger } from '../../utils/logger';
 import { resolveTaskImageContext, taskHasImages } from './taskImageContext';
+import { devStackIsConfigured } from '../../utils/devStackPresets';
 
 const LOGGER_CONTEXT = 'taskAiContext';
 
@@ -171,6 +172,34 @@ export function validateTaskAiContext(ctx: TaskAiContext): void {
   if (!hasSource) {
     throw new Error(
       'Tarefa sem conteúdo analisável: informe descrição, formulários anexados, imagens ou regras de negócio vinculadas.'
+    );
+  }
+}
+
+/**
+ * Valida contexto para guia Dev: o título basta; descrição/stack enriquecem o prompt.
+ * Tarefas Dev costumam ter só título até o Jira ser enriquecido.
+ */
+export function validateDevGuidanceContext(
+  ctx: TaskAiContext,
+  project?: Project | null
+): void {
+  if (!ctx.title.trim()) {
+    throw new Error('Título da tarefa é obrigatório para geração com IA.');
+  }
+
+  const hasRichContext =
+    ctx.hasRealDescription ||
+    ctx.hasAttachedForms ||
+    ctx.hasImages ||
+    ctx.hasBusinessRules ||
+    devStackIsConfigured(project?.settings?.devStack);
+
+  if (!hasRichContext) {
+    logger.debug(
+      'Guia Dev com contexto mínimo (somente título) — recomenda-se descrição ou stack no Dashboard Dev',
+      LOGGER_CONTEXT,
+      { taskTitle: ctx.title }
     );
   }
 }

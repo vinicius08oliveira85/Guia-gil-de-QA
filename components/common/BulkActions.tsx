@@ -4,6 +4,7 @@ import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { Modal } from './Modal';
 import { ConfirmDialog } from './ConfirmDialog';
 import { useProjectsStore } from '../../store/projectsStore';
+import { normalizeProjectWorkflow } from '../../utils/projectWorkflow';
 import {
   neuBrandBorderClass,
   neuCardInsetClass,
@@ -208,7 +209,9 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
       // Criar novo projeto
       const createdProject = await createProject(
         projectName.trim(),
-        projectDescription.trim() || ''
+        projectDescription.trim() || '',
+        undefined,
+        normalizeProjectWorkflow(project.workflow)
       );
 
       // Atualizar o projeto criado com as tasks
