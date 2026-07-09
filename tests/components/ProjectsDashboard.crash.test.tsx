@@ -19,7 +19,12 @@ const baseProject: Project = {
 function renderDashboard(projects: Project[]) {
   return render(
     <MemoryRouter>
-      <ProjectsDashboard workflow="qa" projects={projects} onCreateProject={async () => {}} />
+      <ProjectsDashboard
+        workflow="qa"
+        projects={projects}
+        onCreateProject={async () => {}}
+        onDeleteProject={async () => {}}
+      />
     </MemoryRouter>
   );
 }

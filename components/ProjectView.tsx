@@ -21,15 +21,13 @@ const NotepadView = lazyWithRetry(() =>
   import('./project/NotepadView').then(m => ({ default: m.NotepadView }))
 );
 import { KeepAlivePanel } from './common/KeepAlivePanel';
-import { Breadcrumbs } from './common/Breadcrumbs';
-import type { BreadcrumbItem } from './common/Breadcrumbs';
-import { ConfirmDialog } from './common/ConfirmDialog';
+import { Breadcrumbs, type BreadcrumbItem } from './common/Breadcrumbs';
 import { useProjectsStore } from '../store/projectsStore';
 import { useAutoSave } from '../hooks/useAutoSave';
-import toast from 'react-hot-toast';
-import { Spinner } from './common/Spinner';
-import { Trash2, CheckCircle2, AlertTriangle, Layers, PanelRight, RefreshCw } from 'lucide-react';
+import { ProjectWorkspaceActions } from './common/ProjectWorkspaceActions';
+import { Layers, PanelRight } from 'lucide-react';
 import { logger } from '../utils/logger';
+import toast from 'react-hot-toast';
 import { Button } from './common/Button';
 import { cn } from '../utils/cn';
 import { workspaceSurfaceLightClass } from './common/appPageNeuUi';
@@ -38,14 +36,12 @@ import {
   projectChromeBacklogBtnClass,
   projectChromeBacklogCountClass,
   projectChromeBreadcrumbsClass,
-  projectChromeDangerBtnClass,
   projectChromeHeaderInnerClass,
   projectChromeHeaderShellClass,
   projectChromeSyncBtnClass,
   projectChromeToolbarClass,
   projectChromeToolbarDividerClass,
   projectChromeToolbarStatusClass,
-  projectChromeToolbarStatusWrapClass,
 } from './tasks/tasksPanelNeuStyles';
 import { countBacklogTasks, type TasksListMode } from '../utils/backlogTasks';
 import {
@@ -82,8 +78,7 @@ const TAB_LABELS_DEV: Record<string, string> = {
 export const ProjectView: React.FC<{
   project: Project;
   onUpdateProject: (project: Project) => void | Promise<void>;
-  onDeleteProject?: (projectId: string) => void | Promise<void>;
-}> = ({ project, onUpdateProject, onDeleteProject }) => {
+}> = ({ project, onUpdateProject }) => {
   const {
     activeTab,
     openTaskTabIds,
@@ -112,12 +107,6 @@ export const ProjectView: React.FC<{
   /** Tarefa com detalhes inline ou modal aberto — terceiro nível do breadcrumb. */
   const [breadcrumbTaskId, setBreadcrumbTaskId] = useState<string | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
-  const [showDeleteProjectConfirm, setShowDeleteProjectConfirm] = useState(false);
-  const [isDeletingProject, setIsDeletingProject] = useState(false);
-  const [isSavingLocally, setIsSavingLocally] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const saveProjectLocally = useProjectsStore(s => s.saveProjectLocally);
-  const syncLocalBackup = useProjectsStore(s => s.syncLocalBackup);
   const projects = useProjectsStore(s => s.projects);
   const storeLoading = useProjectsStore(s => s.isLoading);
   const selectProject = useProjectsStore(s => s.selectProject);
@@ -236,36 +225,6 @@ export const ProjectView: React.FC<{
   const handlePrint = () => {
     setIsPrinting(true);
   };
-
-  const handleSaveLocally = async () => {
-    setIsSavingLocally(true);
-    setSaveStatus('saving');
-    try {
-      await saveProjectLocally(currentProject.id);
-      setSaveStatus('saved');
-      toast.success(`Projeto "${currentProject.name}" salvo localmente!`);
-      setTimeout(() => setSaveStatus('idle'), 2000);
-    } catch (error) {
-      setSaveStatus('error');
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      toast.error(`Erro ao salvar localmente: ${errorMessage}`);
-      setTimeout(() => setSaveStatus('idle'), 3000);
-    } finally {
-      setIsSavingLocally(false);
-    }
-  };
-
-  const handleSyncLocalBackup = async () => {
-    setIsSavingLocally(true);
-    try {
-      await syncLocalBackup();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Erro ao sincronizar pasta local');
-    } finally {
-      setIsSavingLocally(false);
-    }
-  };
-
 
   // Deep link pontual (ex.: vindo de outra tela)
   useEffect(() => {
@@ -536,82 +495,15 @@ export const ProjectView: React.FC<{
                 </div>
               </div>
               {/* Toolbar de ações do projeto — agrupadas em uma única barra coesa */}
-              <div className={projectChromeToolbarClass} role="toolbar" aria-label="Ações do projeto">
-                {/* Status de salvamento */}
-                <div
-                  className={projectChromeToolbarStatusWrapClass}
-                  role="status"
-                  aria-live="polite"
-                  aria-atomic="true"
-                >
-                  {saveStatus === 'saving' && (
-                    <>
-                      <Spinner size="sm" />
-                      <span className="text-info hidden sm:inline">Salvando...</span>
-                    </>
-                  )}
-                  {saveStatus === 'saved' && (
-                    <>
-                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" aria-hidden />
-                      <span className="hidden text-success sm:inline">Salvo</span>
-                    </>
-                  )}
-                  {saveStatus === 'error' && (
-                    <>
-                      <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-error" aria-hidden />
-                      <span className="hidden text-error sm:inline">Erro ao salvar</span>
-                    </>
-                  )}
-                </div>
-
+              <div className={projectChromeToolbarClass} role="presentation">
+                <ProjectWorkspaceActions project={currentProject} variant="toolbar" />
                 <div className={projectChromeToolbarDividerClass} aria-hidden />
-                <button
-                  type="button"
-                  onClick={handleSaveLocally}
-                  disabled={isSavingLocally}
-                  className={projectChromeSyncBtnClass}
-                  aria-label="Salvar projeto localmente"
-                >
-                  {isSavingLocally && saveStatus === 'saving' ? (
-                    <>
-                      <Spinner size="sm" />
-                      <span className="hidden sm:inline">Salvando...</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                      <span className="hidden sm:inline">Salvar</span>
-                    </>
-                  )}
-                </button>
-
-                <div className={projectChromeToolbarDividerClass} aria-hidden />
-                <button
-                  type="button"
-                  onClick={handleSyncLocalBackup}
-                  disabled={isSavingLocally}
-                  className={projectChromeSyncBtnClass}
-                  aria-label="Sincronizar backup na pasta local"
-                >
-                  {isSavingLocally && saveStatus !== 'saving' ? (
-                    <>
-                      <Spinner size="sm" />
-                      <span className="hidden sm:inline">Sincronizando...</span>
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                      <span className="hidden sm:inline">Sincronizar</span>
-                    </>
-                  )}
-                </button>
                 <button
                   type="button"
                   onClick={toggleNotepadDock}
                   className={cn(
                     projectChromeSyncBtnClass,
-                    isNotepadDockOpen &&
-                      'bg-primary/14 text-primary'
+                    isNotepadDockOpen && 'bg-primary/14 text-primary'
                   )}
                   aria-label={
                     isNotepadDockOpen
@@ -626,23 +518,6 @@ export const ProjectView: React.FC<{
                     {isNotepadDockOpen ? 'Notas fixas' : 'Fixar notas'}
                   </span>
                 </button>
-
-
-                {/* Separador + Excluir */}
-                {onDeleteProject && (
-                  <>
-                    <div className={projectChromeToolbarDividerClass} aria-hidden />
-                    <button
-                      type="button"
-                      onClick={() => setShowDeleteProjectConfirm(true)}
-                      className={projectChromeDangerBtnClass}
-                      aria-label={`Excluir projeto ${currentProject.name}`}
-                    >
-                      <Trash2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                      <span className="hidden sm:inline">Excluir</span>
-                    </button>
-                  </>
-                )}
               </div>
             </div>
 
@@ -858,27 +733,6 @@ export const ProjectView: React.FC<{
           ) : null}
         </div>
       </div>
-      {onDeleteProject && (
-        <ConfirmDialog
-          isOpen={showDeleteProjectConfirm}
-          onClose={() => setShowDeleteProjectConfirm(false)}
-          onConfirm={async () => {
-            setIsDeletingProject(true);
-            try {
-              await onDeleteProject(currentProject.id);
-              setShowDeleteProjectConfirm(false);
-            } finally {
-              setIsDeletingProject(false);
-            }
-          }}
-          title={`Excluir "${currentProject.name}"`}
-          message="Você tem certeza que deseja excluir este projeto? Todos os dados associados (tarefas, documentos, análises) serão perdidos permanentemente. Esta ação não pode ser desfeita."
-          confirmText="Sim, Excluir"
-          cancelText="Cancelar"
-          variant="danger"
-          isLoading={isDeletingProject}
-        />
-      )}
       {isPrinting && <PrintableReport project={currentProject} metrics={metrics} />}
     </>
   );

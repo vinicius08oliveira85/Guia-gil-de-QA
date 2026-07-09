@@ -15,16 +15,12 @@ const ProjectView = lazyWithRetry(() =>
 
 export interface ProjectViewPageProps {
   onUpdateProject: (project: Project) => Promise<void>;
-  onDeleteProject: (projectId: string) => Promise<void>;
 }
 
 /**
  * Rota `/projects/:id` — resolve o projeto na store e renderiza {@link ProjectView}.
  */
-export const ProjectViewPage: React.FC<ProjectViewPageProps> = ({
-  onUpdateProject,
-  onDeleteProject,
-}) => {
+export const ProjectViewPage: React.FC<ProjectViewPageProps> = ({ onUpdateProject }) => {
   const { id } = useParams<{ id: string }>();
   const isLoading = useProjectsStore(s => s.isLoading);
   const project = useProjectsStore(s => s.projects.find(p => p.id === id));
@@ -51,11 +47,7 @@ export const ProjectViewPage: React.FC<ProjectViewPageProps> = ({
         </div>
       }
     >
-      <ProjectView
-        project={project}
-        onUpdateProject={onUpdateProject}
-        onDeleteProject={onDeleteProject}
-      />
+      <ProjectView project={project} onUpdateProject={onUpdateProject} />
     </Suspense>
   );
 };

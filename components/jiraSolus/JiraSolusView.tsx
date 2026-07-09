@@ -9,6 +9,7 @@ import {
   FILAS_TASKS_STORAGE_KEY,
   readTaskTrackingSnapshot,
   TASK_TRACKING_RESTORED_EVENT,
+  writeTaskTrackingSnapshot,
 } from '../../services/taskTrackingStorage';
 import { Breadcrumbs, type BreadcrumbItem } from '../common/Breadcrumbs';
 import {
@@ -24,6 +25,7 @@ import { TaskWorkspacePanel } from '../tasks/TaskWorkspacePanel';
 import {
   projectChromeBreadcrumbsClass,
   projectChromeHeaderInnerClass,
+  projectChromeToolbarClass,
 } from '../tasks/tasksPanelNeuStyles';
 import {
   isJiraSolusFixedTabId,
@@ -36,7 +38,7 @@ import {
 import { getAdjacentOpenTaskId } from '../../utils/workspaceSessionStorage';
 import { useWorkspaceTabs } from '../../hooks/useWorkspaceTabs';
 import { useTaskTrackingHeaderStore } from '../../store/taskTrackingHeaderStore';
-import { writeTaskTrackingSnapshot } from '../../services/taskTrackingStorage';
+import { TaskTrackingWorkspaceActions } from '../common/TaskTrackingWorkspaceActions';
 import toast from 'react-hot-toast';
 import { KeepAlivePanel } from '../common/KeepAlivePanel';
 
@@ -97,25 +99,23 @@ export const JiraSolusView = React.memo(() => {
     () => initialSnapshot.slaRiskWindowHours
   );
   const [activeFilter, setActiveFilter] = useState<JiraFilasFilter>({ kind: 'all' });
-  const setHeaderSaveAction = useTaskTrackingHeaderStore(s => s.setSaveAction);
+  const [isSavingTracking, setIsSavingTracking] = useState(false);
+  const taskTrackingJiraAction = useTaskTrackingHeaderStore(s => s.jiraAction);
 
   const saveTaskTracking = useCallback(async () => {
-    writeTaskTrackingSnapshot({
-      selectedProjectKey,
-      queueSelection: readTaskTrackingSnapshot().queueSelection,
-      tasks,
-      slaRiskWindowHours,
-    });
-    toast.success('Acompanhamento salvo localmente!');
+    setIsSavingTracking(true);
+    try {
+      writeTaskTrackingSnapshot({
+        selectedProjectKey,
+        queueSelection: readTaskTrackingSnapshot().queueSelection,
+        tasks,
+        slaRiskWindowHours,
+      });
+      toast.success('Acompanhamento salvo localmente!');
+    } finally {
+      setIsSavingTracking(false);
+    }
   }, [selectedProjectKey, tasks, slaRiskWindowHours]);
-
-  useEffect(() => {
-    setHeaderSaveAction({
-      onSave: saveTaskTracking,
-      isSaving: false,
-    });
-    return () => setHeaderSaveAction(null);
-  }, [setHeaderSaveAction, saveTaskTracking]);
 
   useEffect(() => {
     const handleRestored = () => {
@@ -306,6 +306,17 @@ export const JiraSolusView = React.memo(() => {
                   align="left"
                   dense
                   className={cn(projectChromeBreadcrumbsClass, 'w-full min-w-0 max-w-full')}
+                />
+              </div>
+              <div className={cn(projectChromeToolbarClass, 'shrink-0')} role="presentation">
+                <TaskTrackingWorkspaceActions
+                  variant="toolbar"
+                  onSave={saveTaskTracking}
+                  onJiraSync={() => taskTrackingJiraAction?.onSync()}
+                  isSaving={isSavingTracking}
+                  isJiraSyncing={taskTrackingJiraAction?.isSyncing}
+                  jiraDisabled={taskTrackingJiraAction?.disabled ?? true}
+                  jiraTitle={taskTrackingJiraAction?.title}
                 />
               </div>
             </div>

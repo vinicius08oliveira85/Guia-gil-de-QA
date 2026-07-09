@@ -1,9 +1,12 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, ClipboardList, RefreshCw } from 'lucide-react';
+import { ArrowRight, ClipboardList } from 'lucide-react';
 import { getJiraConfig } from '../../services/jiraService';
 import { useFilasTaskTracking } from '../../hooks/useFilasTaskTracking';
 import { useFilasSync } from '../../hooks/useFilasSync';
+import { readTaskTrackingSnapshot, writeTaskTrackingSnapshot } from '../../services/taskTrackingStorage';
+import { TaskTrackingWorkspaceActions } from '../common/TaskTrackingWorkspaceActions';
+import toast from 'react-hot-toast';
 import { cn } from '../../utils/cn';
 import {
   collectAssigneeOptions,
@@ -89,6 +92,7 @@ export const LandingTaskFollowUp = React.memo(() => {
     useFilasTaskTracking();
   const { isSyncing, sync: syncFromJira } = useFilasSync({ onSuccess: refresh });
   const jiraConfigured = Boolean(getJiraConfig());
+  const [isSavingTracking, setIsSavingTracking] = useState(false);
 
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>(() =>
     readLandingTaskFollowUpAssignees()
@@ -141,6 +145,21 @@ export const LandingTaskFollowUp = React.memo(() => {
     [navigate]
   );
 
+  const saveTaskTracking = useCallback(async () => {
+    setIsSavingTracking(true);
+    try {
+      const snapshot = readTaskTrackingSnapshot();
+      writeTaskTrackingSnapshot({
+        ...snapshot,
+        tasks: filasTasks,
+        slaRiskWindowHours,
+      });
+      toast.success('Acompanhamento salvo localmente!');
+    } finally {
+      setIsSavingTracking(false);
+    }
+  }, [filasTasks, slaRiskWindowHours]);
+
   const handleSyncFromJira = useCallback(() => {
     void syncFromJira();
   }, [syncFromJira]);
@@ -174,21 +193,16 @@ export const LandingTaskFollowUp = React.memo(() => {
               Filas Jira · sincronizado localmente
             </p>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <button
-              type="button"
-              onClick={handleSyncFromJira}
-              disabled={isSyncing}
-              className={cn(landingNeuLinkBtnClass, 'disabled:cursor-not-allowed disabled:opacity-60')}
-              aria-label="Atualizar tarefas do Jira"
-              aria-busy={isSyncing}
-            >
-              <RefreshCw
-                className={cn('h-3.5 w-3.5', isSyncing && 'animate-spin motion-reduce:animate-none')}
-                aria-hidden
-              />
-              {isSyncing ? 'Atualizando…' : 'Atualizar'}
-            </button>
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+            <TaskTrackingWorkspaceActions
+              variant="inline"
+              onSave={saveTaskTracking}
+              onJiraSync={handleSyncFromJira}
+              isSaving={isSavingTracking}
+              isJiraSyncing={isSyncing}
+              jiraDisabled={!hasFilasSelection && filasTasks.length === 0}
+              jiraTitle="Atualizar tarefas do Jira neste acompanhamento"
+            />
             <Link
               to="/jira-solus"
               className={landingNeuLinkBtnClass}

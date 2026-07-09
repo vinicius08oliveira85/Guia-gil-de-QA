@@ -24,6 +24,7 @@ import {
   type ProjectHealthTone,
 } from '../../utils/workspaceAnalytics';
 import { getProjectIconMeta } from '../../utils/projectIcon';
+import { ProjectWorkspaceActions } from './ProjectWorkspaceActions';
 import { RadialProgress } from './RadialProgress';
 import {
   projectCardAccentBarClass,
@@ -53,6 +54,7 @@ export interface ProjectCardProps {
   project: Project;
   onSelect?: () => void;
   onTaskClick?: (taskId: string) => void;
+  onDeleteProject?: () => void | Promise<void>;
   icon?: LucideIcon;
   className?: string;
 }
@@ -132,7 +134,7 @@ function StatTile({
 }
 
 export const ProjectCard = React.memo<ProjectCardProps>(
-  ({ project, onSelect, onTaskClick, icon: iconOverride, className }) => {
+  ({ project, onSelect, onTaskClick, onDeleteProject, icon: iconOverride, className }) => {
     const metrics = useMemo(() => calculateProjectMetrics(project), [project]);
     const tasks = project.tasks || [];
     const health = useMemo(() => computeProjectHealth(project), [project]);
@@ -347,6 +349,13 @@ export const ProjectCard = React.memo<ProjectCardProps>(
             </span>
           </div>
         </div>
+
+        <ProjectWorkspaceActions
+          project={project}
+          variant="card"
+          showDelete={Boolean(onDeleteProject)}
+          onDeleteProject={onDeleteProject}
+        />
 
         {onTaskClick && latestCompletedTask ? (
           <button

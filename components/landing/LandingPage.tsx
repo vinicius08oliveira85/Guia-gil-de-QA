@@ -11,6 +11,7 @@ import { LandingTaskFollowUp } from './LandingTaskFollowUp';
 import { LandingIntegrationStatus } from './LandingIntegrationStatus';
 import { LandingEmptyOnboarding } from './LandingEmptyOnboarding';
 import { LandingHomeFooter } from './LandingHomeFooter';
+import { LandingWorkspaceActions } from './LandingWorkspaceActions';
 import { APP_BRAND, LANDING_SECTIONS } from './landingSections';
 import {
   landingAsideClass,
@@ -18,8 +19,7 @@ import {
   landingHeroClass,
   landingHeroShellClass,
   landingMainGridClass,
-  landingMenuCardDualPrimaryGridClass,
-  landingMenuCardSecondaryGridClass,
+  landingMenuCardCellClass,
   landingMenuGridClass,
   landingNavClass,
   landingNeuActionBtnClass,
@@ -74,18 +74,21 @@ export const LandingPage = React.memo(() => {
           </span>
         </Link>
 
-        <Link
-          to="/settings"
-          aria-label="Abrir configurações"
-          title="Configurações"
-          className={cn(landingNeuActionBtnClass, 'group shrink-0')}
-        >
-          <Settings
-            className="h-4 w-4 shrink-0 transition-transform duration-300 group-hover:rotate-45"
-            aria-hidden
-          />
-          <span className="hidden sm:inline">Configurações</span>
-        </Link>
+        <div className="flex shrink-0 items-center gap-2">
+          <LandingWorkspaceActions />
+          <Link
+            to="/settings"
+            aria-label="Abrir configurações"
+            title="Configurações"
+            className={cn(landingNeuActionBtnClass, 'group shrink-0')}
+          >
+            <Settings
+              className="h-4 w-4 shrink-0 transition-transform duration-300 group-hover:rotate-45"
+              aria-hidden
+            />
+            <span className="hidden sm:inline">Configurações</span>
+          </Link>
+        </div>
       </header>
 
       <div className={landingPageContainerClass}>
@@ -133,7 +136,7 @@ export const LandingPage = React.memo(() => {
             <aside className={landingAsideClass}>
               {!isLoading && !hasProjects ? <LandingEmptyOnboarding /> : null}
               {!isLoading && hasProjects ? (
-                <LandingRecentProjects projects={recentProjects} layout="stack" />
+                <LandingRecentProjects projects={recentProjects} layout="stack" compact limit={2} />
               ) : null}
             </aside>
           ) : null}
@@ -148,7 +151,7 @@ export const LandingPage = React.memo(() => {
                 Acesso rápido
               </h2>
               <p className={landingNeuSectionDescClass}>
-                Projetos QA e Dev, acompanhamento Jira × Solus e preferências do workspace.
+                Projetos QA e Dev e acompanhamento Jira × Solus.
               </p>
             </div>
 
@@ -159,10 +162,10 @@ export const LandingPage = React.memo(() => {
                 title={LANDING_SECTIONS.projectsQa.title}
                 description={LANDING_SECTIONS.projectsQa.description}
                 icon={LayoutGrid}
-                variant="primary"
+                variant="secondary"
                 badge={LANDING_SECTIONS.projectsQa.badge}
                 ctaLabel={qaProjects.length > 0 ? 'Abrir projetos QA' : 'Criar projeto QA'}
-                className={landingMenuCardDualPrimaryGridClass}
+                className={landingMenuCardCellClass}
               />
               <LandingMenuCard
                 to={getProjectsListPath('dev')}
@@ -170,10 +173,10 @@ export const LandingPage = React.memo(() => {
                 title={LANDING_SECTIONS.projectsDev.title}
                 description={LANDING_SECTIONS.projectsDev.description}
                 icon={Code2}
-                variant="primary"
+                variant="secondary"
                 badge={LANDING_SECTIONS.projectsDev.badge}
                 ctaLabel={devProjects.length > 0 ? 'Abrir projetos Dev' : 'Criar projeto Dev'}
-                className={landingMenuCardDualPrimaryGridClass}
+                className={landingMenuCardCellClass}
               />
               <LandingMenuCard
                 to="/jira-solus"
@@ -182,17 +185,7 @@ export const LandingPage = React.memo(() => {
                 description={LANDING_SECTIONS.jiraSolus.description}
                 icon={GitCompare}
                 variant="secondary"
-                className={landingMenuCardSecondaryGridClass}
-              />
-              <LandingMenuCard
-                to="/settings"
-                ariaLabel={`Acessar ${LANDING_SECTIONS.settings.title}`}
-                title={LANDING_SECTIONS.settings.title}
-                description={LANDING_SECTIONS.settings.description}
-                icon={Settings}
-                variant="secondary"
-                ctaLabel="Abrir configurações"
-                className={landingMenuCardSecondaryGridClass}
+                className={cn(landingMenuCardCellClass, 'sm:col-span-2 lg:col-span-1')}
               />
             </div>
           </nav>

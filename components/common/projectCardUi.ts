@@ -60,6 +60,21 @@ export const projectCardIconWrapClass = cn(
 
 export const projectCardChipClass = 'project-card-neu-chip';
 
+/** Trilho de ações no rodapé do card (Salvar, Importar, Exportar, Jira, Excluir). */
+export const projectCardActionTrackClass = 'project-card-action-track';
+
+export const projectCardActionBtnClass = cn(
+  'project-card-action-btn cursor-pointer',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--project-card-accent)_45%,transparent)]'
+);
+
+export const projectCardActionBtnDangerClass = cn(
+  'project-card-action-btn project-card-action-btn--danger cursor-pointer',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,#dc2626_35%,transparent)]'
+);
+
+export const projectCardActionDividerClass = 'project-card-action-divider';
+
 /** Tile compacto de métrica secundária (Exec. / Sucesso) — relevo rebaixado. */
 export const projectCardStatTileClass = cn(
   'project-card-neu-chip flex min-w-0 flex-1 flex-col gap-1 px-2.5 py-2'

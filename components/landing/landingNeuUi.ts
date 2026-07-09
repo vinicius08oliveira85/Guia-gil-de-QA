@@ -57,22 +57,25 @@ export const landingHeroClass =
 /** Badge/eyebrow acima do título (announcement pill — SaaS hero). */
 export const landingEyebrowClass = 'landing-eyebrow';
 
-/** Coluna lateral (continuar / onboarding). */
-export const landingAsideClass = 'flex flex-col gap-4 lg:col-span-5';
+/** Coluna lateral compacta (continuar / onboarding). */
+export const landingAsideClass = 'flex flex-col gap-3 lg:col-span-3 xl:col-span-3';
 
 /** Área de navegação principal — layout bento. */
-export const landingNavClass = 'flex flex-col gap-4 lg:col-span-7';
+export const landingNavClass = 'flex flex-col gap-4 lg:col-span-9 xl:col-span-9';
 
 /** Grade bento dos cards de menu (21st bento grid). */
 export const landingMenuGridClass = cn(
-  'landing-bento-grid grid w-full grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4 lg:grid-cols-2 lg:gap-5',
-  'xl:grid-cols-3 xl:gap-5 2xl:grid-cols-3',
-  'lg:auto-rows-[minmax(10.5rem,auto)]'
+  'landing-bento-grid landing-bento-grid--aligned grid w-full grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4',
+  'lg:grid-cols-3 lg:gap-5 lg:auto-rows-fr',
+  'lg:items-stretch'
 );
 
 export const landingMenuCardPrimaryGridClass = 'sm:col-span-2 lg:col-span-2 lg:row-span-2';
 
 export const landingMenuCardDualPrimaryGridClass = 'sm:col-span-1 lg:col-span-1';
+
+/** Célula uniforme na grade de 3 cards alinhados. */
+export const landingMenuCardCellClass = 'h-full sm:col-span-1 lg:col-span-1';
 
 export const landingMenuCardSecondaryGridClass = 'lg:col-span-1';
 
@@ -184,6 +187,28 @@ export const landingNeuRowClass = cn(
   'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
   'motion-reduce:transform-none sm:items-center'
 );
+
+/** Painel Continuar — versão compacta. */
+export const landingNeuPanelCompactClass = cn(
+  landingNeuPanelClass,
+  'landing-neu-panel--compact gap-3 p-3 sm:gap-3.5 sm:p-4'
+);
+
+/** Linha compacta na lista Continuar. */
+export const landingNeuRowCompactClass = cn(
+  landingNeuRowClass,
+  'landing-neu-row--compact gap-2 px-2.5 py-2 sm:px-3 sm:py-2.5'
+);
+
+/** Badge de workflow (QA / Dev) no bloco Continuar. */
+export function landingWorkflowBadgeClass(workflow: 'qa' | 'dev'): string {
+  return cn(
+    'landing-workflow-badge shrink-0 rounded-full border px-1.5 py-0.5 text-[0.625rem] font-bold uppercase tracking-wide',
+    workflow === 'dev'
+      ? 'border-info/30 bg-info/10 text-info'
+      : 'border-primary/30 bg-primary/10 text-primary'
+  );
+}
 
 export const landingNeuEmptyClass = cn(
   'landing-neu-empty px-3 py-4 text-center text-sm font-medium',

@@ -8,40 +8,18 @@ import React, {
   useId,
 } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ExpansibleButton } from './ExpansibleButton';
-import { JiraBrandIcon } from './JiraBrandIcon';
-import {
-  Plus,
-  Loader2,
-  ChevronLeft,
-  LayoutGrid,
-  Save,
-  RefreshCw,
-} from 'lucide-react';
+import { Plus, ChevronLeft, LayoutGrid } from 'lucide-react';
 import { Project } from '../../types';
-import { Modal } from './Modal';
 import { useProjectsStore } from '../../store/projectsStore';
-import { useTaskTrackingHeaderStore } from '../../store/taskTrackingHeaderStore';
-import { useJiraSync } from '../../hooks/useJiraSync';
-import toast from 'react-hot-toast';
 import {
   NavigationMenuDrawer,
   NavigationMenuHamburger,
-  NavigationMenuRail,
 } from './NavigationMenu';
 import type { NavigationMenuItem } from './NavigationMenu';
 import { cn } from '../../utils/cn';
 import { isAnalysisOutdated } from '../../utils/analysisFreshness';
 import { getGeneralIAAnalysisSnapshotHash } from '../../services/ai/generalAnalysisService';
-import { AppSelect } from '../common/AppSelect';
-import {
-  headerNeuJiraSlotClass,
-  headerNeuSaveSlotClass,
-  headerNeuSaveSlotSeparatorClass,
-  headerNeuTrailingActionsClass,
-  headerNeuToolbarPillPrimaryClass,
-  headerNeuToolbarPillSecondaryClass,
-} from './headerNeuUi';
+import { headerNeuNavPillClass, headerNeuToolbarPillPrimaryClass } from './headerNeuUi';
 import { APP_BRAND } from '../landing/landingSections';
 import { resolveHeaderBackNavigation } from '../../utils/headerBackNavigation';
 import { normalizeProjectWorkflow } from '../../utils/projectWorkflow';
@@ -52,9 +30,7 @@ interface HeaderProps {
   onOpenCreateModal?: () => void;
   showDashboardActions?: boolean;
   onLogoClick?: () => void;
-  /** Título exibido ao lado da logo (padrão: QA Agile Guide). */
   brandTitle?: string;
-  /** Subtítulo exibido abaixo do título (padrão: tagline do app). */
   brandSubtitle?: string;
 }
 
@@ -67,40 +43,21 @@ export const Header: React.FC<HeaderProps> = ({
   brandTitle,
   brandSubtitle,
 }) => {
-  const [isSaving, setIsSaving] = useState(false);
-  const [isSyncingLocal, setIsSyncingLocal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const mobileMenuPanelRef = useRef<HTMLDivElement>(null);
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
   const headerRef = useRef<HTMLElement>(null);
   const mobileMenuDomId = useId().replace(/:/g, '');
 
-  const saveProjectLocally = useProjectsStore(s => s.saveProjectLocally);
   const getSelectedProject = useProjectsStore(s => s.getSelectedProject);
-  const syncLocalBackup = useProjectsStore(s => s.syncLocalBackup);
-  const updateProject = useProjectsStore(s => s.updateProject);
   const selectProject = useProjectsStore(s => s.selectProject);
   const selectedProjectId = useProjectsStore(s => s.selectedProjectId);
   const selectedProject = getSelectedProject();
-  const taskTrackingJiraAction = useTaskTrackingHeaderStore(s => s.jiraAction);
-  const taskTrackingSaveAction = useTaskTrackingHeaderStore(s => s.saveAction);
   const location = useLocation();
-  const isJiraSolusRoute = location.pathname === '/jira-solus';
   const navigate = useNavigate();
-  const {
-    handleSyncJira,
-    isSyncingJira,
-    showJiraProjectSelector,
-    setShowJiraProjectSelector,
-    availableJiraProjects,
-    selectedJiraProjectKey,
-    setSelectedJiraProjectKey,
-    handleConfirmJiraProject,
-  } = useJiraSync(selectedProject ?? null, updateProject);
 
   const closeMobileMenu = useCallback(() => setMobileMenuOpen(false), []);
 
-  /** Lista principal de projetos: limpa seleção no store e reutiliza o handler do App (URL / settings). */
   const goToProjectsList = useCallback(() => {
     selectProject(null);
     onLogoClick?.();
@@ -123,7 +80,6 @@ export const Header: React.FC<HeaderProps> = ({
     el?.focus();
   }, [mobileMenuOpen]);
 
-  /** Permite cabeçalhos sticky nas views (ex.: ProjectView) logo abaixo deste header. */
   useLayoutEffect(() => {
     const el = headerRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return;
@@ -141,12 +97,7 @@ export const Header: React.FC<HeaderProps> = ({
       ro.disconnect();
       window.removeEventListener('resize', setVar);
     };
-  }, [
-    mobileMenuOpen,
-    selectedProject?.id,
-    selectedProject?.generalIAAnalysis,
-    showDashboardActions,
-  ]);
+  }, [mobileMenuOpen, selectedProject?.id, selectedProject?.generalIAAnalysis, showDashboardActions]);
 
   const generalAnalysisOutdated = useMemo(() => {
     if (!selectedProject) return false;
@@ -169,72 +120,6 @@ export const Header: React.FC<HeaderProps> = ({
     return 'Análise geral com IA desatualizada em relação ao estado atual do projeto';
   }, [selectedProject, generalAnalysisOutdated]);
 
-  const handleSave = useCallback(async () => {
-    if (isSaving) return;
-
-    setIsSaving(true);
-    try {
-      const proj = getSelectedProject();
-      if (proj) {
-        await saveProjectLocally(proj.id);
-        toast.success(`Projeto "${proj.name}" salvo localmente!`);
-        return;
-      }
-
-      const saveAction = useTaskTrackingHeaderStore.getState().saveAction;
-      if (isJiraSolusRoute && saveAction) {
-        await saveAction.onSave();
-        return;
-      }
-
-      await syncLocalBackup();
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Erro ao salvar localmente.';
-      toast.error(message);
-    } finally {
-      setIsSaving(false);
-    }
-  }, [isSaving, getSelectedProject, saveProjectLocally, isJiraSolusRoute, syncLocalBackup]);
-
-  const saveBusy = isSaving || (isJiraSolusRoute && (taskTrackingSaveAction?.isSaving ?? false));
-
-  const showHeaderSaveButton =
-    Boolean(selectedProject) ||
-    Boolean(showDashboardActions) ||
-    (isJiraSolusRoute && Boolean(taskTrackingSaveAction));
-
-  const headerSaveButton = showHeaderSaveButton ? (
-    <ExpansibleButton
-      neuVariant="header"
-      icon={
-        saveBusy ? (
-          <Loader2
-            className="h-[18px] w-[18px] flex-shrink-0 animate-spin text-primary"
-            aria-hidden
-          />
-        ) : (
-          <Save className="h-[18px] w-[18px] flex-shrink-0 text-[var(--chart-1)]" aria-hidden />
-        )
-      }
-      label={saveBusy ? 'Salvando...' : 'Salvar'}
-      onClick={() => void handleSave()}
-      disabled={saveBusy}
-      ariaLabel="Salvar localmente"
-      isExpanded={false}
-    />
-  ) : null;
-
-  const handleSyncLocal = async () => {
-    setIsSyncingLocal(true);
-    try {
-      await syncLocalBackup();
-    } catch {
-      toast.error('Erro ao sincronizar backup na pasta local.');
-    } finally {
-      setIsSyncingLocal(false);
-    }
-  };
-
   const mobileDrawerItems = useMemo((): NavigationMenuItem[] => {
     if (!onLogoClick) return [];
     const items: NavigationMenuItem[] = [
@@ -253,31 +138,13 @@ export const Header: React.FC<HeaderProps> = ({
         onClick: () => onOpenCreateModal(),
       });
     }
-    if (showDashboardActions) {
-      items.push({
-        id: 'sync-local',
-        label: isSyncingLocal ? 'Sincronizando…' : 'Sincronizar pasta local',
-        icon: <RefreshCw className="h-5 w-5" aria-hidden />,
-        onClick: () => {
-          void handleSyncLocal();
-        },
-      });
-    }
     return items;
-  }, [
-    onLogoClick,
-    goToProjectsList,
-    showDashboardActions,
-    onOpenCreateModal,
-    isSyncingLocal,
-    handleSyncLocal,
-  ]);
+  }, [onLogoClick, goToProjectsList, showDashboardActions, onOpenCreateModal]);
 
   const selectedProjectWorkflow = selectedProject
     ? normalizeProjectWorkflow(selectedProject.workflow)
     : undefined;
 
-  /** Volta para a tela anterior conforme a rota atual (Menu ou Projetos). */
   const handleHeaderBack = useCallback(() => {
     const back = resolveHeaderBackNavigation(location.pathname, {
       projectWorkflow: selectedProjectWorkflow,
@@ -348,49 +215,6 @@ export const Header: React.FC<HeaderProps> = ({
     </>
   );
 
-  const projectJiraButton = selectedProject ? (
-    <ExpansibleButton
-      neuVariant="header"
-      icon={
-        isSyncingJira ? (
-          <Loader2 className="h-[18px] w-[18px] flex-shrink-0 animate-spin" aria-hidden />
-        ) : (
-          <JiraBrandIcon className="h-[18px] w-[18px] flex-shrink-0" />
-        )
-      }
-      label={isSyncingJira ? 'Sincronizando...' : 'Jira'}
-      onClick={handleSyncJira}
-      disabled={isSyncingJira}
-      ariaLabel="Sincronizar com Jira"
-      isExpanded={false}
-    />
-  ) : null;
-
-  /** Botão Jira da tela Acompanhamento — registrado pelo painel de Filas. */
-  const taskTrackingJiraButton = taskTrackingJiraAction ? (
-    <ExpansibleButton
-      neuVariant="header"
-      icon={
-        taskTrackingJiraAction.isSyncing ? (
-          <Loader2 className="h-[18px] w-[18px] flex-shrink-0 animate-spin" aria-hidden />
-        ) : (
-          <JiraBrandIcon className="h-[18px] w-[18px] flex-shrink-0" />
-        )
-      }
-      label={taskTrackingJiraAction.isSyncing ? 'Atualizando…' : 'Jira'}
-      onClick={taskTrackingJiraAction.onSync}
-      disabled={taskTrackingJiraAction.disabled}
-      ariaLabel="Atualizar fila exportada do Jira"
-      title={taskTrackingJiraAction.title}
-      isExpanded={false}
-    />
-  ) : null;
-
-  /** Jira sempre penúltimo: Acompanhamento tem prioridade sobre projeto aberto. */
-  const headerJiraButton = taskTrackingJiraButton ?? projectJiraButton;
-
-  const showHeaderTrailingActions = Boolean(headerJiraButton || headerSaveButton);
-
   return (
     <header
       ref={headerRef}
@@ -411,83 +235,57 @@ export const Header: React.FC<HeaderProps> = ({
             'sm:gap-2.5'
           )}
         >
-          {onLogoClick ? (
-            <button
-              type="button"
-              onClick={goToProjectsList}
-              className={cn(
-                'group flex h-full min-h-0 min-w-0 flex-1 cursor-pointer items-center gap-2 overflow-hidden rounded-[var(--radius)] p-0.5 text-left sm:gap-2.5',
-                'border border-transparent bg-transparent',
-                'transition-[background-color,border-color,box-shadow] duration-200 ease-out',
-                'hover:border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]',
-                'hover:bg-[color-mix(in_srgb,var(--leve-neu-bg)_88%,var(--leve-neu-light))]',
-                'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[oklch(var(--p))]'
-              )}
-              aria-label={
-                selectedProject
-                  ? 'Voltar para Meus Projetos'
-                  : showDashboardActions
-                    ? 'Voltar para a página inicial'
-                    : 'Voltar'
-              }
-            >
-              <span
-                className={cn(
-                  'pointer-events-none flex h-9 w-9 shrink-0 items-center justify-center',
-                  'rounded-full border border-transparent transition-all duration-200',
-                  'group-hover:border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]',
-                  'group-hover:bg-[color-mix(in_srgb,var(--leve-neu-bg)_88%,var(--leve-neu-light))]'
-                )}
-                aria-hidden
+          <div className="flex h-full min-h-0 min-w-0 flex-1 items-center gap-1.5 overflow-hidden sm:gap-2">
+            {headerBackNavItem ? (
+              <button
+                type="button"
+                onClick={handleHeaderBack}
+                className={cn(headerNeuNavPillClass, 'shrink-0')}
+                aria-label={headerBackNavItem.ariaLabel}
               >
-                <ChevronLeft className="h-5 w-5 text-base-content/72 group-hover:text-base-content" />
-              </span>
-              {logoContent}
-            </button>
-          ) : (
-            <div className="flex h-full min-w-0 flex-1 items-center gap-2 overflow-hidden sm:gap-2.5">
-              {logoContent}
-            </div>
-          )}
+                {headerBackNavItem.icon ? (
+                  <span className="mr-1 inline-flex shrink-0">{headerBackNavItem.icon}</span>
+                ) : null}
+                {headerBackNavItem.label}
+              </button>
+            ) : null}
+
+            {onLogoClick ? (
+              <button
+                type="button"
+                onClick={goToProjectsList}
+                className={cn(
+                  'group flex h-full min-h-0 min-w-0 flex-1 cursor-pointer items-center gap-2 overflow-hidden rounded-[var(--radius)] p-0.5 text-left sm:gap-2.5',
+                  'border border-transparent bg-transparent',
+                  'transition-[background-color,border-color,box-shadow] duration-200 ease-out',
+                  'hover:border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]',
+                  'hover:bg-[color-mix(in_srgb,var(--leve-neu-bg)_88%,var(--leve-neu-light))]',
+                  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[oklch(var(--p))]'
+                )}
+                aria-label="Ir para a página inicial"
+              >
+                {logoContent}
+              </button>
+            ) : (
+              <div className="flex h-full min-w-0 flex-1 items-center gap-2 overflow-hidden sm:gap-2.5">
+                {logoContent}
+              </div>
+            )}
+          </div>
 
           <div className="app-header-actions relative flex min-w-0 max-w-[min(100%,52%)] shrink-0 items-center justify-end gap-1.5 overflow-hidden max-md:max-w-[min(100%,72%)] sm:max-w-[min(100%,58%)] md:gap-2">
             <div className="flex min-w-0 items-center justify-end gap-1.5 overflow-hidden md:gap-2">
-              {showDashboardActions && (
+              {showDashboardActions && onOpenCreateModal ? (
                 <div className="hidden shrink-0 items-center gap-1.5 md:flex">
-                  {onOpenCreateModal && (
-                    <button
-                      type="button"
-                      onClick={onOpenCreateModal}
-                      className={headerNeuToolbarPillPrimaryClass}
-                    >
-                      <Plus className="h-4 w-4 shrink-0" aria-hidden />
-                      Novo projeto
-                    </button>
-                  )}
                   <button
                     type="button"
-                    onClick={() => void handleSyncLocal()}
-                    disabled={isSyncingLocal}
-                    className={headerNeuToolbarPillSecondaryClass}
-                    aria-label="Sincronizar backup na pasta local"
+                    onClick={onOpenCreateModal}
+                    className={headerNeuToolbarPillPrimaryClass}
                   >
-                    {isSyncingLocal ? (
-                      <span className="inline-flex items-center gap-1.5">
-                        <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden />
-                        Sincronizando…
-                      </span>
-                    ) : (
-                      'Sincronizar'
-                    )}
+                    <Plus className="h-4 w-4 shrink-0" aria-hidden />
+                    Novo projeto
                   </button>
                 </div>
-              )}
-              {headerBackNavItem ? (
-                <NavigationMenuRail
-                  items={[headerBackNavItem]}
-                  neuVariant="header"
-                  className="shrink-0 border-l border-[color-mix(in_srgb,var(--project-card-neu-light)_22%,transparent)] pl-2 max-md:hidden"
-                />
               ) : null}
               <div className="relative z-[110] flex shrink-0 items-center gap-1 md:hidden">
                 <NavigationMenuHamburger
@@ -507,84 +305,9 @@ export const Header: React.FC<HeaderProps> = ({
                 />
               </div>
             </div>
-
-            {showHeaderTrailingActions ? (
-              <>
-                <span className={headerNeuSaveSlotSeparatorClass} aria-hidden />
-                <div className={headerNeuTrailingActionsClass}>
-                  {headerJiraButton ? (
-                    <div className={headerNeuJiraSlotClass}>{headerJiraButton}</div>
-                  ) : null}
-                  {headerSaveButton ? (
-                    <div className={headerNeuSaveSlotClass}>{headerSaveButton}</div>
-                  ) : null}
-                </div>
-              </>
-            ) : null}
           </div>
         </div>
       </div>
-
-      <Modal
-        isOpen={showJiraProjectSelector}
-        onClose={() => {
-          setShowJiraProjectSelector(false);
-          setSelectedJiraProjectKey('');
-        }}
-        title="Selecionar Projeto do Jira"
-      >
-        <div className="space-y-4">
-          <p className="text-sm text-base-content/70">
-            Selecione o projeto do Jira para sincronizar apenas as novas tarefas:
-          </p>
-          <div>
-            <label className="mb-2 block text-sm font-medium text-base-content">Projeto</label>
-            <AppSelect
-              value={selectedJiraProjectKey}
-              onChange={v => setSelectedJiraProjectKey(v)}
-              className="select select-bordered w-full"
-            >
-              <option value="">Selecione um projeto...</option>
-              {availableJiraProjects.map(proj => (
-                <option key={proj.key} value={proj.key}>
-                  {proj.name} ({proj.key})
-                </option>
-              ))}
-            </AppSelect>
-          </div>
-          <div className="flex items-center justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setShowJiraProjectSelector(false);
-                setSelectedJiraProjectKey('');
-              }}
-              className="btn btn-ghost btn-sm rounded-[var(--radius)] transition-colors duration-200 hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]"
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              onClick={handleConfirmJiraProject}
-              disabled={!selectedJiraProjectKey || isSyncingJira}
-              className={cn(
-                'btn btn-sm gap-2 rounded-[var(--radius)] border-0 shadow-sm transition-all duration-200 active:scale-[0.98]',
-                'bg-[oklch(var(--p))] text-[oklch(var(--pc))]',
-                'hover:bg-[color-mix(in_oklch,oklch(var(--p))_88%,oklch(var(--bc)))]'
-              )}
-            >
-              {isSyncingJira ? (
-                <>
-                  <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden />
-                  Sincronizando…
-                </>
-              ) : (
-                'Sincronizar'
-              )}
-            </button>
-          </div>
-        </div>
-      </Modal>
     </header>
   );
 };

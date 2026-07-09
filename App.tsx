@@ -534,6 +534,7 @@ const AppContent: React.FC = () => {
                     workflow="qa"
                     projects={projects}
                     onCreateProject={handleCreateProject}
+                    onDeleteProject={handleDeleteProject}
                   />
                 </Suspense>
               }
@@ -546,6 +547,7 @@ const AppContent: React.FC = () => {
                     workflow="dev"
                     projects={projects}
                     onCreateProject={handleCreateProject}
+                    onDeleteProject={handleDeleteProject}
                   />
                 </Suspense>
               }
@@ -553,10 +555,7 @@ const AppContent: React.FC = () => {
             <Route
               path="/projects/:id"
               element={
-                <ProjectViewPage
-                  onUpdateProject={handleUpdateProject}
-                  onDeleteProject={handleDeleteProject}
-                />
+                <ProjectViewPage onUpdateProject={handleUpdateProject} />
               }
             />
             <Route

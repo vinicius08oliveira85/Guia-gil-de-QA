@@ -934,8 +934,8 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
           <p className={cn(jiraSolusHeroSubtitleClass, 'mt-1')}>
             Selecione projeto(s), fila e status do Jira Service Management para importar apenas as
             tarefas relevantes. O sistema atualiza automaticamente a cada 10 minutos (projetos e
-            filas). Use <strong>Atualizar filas</strong> ou o botão <strong>Jira</strong> no topo
-            para sincronizar manualmente. Também é possível importar uma issue pelo ID.
+            filas). Use <strong>Atualizar filas</strong> ou o botão <strong>Jira</strong> na barra
+            de ações acima para sincronizar manualmente. Também é possível importar uma issue pelo ID.
           </p>
         </div>
       </div>

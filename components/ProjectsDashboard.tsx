@@ -106,7 +106,8 @@ export const ProjectsDashboard: React.FC<{
     templateId?: string,
     workflow?: ProjectWorkflow
   ) => Promise<void>;
-}> = ({ workflow, projects: allProjects, onCreateProject }) => {
+  onDeleteProject: (projectId: string) => Promise<void>;
+}> = ({ workflow, projects: allProjects, onCreateProject, onDeleteProject }) => {
   const projects = useMemo(
     () => filterProjectsByWorkflow(allProjects, workflow),
     [allProjects, workflow]
@@ -451,6 +452,7 @@ export const ProjectsDashboard: React.FC<{
                         className="h-full"
                         onSelect={() => navigate(`/projects/${p.id}`)}
                         onTaskClick={taskId => handleNavigateToTask(p.id, taskId)}
+                        onDeleteProject={() => onDeleteProject(p.id)}
                       />
                     </div>
                   ))}
