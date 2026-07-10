@@ -4,6 +4,7 @@ import { useProjectsStore } from '../store/projectsStore';
 import { logger } from '../utils/logger';
 import { scheduleLocalFolderSync } from '../utils/localFolderSyncScheduler';
 import { notepadPagesFingerprint, resolveNotepadPages } from '../utils/notepadPages';
+import { devProjectAnalysisFingerprint } from '../utils/devProjectAnalysisFormat';
 
 interface UseAutoSaveOptions {
   project: Project;
@@ -44,6 +45,8 @@ const buildProjectFingerprint = (project: Project): string =>
       attachmentsCount: task.jiraAttachments?.length ?? 0,
       analysisGeneratedAt: task.iaAnalysis?.generatedAt,
       analysisIsOutdated: task.iaAnalysis?.isOutdated,
+      devGuidanceSnapshotHash: task.devGuidanceSnapshotHash,
+      devGuidanceGeneratedAt: task.devGuidanceGeneratedAt,
     })),
     documents: (project.documents || []).map(doc => ({
       name: doc.name,
@@ -68,6 +71,11 @@ const buildProjectFingerprint = (project: Project): string =>
     })),
     notepadPages: notepadPagesFingerprint(resolveNotepadPages(project)),
     settingsFingerprint: JSON.stringify(project.settings ?? {}),
+    devStackFingerprint: JSON.stringify(project.settings?.devStack ?? {}),
+    devProjectFullAnalysesCount: project.devProjectFullAnalyses?.length ?? 0,
+    devProjectFullAnalysisFingerprint: devProjectAnalysisFingerprint(
+      project.devProjectFullAnalyses
+    ),
     analysisFingerprint: {
       general: project.generalIAAnalysis?.generatedAt,
       generalOutdated: project.generalIAAnalysis?.isOutdated,
@@ -93,7 +101,9 @@ export const useAutoSave = ({
   disabled = false,
 }: UseAutoSaveOptions) => {
   const { updateProject } = useProjectsStore();
-  const previousProjectRef = useRef<string>('');
+  const previousFingerprintRef = useRef<string>('');
+  const lastProjectRef = useRef<Project | null>(null);
+  const pendingSaveProjectRef = useRef<Project | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isSavingRef = useRef(false);
   /** Evita JSON.stringify completo quando o store devolve novo objeto com o mesmo conteúdo indexado. */
@@ -106,6 +116,7 @@ export const useAutoSave = ({
     phasesRef: unknown;
     businessRulesRef: unknown;
     notepadPagesRef: unknown;
+    devProjectFullAnalysesRef: unknown;
   } | null>(null);
   const activeProjectIdRef = useRef<string | null>(null);
 
@@ -193,6 +204,39 @@ export const useAutoSave = ({
       return true;
     }
 
+    // Stack Dev (Dashboard Dev)
+    if (
+      JSON.stringify(oldProject.settings?.devStack ?? {}) !==
+      JSON.stringify(newProject.settings?.devStack ?? {})
+    ) {
+      return true;
+    }
+
+    // Análises IA Dev do projeto
+    if (
+      (oldProject.devProjectFullAnalyses?.length ?? 0) !==
+        (newProject.devProjectFullAnalyses?.length ?? 0) ||
+      devProjectAnalysisFingerprint(oldProject.devProjectFullAnalyses) !==
+        devProjectAnalysisFingerprint(newProject.devProjectFullAnalyses)
+    ) {
+      return true;
+    }
+
+    // Guias Dev por tarefa
+    const oldDevGuidance = oldProject.tasks.map(t => ({
+      id: t.id,
+      hash: t.devGuidanceSnapshotHash,
+      at: t.devGuidanceGeneratedAt,
+    }));
+    const newDevGuidance = newProject.tasks.map(t => ({
+      id: t.id,
+      hash: t.devGuidanceSnapshotHash,
+      at: t.devGuidanceGeneratedAt,
+    }));
+    if (JSON.stringify(oldDevGuidance) !== JSON.stringify(newDevGuidance)) {
+      return true;
+    }
+
     return false;
   }, []);
 
@@ -232,7 +276,9 @@ export const useAutoSave = ({
 
     if (activeProjectIdRef.current !== project.id) {
       activeProjectIdRef.current = project.id;
-      previousProjectRef.current = '';
+      previousFingerprintRef.current = '';
+      lastProjectRef.current = null;
+      pendingSaveProjectRef.current = null;
       lastPersistedMetaRef.current = null;
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
@@ -250,7 +296,8 @@ export const useAutoSave = ({
       meta.settingsRef === project.settings &&
       meta.phasesRef === project.phases &&
       meta.businessRulesRef === project.businessRules &&
-      meta.notepadPagesRef === project.notepadPages
+      meta.notepadPagesRef === project.notepadPages &&
+      meta.devProjectFullAnalysesRef === project.devProjectFullAnalyses
     ) {
       return;
     }
@@ -267,26 +314,22 @@ export const useAutoSave = ({
       phasesRef: project.phases,
       businessRulesRef: project.businessRules,
       notepadPagesRef: project.notepadPages,
+      devProjectFullAnalysesRef: project.devProjectFullAnalyses,
     };
 
-    // Se não há projeto anterior, apenas armazenar e retornar
-    if (previousProjectRef.current === '') {
-      previousProjectRef.current = currentProjectString;
+    // Se não há fingerprint anterior, apenas armazenar e retornar
+    if (previousFingerprintRef.current === '') {
+      previousFingerprintRef.current = currentProjectString;
+      lastProjectRef.current = project;
       return;
     }
 
     // Se não houve mudança, retornar
-    if (previousProjectRef.current === currentProjectString) {
+    if (previousFingerprintRef.current === currentProjectString) {
       return;
     }
 
-    // Parse do projeto anterior para verificar mudanças críticas
-    let oldProject: Project | null = null;
-    try {
-      oldProject = JSON.parse(previousProjectRef.current) as Project;
-    } catch {
-      // Se não conseguir fazer parse, tratar como mudança normal
-    }
+    const oldProject = lastProjectRef.current;
 
     // Verificar se é mudança crítica
     const isCritical = oldProject ? isCriticalChange(oldProject, project) : false;
@@ -297,35 +340,36 @@ export const useAutoSave = ({
       saveTimeoutRef.current = null;
     }
 
+    pendingSaveProjectRef.current = project;
+
     if (isCritical) {
       // Mudança crítica - salvar imediatamente
       logger.debug('Mudança crítica detectada, salvando imediatamente', 'useAutoSave');
-      saveProject(project);
+      void saveProject(project);
+      pendingSaveProjectRef.current = null;
     } else {
       // Mudança não crítica - aguardar debounce
       saveTimeoutRef.current = setTimeout(() => {
-        saveProject(project);
+        void saveProject(project);
+        pendingSaveProjectRef.current = null;
         saveTimeoutRef.current = null;
       }, debounceMs);
     }
 
-    // Atualizar referência do projeto anterior
-    previousProjectRef.current = currentProjectString;
+    // Atualizar referências
+    previousFingerprintRef.current = currentProjectString;
+    lastProjectRef.current = project;
   }, [project, disabled, debounceMs, isCriticalChange, saveProject]);
 
-  // Cleanup: salvar antes de desmontar
+  // Cleanup: salvar projeto pendente antes de desmontar (nunca usar fingerprint como Project)
   useEffect(() => {
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
-        // Salvar imediatamente antes de desmontar
-        if (previousProjectRef.current !== '') {
-          try {
-            const projectToSave = JSON.parse(previousProjectRef.current) as Project;
-            saveProject(projectToSave);
-          } catch {
-            // Ignorar erros no cleanup
-          }
+        saveTimeoutRef.current = null;
+        const projectToSave = pendingSaveProjectRef.current ?? lastProjectRef.current;
+        if (projectToSave) {
+          void saveProject(projectToSave);
         }
       }
     };

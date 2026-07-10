@@ -12,6 +12,7 @@ import {
   validateDevGuidanceContext,
 } from './taskAiContext';
 import { formatDevStackForPrompt } from '../../utils/devStackFormat';
+import { devProjectAnalysisFingerprint } from '../../utils/devProjectAnalysisFormat';
 import { normalizeCursorAgentAction } from '../../utils/cursorAgentUi';
 
 function buildMultimodalContents(
@@ -82,7 +83,8 @@ function computeDevGuidanceHash(
 ): string {
   const base = computeTaskAiContextHash(task, ctx, { detailLevel: 'dev-guidance' });
   const stack = formatDevStackForPrompt(project?.settings?.devStack);
-  return hashString(`${base}||${stack}`);
+  const devAnalysis = devProjectAnalysisFingerprint(project?.devProjectFullAnalyses);
+  return hashString(`${base}||${stack}||${devAnalysis}`);
 }
 
 function normalizeSteps(raw: unknown): DevGuidanceStep[] {

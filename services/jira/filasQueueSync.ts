@@ -8,6 +8,7 @@ import {
   readTaskTrackingSnapshot,
   writeTaskTrackingSnapshot,
 } from '../taskTrackingStorage';
+import { resolveImportedProjectKeys } from '../../utils/taskTrackingProject';
 import { enrichTasksWithJiraSlas } from './sla';
 import { enrichTasksWithJsmSummary } from './jsmRequest';
 import { importFilasRelatedIssues } from './filasRelatedIssues';
@@ -209,6 +210,7 @@ export async function syncFilasQueuesFromJira(
     ...snapshot,
     selectedProjectKey: projectKeys[0] ?? snapshot.selectedProjectKey,
     tasks: mergedTasks,
+    importedProjectKeys: resolveImportedProjectKeys(mergedTasks, projectKeys),
   });
   dispatchTaskTrackingRestored();
 

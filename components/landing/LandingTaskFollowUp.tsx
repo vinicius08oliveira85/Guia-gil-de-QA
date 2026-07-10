@@ -21,8 +21,10 @@ import {
 } from '../../utils/landingTaskFollowUpStorage';
 import { classifyTaskSla } from '../../utils/jiraFilasMetrics';
 import { getTaskAssigneeLabel, getTaskStatusLabel } from '../../utils/taskDisplayLabels';
-import { getJiraStatusColor } from '../../utils/jiraStatusColors';
+import { resolveJiraStatusColorFromPalette } from '../../utils/jiraStatusColors';
 import { JiraStatusLozenge } from '../tasks/JiraStatusLozenge';
+import { TaskTrackingProjectFilterBar } from '../common/TaskTrackingProjectFilter';
+import { countTasksByProject, resolvePaletteForTask } from '../../utils/taskTrackingProject';
 import {
   landingAccentTextClass,
   landingNeuAccentBarClass,
@@ -84,7 +86,17 @@ const AssigneeFilterChip: React.FC<AssigneeFilterChipProps> = ({
  */
 export const LandingTaskFollowUp = React.memo(() => {
   const navigate = useNavigate();
-  const { tasks: filasTasks, slaRiskWindowHours, hasFilasSelection } = useFilasTaskTracking();
+  const {
+    filteredTasks: filasTasks,
+    tasks: allFilasTasks,
+    slaRiskWindowHours,
+    jiraStatuses,
+    jiraStatusesByProject,
+    importedProjectKeys,
+    activeProjectFilter,
+    setActiveProjectFilter,
+    hasFilasSelection,
+  } = useFilasTaskTracking();
   const jiraConfigured = Boolean(getJiraConfig());
 
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>(() =>
@@ -202,6 +214,21 @@ export const LandingTaskFollowUp = React.memo(() => {
               </div>
             ) : null}
 
+            {importedProjectKeys.length > 1 ? (
+              <TaskTrackingProjectFilterBar
+                projectKeys={importedProjectKeys}
+                activeFilter={activeProjectFilter}
+                onSelectFilter={setActiveProjectFilter}
+                countForProject={projectKey =>
+                  collectOpenFilasTasks(allFilasTasks).filter(
+                    ({ task }) => getJiraProjectKeyFromTaskId(task.id) === projectKey
+                  ).length
+                }
+                totalCount={collectOpenFilasTasks(allFilasTasks).length}
+                variant="landing"
+              />
+            ) : null}
+
             {assigneeOptions.length > 0 ? (
               <div
                 className="flex flex-col gap-2"
@@ -243,7 +270,8 @@ export const LandingTaskFollowUp = React.memo(() => {
                     const slaBucket = classifyTaskSla(task, Date.now(), slaRiskWindowHours);
                     const jiraProjectKey = getJiraProjectKeyFromTaskId(task.id);
                     const statusLabel = getTaskStatusLabel(task);
-                    const statusColor = getJiraStatusColor(statusLabel);
+                    const taskPalette = resolvePaletteForTask(task, jiraStatusesByProject, jiraStatuses);
+                    const statusColor = resolveJiraStatusColorFromPalette(statusLabel, taskPalette);
                     return (
                       <li key={task.id}>
                         <button

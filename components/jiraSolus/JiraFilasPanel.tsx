@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Download, Filter, Inbox, List, Loader2, RefreshCw, Search, X } from 'lucide-react';
+import { ChevronDown, Download, Filter, Inbox, List, Loader2, RefreshCw, Search, X } from 'lucide-react';
 import {
   getJiraConfig,
   getJiraProjects,
@@ -101,7 +101,17 @@ import {
 import {
   readFilasImportSelection,
   writeFilasImportSelection,
+  mergeJiraStatusesByProject,
+  type JiraStatusPaletteEntry,
+  type TaskTrackingProjectFilter,
 } from '../../services/taskTrackingStorage';
+import { TaskTrackingProjectFilterBar } from '../common/TaskTrackingProjectFilter';
+import {
+  countTasksByProject,
+  filterTasksByProjectFilter,
+  mergeJiraStatusPalettes,
+  resolvePaletteForProjectFilter,
+} from '../../utils/taskTrackingProject';
 
 export interface JiraFilasWorkspaceBridge {
   filasProject: Project;
@@ -117,6 +127,13 @@ export interface JiraFilasPanelProps {
   setSelectedProjectKey: (key: string) => void;
   jiraStatuses: Array<{ name: string; color: string }>;
   setJiraStatuses: React.Dispatch<React.SetStateAction<Array<{ name: string; color: string }>>>;
+  jiraStatusesByProject: Record<string, JiraStatusPaletteEntry[]>;
+  setJiraStatusesByProject: React.Dispatch<
+    React.SetStateAction<Record<string, JiraStatusPaletteEntry[]>>
+  >;
+  importedProjectKeys: string[];
+  activeProjectFilter: TaskTrackingProjectFilter;
+  onSelectProjectFilter: (filter: TaskTrackingProjectFilter) => void;
   activeFilter: JiraFilasFilter;
   onClearFilter: () => void;
   slaRiskWindowHours: number;
@@ -135,6 +152,11 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
   setSelectedProjectKey,
   jiraStatuses,
   setJiraStatuses,
+  jiraStatusesByProject,
+  setJiraStatusesByProject,
+  importedProjectKeys,
+  activeProjectFilter,
+  onSelectProjectFilter,
   activeFilter,
   onClearFilter,
   slaRiskWindowHours,
@@ -167,6 +189,7 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
   const [showExportTasksModal, setShowExportTasksModal] = useState(false);
   const [sortBy, setSortBy] = useLocalStorage<TaskSortBy>('jira-filas-sort-by', 'id');
   const [groupBy, setGroupBy] = useLocalStorage<TaskGroupBy>('jira-filas-group-by', 'none');
+  const [isImportSectionExpanded, setIsImportSectionExpanded] = useState(false);
 
   useEffect(() => {
     writeJiraFilasLocalFilters(localFilters);
@@ -208,24 +231,37 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
   useEffect(() => {
     const config = getJiraConfig();
     if (!config || selectedProjectKeys.length === 0) {
+      setJiraStatusesByProject({});
       setJiraStatuses([]);
       return;
     }
 
     let cancelled = false;
-    const primaryKey = selectedProjectKeys[0];
-    getJiraStatuses(config, primaryKey)
-      .then(statuses => {
-        if (!cancelled) setJiraStatuses(statuses);
+    Promise.all(
+      selectedProjectKeys.map(projectKey =>
+        getJiraStatuses(config, projectKey).then(statuses => ({ projectKey, statuses }))
+      )
+    )
+      .then(results => {
+        if (cancelled) return;
+        const byProject = Object.fromEntries(results.map(r => [r.projectKey, r.statuses]));
+        setJiraStatusesByProject(prev => mergeJiraStatusesByProject(prev, byProject));
       })
       .catch(() => {
-        if (!cancelled) setJiraStatuses([]);
+        if (!cancelled) setJiraStatusesByProject({});
       });
 
     return () => {
       cancelled = true;
     };
-  }, [selectedProjectKeys, setJiraStatuses]);
+  }, [selectedProjectKeys, setJiraStatusesByProject]);
+
+  useEffect(() => {
+    const palette = resolvePaletteForProjectFilter(jiraStatusesByProject, activeProjectFilter, []);
+    setJiraStatuses(
+      palette.length > 0 ? palette : mergeJiraStatusPalettes(Object.values(jiraStatusesByProject))
+    );
+  }, [activeProjectFilter, jiraStatusesByProject, setJiraStatuses]);
 
   useEffect(() => {
     setSelectedProjectKey(selectedProjectKeys[0] ?? '');
@@ -307,6 +343,12 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
     });
   }, [selectedProjectKeys, selectedQueueCategories, selectedQueueStatuses, resolvedQueueIds]);
 
+  const filasPalette = useMemo(
+    () =>
+      resolvePaletteForProjectFilter(jiraStatusesByProject, activeProjectFilter, jiraStatuses),
+    [jiraStatusesByProject, activeProjectFilter, jiraStatuses]
+  );
+
   const filasProject = useMemo(
     (): Project => ({
       id: 'jira-filas',
@@ -319,10 +361,10 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
       tags: [],
       settings: {
         jiraProjectKey: selectedProjectKey || undefined,
-        jiraStatuses,
+        jiraStatuses: filasPalette,
       },
     }),
-    [tasks, selectedProjectKey, jiraStatuses]
+    [tasks, selectedProjectKey, filasPalette]
   );
 
   const activeLocalFiltersCount = useMemo(
@@ -355,9 +397,14 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
     [localFilters, slaRiskWindowHours]
   );
 
+  const projectScopedTasks = useMemo(
+    () => filterTasksByProjectFilter(tasks, activeProjectFilter),
+    [tasks, activeProjectFilter]
+  );
+
   const filteredTasks = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    return tasks.filter(t => {
+    return projectScopedTasks.filter(t => {
       if (!matchesJiraFilasFilter(t, activeFilter, Date.now(), slaRiskWindowHours)) return false;
       if (!matchesLocalFilters(t)) return false;
       if (!q) return true;
@@ -367,7 +414,7 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
         (!!t.description && t.description.toLowerCase().includes(q))
       );
     });
-  }, [tasks, searchQuery, activeFilter, slaRiskWindowHours, matchesLocalFilters]);
+  }, [projectScopedTasks, searchQuery, activeFilter, slaRiskWindowHours, matchesLocalFilters]);
 
   const taskComparator = useMemo(() => getTaskComparator(sortBy), [sortBy]);
 
@@ -414,7 +461,7 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
     const statuses = new Set<string>();
     const types = new Set<string>();
     const assignees = new Set<string>();
-    for (const task of tasks) {
+    for (const task of projectScopedTasks) {
       statuses.add(getTaskStatusLabel(task));
       types.add(task.type);
       assignees.add(getTaskAssigneeLabel(task));
@@ -425,17 +472,21 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
       types: Array.from(types).sort(sortPt),
       assignees: Array.from(assignees).sort(sortPt),
     };
-  }, [tasks]);
+  }, [projectScopedTasks]);
 
   const filterCounts = useMemo(
     () => ({
-      status: (value: string) => tasks.filter(t => getTaskStatusLabel(t) === value).length,
+      status: (value: string) =>
+        projectScopedTasks.filter(t => getTaskStatusLabel(t) === value).length,
       sla: (value: (typeof SLA_FILTER_OPTIONS)[number]['value']) =>
-        tasks.filter(t => classifyTaskSla(t, Date.now(), slaRiskWindowHours) === value).length,
-      type: (value: string) => tasks.filter(t => t.type === value).length,
-      assignee: (value: string) => tasks.filter(t => getTaskAssigneeLabel(t) === value).length,
+        projectScopedTasks.filter(
+          t => classifyTaskSla(t, Date.now(), slaRiskWindowHours) === value
+        ).length,
+      type: (value: string) => projectScopedTasks.filter(t => t.type === value).length,
+      assignee: (value: string) =>
+        projectScopedTasks.filter(t => getTaskAssigneeLabel(t) === value).length,
     }),
-    [tasks, slaRiskWindowHours]
+    [projectScopedTasks, slaRiskWindowHours]
   );
 
   const mergeImportedTasks = useCallback((imported: JiraTask[]) => {
@@ -867,6 +918,38 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
 
   const hasJiraConfig = !!getJiraConfig();
   const isBusy = isImportingProject || isUpdatingQueue || isImportingIssue;
+  const showImportSectionBody = isImportSectionExpanded || isBusy;
+
+  const importSectionSummary = useMemo(() => {
+    if (selectedProjectKeys.length === 0) {
+      return 'Nenhum projeto selecionado · Clique para configurar';
+    }
+    const parts = [
+      selectedProjectKeys.length === 1
+        ? selectedProjectKeys[0]
+        : `${selectedProjectKeys.length} projetos`,
+    ];
+    if (selectedQueueCategories.length > 0) {
+      parts.push(
+        `${selectedQueueCategories.length} fila${selectedQueueCategories.length === 1 ? '' : 's'}`
+      );
+    }
+    if (selectedQueueStatuses.length > 0) {
+      parts.push(
+        `${selectedQueueStatuses.length} status`
+      );
+    }
+    if (selectedQueues.length > 0) {
+      parts.push(`${selectedQueues.length} fila${selectedQueues.length === 1 ? '' : 's'} JSM`);
+    }
+    return `${parts.join(' · ')} · Clique para editar`;
+  }, [
+    selectedProjectKeys,
+    selectedQueueCategories,
+    selectedQueueStatuses,
+    selectedQueues.length,
+  ]);
+
   const hasActiveFilter = isJiraFilasFilterActive(activeFilter);
   const activeFilterLabel = getJiraFilasFilterLabel(activeFilter);
   const canImportQueue =
@@ -940,13 +1023,60 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
         </div>
       </div>
 
+      {(importedProjectKeys.length > 1 ? importedProjectKeys : selectedProjectKeys).length > 1 ? (
+        <TaskTrackingProjectFilterBar
+          projectKeys={
+            importedProjectKeys.length > 1 ? importedProjectKeys : selectedProjectKeys
+          }
+          activeFilter={activeProjectFilter}
+          onSelectFilter={onSelectProjectFilter}
+          countForProject={(projectKey: string) => countTasksByProject(tasks, projectKey)}
+          totalCount={tasks.length}
+          variant="jira-solus"
+        />
+      ) : null}
+
       <section className={cn(jiraSolusInnerPanelClass, 'space-y-4')} aria-label="Importação do Jira">
-        <header className={jiraSolusSectionHeaderClass}>
-          <h2 className={jiraSolusSectionLabelClass}>Importação Jira</h2>
-          <p className={jiraSolusSectionDescClass}>
-            Selecione projetos, filas e status JSM ou importe uma issue individual pelo ID.
-          </p>
-        </header>
+        <button
+          type="button"
+          onClick={() => setIsImportSectionExpanded(prev => !prev)}
+          className={cn(
+            jiraSolusSectionHeaderClass,
+            'group/import-header w-full cursor-pointer rounded-xl text-left transition-colors',
+            'hover:bg-[color-mix(in_srgb,var(--project-workspace-highlight)_55%,transparent)]',
+            'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+            'focus-visible:outline-[color-mix(in_srgb,var(--project-card-accent)_45%,transparent)]'
+          )}
+          aria-expanded={showImportSectionBody}
+          aria-controls="jira-filas-import-panel"
+          aria-label={
+            showImportSectionBody
+              ? 'Recolher importação Jira'
+              : 'Expandir importação Jira para editar'
+          }
+        >
+          <div className="flex w-full items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <h2 className={jiraSolusSectionLabelClass}>Importação Jira</h2>
+              <p className={jiraSolusSectionDescClass}>
+                {showImportSectionBody
+                  ? 'Selecione projetos, filas e status JSM ou importe uma issue individual pelo ID.'
+                  : importSectionSummary}
+              </p>
+            </div>
+            <ChevronDown
+              className={cn(
+                'mt-0.5 h-5 w-5 shrink-0 text-[var(--brand-text-muted)] transition-transform duration-200',
+                'group-hover/import-header:text-[var(--project-card-accent)]',
+                showImportSectionBody && 'rotate-180'
+              )}
+              aria-hidden
+            />
+          </div>
+        </button>
+
+        {showImportSectionBody ? (
+          <div id="jira-filas-import-panel" className="space-y-4">
         <JiraFilasImportSelector
           projects={jiraProjects}
           queues={jiraQueues}
@@ -1116,6 +1246,8 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
               <X className="h-4 w-4 shrink-0" aria-hidden />
               Limpar filtro
             </button>
+          </div>
+        ) : null}
           </div>
         ) : null}
       </section>

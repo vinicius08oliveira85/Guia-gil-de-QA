@@ -6,6 +6,7 @@ import {
   normalizeDevStackConfig,
 } from '../../utils/devStackPresets';
 import { formatDevStackSummary } from '../../utils/devStackFormat';
+import { useProjectsStore } from '../../store/projectsStore';
 import { cn } from '../../utils/cn';
 import { dashboardPanelClass } from '../dashboard/dashboardNeuUi';
 import { AppSelect } from '../common/AppSelect';
@@ -78,15 +79,17 @@ export const DevStackConfigPanel: React.FC<DevStackConfigPanelProps> = ({
 
   const persist = useCallback(
     (next: DevStackConfig) => {
+      const latest =
+        useProjectsStore.getState().projects.find(p => p.id === project.id) ?? project;
       onUpdateProject({
-        ...project,
+        ...latest,
         settings: {
-          ...project.settings,
+          ...latest.settings,
           devStack: next,
         },
       });
     },
-    [project, onUpdateProject]
+    [project.id, onUpdateProject]
   );
 
   const applyPreset = useCallback(

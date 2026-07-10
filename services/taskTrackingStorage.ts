@@ -8,9 +8,24 @@ export const FILAS_PROJECT_STORAGE_KEY = 'jira-solus-filas-project-key';
 export const FILAS_TASKS_STORAGE_KEY = 'jira-solus-filas-tasks';
 export const FILAS_SLA_RISK_WINDOW_STORAGE_KEY = 'jira-solus-filas-sla-risk-window-hours';
 export const FILAS_QUEUE_STORAGE_KEY = 'jira-solus-filas-queue';
+export const FILAS_JIRA_STATUSES_STORAGE_KEY = 'jira-solus-filas-jira-statuses';
+export const FILAS_JIRA_STATUSES_BY_PROJECT_KEY = 'jira-solus-filas-jira-statuses-by-project';
+export const FILAS_IMPORTED_PROJECT_KEYS_KEY = 'jira-solus-filas-imported-project-keys';
+export const FILAS_ACTIVE_PROJECT_FILTER_KEY = 'jira-solus-filas-active-project-filter';
 
-/** Disparado após importação de backup restaurar o acompanhamento (mesma aba). */
+/** Disparado após importação de backup ou sync completo das filas (mesma aba). */
 export const TASK_TRACKING_RESTORED_EVENT = 'qa-task-tracking-restored';
+
+/** Disparado após edições incrementais (status, import parcial, etc.) na mesma aba. */
+export const TASK_TRACKING_UPDATED_EVENT = 'qa-task-tracking-updated';
+
+export interface JiraStatusPaletteEntry {
+  name: string;
+  color: string;
+}
+
+/** Filtro de projeto: `all` ou chave Jira (ex.: SUS). */
+export type TaskTrackingProjectFilter = 'all' | string;
 
 export interface TaskTrackingQueueSelection {
   projectKey: string;
@@ -31,6 +46,14 @@ export interface TaskTrackingSnapshot {
   queueSelection: TaskTrackingQueueSelection | null;
   tasks: JiraTask[];
   slaRiskWindowHours: number;
+  /** Paleta flat (legado / projeto primário). Preferir jiraStatusesByProject. */
+  jiraStatuses: JiraStatusPaletteEntry[];
+  /** Filtro de projeto ativo compartilhado entre Landing e Acompanhamento. */
+  activeProjectFilter: TaskTrackingProjectFilter;
+  /** Projetos Jira com tarefas importadas. */
+  importedProjectKeys: string[];
+  /** Paleta de cores de status por projeto Jira. */
+  jiraStatusesByProject: Record<string, JiraStatusPaletteEntry[]>;
 }
 
 const EMPTY_SNAPSHOT: TaskTrackingSnapshot = {
@@ -38,6 +61,10 @@ const EMPTY_SNAPSHOT: TaskTrackingSnapshot = {
   queueSelection: null,
   tasks: [],
   slaRiskWindowHours: DEFAULT_SLA_RISK_WINDOW_HOURS,
+  jiraStatuses: [],
+  activeProjectFilter: 'all',
+  importedProjectKeys: [],
+  jiraStatusesByProject: {},
 };
 
 function readSessionItem(key: string): string | null {
@@ -89,6 +116,73 @@ function readStoredTasks(): JiraTask[] {
   } catch {
     return [];
   }
+}
+
+function normalizePaletteEntries(raw: unknown): JiraStatusPaletteEntry[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter(
+      (entry): entry is JiraStatusPaletteEntry =>
+        Boolean(entry) &&
+        typeof entry === 'object' &&
+        typeof (entry as JiraStatusPaletteEntry).name === 'string' &&
+        typeof (entry as JiraStatusPaletteEntry).color === 'string'
+    )
+    .map(entry => ({
+      name: entry.name.trim(),
+      color: entry.color.trim(),
+    }))
+    .filter(entry => entry.name.length > 0);
+}
+
+function readStoredJiraStatuses(): JiraStatusPaletteEntry[] {
+  const raw = readLocalItem(FILAS_JIRA_STATUSES_STORAGE_KEY);
+  if (!raw) return [];
+  try {
+    return normalizePaletteEntries(JSON.parse(raw));
+  } catch {
+    return [];
+  }
+}
+
+function readStoredJiraStatusesByProject(): Record<string, JiraStatusPaletteEntry[]> {
+  const raw = readLocalItem(FILAS_JIRA_STATUSES_BY_PROJECT_KEY);
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    if (!parsed || typeof parsed !== 'object') return {};
+    const result: Record<string, JiraStatusPaletteEntry[]> = {};
+    for (const [key, value] of Object.entries(parsed)) {
+      const normalizedKey = key.trim();
+      if (!normalizedKey) continue;
+      const palette = normalizePaletteEntries(value);
+      if (palette.length > 0) result[normalizedKey] = palette;
+    }
+    return result;
+  } catch {
+    return {};
+  }
+}
+
+function readStoredImportedProjectKeys(): string[] {
+  const raw = readLocalItem(FILAS_IMPORTED_PROJECT_KEYS_KEY);
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((k): k is string => typeof k === 'string')
+      .map(k => k.trim())
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function readStoredActiveProjectFilter(): TaskTrackingProjectFilter {
+  const raw = readSessionItem(FILAS_ACTIVE_PROJECT_FILTER_KEY);
+  if (!raw || raw.trim() === '') return 'all';
+  return raw.trim();
 }
 
 function readStoredSlaRiskWindowHours(): number {
@@ -146,11 +240,55 @@ function readStoredQueueSelection(): TaskTrackingQueueSelection | null {
  * Lê o estado persistido do Acompanhamento de Tarefas (localStorage + sessionStorage).
  */
 export function readTaskTrackingSnapshot(): TaskTrackingSnapshot {
+  const queueSelection = readStoredQueueSelection();
+  const tasks = readStoredTasks();
+  const selectedProjectKey = readSessionItem(FILAS_PROJECT_STORAGE_KEY)?.trim() ?? '';
+  let jiraStatusesByProject = readStoredJiraStatusesByProject();
+  const legacyJiraStatuses = readStoredJiraStatuses();
+
+  if (Object.keys(jiraStatusesByProject).length === 0 && legacyJiraStatuses.length > 0) {
+    const migrateKey =
+      selectedProjectKey ||
+      queueSelection?.projectKeys?.[0] ||
+      queueSelection?.projectKey ||
+      'Jira';
+    jiraStatusesByProject = { [migrateKey]: legacyJiraStatuses };
+  }
+
+  const selectionKeys = queueSelection?.projectKeys ?? [];
+  const storedImportedKeys = readStoredImportedProjectKeys();
+  const importedProjectKeys = Array.from(
+    new Set([
+      ...storedImportedKeys,
+      ...selectionKeys,
+      ...Object.keys(jiraStatusesByProject),
+    ])
+  )
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b, 'pt-BR'));
+
+  const activeProjectFilter = readStoredActiveProjectFilter();
+  const normalizedFilter =
+    activeProjectFilter === 'all' || importedProjectKeys.includes(activeProjectFilter)
+      ? activeProjectFilter
+      : 'all';
+
+  const jiraStatuses =
+    legacyJiraStatuses.length > 0
+      ? legacyJiraStatuses
+      : normalizedFilter !== 'all'
+        ? (jiraStatusesByProject[normalizedFilter] ?? [])
+        : (jiraStatusesByProject[importedProjectKeys[0] ?? ''] ?? []);
+
   return {
-    selectedProjectKey: readSessionItem(FILAS_PROJECT_STORAGE_KEY)?.trim() ?? '',
-    queueSelection: readStoredQueueSelection(),
-    tasks: readStoredTasks(),
+    selectedProjectKey,
+    queueSelection,
+    tasks,
     slaRiskWindowHours: readStoredSlaRiskWindowHours(),
+    jiraStatuses,
+    activeProjectFilter: normalizedFilter,
+    importedProjectKeys,
+    jiraStatusesByProject,
   };
 }
 
@@ -177,10 +315,82 @@ export function writeTaskTrackingSnapshot(snapshot: TaskTrackingSnapshot): void 
 
   writeLocalItem(FILAS_TASKS_STORAGE_KEY, JSON.stringify(snapshot.tasks));
   writeLocalItem(FILAS_SLA_RISK_WINDOW_STORAGE_KEY, String(snapshot.slaRiskWindowHours));
+  writeLocalItem(
+    FILAS_JIRA_STATUSES_STORAGE_KEY,
+    snapshot.jiraStatuses.length > 0 ? JSON.stringify(snapshot.jiraStatuses) : null
+  );
+  writeLocalItem(
+    FILAS_JIRA_STATUSES_BY_PROJECT_KEY,
+    Object.keys(snapshot.jiraStatusesByProject).length > 0
+      ? JSON.stringify(snapshot.jiraStatusesByProject)
+      : null
+  );
+  writeLocalItem(
+    FILAS_IMPORTED_PROJECT_KEYS_KEY,
+    snapshot.importedProjectKeys.length > 0
+      ? JSON.stringify(snapshot.importedProjectKeys)
+      : null
+  );
+  writeSessionItem(
+    FILAS_ACTIVE_PROJECT_FILTER_KEY,
+    snapshot.activeProjectFilter === 'all' ? null : snapshot.activeProjectFilter
+  );
   scheduleLocalFolderSync();
 }
 
-/** Lê a seleção persistida do assistente de importação das filas. */
+/**
+ * Mescla campos parciais no snapshot persistido e notifica consumidores (ex.: Landing).
+ */
+export function persistTaskTrackingPartial(
+  partial: Partial<TaskTrackingSnapshot>,
+  options?: { notify?: boolean }
+): void {
+  const current = readTaskTrackingSnapshot();
+  writeTaskTrackingSnapshot({
+    selectedProjectKey:
+      partial.selectedProjectKey !== undefined ? partial.selectedProjectKey : current.selectedProjectKey,
+    queueSelection:
+      partial.queueSelection !== undefined ? partial.queueSelection : current.queueSelection,
+    tasks: partial.tasks !== undefined ? partial.tasks : current.tasks,
+    slaRiskWindowHours:
+      partial.slaRiskWindowHours !== undefined
+        ? partial.slaRiskWindowHours
+        : current.slaRiskWindowHours,
+    jiraStatuses:
+      partial.jiraStatuses !== undefined ? partial.jiraStatuses : current.jiraStatuses,
+    activeProjectFilter:
+      partial.activeProjectFilter !== undefined
+        ? partial.activeProjectFilter
+        : current.activeProjectFilter,
+    importedProjectKeys:
+      partial.importedProjectKeys !== undefined
+        ? partial.importedProjectKeys
+        : current.importedProjectKeys,
+    jiraStatusesByProject:
+      partial.jiraStatusesByProject !== undefined
+        ? partial.jiraStatusesByProject
+        : current.jiraStatusesByProject,
+  });
+  if (options?.notify !== false) {
+    dispatchTaskTrackingUpdated();
+  }
+}
+
+/** Atualiza o filtro de projeto ativo e notifica consumidores. */
+export function writeActiveProjectFilter(
+  filter: TaskTrackingProjectFilter,
+  options?: { notify?: boolean }
+): void {
+  persistTaskTrackingPartial({ activeProjectFilter: filter }, options);
+}
+
+/** Mescla paletas de status por projeto. */
+export function mergeJiraStatusesByProject(
+  current: Record<string, JiraStatusPaletteEntry[]>,
+  incoming: Record<string, JiraStatusPaletteEntry[]>
+): Record<string, JiraStatusPaletteEntry[]> {
+  return { ...current, ...incoming };
+}
 export function readFilasImportSelection(): FilasImportSelection | null {
   const selection = readStoredQueueSelection();
   if (!selection) return null;
@@ -270,6 +480,12 @@ export function dispatchTaskTrackingRestored(): void {
   window.dispatchEvent(new CustomEvent(TASK_TRACKING_RESTORED_EVENT));
 }
 
+/** Notifica componentes na mesma aba sobre alterações incrementais do acompanhamento. */
+export function dispatchTaskTrackingUpdated(): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent(TASK_TRACKING_UPDATED_EVENT));
+}
+
 function isJiraTaskLike(value: unknown): value is JiraTask {
   if (!value || typeof value !== 'object') return false;
   const o = value as Record<string, unknown>;
@@ -323,7 +539,43 @@ export function normalizeTaskTrackingBackup(raw: unknown): TaskTrackingSnapshot 
     }
   }
 
-  return { selectedProjectKey, queueSelection, tasks, slaRiskWindowHours };
+  let jiraStatuses = normalizePaletteEntries(o.jiraStatuses);
+
+  let jiraStatusesByProject: Record<string, JiraStatusPaletteEntry[]> = {};
+  if (o.jiraStatusesByProject && typeof o.jiraStatusesByProject === 'object') {
+    for (const [key, value] of Object.entries(o.jiraStatusesByProject as Record<string, unknown>)) {
+      const normalizedKey = key.trim();
+      if (!normalizedKey) continue;
+      const palette = normalizePaletteEntries(value);
+      if (palette.length > 0) jiraStatusesByProject[normalizedKey] = palette;
+    }
+  } else if (jiraStatuses.length > 0) {
+    const migrateKey = selectedProjectKey || queueSelection?.projectKeys?.[0] || 'Jira';
+    jiraStatusesByProject = { [migrateKey]: jiraStatuses };
+  }
+
+  const importedProjectKeys = Array.isArray(o.importedProjectKeys)
+    ? o.importedProjectKeys
+        .filter((k): k is string => typeof k === 'string')
+        .map(k => k.trim())
+        .filter(Boolean)
+    : queueSelection?.projectKeys ?? Object.keys(jiraStatusesByProject);
+
+  const activeProjectFilter: TaskTrackingProjectFilter =
+    typeof o.activeProjectFilter === 'string' && o.activeProjectFilter.trim()
+      ? o.activeProjectFilter.trim()
+      : 'all';
+
+  return {
+    selectedProjectKey,
+    queueSelection,
+    tasks,
+    slaRiskWindowHours,
+    jiraStatuses,
+    activeProjectFilter,
+    importedProjectKeys,
+    jiraStatusesByProject,
+  };
 }
 
 /**

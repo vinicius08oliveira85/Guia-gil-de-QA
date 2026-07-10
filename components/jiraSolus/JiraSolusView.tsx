@@ -4,13 +4,20 @@ import { cn } from '../../utils/cn';
 import type { JiraTask } from '../../types';
 import { type JiraFilasFilter } from '../../utils/jiraFilasMetrics';
 import {
-  FILAS_PROJECT_STORAGE_KEY,
-  FILAS_SLA_RISK_WINDOW_STORAGE_KEY,
-  FILAS_TASKS_STORAGE_KEY,
   readTaskTrackingSnapshot,
   TASK_TRACKING_RESTORED_EVENT,
+  persistTaskTrackingPartial,
+  dispatchTaskTrackingUpdated,
   writeTaskTrackingSnapshot,
+  writeActiveProjectFilter,
+  type TaskTrackingProjectFilter,
+  type JiraStatusPaletteEntry,
 } from '../../services/taskTrackingStorage';
+import {
+  filterTasksByProjectFilter,
+  resolveImportedProjectKeys,
+  resolvePaletteForProjectFilter,
+} from '../../utils/taskTrackingProject';
 import { Breadcrumbs, type BreadcrumbItem } from '../common/Breadcrumbs';
 import {
   jiraSolusChromeHeaderClass,
@@ -58,11 +65,21 @@ function applySnapshotToState(
     setTasks: React.Dispatch<React.SetStateAction<JiraTask[]>>;
     setSelectedProjectKey: React.Dispatch<React.SetStateAction<string>>;
     setSlaRiskWindowHours: React.Dispatch<React.SetStateAction<number>>;
+    setJiraStatuses: React.Dispatch<React.SetStateAction<JiraStatusPaletteEntry[]>>;
+    setJiraStatusesByProject: React.Dispatch<
+      React.SetStateAction<Record<string, JiraStatusPaletteEntry[]>>
+    >;
+    setActiveProjectFilter: React.Dispatch<React.SetStateAction<TaskTrackingProjectFilter>>;
+    setImportedProjectKeys: React.Dispatch<React.SetStateAction<string[]>>;
   }
 ): void {
   setters.setTasks(snapshot.tasks);
   setters.setSelectedProjectKey(snapshot.selectedProjectKey);
   setters.setSlaRiskWindowHours(snapshot.slaRiskWindowHours);
+  setters.setJiraStatuses(snapshot.jiraStatuses);
+  setters.setJiraStatusesByProject(snapshot.jiraStatusesByProject);
+  setters.setActiveProjectFilter(snapshot.activeProjectFilter);
+  setters.setImportedProjectKeys(snapshot.importedProjectKeys);
 }
 
 /**
@@ -96,13 +113,49 @@ export const JiraSolusView = React.memo(() => {
   });
 
   const [filasBridge, setFilasBridge] = useState<JiraFilasWorkspaceBridge | null>(null);
-  const [jiraStatuses, setJiraStatuses] = useState<Array<{ name: string; color: string }>>([]);
+  const [jiraStatuses, setJiraStatuses] = useState<JiraStatusPaletteEntry[]>(
+    () => initialSnapshot.jiraStatuses
+  );
+  const [jiraStatusesByProject, setJiraStatusesByProject] = useState<
+    Record<string, JiraStatusPaletteEntry[]>
+  >(() => initialSnapshot.jiraStatusesByProject);
+  const [activeProjectFilter, setActiveProjectFilterState] = useState<TaskTrackingProjectFilter>(
+    () => initialSnapshot.activeProjectFilter
+  );
+  const [importedProjectKeys, setImportedProjectKeys] = useState<string[]>(
+    () => initialSnapshot.importedProjectKeys
+  );
   const [slaRiskWindowHours, setSlaRiskWindowHours] = useState(
     () => initialSnapshot.slaRiskWindowHours
   );
   const [activeFilter, setActiveFilter] = useState<JiraFilasFilter>({ kind: 'all' });
   const [isSavingTracking, setIsSavingTracking] = useState(false);
   const taskTrackingJiraAction = useTaskTrackingHeaderStore(s => s.jiraAction);
+
+  const resolvedImportedKeys = useMemo(
+    () =>
+      resolveImportedProjectKeys(
+        tasks,
+        readTaskTrackingSnapshot().queueSelection?.projectKeys ?? importedProjectKeys
+      ),
+    [tasks, importedProjectKeys]
+  );
+
+  const projectFilteredTasks = useMemo(
+    () => filterTasksByProjectFilter(tasks, activeProjectFilter),
+    [tasks, activeProjectFilter]
+  );
+
+  const activeJiraStatuses = useMemo(
+    () =>
+      resolvePaletteForProjectFilter(jiraStatusesByProject, activeProjectFilter, jiraStatuses),
+    [jiraStatusesByProject, activeProjectFilter, jiraStatuses]
+  );
+
+  const handleSelectProjectFilter = useCallback((filter: TaskTrackingProjectFilter) => {
+    setActiveProjectFilterState(filter);
+    writeActiveProjectFilter(filter);
+  }, []);
 
   const saveTaskTracking = useCallback(async () => {
     setIsSavingTracking(true);
@@ -112,12 +165,25 @@ export const JiraSolusView = React.memo(() => {
         queueSelection: readTaskTrackingSnapshot().queueSelection,
         tasks,
         slaRiskWindowHours,
+        jiraStatuses,
+        activeProjectFilter,
+        importedProjectKeys: resolvedImportedKeys,
+        jiraStatusesByProject,
       });
+      dispatchTaskTrackingUpdated();
       toast.success('Acompanhamento salvo localmente!');
     } finally {
       setIsSavingTracking(false);
     }
-  }, [selectedProjectKey, tasks, slaRiskWindowHours]);
+  }, [
+    selectedProjectKey,
+    tasks,
+    slaRiskWindowHours,
+    jiraStatuses,
+    activeProjectFilter,
+    resolvedImportedKeys,
+    jiraStatusesByProject,
+  ]);
 
   useEffect(() => {
     const handleRestored = () => {
@@ -125,6 +191,10 @@ export const JiraSolusView = React.memo(() => {
         setTasks,
         setSelectedProjectKey,
         setSlaRiskWindowHours,
+        setJiraStatuses,
+        setJiraStatusesByProject,
+        setActiveProjectFilter: setActiveProjectFilterState,
+        setImportedProjectKeys,
       });
     };
     window.addEventListener(TASK_TRACKING_RESTORED_EVENT, handleRestored);
@@ -141,32 +211,27 @@ export const JiraSolusView = React.memo(() => {
   }, [tasks, openTaskTab]);
 
   useEffect(() => {
-    try {
-      if (selectedProjectKey) {
-        sessionStorage.setItem(FILAS_PROJECT_STORAGE_KEY, selectedProjectKey);
-      } else {
-        sessionStorage.removeItem(FILAS_PROJECT_STORAGE_KEY);
-      }
-    } catch {
-      /* ignore */
-    }
-  }, [selectedProjectKey]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(FILAS_TASKS_STORAGE_KEY, JSON.stringify(tasks));
-    } catch {
-      /* ignore */
-    }
-  }, [tasks]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(FILAS_SLA_RISK_WINDOW_STORAGE_KEY, String(slaRiskWindowHours));
-    } catch {
-      /* ignore */
-    }
-  }, [slaRiskWindowHours]);
+    persistTaskTrackingPartial(
+      {
+        selectedProjectKey,
+        tasks,
+        slaRiskWindowHours,
+        jiraStatuses: activeJiraStatuses,
+        activeProjectFilter,
+        importedProjectKeys: resolvedImportedKeys,
+        jiraStatusesByProject,
+      },
+      { notify: true }
+    );
+  }, [
+    selectedProjectKey,
+    tasks,
+    slaRiskWindowHours,
+    activeJiraStatuses,
+    activeProjectFilter,
+    resolvedImportedKeys,
+    jiraStatusesByProject,
+  ]);
 
   const taskTabLabels = useMemo(
     () => resolveTaskTabLabels(openTaskTabIds, tasks),
@@ -383,6 +448,10 @@ export const JiraSolusView = React.memo(() => {
           >
             <JiraFilasDashboardPanel
               tasks={tasks}
+              filteredTasks={projectFilteredTasks}
+              importedProjectKeys={resolvedImportedKeys}
+              activeProjectFilter={activeProjectFilter}
+              onSelectProjectFilter={handleSelectProjectFilter}
               selectedProjectKey={selectedProjectKey}
               slaRiskWindowHours={slaRiskWindowHours}
               activeFilter={activeFilter}
@@ -400,8 +469,13 @@ export const JiraSolusView = React.memo(() => {
               setTasks={setTasks}
               selectedProjectKey={selectedProjectKey}
               setSelectedProjectKey={setSelectedProjectKey}
-              jiraStatuses={jiraStatuses}
+              jiraStatuses={activeJiraStatuses}
               setJiraStatuses={setJiraStatuses}
+              jiraStatusesByProject={jiraStatusesByProject}
+              setJiraStatusesByProject={setJiraStatusesByProject}
+              importedProjectKeys={resolvedImportedKeys}
+              activeProjectFilter={activeProjectFilter}
+              onSelectProjectFilter={handleSelectProjectFilter}
               activeFilter={activeFilter}
               onClearFilter={() => setActiveFilter({ kind: 'all' })}
               slaRiskWindowHours={slaRiskWindowHours}

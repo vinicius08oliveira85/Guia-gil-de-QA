@@ -55,6 +55,7 @@ import { EmptyState } from '../common/EmptyState';
 import {
   ensureJiraHexColor,
   getJiraStatusColor,
+  resolveJiraStatusColorFromPalette,
 } from '../../utils/jiraStatusColors';
 import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
 import { getJiraConfig } from '../../services/jiraService';
@@ -197,13 +198,6 @@ export type TaskWithChildren = JiraTask & { children: TaskWithChildren[] };
 
 type DetailSection = 'overview' | 'bdd' | 'tests' | 'planning' | 'guidance';
 type TestSubSection = 'strategy' | 'test-cases';
-
-const normalizeStatusName = (value: string) =>
-  value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .trim()
-    .toLowerCase();
 
 export const JiraTaskItem: React.FC<{
   task: TaskWithChildren;
@@ -421,20 +415,7 @@ export const JiraTaskItem: React.FC<{
       if (!statusName) {
         return undefined;
       }
-      if (jiraStatusPalette && jiraStatusPalette.length > 0) {
-        const normalizedTarget = normalizeStatusName(statusName);
-        const matched = jiraStatusPalette.find(statusEntry => {
-          const entryName = typeof statusEntry === 'string' ? statusEntry : statusEntry.name;
-          return normalizeStatusName(entryName) === normalizedTarget;
-        });
-        if (matched) {
-          if (typeof matched === 'string') {
-            return ensureJiraHexColor(undefined, matched);
-          }
-          return ensureJiraHexColor(matched.color, matched.name);
-        }
-      }
-      return getJiraStatusColor(statusName);
+      return resolveJiraStatusColorFromPalette(statusName, jiraStatusPalette);
     }, [currentDisplayStatusLabel, jiraStatusPalette]);
 
     const testExecutionSummary = useMemo(() => {

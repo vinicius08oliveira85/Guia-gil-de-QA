@@ -17,6 +17,8 @@ export interface JiraStatusCategoryInfo {
   colorName?: string;
 }
 
+export type JiraStatusPaletteEntry = string | { name: string; color: string };
+
 const FALLBACK_COLOR = '#42526e';
 
 const normalizeHexColor = (color: string): string => {
@@ -46,6 +48,14 @@ const normalizeString = (value: string): string =>
 
 const keywordMatches = (value: string, keywords: string[]): boolean =>
   keywords.some(keyword => value.includes(keyword));
+
+/** Normaliza nome de status para comparação (sem acentos, minúsculas). */
+export const normalizeJiraStatusName = (value: string): string =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
 
 export const getJiraStatusColor = (
   statusName: string,
@@ -207,6 +217,33 @@ export const ensureJiraHexColor = (
     return getJiraStatusColor(fallbackStatus);
   }
   return undefined;
+};
+
+/**
+ * Resolve a cor hex de um status usando a paleta da API Jira, com fallback heurístico.
+ * Usado em Filas (Jira) e Acompanhamento de tarefas (Landing) para manter cores iguais.
+ */
+export const resolveJiraStatusColorFromPalette = (
+  statusName: string,
+  palette?: JiraStatusPaletteEntry[] | null
+): string => {
+  if (!statusName) {
+    return getJiraStatusColor('');
+  }
+  if (palette && palette.length > 0) {
+    const normalizedTarget = normalizeJiraStatusName(statusName);
+    const matched = palette.find(entry => {
+      const entryName = typeof entry === 'string' ? entry : entry.name;
+      return normalizeJiraStatusName(entryName) === normalizedTarget;
+    });
+    if (matched) {
+      if (typeof matched === 'string') {
+        return ensureJiraHexColor(undefined, matched) ?? getJiraStatusColor(matched);
+      }
+      return ensureJiraHexColor(matched.color, matched.name) ?? getJiraStatusColor(matched.name);
+    }
+  }
+  return getJiraStatusColor(statusName);
 };
 
 /** Estilo de lozenge Jira (fundo suave + indicador na cor do workflow). */

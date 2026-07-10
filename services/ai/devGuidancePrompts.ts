@@ -2,6 +2,7 @@ import type { Project } from '../../types';
 import type { TaskAiContext } from './taskAiContext';
 import { buildComplementaryDocumentSection } from './testGenerationPrompts';
 import { formatDevStackForPrompt } from '../../utils/devStackFormat';
+import { formatLatestDevProjectAnalysisForPrompt } from '../../utils/devProjectAnalysisFormat';
 
 export const DEV_GUIDANCE_JSON_FOOTER =
   'Responda somente com JSON válido no formato do schema solicitado.';
@@ -11,6 +12,9 @@ export async function buildDevGuidancePrompt(
   project: Project | null | undefined
 ): Promise<string> {
   const stackBlock = formatDevStackForPrompt(project?.settings?.devStack);
+  const devAnalysisBlock = formatLatestDevProjectAnalysisForPrompt(
+    project?.devProjectFullAnalyses
+  );
   const docSection = await buildComplementaryDocumentSection(project);
   const rulesPart = ctx.businessRulesBlock.trim()
     ? `\n\n### REGRAS DE NEGÓCIO APLICÁVEIS ###\n${ctx.businessRulesBlock}\n`
@@ -27,6 +31,9 @@ Você é um arquiteto/desenvolvedor sênior mentorando a implementação de uma 
 ### STACK DO PROJETO ###
 ${stackBlock}
 
+### ANÁLISE DEV DO PROJETO (mais recente) ###
+${devAnalysisBlock}
+
 ### CONTEXTO DA TAREFA ###
 Título: ${ctx.title}
 Tipo: ${ctx.taskType ?? 'Tarefa'}
@@ -41,7 +48,7 @@ ${docSection ? `\n### DOCUMENTAÇÃO COMPLEMENTAR ###\n${docSection}\n` : ''}
 INSTRUÇÕES:
 1. Gere um GUIA DE IMPLEMENTAÇÃO prático para o desenvolvedor — não gere casos de teste formais (isso é fluxo QA).
 2. O desenvolvedor SEMPRE implementa código com o **Agente do Cursor (Cursor AI)**. Cada passo deve incluir um prompt pronto para colar no chat do Agente.
-3. Alinhe passos, módulos e contratos à stack configurada acima.
+3. Alinhe passos, módulos e contratos à stack configurada acima e ao backlog/riscos da análise Dev do projeto quando disponível.
 4. Use as regras de negócio vinculadas; não invente escopo fora delas.
 5. Inclua passos ordenados, arquivos/módulos sugeridos, dicas de código quando útil e checklist de validação por passo.
 6. Sugira testes que o desenvolvedor deve escrever (lista curta), sem formato de caso de teste QA.
