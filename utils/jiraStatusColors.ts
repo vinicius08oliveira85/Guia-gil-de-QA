@@ -19,7 +19,9 @@ export interface JiraStatusCategoryInfo {
 
 export type JiraStatusPaletteEntry = string | { name: string; color: string };
 
-const FALLBACK_COLOR = '#42526e';
+export const JIRA_STATUS_FALLBACK_COLOR = '#42526e';
+
+const FALLBACK_COLOR = JIRA_STATUS_FALLBACK_COLOR;
 
 const normalizeHexColor = (color: string): string => {
   if (!color) return FALLBACK_COLOR;
@@ -57,32 +59,13 @@ export const normalizeJiraStatusName = (value: string): string =>
     .trim()
     .toLowerCase();
 
-export const getJiraStatusColor = (
-  statusName: string,
-  statusCategory?: JiraStatusCategoryInfo
-): string => {
-  if (statusCategory) {
-    if (statusCategory.colorName) {
-      const mapped = JIRA_COLOR_MAP[statusCategory.colorName.toLowerCase()];
-      if (mapped) {
-        return mapped;
-      }
-    }
-    if (statusCategory.key) {
-      const keyColorMap: Record<string, string> = {
-        done: '#00875a',
-        'in-progress': '#0052cc',
-        indeterminate: '#0052cc',
-        'to-do': '#42526e',
-        new: '#42526e',
-      };
-      const mapped = keyColorMap[statusCategory.key.toLowerCase()];
-      if (mapped) {
-        return mapped;
-      }
-    }
-  }
+interface JiraStatusNameColorResult {
+  color: string;
+  /** true quando alguma regra por palavra-chave no nome foi aplicada. */
+  matchedByName: boolean;
+}
 
+const resolveJiraStatusColorByName = (statusName: string): JiraStatusNameColorResult => {
   const normalized = normalizeString(statusName);
 
   if (
@@ -111,7 +94,7 @@ export const getJiraStatusColor = (
       'entregue',
     ])
   ) {
-    return '#00875a';
+    return { color: '#00875a', matchedByName: true };
   }
 
   if (
@@ -127,7 +110,7 @@ export const getJiraStatusColor = (
       'descartada',
     ])
   ) {
-    return '#ae2a19';
+    return { color: '#ae2a19', matchedByName: true };
   }
 
   if (
@@ -145,7 +128,7 @@ export const getJiraStatusColor = (
       'suspensa',
     ])
   ) {
-    return '#f5cd47';
+    return { color: '#f5cd47', matchedByName: true };
   }
 
   if (
@@ -167,11 +150,11 @@ export const getJiraStatusColor = (
       'atendimento',
     ])
   ) {
-    return '#0052cc';
+    return { color: '#0052cc', matchedByName: true };
   }
 
   if (keywordMatches(normalized, ['review', 'validacao'])) {
-    return '#6554c0';
+    return { color: '#6554c0', matchedByName: true };
   }
 
   if (
@@ -187,14 +170,43 @@ export const getJiraStatusColor = (
       'planejamento',
     ])
   ) {
-    return '#42526e';
+    return { color: '#42526e', matchedByName: true };
   }
 
   if (keywordMatches(normalized, ['bloqueado', 'blocked', 'impedido'])) {
-    return '#c25100';
+    return { color: '#c25100', matchedByName: true };
   }
 
-  return FALLBACK_COLOR;
+  return { color: FALLBACK_COLOR, matchedByName: false };
+};
+
+export const getJiraStatusColor = (
+  statusName: string,
+  statusCategory?: JiraStatusCategoryInfo
+): string => {
+  if (statusCategory) {
+    if (statusCategory.colorName) {
+      const mapped = JIRA_COLOR_MAP[statusCategory.colorName.toLowerCase()];
+      if (mapped) {
+        return mapped;
+      }
+    }
+    if (statusCategory.key) {
+      const keyColorMap: Record<string, string> = {
+        done: '#00875a',
+        'in-progress': '#0052cc',
+        indeterminate: '#0052cc',
+        'to-do': '#42526e',
+        new: '#42526e',
+      };
+      const mapped = keyColorMap[statusCategory.key.toLowerCase()];
+      if (mapped) {
+        return mapped;
+      }
+    }
+  }
+
+  return resolveJiraStatusColorByName(statusName).color;
 };
 
 export const getJiraStatusTextColor = (backgroundColor: string): string => {
@@ -223,13 +235,32 @@ export const ensureJiraHexColor = (
  * Resolve a cor hex de um status usando a paleta da API Jira, com fallback heurístico.
  * Usado em Filas (Jira) e Acompanhamento de tarefas (Landing) para manter cores iguais.
  */
+/**
+ * Cor para persistir na paleta após buscar status na API Jira.
+ * A API expõe sobretudo statusCategory (ex.: yellow para vários custom statuses);
+ * a heurística por nome distingue AGUARDANDO, PENDENTE, ESCALATED, etc.
+ */
+export const resolveJiraStatusColorForStorage = (
+  statusName: string,
+  statusCategory?: JiraStatusCategoryInfo
+): string => {
+  const fromName = resolveJiraStatusColorByName(statusName);
+  if (fromName.matchedByName) {
+    return fromName.color;
+  }
+  return getJiraStatusColor(statusName, statusCategory);
+};
+
 export const resolveJiraStatusColorFromPalette = (
   statusName: string,
   palette?: JiraStatusPaletteEntry[] | null
 ): string => {
+  const fromName = resolveJiraStatusColorByName(statusName);
+
   if (!statusName) {
-    return getJiraStatusColor('');
+    return fromName.color;
   }
+
   if (palette && palette.length > 0) {
     const normalizedTarget = normalizeJiraStatusName(statusName);
     const matched = palette.find(entry => {
@@ -237,13 +268,20 @@ export const resolveJiraStatusColorFromPalette = (
       return normalizeJiraStatusName(entryName) === normalizedTarget;
     });
     if (matched) {
-      if (typeof matched === 'string') {
-        return ensureJiraHexColor(undefined, matched) ?? getJiraStatusColor(matched);
+      const paletteColor =
+        typeof matched === 'string'
+          ? ensureJiraHexColor(undefined, matched) ?? getJiraStatusColor(matched)
+          : ensureJiraHexColor(matched.color, matched.name) ??
+            getJiraStatusColor(matched.name);
+
+      if (fromName.matchedByName) {
+        return fromName.color;
       }
-      return ensureJiraHexColor(matched.color, matched.name) ?? getJiraStatusColor(matched.name);
+      return paletteColor;
     }
   }
-  return getJiraStatusColor(statusName);
+
+  return fromName.color;
 };
 
 /** Estilo de lozenge Jira (fundo suave + indicador na cor do workflow). */

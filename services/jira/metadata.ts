@@ -8,7 +8,7 @@ import type {
 import { jiraApiCall } from './api';
 import { getJiraIssues } from './issues';
 import { getCache, setCache, clearCache } from '../../utils/apiCache';
-import { getJiraStatusColor } from '../../utils/jiraStatusColors';
+import { resolveJiraStatusColorForStorage } from '../../utils/jiraStatusColors';
 import { logger } from '../../utils/logger';
 
 interface JiraFieldContextPage {
@@ -122,7 +122,7 @@ export const getJiraStatuses = async (
         if (statusCategory.statuses && Array.isArray(statusCategory.statuses)) {
           statusCategory.statuses.forEach(status => {
             if (status.name) {
-              const color = getJiraStatusColor(status.name, status.statusCategory);
+              const color = resolveJiraStatusColorForStorage(status.name, status.statusCategory);
               statusMap.set(status.name, color);
             }
           });
@@ -139,7 +139,10 @@ export const getJiraStatuses = async (
         if (issue.fields?.status?.name) {
           const statusName = issue.fields.status.name;
           if (!statusMap.has(statusName)) {
-            const color = getJiraStatusColor(statusName, issue.fields.status.statusCategory);
+            const color = resolveJiraStatusColorForStorage(
+              statusName,
+              issue.fields.status.statusCategory
+            );
             statusMap.set(statusName, color);
           }
         }
@@ -161,7 +164,10 @@ export const getJiraStatuses = async (
         if (issue.fields?.status?.name) {
           const statusName = issue.fields.status.name;
           if (!statusMap.has(statusName)) {
-            const color = getJiraStatusColor(statusName, issue.fields.status.statusCategory);
+            const color = resolveJiraStatusColorForStorage(
+              statusName,
+              issue.fields.status.statusCategory
+            );
             statusMap.set(statusName, color);
           }
         }
