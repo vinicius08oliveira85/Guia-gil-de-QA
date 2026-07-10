@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import type { JiraTask } from '../../types';
-import { generateDevImplementationReport } from '../../utils/devImplementationReportGenerator';
+import {
+  generateDevImplementationReport,
+  generateDevImplementationExecutiveSummary,
+} from '../../utils/devImplementationReportGenerator';
 
 const baseTask: JiraTask = {
   id: 'SIS-188',
@@ -47,9 +50,17 @@ describe('devImplementationReportGenerator', () => {
     expect(report).toContain('https://example.com/pr/42');
   });
 
-  it('gera markdown com passos concluídos', () => {
-    const report = generateDevImplementationReport(baseTask, { format: 'markdown' });
-    expect(report).toContain('# Registro de Implementação');
-    expect(report).toContain('## Passos de implementação (2/2 concluídos)');
+  it('gera resumo executivo e modo PO', () => {
+    const summary = generateDevImplementationExecutiveSummary(baseTask, {
+      record: baseTask.devImplementationRecord,
+    });
+    expect(summary).toContain('Resumo executivo');
+    expect(summary).toContain('2/2 passo');
+
+    const po = generateDevImplementationReport(baseTask, {
+      mode: 'po',
+      record: baseTask.devImplementationRecord,
+    });
+    expect(po).toContain('Entrega de implementação');
   });
 });

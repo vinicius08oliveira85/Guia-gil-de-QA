@@ -19,6 +19,8 @@ interface TestReportTextPreviewProps {
   formatLabel: string;
   isAISummarized?: boolean;
   aiSummaryMode?: 'executive' | 'po' | null;
+  /** Sobrescreve o aria-label da seção (ex.: registro Dev). */
+  previewAriaLabel?: string;
 }
 
 type PreviewStatus = 'Aprovado' | 'Reprovado' | 'Bloqueado';
@@ -271,13 +273,14 @@ export const TestReportTextPreview: React.FC<TestReportTextPreviewProps> = ({
   formatLabel,
   isAISummarized = false,
   aiSummaryMode = null,
+  previewAriaLabel = 'Prévia do relatório de testes',
 }) => {
   const parsedRows = useMemo(() => parseReportRows(reportText), [reportText]);
   const isMarkdown = formatLabel === 'Markdown' && !isAISummarized;
 
   return (
     <section
-      aria-label="Prévia do relatório de testes"
+      aria-label={previewAriaLabel}
       className={cn(
         testReportModalSectionClass,
         'flex h-full min-h-[320px] flex-col overflow-hidden'

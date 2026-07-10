@@ -12,6 +12,7 @@ import { Sparkles, Copy, Download, AlertTriangle, Bot, FileCheck } from 'lucide-
 import toast from 'react-hot-toast';
 import { dashboardPanelClass } from '../../dashboard/dashboardNeuUi';
 import { useTaskDetail } from './TaskDetailContext';
+import { StructuredCursorPrompt } from '../StructuredCursorPrompt';
 
 export interface TaskDevGuidanceSectionProps {
   task: JiraTask;
@@ -58,9 +59,7 @@ const CursorPromptPanel: React.FC<{
         {copyLabel}
       </button>
     </div>
-    <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-md bg-base-100/90 p-3 text-xs leading-relaxed text-base-content/90">
-      {prompt}
-    </pre>
+    <StructuredCursorPrompt prompt={prompt} />
   </div>
 );
 

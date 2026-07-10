@@ -60,6 +60,7 @@ INSTRUÇÕES:
      * Pedir que o agente siga convenções do projeto e não altere arquivos fora do escopo do passo.
      * Ser imperativo e específico — o agente não terá outro contexto além deste prompt.
 8. Inclua cursorAgentMasterPrompt: um único prompt consolidado para implementar a tarefa inteira em uma sessão do Agente do Cursor (referenciando os passos na ordem, sem repetir texto desnecessário).
+   Formate o prompt mestre com parágrafos separados por linha em branco, passos numerados (1., 2., …) um por linha, seção "Restrições:" com bullets quando houver limites, e linguagem imperativa clara.
 9. Responda em português brasileiro.${imageNote}
 
 ${DEV_GUIDANCE_JSON_FOOTER}

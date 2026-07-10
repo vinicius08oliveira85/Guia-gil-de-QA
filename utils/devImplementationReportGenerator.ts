@@ -4,7 +4,7 @@ import { formatDevStackSummary } from './devStackFormat';
 import { normalizeDevStackConfig } from './devStackPresets';
 
 export type DevImplementationReportFormat = 'text' | 'markdown';
-export type DevImplementationReportMode = 'structured' | 'concise';
+export type DevImplementationReportMode = 'structured' | 'concise' | 'po';
 
 export interface GenerateDevImplementationReportOptions {
   format?: DevImplementationReportFormat;
@@ -123,6 +123,25 @@ export function generateDevImplementationReport(
   const guidance = task.devGuidance;
   const isMarkdown = format === 'markdown';
 
+  if (mode === 'po') {
+    const poLines = buildPoReportLines(task, record, generatedAt);
+    if (isMarkdown) {
+      return (
+        [
+          `# Registro de Implementação — ${task.title}`,
+          '',
+          `**Tarefa:** ${task.id}`,
+          '',
+          ...poLines,
+          '',
+          '*Registro gerado pelo Guia Agile — Projeto Dev*',
+          '',
+        ].join('\n').trimEnd() + '\n'
+      );
+    }
+    return poLines.join('\n').trimEnd() + '\n';
+  }
+
   const lines: string[] = [];
 
   if (isMarkdown) {
@@ -232,7 +251,133 @@ export function generateDevImplementationReport(
   return lines.join('\n').trimEnd() + '\n';
 }
 
+function buildImplementationCounts(task: JiraTask, record?: DevImplementationRecord) {
+  const steps = task.devGuidance?.implementationSteps ?? [];
+  const completedOrders = new Set(record?.completedStepOrders ?? []);
+  const total = steps.length;
+  const completed = steps.filter(s => completedOrders.has(s.order)).length;
+  return {
+    total,
+    completed,
+    pending: Math.max(total - completed, 0),
+  };
+}
+
+/** Resumo executivo curto (atalho de cópia). */
+export function generateDevImplementationExecutiveSummary(
+  task: JiraTask,
+  options: Omit<GenerateDevImplementationReportOptions, 'format' | 'mode'> = {}
+): string {
+  const generatedAt = options.generatedAt ?? new Date();
+  const record = resolveRecord(task, options.record);
+  const counts = buildImplementationCounts(task, record);
+  const lines: string[] = [];
+
+  lines.push(`Resumo executivo da implementação ${task.id}`);
+  lines.push(`Título: ${task.title ?? '-'}`);
+  lines.push(
+    `Status: ${counts.completed}/${counts.total} passo(s) concluído(s)${counts.pending ? `, ${counts.pending} pendente(s)` : ''}.`
+  );
+
+  if (record?.suggestedTestsResult && task.devGuidance?.suggestedTests?.length) {
+    lines.push(
+      `Testes sugeridos: ${SUGGESTED_TESTS_RESULT_LABELS[record.suggestedTestsResult]}.`
+    );
+  }
+
+  if (record?.evidenceLinks?.length) {
+    lines.push(`Evidências: ${record.evidenceLinks.length} link(s) anexado(s).`);
+  }
+
+  if (record?.notes?.trim()) {
+    lines.push(`Observação: ${collapseOneLine(record.notes)}`);
+  }
+
+  lines.push('');
+  lines.push(`Concluído em: ${formatDateTime(generatedAt)}`);
+  return lines.join('\n');
+}
+
+/** Somente passos concluídos/pendentes (atalho de cópia). */
+export function generateDevImplementationStepsOnlyReport(
+  task: JiraTask,
+  options: Omit<GenerateDevImplementationReportOptions, 'format' | 'mode'> = {}
+): string {
+  const generatedAt = options.generatedAt ?? new Date();
+  const record = resolveRecord(task, options.record);
+  const guidance = task.devGuidance;
+  const lines: string[] = [];
+
+  lines.push(`PASSOS DE IMPLEMENTAÇÃO | ${task.id} | ${task.title ?? '-'}`);
+  lines.push('');
+
+  if (!guidance?.implementationSteps.length) {
+    lines.push('Nenhum passo estruturado no guia Dev.');
+  } else {
+    const completedOrders = new Set(record?.completedStepOrders ?? []);
+    [...guidance.implementationSteps]
+      .sort((a, b) => a.order - b.order)
+      .forEach(step => {
+        const done = completedOrders.has(step.order);
+        lines.push(
+          `${step.order}. ${done ? '✅ Concluído' : '○ Pendente'}: ${step.title}`
+        );
+      });
+  }
+
+  lines.push('');
+  lines.push(`Concluído em: ${formatDateTime(generatedAt)}`);
+  return lines.join('\n');
+}
+
+function buildPoReportLines(
+  task: JiraTask,
+  record: DevImplementationRecord | undefined,
+  generatedAt: Date
+): string[] {
+  const counts = buildImplementationCounts(task, record);
+  const lines: string[] = [
+    `Entrega de implementação — ${task.id}`,
+    '',
+    `História: ${task.title ?? '-'}`,
+  ];
+
+  const description = getTaskDescriptionSummary(task);
+  if (description) {
+    lines.push(`Contexto: ${description}`);
+  }
+
+  lines.push('');
+  lines.push(
+    `Resultado: ${counts.completed} de ${counts.total} passos do guia de implementação foram concluídos.`
+  );
+
+  if (record?.suggestedTestsResult && task.devGuidance?.suggestedTests?.length) {
+    lines.push(
+      `Validação técnica: ${SUGGESTED_TESTS_RESULT_LABELS[record.suggestedTestsResult]}.`
+    );
+  }
+
+  if (record?.notes?.trim()) {
+    lines.push('');
+    lines.push('Observações do desenvolvedor:');
+    lines.push(record.notes.trim());
+  }
+
+  if (record?.evidenceLinks?.length) {
+    lines.push('');
+    lines.push('Evidências:');
+    record.evidenceLinks.forEach(link => lines.push(`- ${link}`));
+  }
+
+  lines.push('');
+  lines.push(`Registro gerado em ${formatDateTime(generatedAt)}.`);
+  return lines;
+}
+
 export const DEV_IMPLEMENTATION_REPORT_MODE_LABELS = {
-  structured: 'Completo',
+  structured: 'Texto estruturado',
   concise: 'Resumido',
+  po: 'Para o PO',
+  markdown: 'Markdown',
 } as const;
