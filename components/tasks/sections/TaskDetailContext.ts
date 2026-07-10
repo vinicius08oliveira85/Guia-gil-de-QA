@@ -64,6 +64,8 @@ export interface TaskDetailContextValue {
   onOpenTask?: (task: JiraTask) => void;
 
   onShowTestReport: () => void;
+  /** Abre modal de registro de implementação (Projetos Dev). */
+  onShowDevImplementationReport?: () => void;
   onViewJiraAttachment: (attachment: JiraAttachmentViewInput) => void;
   loadingJiraAttachmentId: string | null;
 }

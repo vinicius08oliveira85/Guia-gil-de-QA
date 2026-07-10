@@ -259,6 +259,8 @@ export interface JiraTask {
   devGuidanceGeneratedAt?: string;
   /** Hash do snapshot usado na última geração do guia Dev. */
   devGuidanceSnapshotHash?: string;
+  /** Registro de implementação concluída (fluxo Projetos Dev). */
+  devImplementationRecord?: DevImplementationRecord;
   /** SLAs do Jira Service Management (Time to resolution, Time to first response, etc.). */
   jiraSlas?: JiraTaskSla[];
   /** Nome do serviço / projeto JSM (quando disponível na API). */
@@ -663,6 +665,22 @@ export interface DevGuidanceArtifact {
   suggestedTests?: string[];
   /** Prompt consolidado para implementar a tarefa inteira no Agente do Cursor. */
   cursorAgentMasterPrompt?: string;
+}
+
+/** Registro persistido de implementação Dev concluída. */
+export interface DevImplementationRecord {
+  /** ISO — quando o desenvolvimento foi registrado como concluído. */
+  completedAt: string;
+  /** Passos do guia marcados como concluídos (`implementationSteps.order`). */
+  completedStepOrders?: number[];
+  /** Itens de validação marcados como concluídos. */
+  completedValidations?: string[];
+  /** Notas do desenvolvedor (evidências, observações, links). */
+  notes?: string;
+  /** Links de evidência (PR, Postman, prints, etc.). */
+  evidenceLinks?: string[];
+  /** Resultado dos testes sugeridos pelo guia. */
+  suggestedTestsResult?: 'pending' | 'passed' | 'partial' | 'not_run';
 }
 
 /** Stack técnica configurável por projeto Dev. */

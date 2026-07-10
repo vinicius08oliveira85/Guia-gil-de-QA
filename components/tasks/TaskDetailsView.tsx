@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { JiraTask, BddScenario, TestCaseDetailLevel, Project, TestCase } from '../../types';
 import { Modal } from '../common/Modal';
 import { TestReportModal } from './TestReportModal';
+import { DevImplementationReportModal } from './DevImplementationReportModal';
+import { JiraTask, BddScenario, TestCaseDetailLevel, Project, TestCase, DevImplementationRecord } from '../../types';
 import { TaskWithChildren } from './JiraTaskItem';
 import { getTaskDependents } from '../../utils/dependencyService';
 import { getLinkedBusinessRuleIdsForTask } from '../../utils/businessRuleTaskLinking';
@@ -148,6 +149,7 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
 }) => {
   const [detailLevel, setDetailLevel] = useState<TestCaseDetailLevel>('Estruturado');
   const [showTestReport, setShowTestReport] = useState(false);
+  const [showDevImplementationReport, setShowDevImplementationReport] = useState(false);
   const {
     viewingJiraAttachment,
     setViewingJiraAttachment,
@@ -282,6 +284,33 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
   }, [sectionTabs, activeSection, task.type, project, onUpdateProject, setActiveSection, devMode]);
 
   const handleShowTestReport = useCallback(() => setShowTestReport(true), []);
+  const handleShowDevImplementationReport = useCallback(
+    () => setShowDevImplementationReport(true),
+    []
+  );
+
+  const handleSaveDevImplementationRecord = useCallback(
+    async (record: DevImplementationRecord, markAsDone: boolean) => {
+      if (!project || !onUpdateProject) {
+        throw new Error('Projeto indisponível para salvar registro.');
+      }
+      const updatedTask: JiraTask = {
+        ...task,
+        devImplementationRecord: record,
+        ...(markAsDone
+          ? {
+              status: 'Done' as const,
+              completedAt: record.completedAt,
+            }
+          : {}),
+      };
+      await onUpdateProject({
+        ...project,
+        tasks: project.tasks.map(t => (t.id === task.id ? updatedTask : t)),
+      });
+    },
+    [project, onUpdateProject, task]
+  );
 
   const taskDetailValue = useMemo<TaskDetailContextValue>(
     () => ({
@@ -320,6 +349,7 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
       onNavigateToTab,
       onOpenTask,
       onShowTestReport: handleShowTestReport,
+      onShowDevImplementationReport: devMode ? handleShowDevImplementationReport : undefined,
       onViewJiraAttachment: handleViewJiraAttachment,
       loadingJiraAttachmentId,
     }),
@@ -358,6 +388,7 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
       onNavigateToTab,
       onOpenTask,
       handleShowTestReport,
+      handleShowDevImplementationReport,
       handleViewJiraAttachment,
       loadingJiraAttachmentId,
     ]
@@ -617,6 +648,16 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
         onClose={() => setShowTestReport(false)}
         task={task}
       />
+
+      {devMode && task.devGuidance ? (
+        <DevImplementationReportModal
+          isOpen={showDevImplementationReport}
+          onClose={() => setShowDevImplementationReport(false)}
+          task={task}
+          project={project}
+          onSaveRecord={handleSaveDevImplementationRecord}
+        />
+      ) : null}
 
       {/* Modal de Visualização de Anexo do Jira */}
       {viewingJiraAttachment && viewingJiraAttachment.content && (

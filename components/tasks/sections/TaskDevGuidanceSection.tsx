@@ -8,9 +8,10 @@ import {
   CURSOR_AGENT_ACTION_LABELS,
   CURSOR_IMPLEMENTATION_TOOL_LABEL,
 } from '../../../utils/cursorAgentUi';
-import { Sparkles, Copy, Download, AlertTriangle, Bot } from 'lucide-react';
+import { Sparkles, Copy, Download, AlertTriangle, Bot, FileCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { dashboardPanelClass } from '../../dashboard/dashboardNeuUi';
+import { useTaskDetail } from './TaskDetailContext';
 
 export interface TaskDevGuidanceSectionProps {
   task: JiraTask;
@@ -68,6 +69,7 @@ export const TaskDevGuidanceSection: React.FC<TaskDevGuidanceSectionProps> = ({
   onGenerate,
   isGenerating,
 }) => {
+  const { onShowDevImplementationReport } = useTaskDetail();
   const guidance = task.devGuidance;
   const outdated = useMemo(() => isDevGuidanceOutdated(task), [task]);
 
@@ -133,6 +135,16 @@ export const TaskDevGuidanceSection: React.FC<TaskDevGuidanceSectionProps> = ({
                 <Download className="h-4 w-4" aria-hidden />
                 Baixar .md
               </button>
+              {onShowDevImplementationReport ? (
+                <button
+                  type="button"
+                  onClick={onShowDevImplementationReport}
+                  className="btn btn-secondary btn-sm gap-1"
+                >
+                  <FileCheck className="h-4 w-4" aria-hidden />
+                  {task.devImplementationRecord ? 'Ver registro' : 'Registrar implementação'}
+                </button>
+              ) : null}
             </>
           ) : null}
         </div>

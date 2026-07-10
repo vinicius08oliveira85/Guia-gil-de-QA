@@ -133,6 +133,7 @@ export const TaskOverviewSection: React.FC = () => {
     onEditComment,
     onDeleteComment,
     onShowTestReport,
+    onShowDevImplementationReport,
     onViewJiraAttachment,
     loadingJiraAttachmentId,
   } = useTaskDetail();
@@ -277,6 +278,34 @@ export const TaskOverviewSection: React.FC = () => {
                   />
                 </svg>
                 <span>Gerar Registro de Testes</span>
+              </button>
+            </div>
+          )}
+
+        {devMode &&
+          task.devGuidance &&
+          (task.type === 'Tarefa' || task.type === 'Bug') &&
+          onShowDevImplementationReport && (
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={onShowDevImplementationReport}
+                className={testReportGenerateRecordBtnClass}
+                aria-label="Gerar registro de implementação"
+              >
+                <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                <span>
+                  {task.devImplementationRecord
+                    ? 'Ver registro de implementação'
+                    : 'Gerar Registro de Implementação'}
+                </span>
               </button>
             </div>
           )}
@@ -452,7 +481,13 @@ export const TaskOverviewSection: React.FC = () => {
                   Monta passos de implementação e prompts prontos para o Agente do Cursor (criar,
                   modificar ou excluir código), alinhados à stack do projeto.
                 </p>
-                {task.devGuidanceGeneratedAt ? (
+                {task.devImplementationRecord ? (
+                  <p className={cn(leveTaskModalMutedXsClass, 'mt-1.5')} title={task.devImplementationRecord.completedAt}>
+                    Implementação registrada{' '}
+                    {formatRelativeTimestamp(task.devImplementationRecord.completedAt) ??
+                      task.devImplementationRecord.completedAt}
+                  </p>
+                ) : task.devGuidanceGeneratedAt ? (
                   <p className={cn(leveTaskModalMutedXsClass, 'mt-1.5')} title={task.devGuidanceGeneratedAt}>
                     Última geração{' '}
                     {formatRelativeTimestamp(task.devGuidanceGeneratedAt) ?? task.devGuidanceGeneratedAt}

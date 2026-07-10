@@ -227,11 +227,13 @@ export const useAutoSave = ({
       id: t.id,
       hash: t.devGuidanceSnapshotHash,
       at: t.devGuidanceGeneratedAt,
+      implAt: t.devImplementationRecord?.completedAt,
     }));
     const newDevGuidance = newProject.tasks.map(t => ({
       id: t.id,
       hash: t.devGuidanceSnapshotHash,
       at: t.devGuidanceGeneratedAt,
+      implAt: t.devImplementationRecord?.completedAt,
     }));
     if (JSON.stringify(oldDevGuidance) !== JSON.stringify(newDevGuidance)) {
       return true;
