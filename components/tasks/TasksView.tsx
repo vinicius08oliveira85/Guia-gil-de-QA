@@ -114,6 +114,7 @@ import {
   type TaskSortBy,
   type TaskGroupBy,
 } from './tasksViewHelpers';
+import { alignTaskStatusesFromJira, buildTaskJiraStatusSnapshot } from '../../utils/jiraTaskSyncMirror';
 import { testCaseLooksAutomated } from '../../utils/testCaseMigration';
 import { VirtualizedTaskRootList, shouldVirtualizeTaskRoots } from './VirtualizedTaskRootList';
 import { leveViewOutlineBtnClass } from '../common/projectCardUi';
@@ -159,7 +160,7 @@ export const TasksView: React.FC<{
   /** Abre tarefa em aba do workspace (ProjectView); se omitido, usa modal local. */
   onOpenTaskTab?: (task: JiraTask) => void;
 }> = ({
-  project,
+  project: projectProp,
   onUpdateProject,
   onNavigateToTab,
   initialTaskId,
@@ -170,6 +171,10 @@ export const TasksView: React.FC<{
   onListModeChange,
   onOpenTaskTab,
 }) => {
+  const project =
+    useProjectsStore(
+      useCallback(state => state.projects.find(p => p.id === projectProp.id), [projectProp.id])
+    ) ?? projectProp;
   const isDevProject = normalizeProjectWorkflow(project.workflow) === 'dev';
   const backlogOnly = listModeProp === 'backlog';
   const backlogTaskCount = useMemo(
@@ -806,7 +811,9 @@ export const TasksView: React.FC<{
         if (!config) {
           throw new Error('Jira não configurado. Configure nas configurações primeiro.');
         }
-        const updatedProject = await updateSingleTaskFromJira(config, project, taskId);
+        const latestProject =
+          useProjectsStore.getState().projects.find(p => p.id === project.id) ?? project;
+        const updatedProject = await updateSingleTaskFromJira(config, latestProject, taskId);
         await onUpdateProject(updatedProject);
         handleSuccess('Tarefa atualizada do Jira.');
       } catch (error) {
@@ -1728,10 +1735,8 @@ export const TasksView: React.FC<{
 
   const epics = useMemo(() => project.tasks.filter(t => t.type === 'Epic'), [project.tasks]);
 
-  // Corrigir status das tarefas baseado no jiraStatus quando disponível
-  // Isso corrige tarefas que foram importadas antes da correção do mapeamento
-  // Usar useRef para evitar loops infinitos e correções múltiplas
-  const hasCorrectedStatus = useRef<string | null>(null);
+  // Alinhar status interno ao jiraStatus após sync/importação Jira
+  const lastJiraStatusSnapshotRef = useRef('');
   const onUpdateProjectRef = useRef(onUpdateProject);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -1781,75 +1786,40 @@ export const TasksView: React.FC<{
   }, [initialTaskId]);
 
   useEffect(() => {
-    if (!project || !project.tasks || !Array.isArray(project.tasks)) return;
+    if (!project?.tasks?.length) return;
     if (!onUpdateProjectRef.current) return;
 
-    // Se já corrigimos este projeto, não corrigir novamente
-    if (hasCorrectedStatus.current === project.id) return;
+    const snapshot = buildTaskJiraStatusSnapshot(project.tasks);
+    if (snapshot === lastJiraStatusSnapshotRef.current) return;
 
     try {
-      const tasksNeedingCorrection = project.tasks.filter(task => {
-        if (!task || !task.jiraStatus) return false;
-        try {
-          const correctStatus = mapJiraStatusToTaskStatus(task.jiraStatus);
-          return task.status !== correctStatus;
-        } catch (error) {
-          logger.warn('Erro ao mapear status do Jira', 'TasksView', {
-            error,
-            taskId: task.id,
-            jiraStatus: task.jiraStatus,
-          });
-          return false;
-        }
-      });
+      const { tasks: correctedTasks, correctedCount } = alignTaskStatusesFromJira(project.tasks);
+      lastJiraStatusSnapshotRef.current = snapshot;
 
-      if (tasksNeedingCorrection.length > 0) {
-        const correctedTasks = project.tasks.map(task => {
-          if (!task || !task.jiraStatus) return task;
-          try {
-            const correctStatus = mapJiraStatusToTaskStatus(task.jiraStatus);
-            if (task.status !== correctStatus) {
-              return { ...task, status: correctStatus };
-            }
-          } catch (error) {
-            logger.warn('Erro ao corrigir status da tarefa', 'TasksView', {
-              error,
-              taskId: task.id,
-            });
-          }
-          return task;
-        });
-
-        // Marcar que já corrigimos este projeto ANTES de atualizar
-        hasCorrectedStatus.current = project.id;
-
-        // Atualizar projeto de forma assíncrona para evitar problemas de render
+      if (correctedCount > 0) {
         Promise.resolve().then(() => {
-          if (onUpdateProjectRef.current && project) {
-            onUpdateProjectRef.current({
-              ...project,
-              tasks: correctedTasks,
-            });
-          }
+          onUpdateProjectRef.current?.({
+            ...project,
+            tasks: correctedTasks,
+          });
         });
-
         logger.info(
-          `Corrigidos ${tasksNeedingCorrection.length} status de tarefas baseado no jiraStatus`,
+          `Alinhados ${correctedCount} status de tarefas com jiraStatus após atualização`,
           'TasksView'
         );
-      } else {
-        // Marcar como corrigido mesmo se não houver correções necessárias
-        hasCorrectedStatus.current = project.id;
       }
     } catch (error) {
-      logger.error('Erro ao corrigir status das tarefas', 'TasksView', {
+      lastJiraStatusSnapshotRef.current = snapshot;
+      logger.error('Erro ao alinhar status das tarefas com jiraStatus', 'TasksView', {
         error,
-        projectId: project?.id,
+        projectId: project.id,
       });
-      // Marcar como corrigido mesmo em caso de erro para evitar loops
-      hasCorrectedStatus.current = project.id;
     }
-  }, [project?.id, project?.tasks]);
+  }, [project]);
+
+  useEffect(() => {
+    lastJiraStatusSnapshotRef.current = '';
+  }, [project.id]);
 
   const stats = useMemo(() => {
     try {

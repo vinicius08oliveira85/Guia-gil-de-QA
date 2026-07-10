@@ -37,6 +37,7 @@ import {
   getProjectsListPath,
   isProjectsListPath,
   parseProjectsListWorkflow,
+  recordLastProjectsListWorkflow,
 } from './utils/projectWorkflow';
 import {
   resolveProjectsListSectionDescription,
@@ -105,6 +106,7 @@ const AppContent: React.FC = () => {
     projects,
     selectedProjectId,
     isLoading,
+    hasBootstrapLoaded,
     error: storeError,
     loadProjects,
     createProject,
@@ -257,6 +259,13 @@ const AppContent: React.FC = () => {
       selectProject(null);
     }
   }, [location.pathname, selectedProjectId, selectProject, isLoading]);
+
+  useEffect(() => {
+    const workflow = parseProjectsListWorkflow(location.pathname);
+    if (workflow) {
+      recordLastProjectsListWorkflow(workflow);
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     loadProjects().catch(error => {
@@ -423,6 +432,7 @@ const AppContent: React.FC = () => {
 
   const isLanding = location.pathname === '/';
   const projectsListWorkflow = parseProjectsListWorkflow(location.pathname);
+  const isBootstrapping = !hasBootstrapLoaded && !isLanding;
   const isDashboard = projectsListWorkflow !== null;
   const isJiraSolus = location.pathname === '/jira-solus';
   const shouldShowHeader = !isLanding;
@@ -520,7 +530,7 @@ const AppContent: React.FC = () => {
           </div>
         ) : null}
 
-        {isLoading && !isLanding ? (
+        {isBootstrapping ? (
           <ProjectsDashboardSkeleton />
         ) : (
           <Routes>

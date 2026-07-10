@@ -1,4 +1,5 @@
 import type { Project, ProjectWorkflow } from '../types';
+import { getLastOpenedProjectIds } from './landingRecentProjects';
 
 export const PROJECT_WORKFLOWS = ['qa', 'dev'] as const;
 
@@ -51,6 +52,56 @@ export function isProjectsListPath(pathname: string): boolean {
 
 export function getProjectListPathForProject(project: Pick<Project, 'workflow'>): `/projects/${ProjectWorkflow}` {
   return getProjectsListPath(normalizeProjectWorkflow(project.workflow));
+}
+
+const LAST_PROJECTS_LIST_WORKFLOW_KEY = 'qa_last_projects_list_workflow';
+
+/** Persiste a última listagem de projetos visitada (QA ou Dev). */
+export function recordLastProjectsListWorkflow(workflow: ProjectWorkflow): void {
+  if (typeof localStorage === 'undefined') return;
+  try {
+    localStorage.setItem(LAST_PROJECTS_LIST_WORKFLOW_KEY, normalizeProjectWorkflow(workflow));
+  } catch {
+    /* quota / modo privado */
+  }
+}
+
+function readLastProjectsListWorkflow(): ProjectWorkflow | null {
+  if (typeof localStorage === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(LAST_PROJECTS_LIST_WORKFLOW_KEY);
+    return raw === 'dev' ? 'dev' : raw === 'qa' ? 'qa' : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Rota de fallback quando `/projects/:id` não encontra o projeto após o bootstrap.
+ * Prioriza workflow do último projeto aberto ou da última listagem visitada.
+ */
+export function resolveProjectViewNotFoundPath(
+  projects: Project[],
+  requestedProjectId?: string
+): `/projects/${ProjectWorkflow}` {
+  const lastOpenedId = getLastOpenedProjectIds()[0];
+  const lastOpenedProject = lastOpenedId
+    ? projects.find(project => project.id === lastOpenedId)
+    : undefined;
+  if (lastOpenedProject) {
+    return getProjectListPathForProject(lastOpenedProject);
+  }
+
+  if (requestedProjectId) {
+    const stillListed = projects.some(project => project.id === requestedProjectId);
+    if (!stillListed) {
+      const lastList = readLastProjectsListWorkflow();
+      if (lastList) return getProjectsListPath(lastList);
+    }
+  }
+
+  const lastList = readLastProjectsListWorkflow();
+  return getProjectsListPath(lastList ?? 'qa');
 }
 
 function normalizeJiraProjectKey(jiraProjectKey: string | undefined | null): string | null {

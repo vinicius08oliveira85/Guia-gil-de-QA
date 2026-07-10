@@ -75,6 +75,29 @@ describe('Testes de Navegação', () => {
       });
     });
 
+    it('mantém ProjectView após recarregar a rota do projeto', async () => {
+      const project = createMockProject({ id: 'proj-refresh-1', workflow: 'dev' });
+      await seedAndLoadApp([project], `/projects/${project.id}`);
+
+      await waitFor(() => {
+        expect(screen.getByText(project.name)).toBeInTheDocument();
+      });
+
+      useProjectsStore.setState({
+        hasBootstrapLoaded: false,
+        isLoading: true,
+        projects: [],
+      });
+      setInitialRoute(`/projects/${project.id}`);
+
+      await useProjectsStore.getState().loadProjects();
+
+      await waitFor(() => {
+        expect(window.location.pathname).toBe(`/projects/${project.id}`);
+        expect(screen.getByText(project.name)).toBeInTheDocument();
+      });
+    });
+
     it('deve navegar de ProjectView para Dashboard ao clicar em Voltar', async () => {
       const project = createMockProject();
       await seedAndLoadApp([project]);

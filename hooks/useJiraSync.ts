@@ -10,6 +10,7 @@ import {
 import { useProjectsStore } from '../store/projectsStore';
 import { useErrorHandler } from './useErrorHandler';
 import { logger } from '../utils/logger';
+import { propagateJiraTaskUpdatesToLinkedProjects } from '../utils/jiraCrossProjectSync';
 
 type OnUpdateProject = (project: Project, options?: { silent?: boolean }) => Promise<void>;
 
@@ -163,6 +164,21 @@ export function useJiraSync(project: Project | null, onUpdateProject: OnUpdatePr
             );
             await onUpdateProject(updatedProject);
           }
+
+          const { projects: allAfterSync, updateProject: persistProject } =
+            useProjectsStore.getState();
+          const mergedProjects = propagateJiraTaskUpdatesToLinkedProjects(
+            updatedProject,
+            allAfterSync
+          );
+          const crossProjectUpdates = mergedProjects.filter(candidate => {
+            if (candidate.id === updatedProject.id) return false;
+            const before = allAfterSync.find(p => p.id === candidate.id);
+            return !!before && before !== candidate;
+          });
+          for (const linkedProject of crossProjectUpdates) {
+            await persistProject(linkedProject, { silent: true });
+          }
         } else {
           logger.warn(
             'VALIDAÇÃO FINAL EM useJiraSync: Projeto não encontrado no store após sincronização',
@@ -170,6 +186,20 @@ export function useJiraSync(project: Project | null, onUpdateProject: OnUpdatePr
             { projectId: project.id }
           );
           await onUpdateProject(updatedProject);
+
+          const { projects: allAfterSync, updateProject: persistProject } =
+            useProjectsStore.getState();
+          const mergedProjects = propagateJiraTaskUpdatesToLinkedProjects(
+            updatedProject,
+            allAfterSync
+          );
+          for (const linkedProject of mergedProjects) {
+            if (linkedProject.id === updatedProject.id) continue;
+            const before = allAfterSync.find(p => p.id === linkedProject.id);
+            if (before && before !== linkedProject) {
+              await persistProject(linkedProject, { silent: true });
+            }
+          }
         }
 
         const existingTaskIds = new Set(project.tasks.map(t => t.id));

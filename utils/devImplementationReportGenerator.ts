@@ -2,6 +2,10 @@ import type { DevImplementationRecord, JiraTask, Project } from '../types';
 import { CURSOR_IMPLEMENTATION_TOOL_LABEL } from './cursorAgentUi';
 import { formatDevStackSummary } from './devStackFormat';
 import { normalizeDevStackConfig } from './devStackPresets';
+import {
+  parseTaskDescriptionForReport,
+  splitStepDescriptionLines,
+} from './devReportTextStructure';
 
 export type DevImplementationReportFormat = 'text' | 'markdown';
 export type DevImplementationReportMode = 'structured' | 'concise' | 'po';
@@ -41,8 +45,45 @@ function collapseOneLine(value: string): string {
 function getTaskDescriptionSummary(task: JiraTask): string | null {
   const raw = (task.description || '').trim();
   if (!raw) return null;
+  const { contextParagraphs } = parseTaskDescriptionForReport(raw);
+  if (contextParagraphs.length > 0) {
+    return contextParagraphs.join(' ');
+  }
   const plain = raw.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
   return plain || null;
+}
+
+function appendTaskContextLines(
+  lines: string[],
+  task: JiraTask,
+  isMarkdown: boolean
+): void {
+  const raw = (task.description || '').trim();
+  if (!raw) return;
+
+  const { contextParagraphs, acceptanceCriteria } = parseTaskDescriptionForReport(raw);
+
+  if (contextParagraphs.length > 0) {
+    if (isMarkdown) {
+      lines.push('## Contexto', '');
+      contextParagraphs.forEach(p => lines.push(p, ''));
+    } else {
+      lines.push('CONTEXTO', '');
+      contextParagraphs.forEach(p => lines.push(p, ''));
+    }
+  }
+
+  if (acceptanceCriteria.length > 0) {
+    if (isMarkdown) {
+      lines.push('## Critérios de aceite', '');
+      acceptanceCriteria.forEach(item => lines.push(`- [ ] ${item}`));
+      lines.push('');
+    } else {
+      lines.push('CRITÉRIOS DE ACEITE', '');
+      acceptanceCriteria.forEach(item => lines.push(`- [ ] ${item}`));
+      lines.push('');
+    }
+  }
 }
 
 function resolveRecord(
@@ -97,10 +138,22 @@ function buildStepLines(
     } else {
       lines.push(`${step.order}. ${marker} ${step.title}`);
       if (mode === 'structured') {
-        lines.push(`   ${collapseOneLine(step.description)}`);
+        const descriptionLines = splitStepDescriptionLines(step.description);
+        if (descriptionLines.length > 0) {
+          lines.push('   Descrição:');
+          descriptionLines.forEach(line => lines.push(`   ${line}`));
+        }
         if (step.filesOrModules?.length) {
           lines.push(`   Arquivos: ${step.filesOrModules.join(', ')}`);
         }
+        if (step.validationChecklist?.length) {
+          lines.push('   Validações:');
+          for (const item of step.validationChecklist) {
+            const checked = record?.completedValidations?.includes(item);
+            lines.push(`   - [${checked ? 'x' : ' '}] ${item}`);
+          }
+        }
+        lines.push('');
       }
     }
   }
@@ -157,19 +210,16 @@ export function generateDevImplementationReport(
     lines.push(`Título: ${task.title ?? '-'}`);
     lines.push(`Gerado em: ${formatDateTime(generatedAt)}`);
     lines.push(`Ferramenta: ${CURSOR_IMPLEMENTATION_TOOL_LABEL}`);
+    lines.push('');
   }
 
-  const description = getTaskDescriptionSummary(task);
-  if (description) {
-    lines.push(
-      isMarkdown ? `**Contexto:** ${description}` : `Contexto: ${description}`
-    );
-  }
+  appendTaskContextLines(lines, task, isMarkdown);
 
   const stack = options.project?.settings?.devStack;
   if (stack) {
     const summary = formatDevStackSummary(normalizeDevStackConfig(stack));
     lines.push(isMarkdown ? `**Stack:** ${summary}` : `Stack: ${summary}`);
+    lines.push('');
   }
 
   if (task.status === 'Done' || task.completedAt) {
@@ -193,7 +243,7 @@ export function generateDevImplementationReport(
     if (isMarkdown) {
       lines.push('## Visão geral do guia', '', guidance.overview.trim(), '');
     } else if (mode === 'structured') {
-      lines.push('VISÃO GERAL DO GUIA', guidance.overview.trim(), '');
+      lines.push('VISÃO GERAL DO GUIA', '', guidance.overview.trim(), '');
     }
   }
 
@@ -228,7 +278,7 @@ export function generateDevImplementationReport(
       record.evidenceLinks.forEach(link => lines.push(`- ${link}`));
       lines.push('');
     } else {
-      lines.push('EVIDÊNCIAS / LINKS');
+      lines.push('EVIDÊNCIAS / LINKS', '');
       record.evidenceLinks.forEach(link => lines.push(`  • ${link}`));
       lines.push('');
     }
@@ -238,7 +288,7 @@ export function generateDevImplementationReport(
     if (isMarkdown) {
       lines.push('## Observações do desenvolvedor', '', record.notes.trim(), '');
     } else {
-      lines.push('OBSERVAÇÕES DO DESENVOLVEDOR', record.notes.trim(), '');
+      lines.push('OBSERVAÇÕES DO DESENVOLVEDOR', '', record.notes.trim(), '');
     }
   }
 
@@ -346,8 +396,6 @@ function buildPoReportLines(
   if (description) {
     lines.push(`Contexto: ${description}`);
   }
-
-  lines.push('');
   lines.push(
     `Resultado: ${counts.completed} de ${counts.total} passos do guia de implementação foram concluídos.`
   );

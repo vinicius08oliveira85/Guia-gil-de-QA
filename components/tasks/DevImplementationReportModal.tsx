@@ -17,7 +17,7 @@ import { downloadFile } from '../../utils/exportService';
 import { logger } from '../../utils/logger';
 import { Modal } from '../common/Modal';
 import { DevImplementationExecutionPanel } from './DevImplementationExecutionPanel';
-import { TestReportTextPreview } from './TestReportTextPreview';
+import { DevImplementationReportPreview } from './DevImplementationReportPreview';
 import { cn } from '../../utils/cn';
 import {
   leveSettingsHeadingXsClass,
@@ -441,12 +441,11 @@ export const DevImplementationReportModal: React.FC<DevImplementationReportModal
           />
 
           <div className="min-h-0">
-            <TestReportTextPreview
+            <DevImplementationReportPreview
               reportText={reportText}
               formatLabel={currentFormatLabel}
               isAISummarized={isAISummarized}
               aiSummaryMode={aiSummaryMode}
-              previewAriaLabel="Prévia do registro de implementação"
             />
           </div>
         </div>

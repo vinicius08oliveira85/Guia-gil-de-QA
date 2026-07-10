@@ -44,7 +44,8 @@ describe('useProjectsStore', () => {
     useProjectsStore.setState({
       projects: [],
       selectedProjectId: null,
-      isLoading: false,
+      isLoading: true,
+      hasBootstrapLoaded: false,
       error: null,
     });
   });
@@ -70,6 +71,7 @@ describe('useProjectsStore', () => {
       const state = useProjectsStore.getState();
       expect(state.projects).toEqual(mockProjects);
       expect(state.isLoading).toBe(false);
+      expect(state.hasBootstrapLoaded).toBe(true);
       expect(state.error).toBeNull();
     });
 
@@ -82,6 +84,7 @@ describe('useProjectsStore', () => {
       const state = useProjectsStore.getState();
       expect(state.projects).toEqual([]);
       expect(state.isLoading).toBe(false);
+      expect(state.hasBootstrapLoaded).toBe(true);
       expect(state.error).toBeInstanceOf(Error);
     });
   });

@@ -30,6 +30,9 @@ const buildProjectFingerprint = (project: Project): string =>
       title: task.title,
       descriptionLength: task.description?.length ?? 0,
       status: task.status,
+      jiraStatus: task.jiraStatus,
+      priority: task.priority,
+      jiraPriority: task.jiraPriority,
       testStatus: task.testStatus,
       parentId: task.parentId,
       testCases: (task.testCases || []).map(testCase => ({

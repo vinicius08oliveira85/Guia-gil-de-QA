@@ -27,6 +27,8 @@ interface ProjectsState {
   projects: Project[];
   selectedProjectId: string | null;
   isLoading: boolean;
+  /** True após a primeira carga de projetos (evita redirect prematuro no refresh). */
+  hasBootstrapLoaded: boolean;
   error: Error | null;
 
   // Actions
@@ -56,7 +58,8 @@ interface ProjectsState {
 export const useProjectsStore = create<ProjectsState>((set, get) => ({
   projects: [],
   selectedProjectId: null,
-  isLoading: false,
+  isLoading: true,
+  hasBootstrapLoaded: false,
   error: null,
 
   loadProjects: async () => {
@@ -71,6 +74,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       set({
         projects: indexedDBProjects,
         isLoading: false,
+        hasBootstrapLoaded: true,
         error: null,
       });
     } catch (error) {
@@ -78,6 +82,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       set({
         projects: [],
         isLoading: false,
+        hasBootstrapLoaded: true,
         error: error instanceof Error ? error : new Error('Erro ao carregar projetos'),
       });
     }

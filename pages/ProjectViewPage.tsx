@@ -3,6 +3,7 @@ import { Navigate, useParams } from 'react-router-dom';
 import { Project } from '../types';
 import { useProjectsStore } from '../store/projectsStore';
 import { recordLastOpenedProject } from '../utils/landingRecentProjects';
+import { resolveProjectViewNotFoundPath } from '../utils/projectWorkflow';
 import { lazyWithRetry } from '../utils/lazyWithRetry';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
 import { ProjectsDashboardSkeleton } from '../components/projectsDashboard/ProjectsDashboardSkeleton';
@@ -22,7 +23,9 @@ export interface ProjectViewPageProps {
  */
 export const ProjectViewPage: React.FC<ProjectViewPageProps> = ({ onUpdateProject }) => {
   const { id } = useParams<{ id: string }>();
+  const hasBootstrapLoaded = useProjectsStore(s => s.hasBootstrapLoaded);
   const isLoading = useProjectsStore(s => s.isLoading);
+  const projects = useProjectsStore(s => s.projects);
   const project = useProjectsStore(s => s.projects.find(p => p.id === id));
 
   useEffect(() => {
@@ -31,12 +34,13 @@ export const ProjectViewPage: React.FC<ProjectViewPageProps> = ({ onUpdateProjec
     }
   }, [id, project]);
 
-  if (isLoading) {
+  if (!hasBootstrapLoaded || isLoading) {
     return <ProjectsDashboardSkeleton />;
   }
 
   if (!id || !project) {
-    return <Navigate to="/projects/qa" replace />;
+    const fallbackPath = resolveProjectViewNotFoundPath(projects, id);
+    return <Navigate to={fallbackPath} replace />;
   }
 
   return (

@@ -26,6 +26,7 @@ const TestWrapper: React.FC<TestWrapperProps> = ({
         projects: initialProjects,
         selectedProjectId,
         isLoading: false,
+        hasBootstrapLoaded: true,
         error: null,
       });
     }
@@ -135,7 +136,8 @@ export function resetStore(): void {
   useProjectsStore.setState({
     projects: [],
     selectedProjectId: null,
-    isLoading: false,
+    isLoading: true,
+    hasBootstrapLoaded: false,
     error: null,
   });
 }

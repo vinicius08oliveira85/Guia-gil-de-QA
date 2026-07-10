@@ -864,7 +864,7 @@ export const syncJiraProject = async (
           updatedTasks[existingIndex] = {
             ...oldTask,
             jiraStatus: jiraStatusName, // Sempre atualizar do Jira
-            status: jiraStatusChanged ? mapJiraStatusToTaskStatus(jiraStatusName) : oldTask.status, // Atualizar status mapeado se jiraStatus mudou
+            status: mapJiraStatusToTaskStatus(jiraStatusName),
             // CORREÇÃO: Usar finalTestCasesNoChangesFromOriginal que vem do originalTasksMap (mais recente)
             testCases: finalTestCasesNoChangesFromOriginal,
             // ✅ CRÍTICO: Preservar testStatus - NUNCA sobrescrever com dados do Jira
@@ -936,7 +936,7 @@ export const syncJiraProject = async (
           updatedTasks[existingIndex] = {
             ...oldTask,
             jiraStatus: jiraStatusName, // Sempre atualizar do Jira
-            status: jiraStatusChanged ? mapJiraStatusToTaskStatus(jiraStatusName) : oldTask.status, // Atualizar status mapeado se jiraStatus mudou
+            status: mapJiraStatusToTaskStatus(jiraStatusName),
             // CORREÇÃO: Usar finalTestCasesNoChangesFromOriginalMerge que vem do originalTasksMap (mais recente)
             testCases: finalTestCasesNoChangesFromOriginalMerge,
             // ✅ CRÍTICO: Preservar testStatus - NUNCA sobrescrever com dados do Jira
@@ -971,9 +971,7 @@ export const syncJiraProject = async (
             updatedTasks[existingIndex] = {
               ...oldTask,
               jiraStatus: jiraStatusName, // Sempre atualizar do Jira
-              status: jiraStatusChanged
-                ? mapJiraStatusToTaskStatus(jiraStatusName)
-                : oldTask.status, // Atualizar status mapeado se jiraStatus mudou
+              status: mapJiraStatusToTaskStatus(jiraStatusName),
               testCases: originalTaskForNoChanges.testCases || [],
             };
 
@@ -999,9 +997,7 @@ export const syncJiraProject = async (
             updatedTasks[existingIndex] = {
               ...oldTask,
               jiraStatus: jiraStatusName, // Sempre atualizar do Jira
-              status: jiraStatusChanged
-                ? mapJiraStatusToTaskStatus(jiraStatusName)
-                : oldTask.status, // Atualizar status mapeado se jiraStatus mudou
+              status: mapJiraStatusToTaskStatus(jiraStatusName),
             };
 
             if (jiraStatusChanged) {
