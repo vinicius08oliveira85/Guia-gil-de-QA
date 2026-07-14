@@ -58,6 +58,14 @@ export function normalizeHowToExecuteSteps(raw: unknown): string[] {
     .slice(0, 12);
 }
 
+/** Extrai JSON bruto de respostas que venham com fences markdown. */
+function extractJsonPayload(text: string): string {
+  const trimmed = text.trim();
+  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fenced?.[1]) return fenced[1].trim();
+  return trimmed;
+}
+
 /**
  * Gera (ou regenera) o passo a passo "Como executar" de uma estratégia
  * alinhado às ferramentas selecionadas e à análise da tarefa.
@@ -110,8 +118,12 @@ ${buildAnalysisBlock(task.iaAnalysis)}
       },
     });
 
-    const parsed = JSON.parse(response.text.trim()) as { howToExecute?: unknown };
-    const steps = normalizeHowToExecuteSteps(parsed.howToExecute);
+    const payload = extractJsonPayload(response.text || '');
+    const parsed = JSON.parse(payload) as {
+      howToExecute?: unknown;
+      steps?: unknown;
+    };
+    const steps = normalizeHowToExecuteSteps(parsed.howToExecute ?? parsed.steps);
     if (steps.length === 0) {
       throw new Error('A IA não retornou passos válidos. Tente novamente.');
     }

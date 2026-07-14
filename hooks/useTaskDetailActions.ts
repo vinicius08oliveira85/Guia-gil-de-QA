@@ -524,7 +524,9 @@ export function useTaskDetailActions(
   const handleGenerateStrategyHowToExecute = useCallback(
     async (taskId: string, strategyIndex: number) => {
       return enqueueGeminiOperation(async () => {
-        const task = project.tasks.find(t => t.id === taskId);
+        const latestProject =
+          useProjectsStore.getState().projects.find(p => p.id === project.id) ?? project;
+        const task = latestProject.tasks.find(t => t.id === taskId);
         if (!task) return;
 
         const strategy = task.testStrategy?.[strategyIndex];
@@ -533,7 +535,10 @@ export function useTaskDetailActions(
           return;
         }
 
-        const tools = task.strategyTools?.[strategyIndex] ?? [];
+        const toolsFromMap = task.strategyTools?.[strategyIndex];
+        const tools = Array.isArray(toolsFromMap)
+          ? toolsFromMap.map(t => t.trim()).filter(Boolean)
+          : [];
         if (tools.length === 0) {
           handleError(
             new Error('Selecione ao menos uma ferramenta antes de gerar os passos.'),
@@ -550,19 +555,16 @@ export function useTaskDetailActions(
             strategy,
             tools,
           });
-          const latestTask =
-            useProjectsStore.getState().projects.find(p => p.id === project.id)?.tasks.find(
-              t => t.id === taskId
-            ) ?? task;
+          const storeProject =
+            useProjectsStore.getState().projects.find(p => p.id === project.id) ?? latestProject;
+          const latestTask = storeProject.tasks.find(t => t.id === taskId) ?? task;
           const strategies = [...(latestTask.testStrategy ?? [])];
           if (!strategies[strategyIndex]) return;
           strategies[strategyIndex] = { ...strategies[strategyIndex], howToExecute };
           const updatedTask = { ...latestTask, testStrategy: strategies };
-          const latestProject =
-            useProjectsStore.getState().projects.find(p => p.id === project.id) ?? project;
           await onUpdateProject({
-            ...latestProject,
-            tasks: latestProject.tasks.map(t => (t.id === taskId ? updatedTask : t)),
+            ...storeProject,
+            tasks: storeProject.tasks.map(t => (t.id === taskId ? updatedTask : t)),
           });
           propagateTaskUpdate(updatedTask);
           handleSuccess('Passo a passo gerado e salvo no banco.');
