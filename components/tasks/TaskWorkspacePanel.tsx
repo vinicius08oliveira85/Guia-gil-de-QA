@@ -103,6 +103,14 @@ export const TaskWorkspacePanel: React.FC<TaskWorkspacePanelProps> = ({
         onStrategyToolsChange={(strategyIndex, tools) =>
           actions.handleStrategyToolsChange(taskId, strategyIndex, tools)
         }
+        onGenerateStrategyHowToExecute={strategyIndex =>
+          actions.handleGenerateStrategyHowToExecute(taskId, strategyIndex)
+        }
+        generatingStrategyHowToExecuteIndex={
+          actions.generatingStrategyHowToKey?.startsWith(`${taskId}:`)
+            ? Number(actions.generatingStrategyHowToKey.split(':')[1])
+            : null
+        }
         onGenerateTests={(id, detailLevel) => actions.handleGenerateTests(id, detailLevel)}
         isGenerating={actions.generatingTestsTaskId === taskId}
         onGenerateBddScenarios={actions.handleGenerateBddScenarios}

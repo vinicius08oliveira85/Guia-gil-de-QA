@@ -40,6 +40,8 @@ export const TaskTestsSection: React.FC = () => {
     onTaskToolsChange,
     onStrategyExecutedChange,
     onStrategyToolsChange,
+    onGenerateStrategyHowToExecute,
+    generatingStrategyHowToExecuteIndex,
     onTestCaseStatusChange,
     onTestCaseObservedResultChange,
     onTestCaseExecutionKindChange,
@@ -123,6 +125,8 @@ export const TaskTestsSection: React.FC = () => {
                     onToggleExecuted={onStrategyExecutedChange}
                     toolsUsed={(task.strategyTools && task.strategyTools[i]) || []}
                     onToolsChange={onStrategyToolsChange}
+                    onGenerateHowToExecute={onGenerateStrategyHowToExecute}
+                    isGeneratingHowToExecute={generatingStrategyHowToExecuteIndex === i}
                   />
                 );
               })}

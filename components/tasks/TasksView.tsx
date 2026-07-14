@@ -81,6 +81,7 @@ import { TasksViewList } from './TasksViewList';
 import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
 import { generateAndAppendDevProjectAnalysis } from '../../services/ai/projectDevFullAnalysisService';
 import { generateDevGuidanceForTask } from '../../services/ai/devGuidanceGenerationService';
+import { generateStrategyHowToExecute } from '../../services/ai/strategyHowToExecuteService';
 import { normalizeProjectWorkflow } from '../../utils/projectWorkflow';
 import { DEV_TASKS_COPY } from '../../utils/devTasksUi';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
@@ -242,6 +243,7 @@ export const TasksView: React.FC<{
   const [generatingDevGuidanceTaskId, setGeneratingDevGuidanceTaskId] = useState<string | null>(
     null
   );
+  const [generatingStrategyHowToKey, setGeneratingStrategyHowToKey] = useState<string | null>(null);
 
   /** Evita spam de log ao reconstruir a árvore com o mesmo ciclo parentId. */
   const parentCycleWarnedRef = useRef(new Set<string>());
@@ -1137,6 +1139,61 @@ export const TasksView: React.FC<{
       propagateTaskUpdate(updatedTask);
     },
     [project, onUpdateProject]
+  );
+
+  const handleGenerateStrategyHowToExecute = useCallback(
+    async (taskId: string, strategyIndex: number) => {
+      return enqueueGeminiOperation(async () => {
+        const task = project.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        const strategy = task.testStrategy?.[strategyIndex];
+        if (!strategy) {
+          handleError(new Error('Estratégia de teste não encontrada.'), 'Gerar passos da estratégia');
+          return;
+        }
+
+        const tools = task.strategyTools?.[strategyIndex] ?? [];
+        if (tools.length === 0) {
+          handleError(
+            new Error('Selecione ao menos uma ferramenta antes de gerar os passos.'),
+            'Gerar passos da estratégia'
+          );
+          return;
+        }
+
+        const key = `${taskId}:${strategyIndex}`;
+        setGeneratingStrategyHowToKey(key);
+        try {
+          const howToExecute = await generateStrategyHowToExecute({
+            task,
+            strategy,
+            tools,
+          });
+          const latestTask =
+            useProjectsStore.getState().projects.find(p => p.id === project.id)?.tasks.find(
+              t => t.id === taskId
+            ) ?? task;
+          const strategies = [...(latestTask.testStrategy ?? [])];
+          if (!strategies[strategyIndex]) return;
+          strategies[strategyIndex] = { ...strategies[strategyIndex], howToExecute };
+          const updatedTask = { ...latestTask, testStrategy: strategies };
+          const latestProject =
+            useProjectsStore.getState().projects.find(p => p.id === project.id) ?? project;
+          await onUpdateProject({
+            ...latestProject,
+            tasks: latestProject.tasks.map(t => (t.id === taskId ? updatedTask : t)),
+          });
+          propagateTaskUpdate(updatedTask);
+          handleSuccess('Passo a passo gerado e salvo no banco.');
+        } catch (error) {
+          notifyAiError(error, 'Gerar passos da estratégia');
+        } finally {
+          setGeneratingStrategyHowToKey(null);
+        }
+      });
+    },
+    [enqueueGeminiOperation, project, onUpdateProject, propagateTaskUpdate, handleError, handleSuccess, notifyAiError]
   );
 
   const handleAddComment = useCallback(
@@ -2277,6 +2334,14 @@ export const TasksView: React.FC<{
               onStrategyToolsChange={(strategyIndex, tools) =>
                 handleStrategyToolsChange(task.id, strategyIndex, tools)
               }
+              onGenerateStrategyHowToExecute={strategyIndex =>
+                handleGenerateStrategyHowToExecute(task.id, strategyIndex)
+              }
+              generatingStrategyHowToExecuteIndex={
+                generatingStrategyHowToKey?.startsWith(`${task.id}:`)
+                  ? Number(generatingStrategyHowToKey.split(':')[1])
+                  : null
+              }
               onDelete={handleDeleteTask}
               onGenerateTests={handleGenerateTests}
               isGenerating={generatingTestsTaskId === task.id}
@@ -2338,6 +2403,8 @@ export const TasksView: React.FC<{
       handleTaskToolsChange,
       handleStrategyExecutedChange,
       handleStrategyToolsChange,
+      handleGenerateStrategyHowToExecute,
+      generatingStrategyHowToKey,
       handleDeleteTask,
       handleGenerateTests,
       openTaskFormForNew,
@@ -3030,6 +3097,14 @@ export const TasksView: React.FC<{
           }
           onStrategyToolsChange={(strategyIndex, tools) =>
             handleStrategyToolsChange(modalTask.id, strategyIndex, tools)
+          }
+          onGenerateStrategyHowToExecute={strategyIndex =>
+            handleGenerateStrategyHowToExecute(modalTask.id, strategyIndex)
+          }
+          generatingStrategyHowToExecuteIndex={
+            generatingStrategyHowToKey?.startsWith(`${modalTask.id}:`)
+              ? Number(generatingStrategyHowToKey.split(':')[1])
+              : null
           }
           onGenerateTests={handleGenerateTests}
           isGenerating={generatingTestsTaskId === modalTask.id}

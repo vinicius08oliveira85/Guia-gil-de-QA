@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import type { Project } from '../../types';
 import { useProjectsStore } from '../../store/projectsStore';
 import { useJiraSync } from '../../hooks/useJiraSync';
+import { useLandingWorkspaceActions } from '../../hooks/useLandingWorkspaceActions';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { FileExportModal } from './FileExportModal';
 import { FileImportModal } from './FileImportModal';
@@ -31,7 +32,6 @@ import {
   Trash2,
   Upload,
 } from 'lucide-react';
-import toast from 'react-hot-toast';
 
 export interface ProjectWorkspaceActionsProps {
   project: Project;
@@ -43,6 +43,11 @@ export interface ProjectWorkspaceActionsProps {
   className?: string;
 }
 
+function projectHasJiraLink(project: Project): boolean {
+  if (project.settings?.jiraProjectKey?.trim()) return true;
+  return (project.tasks ?? []).some(task => /^[A-Z][A-Z0-9]*-\d+/i.test(task.id));
+}
+
 export const ProjectWorkspaceActions: React.FC<ProjectWorkspaceActionsProps> = ({
   project,
   variant,
@@ -50,11 +55,15 @@ export const ProjectWorkspaceActions: React.FC<ProjectWorkspaceActionsProps> = (
   onDeleteProject,
   className,
 }) => {
-  const saveProjectLocally = useProjectsStore(s => s.saveProjectLocally);
   const updateProject = useProjectsStore(s => s.updateProject);
   const { handleError, handleSuccess } = useErrorHandler();
+  const {
+    syncAllFromJira,
+    saveAllToDatabase,
+    isSyncingJira: isWorkspaceJiraSyncing,
+    isSaving: isWorkspaceSaving,
+  } = useLandingWorkspaceActions();
 
-  const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [showExportModal, setShowExportModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -65,13 +74,12 @@ export const ProjectWorkspaceActions: React.FC<ProjectWorkspaceActionsProps> = (
 
   const {
     handleSyncJira,
-    isSyncingJira,
+    isSyncingJira: isProjectLinkingJira,
     showJiraProjectSelector,
     setShowJiraProjectSelector,
     availableJiraProjects,
     selectedJiraProjectKey,
     setSelectedJiraProjectKey,
-    handleConfirmJiraProject,
   } = useJiraSync(project, updateProject);
 
   const btnClass =
@@ -86,21 +94,54 @@ export const ProjectWorkspaceActions: React.FC<ProjectWorkspaceActionsProps> = (
       : cn(projectCardActionTrackClass, 'mt-3 w-full');
 
   const handleSave = useCallback(async () => {
-    setIsSaving(true);
     setSaveStatus('saving');
     try {
-      await saveProjectLocally(project.id);
+      await saveAllToDatabase();
       setSaveStatus('saved');
-      toast.success(`Projeto "${project.name}" salvo localmente!`);
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (error) {
       setSaveStatus('error');
-      handleError(error, 'Salvar projeto');
+      handleError(error, 'Salvar no banco de dados');
       setTimeout(() => setSaveStatus('idle'), 3000);
-    } finally {
-      setIsSaving(false);
     }
-  }, [project.id, project.name, saveProjectLocally, handleError]);
+  }, [saveAllToDatabase, handleError]);
+
+  const handleJira = useCallback(async () => {
+    if (!projectHasJiraLink(project)) {
+      await handleSyncJira();
+      return;
+    }
+    await syncAllFromJira();
+  }, [project, handleSyncJira, syncAllFromJira]);
+
+  const handleConfirmJiraLink = useCallback(async () => {
+    if (!selectedJiraProjectKey) {
+      handleError(new Error('Selecione um projeto do Jira'), 'Vincular Jira');
+      return;
+    }
+    try {
+      await updateProject({
+        ...project,
+        settings: {
+          ...project.settings,
+          jiraProjectKey: selectedJiraProjectKey,
+        },
+      });
+      setShowJiraProjectSelector(false);
+      setSelectedJiraProjectKey('');
+      await syncAllFromJira();
+    } catch (error) {
+      handleError(error, 'Vincular Jira');
+    }
+  }, [
+    selectedJiraProjectKey,
+    project,
+    updateProject,
+    setShowJiraProjectSelector,
+    setSelectedJiraProjectKey,
+    syncAllFromJira,
+    handleError,
+  ]);
 
   const handleImportTasks = useCallback(
     (tasks: Project['tasks']) => {
@@ -124,6 +165,8 @@ export const ProjectWorkspaceActions: React.FC<ProjectWorkspaceActionsProps> = (
     }
   }, [onDeleteProject, handleError]);
 
+  const isSaving = isWorkspaceSaving || saveStatus === 'saving';
+  const isSyncingJira = isWorkspaceJiraSyncing || isProjectLinkingJira;
   const busy = isSaving || isSyncingJira || isDeleting;
 
   const actionButtons = (
@@ -133,8 +176,8 @@ export const ProjectWorkspaceActions: React.FC<ProjectWorkspaceActionsProps> = (
         onClick={() => void handleSave()}
         disabled={busy}
         className={btnClass}
-        aria-label={`Salvar projeto ${project.name} localmente`}
-        title="Salvar apenas este projeto"
+        aria-label="Salvar todos os dados no banco de dados"
+        title="Salvar tudo no banco de dados (projetos, acompanhamentos, filtros, bloco de notas e preferências)"
       >
         {isSaving ? (
           <Spinner size="sm" />
@@ -172,11 +215,11 @@ export const ProjectWorkspaceActions: React.FC<ProjectWorkspaceActionsProps> = (
 
       <button
         type="button"
-        onClick={() => void handleSyncJira()}
+        onClick={() => void handleJira()}
         disabled={busy}
         className={btnClass}
-        aria-label="Atualizar tarefas deste projeto a partir do Jira"
-        title="Atualizar tarefas do Jira neste projeto"
+        aria-label="Atualizar projetos QA, Dev e acompanhamentos do Jira"
+        title="Atualizar tudo do Jira (Projetos QA, Dev e Acompanhamentos) e salvar no banco"
       >
         {isSyncingJira ? (
           <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden />
@@ -264,8 +307,8 @@ export const ProjectWorkspaceActions: React.FC<ProjectWorkspaceActionsProps> = (
       >
         <div className="space-y-4">
           <p className="text-sm text-base-content/70">
-            Selecione o projeto do Jira para atualizar as tarefas de{' '}
-            <strong className="font-semibold">{project.name}</strong>:
+            Vincule um projeto do Jira a{' '}
+            <strong className="font-semibold">{project.name}</strong> e atualize tudo no banco:
           </p>
           <div>
             <label className="mb-2 block text-sm font-medium text-base-content">Projeto Jira</label>
@@ -297,9 +340,9 @@ export const ProjectWorkspaceActions: React.FC<ProjectWorkspaceActionsProps> = (
               type="button"
               className="btn btn-primary btn-sm"
               disabled={!selectedJiraProjectKey || isSyncingJira}
-              onClick={() => void handleConfirmJiraProject()}
+              onClick={() => void handleConfirmJiraLink()}
             >
-              {isSyncingJira ? 'Atualizando…' : 'Atualizar tarefas'}
+              {isSyncingJira ? 'Atualizando…' : 'Vincular e atualizar'}
             </button>
           </div>
         </div>

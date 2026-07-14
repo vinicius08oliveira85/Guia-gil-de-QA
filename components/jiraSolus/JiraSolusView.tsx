@@ -44,9 +44,8 @@ import {
 } from '../../utils/workspaceTabs';
 import { getAdjacentOpenTaskId } from '../../utils/workspaceSessionStorage';
 import { useWorkspaceTabs } from '../../hooks/useWorkspaceTabs';
-import { useTaskTrackingHeaderStore } from '../../store/taskTrackingHeaderStore';
+import { useLandingWorkspaceActions } from '../../hooks/useLandingWorkspaceActions';
 import { TaskTrackingWorkspaceActions } from '../common/TaskTrackingWorkspaceActions';
-import toast from 'react-hot-toast';
 import { KeepAlivePanel } from '../common/KeepAlivePanel';
 
 const FIXED_TABS: Array<{ id: JiraSolusFixedTabId; label: string }> = [
@@ -130,7 +129,12 @@ export const JiraSolusView = React.memo(() => {
   );
   const [activeFilter, setActiveFilter] = useState<JiraFilasFilter>({ kind: 'all' });
   const [isSavingTracking, setIsSavingTracking] = useState(false);
-  const taskTrackingJiraAction = useTaskTrackingHeaderStore(s => s.jiraAction);
+  const {
+    saveAllToDatabase,
+    syncAllFromJira,
+    isSaving: isWorkspaceSaving,
+    isSyncingJira: isWorkspaceJiraSyncing,
+  } = useLandingWorkspaceActions();
 
   const resolvedImportedKeys = useMemo(
     () =>
@@ -171,7 +175,7 @@ export const JiraSolusView = React.memo(() => {
         jiraStatusesByProject,
       });
       dispatchTaskTrackingUpdated();
-      toast.success('Acompanhamento salvo localmente!');
+      await saveAllToDatabase();
     } finally {
       setIsSavingTracking(false);
     }
@@ -183,6 +187,7 @@ export const JiraSolusView = React.memo(() => {
     activeProjectFilter,
     resolvedImportedKeys,
     jiraStatusesByProject,
+    saveAllToDatabase,
   ]);
 
   useEffect(() => {
@@ -379,11 +384,11 @@ export const JiraSolusView = React.memo(() => {
                 <TaskTrackingWorkspaceActions
                   variant="toolbar"
                   onSave={saveTaskTracking}
-                  onJiraSync={() => taskTrackingJiraAction?.onSync()}
-                  isSaving={isSavingTracking}
-                  isJiraSyncing={taskTrackingJiraAction?.isSyncing}
-                  jiraDisabled={taskTrackingJiraAction?.disabled ?? true}
-                  jiraTitle={taskTrackingJiraAction?.title}
+                  onJiraSync={() => void syncAllFromJira()}
+                  isSaving={isSavingTracking || isWorkspaceSaving}
+                  isJiraSyncing={isWorkspaceJiraSyncing}
+                  jiraDisabled={false}
+                  jiraTitle="Atualizar tudo do Jira (Projetos QA, Dev e Acompanhamentos) e salvar no banco"
                 />
               </div>
             </div>

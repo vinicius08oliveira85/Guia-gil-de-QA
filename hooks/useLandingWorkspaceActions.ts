@@ -6,7 +6,10 @@ import {
   syncAllJiraProjects,
 } from '../services/jira/jiraAutoSync';
 import { runFilasSelectionSync } from '../services/jira/filasSyncRunner';
-import { saveAllWorkspaceData } from '../services/localSaveService';
+import {
+  saveAllWorkspaceData,
+  type SaveAllWorkspaceResult,
+} from '../services/localSaveService';
 import { useProjectsStore } from '../store/projectsStore';
 import { useErrorHandler } from './useErrorHandler';
 
@@ -18,12 +21,18 @@ export interface UseLandingWorkspaceActionsState {
 }
 
 /**
- * Ações globais da home: atualizar tudo do Jira e salvar o workspace no banco local.
+ * Ações canônicas de workspace: todos os botões Salvar/Jira do app usam estes handlers.
+ * Salvar grava o workspace completo no banco; Jira atualiza projetos + acompanhamento e persiste.
  */
 export function useLandingWorkspaceActions(): UseLandingWorkspaceActionsState {
   const { handleError, handleSuccess, handleWarning } = useErrorHandler();
   const [isSyncingJira, setIsSyncingJira] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  const persistWorkspaceToDatabase = useCallback(async (): Promise<SaveAllWorkspaceResult> => {
+    const projects = useProjectsStore.getState().projects;
+    return saveAllWorkspaceData(projects);
+  }, []);
 
   const syncAllFromJira = useCallback(async () => {
     if (!getJiraConfig()) {
@@ -39,6 +48,7 @@ export function useLandingWorkspaceActions(): UseLandingWorkspaceActionsState {
     try {
       const autoSummary = await runJiraAutoSync();
       if (autoSummary) {
+        await persistWorkspaceToDatabase();
         const parts: string[] = [];
         if (autoSummary.projectsSynced > 0) {
           parts.push(`${autoSummary.projectsSynced} projeto(s) QA/Dev`);
@@ -47,15 +57,18 @@ export function useLandingWorkspaceActions(): UseLandingWorkspaceActionsState {
           parts.push(`${autoSummary.filasTaskCount} tarefa(s) de acompanhamento`);
         }
         if (parts.length > 0) {
-          handleSuccess(`Jira atualizado: ${parts.join(' e ')}.`);
+          handleSuccess(`Jira atualizado e salvo no banco: ${parts.join(' e ')}.`);
           return;
         }
-        handleSuccess('Atualização concluída. Nenhuma alteração encontrada no Jira.');
+        handleSuccess(
+          'Atualização concluída. Nenhuma alteração encontrada no Jira. Dados salvos no banco.'
+        );
         return;
       }
 
       const projectsSynced = await syncAllJiraProjects({ silent: true });
       const filasOutcome = await runFilasSelectionSync();
+      await persistWorkspaceToDatabase();
       const parts: string[] = [];
 
       if (projectsSynced > 0) {
@@ -67,8 +80,8 @@ export function useLandingWorkspaceActions(): UseLandingWorkspaceActionsState {
         if (filasOutcome.reason === 'no-selection') {
           handleSuccess(
             projectsSynced > 0
-              ? `${projectsSynced} projeto(s) atualizado(s). Nenhuma fila selecionada em Acompanhamento.`
-              : 'Nenhuma fila selecionada em Acompanhamento para atualizar.'
+              ? `${projectsSynced} projeto(s) atualizado(s) e salvos no banco. Nenhuma fila selecionada em Acompanhamento.`
+              : 'Nenhuma fila selecionada em Acompanhamento para atualizar. Dados salvos no banco.'
           );
           return;
         }
@@ -82,26 +95,27 @@ export function useLandingWorkspaceActions(): UseLandingWorkspaceActionsState {
       }
 
       if (parts.length > 0) {
-        handleSuccess(`Jira atualizado: ${parts.join(' e ')}.`);
+        handleSuccess(`Jira atualizado e salvo no banco: ${parts.join(' e ')}.`);
       } else {
-        handleSuccess('Atualização concluída. Nenhuma alteração encontrada no Jira.');
+        handleSuccess(
+          'Atualização concluída. Nenhuma alteração encontrada no Jira. Dados salvos no banco.'
+        );
       }
     } catch (error) {
       handleError(error, 'Atualizar do Jira');
     } finally {
       setIsSyncingJira(false);
     }
-  }, [handleError, handleSuccess, handleWarning]);
+  }, [handleError, handleSuccess, handleWarning, persistWorkspaceToDatabase]);
 
   const saveAllToDatabase = useCallback(async () => {
     setIsSaving(true);
     try {
-      const projects = useProjectsStore.getState().projects;
-      const { projectsSaved, folderResult } = await saveAllWorkspaceData(projects);
+      const { projectsSaved, folderResult } = await persistWorkspaceToDatabase();
 
       const parts: string[] = [
-        `${projectsSaved} projeto(s) QA/Dev salvos no banco local`,
-        'acompanhamento, filtros e preferências incluídos no backup',
+        `${projectsSaved} projeto(s) QA/Dev salvos no banco de dados`,
+        'acompanhamento, filtros e preferências incluídos',
       ];
 
       if (folderResult === 'saved') {
@@ -110,18 +124,18 @@ export function useLandingWorkspaceActions(): UseLandingWorkspaceActionsState {
         parts.push('configure uma pasta em Configurações → Dados locais para espelhar no disco');
       } else if (folderResult === 'permission_denied') {
         handleWarning(
-          'Dados salvos localmente, mas a permissão da pasta de backup expirou. Reautorize em Configurações → Dados locais.'
+          'Dados salvos no banco, mas a permissão da pasta de backup expirou. Reautorize em Configurações → Dados locais.'
         );
         return;
       }
 
       handleSuccess(`${parts.join('; ')}.`);
     } catch (error) {
-      handleError(error, 'Salvar workspace');
+      handleError(error, 'Salvar no banco de dados');
     } finally {
       setIsSaving(false);
     }
-  }, [handleError, handleSuccess, handleWarning]);
+  }, [handleError, handleSuccess, handleWarning, persistWorkspaceToDatabase]);
 
   return {
     syncAllFromJira,

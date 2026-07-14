@@ -5,6 +5,7 @@ import { useErrorHandler } from './useErrorHandler';
 import { getAIService } from '../services/ai/aiServiceFactory';
 import { generateTestArtifactsForTask } from '../services/ai/testCaseGenerationService';
 import { generateDevGuidanceForTask } from '../services/ai/devGuidanceGenerationService';
+import { generateStrategyHowToExecute } from '../services/ai/strategyHowToExecuteService';
 import { resolveTaskAiContext } from '../services/ai/taskAiContext';
 import { toToastableAiError } from '../utils/aiErrorMapper';
 import { getJiraConfig, updateSingleTaskFromJira } from '../services/jiraService';
@@ -42,6 +43,7 @@ export function useTaskDetailActions(
   const [generatingBddTaskId, setGeneratingBddTaskId] = useState<string | null>(null);
   const [generatingAllTaskId, setGeneratingAllTaskId] = useState<string | null>(null);
   const [generatingDevGuidanceTaskId, setGeneratingDevGuidanceTaskId] = useState<string | null>(null);
+  const [generatingStrategyHowToKey, setGeneratingStrategyHowToKey] = useState<string | null>(null);
   const [updatingFromJiraTaskId, setUpdatingFromJiraTaskId] = useState<string | null>(null);
   const [testCaseEditorRef, setTestCaseEditorRef] = useState<{
     taskId: string;
@@ -519,6 +521,69 @@ export function useTaskDetailActions(
     [project, onUpdateProject, propagateTaskUpdate]
   );
 
+  const handleGenerateStrategyHowToExecute = useCallback(
+    async (taskId: string, strategyIndex: number) => {
+      return enqueueGeminiOperation(async () => {
+        const task = project.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        const strategy = task.testStrategy?.[strategyIndex];
+        if (!strategy) {
+          handleError(new Error('Estratégia de teste não encontrada.'), 'Gerar passos da estratégia');
+          return;
+        }
+
+        const tools = task.strategyTools?.[strategyIndex] ?? [];
+        if (tools.length === 0) {
+          handleError(
+            new Error('Selecione ao menos uma ferramenta antes de gerar os passos.'),
+            'Gerar passos da estratégia'
+          );
+          return;
+        }
+
+        const key = `${taskId}:${strategyIndex}`;
+        setGeneratingStrategyHowToKey(key);
+        try {
+          const howToExecute = await generateStrategyHowToExecute({
+            task,
+            strategy,
+            tools,
+          });
+          const latestTask =
+            useProjectsStore.getState().projects.find(p => p.id === project.id)?.tasks.find(
+              t => t.id === taskId
+            ) ?? task;
+          const strategies = [...(latestTask.testStrategy ?? [])];
+          if (!strategies[strategyIndex]) return;
+          strategies[strategyIndex] = { ...strategies[strategyIndex], howToExecute };
+          const updatedTask = { ...latestTask, testStrategy: strategies };
+          const latestProject =
+            useProjectsStore.getState().projects.find(p => p.id === project.id) ?? project;
+          await onUpdateProject({
+            ...latestProject,
+            tasks: latestProject.tasks.map(t => (t.id === taskId ? updatedTask : t)),
+          });
+          propagateTaskUpdate(updatedTask);
+          handleSuccess('Passo a passo gerado e salvo no banco.');
+        } catch (error) {
+          notifyAiError(error, 'Gerar passos da estratégia');
+        } finally {
+          setGeneratingStrategyHowToKey(null);
+        }
+      });
+    },
+    [
+      enqueueGeminiOperation,
+      project,
+      onUpdateProject,
+      propagateTaskUpdate,
+      handleError,
+      handleSuccess,
+      notifyAiError,
+    ]
+  );
+
   const handleAddComment = useCallback(
     (taskId: string, content: string) => {
       if (!content.trim()) return;
@@ -621,6 +686,8 @@ export function useTaskDetailActions(
     handleDuplicateTestCase,
     handleStrategyExecutedChange,
     handleStrategyToolsChange,
+    handleGenerateStrategyHowToExecute,
+    generatingStrategyHowToKey,
     handleAddComment,
     handleEditComment,
     handleDeleteComment,

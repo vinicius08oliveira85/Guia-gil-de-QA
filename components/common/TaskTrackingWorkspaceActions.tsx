@@ -51,7 +51,7 @@ export const TaskTrackingWorkspaceActions: React.FC<TaskTrackingWorkspaceActions
   isSaving = false,
   isJiraSyncing = false,
   jiraDisabled = false,
-  jiraTitle = 'Atualizar tarefas do Jira neste acompanhamento',
+  jiraTitle = 'Atualizar tudo do Jira (Projetos QA, Dev e Acompanhamentos) e salvar no banco',
   className,
 }) => {
   const { handleError, handleSuccess } = useErrorHandler();
@@ -127,8 +127,8 @@ export const TaskTrackingWorkspaceActions: React.FC<TaskTrackingWorkspaceActions
         onClick={() => void onSave()}
         disabled={busy}
         className={btnClass}
-        aria-label="Salvar acompanhamento localmente"
-        title="Salvar apenas este acompanhamento"
+        aria-label="Salvar todos os dados no banco de dados"
+        title="Salvar tudo no banco de dados (projetos, acompanhamentos, filtros, bloco de notas e preferências)"
       >
         {isSaving ? (
           <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden />

@@ -45,6 +45,13 @@ const buildProjectFingerprint = (project: Project): string =>
       })),
       bddCount: task.bddScenarios?.length ?? 0,
       strategyCount: task.testStrategy?.length ?? 0,
+      strategyFingerprint: (task.testStrategy || []).map(strategy => ({
+        testType: strategy.testType,
+        descriptionLength: strategy.description?.length ?? 0,
+        howToExecuteLengths: (strategy.howToExecute || []).map(step => step.length),
+        toolsLength: strategy.tools?.length ?? 0,
+      })),
+      strategyToolsFingerprint: JSON.stringify(task.strategyTools ?? {}),
       attachmentsCount: task.jiraAttachments?.length ?? 0,
       analysisGeneratedAt: task.iaAnalysis?.generatedAt,
       analysisIsOutdated: task.iaAnalysis?.isOutdated,

@@ -52,6 +52,8 @@ export interface TaskDetailContextValue {
   onTaskToolsChange?: (tools: string[]) => void;
   onStrategyExecutedChange?: (strategyIndex: number, executed: boolean) => void;
   onStrategyToolsChange?: (strategyIndex: number, tools: string[]) => void;
+  onGenerateStrategyHowToExecute?: (strategyIndex: number) => Promise<void>;
+  generatingStrategyHowToExecuteIndex?: number | null;
   onTestCaseStatusChange: (testCaseId: string, status: TestCase['status']) => void;
   onTestCaseObservedResultChange?: (testCaseId: string, value: string) => void;
   onTestCaseExecutionKindChange?: (testCaseId: string, kind: TestCase['executionKind']) => void;

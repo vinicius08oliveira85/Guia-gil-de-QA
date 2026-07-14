@@ -64,6 +64,8 @@ interface TaskDetailsViewProps {
   onTaskToolsChange?: (tools: string[]) => void;
   onStrategyExecutedChange?: (strategyIndex: number, executed: boolean) => void;
   onStrategyToolsChange?: (strategyIndex: number, tools: string[]) => void;
+  onGenerateStrategyHowToExecute?: (strategyIndex: number) => Promise<void>;
+  generatingStrategyHowToExecuteIndex?: number | null;
   onGenerateTests: (taskId: string, detailLevel: TestCaseDetailLevel) => Promise<void>;
   isGenerating: boolean;
   onGenerateBddScenarios: (taskId: string) => Promise<void>;
@@ -118,6 +120,8 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
   onTaskToolsChange,
   onStrategyExecutedChange,
   onStrategyToolsChange,
+  onGenerateStrategyHowToExecute,
+  generatingStrategyHowToExecuteIndex = null,
   onGenerateTests,
   isGenerating,
   onGenerateBddScenarios,
@@ -339,6 +343,8 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
       onTaskToolsChange,
       onStrategyExecutedChange,
       onStrategyToolsChange,
+      onGenerateStrategyHowToExecute,
+      generatingStrategyHowToExecuteIndex,
       onTestCaseStatusChange,
       onTestCaseObservedResultChange,
       onTestCaseExecutionKindChange,
@@ -378,6 +384,8 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
       onTaskToolsChange,
       onStrategyExecutedChange,
       onStrategyToolsChange,
+      onGenerateStrategyHowToExecute,
+      generatingStrategyHowToExecuteIndex,
       onTestCaseStatusChange,
       onTestCaseObservedResultChange,
       onTestCaseExecutionKindChange,

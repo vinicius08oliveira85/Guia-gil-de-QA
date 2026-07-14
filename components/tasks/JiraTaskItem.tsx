@@ -207,6 +207,8 @@ export const JiraTaskItem: React.FC<{
   onTaskToolsChange?: (tools: string[]) => void;
   onStrategyExecutedChange?: (strategyIndex: number, executed: boolean) => void;
   onStrategyToolsChange?: (strategyIndex: number, tools: string[]) => void;
+  onGenerateStrategyHowToExecute?: (strategyIndex: number) => Promise<void>;
+  generatingStrategyHowToExecuteIndex?: number | null;
   onDelete: (taskId: string) => void;
   onGenerateTests: (taskId: string, detailLevel: TestCaseDetailLevel) => Promise<void>;
   isGenerating: boolean;
@@ -269,6 +271,8 @@ export const JiraTaskItem: React.FC<{
     onTaskToolsChange,
     onStrategyExecutedChange,
     onStrategyToolsChange,
+    onGenerateStrategyHowToExecute,
+    generatingStrategyHowToExecuteIndex = null,
     onDelete,
     onGenerateTests,
     isGenerating: isGeneratingTests,
@@ -1464,6 +1468,8 @@ export const JiraTaskItem: React.FC<{
                         onToggleExecuted={onStrategyExecutedChange}
                         toolsUsed={(task.strategyTools && task.strategyTools[i]) || []}
                         onToolsChange={onStrategyToolsChange}
+                        onGenerateHowToExecute={onGenerateStrategyHowToExecute}
+                        isGeneratingHowToExecute={generatingStrategyHowToExecuteIndex === i}
                       />
                     );
                   })}
