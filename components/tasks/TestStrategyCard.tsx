@@ -1,8 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { CheckCircle2, Circle, ListChecks, Loader2, Sparkles } from 'lucide-react';
-import { TestStrategy } from '../../types';
+import { Bot, CheckCircle2, Circle, Copy, ListChecks, Loader2, Sparkles } from 'lucide-react';
+import type { StrategyCursorAgentTestPrompt, TestStrategy } from '../../types';
 import { ToolsSelector } from './ToolsSelector';
+import { StructuredCursorPrompt } from './StructuredCursorPrompt';
 import { cn } from '../../utils/cn';
+import {
+  CURSOR_AGENT_ACTION_BADGE_CLASS,
+  CURSOR_AGENT_ACTION_LABELS,
+} from '../../utils/cursorAgentUi';
 import {
   leveTaskModalFieldLabelClass,
   leveTaskModalMutedClass,
@@ -15,6 +20,7 @@ import {
   testStrategyToggleTrackClass,
   testStrategyInsetPanelClass,
 } from './taskDetailsNeuUi';
+import toast from 'react-hot-toast';
 
 interface TestStrategyCardProps {
   strategy: TestStrategy;
@@ -23,7 +29,7 @@ interface TestStrategyCardProps {
   onToggleExecuted?: (index: number, executed: boolean) => void;
   toolsUsed?: string[];
   onToolsChange?: (index: number, tools: string[]) => void;
-  /** Gera/atualiza {@link TestStrategy.howToExecute} com IA para as ferramentas selecionadas. */
+  /** Gera/atualiza passos e prompts do Agente do Cursor para as ferramentas selecionadas. */
   onGenerateHowToExecute?: (index: number) => Promise<void>;
   isGeneratingHowToExecute?: boolean;
 }
@@ -34,6 +40,49 @@ function normalizeSteps(value: unknown): string[] {
     .map(step => (typeof step === 'string' ? step.trim() : String(step ?? '').trim()))
     .filter(Boolean);
 }
+
+async function copyPrompt(tool: string, prompt: string): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(prompt);
+    toast.success(`Prompt ${tool} copiado.`);
+  } catch {
+    toast.error('Não foi possível copiar o prompt.');
+  }
+}
+
+const StrategyCursorPromptPanel: React.FC<{ item: StrategyCursorAgentTestPrompt }> = ({
+  item,
+}) => {
+  const action = item.action ?? 'create';
+  return (
+    <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Bot className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+          <span className="text-xs font-semibold uppercase tracking-wide text-primary">
+            {item.tool}
+          </span>
+          <span className={cn('badge badge-sm', CURSOR_AGENT_ACTION_BADGE_CLASS[action])}>
+            {CURSOR_AGENT_ACTION_LABELS[action]}
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={() => void copyPrompt(item.tool, item.prompt)}
+          className="btn btn-primary btn-xs gap-1"
+          aria-label={`Copiar prompt do Agente para ${item.tool}`}
+        >
+          <Copy className="h-3.5 w-3.5" aria-hidden />
+          Copiar prompt
+        </button>
+      </div>
+      <p className={cn('mb-2 text-[11px]', leveTaskModalMutedXsClass)}>
+        Cole no chat do Agente do Cursor para criar o artefato de teste (código/collection).
+      </p>
+      <StructuredCursorPrompt prompt={item.prompt} />
+    </div>
+  );
+};
 
 export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
   strategy,
@@ -50,6 +99,9 @@ export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
   const prevStepsCountRef = useRef(0);
 
   const steps = normalizeSteps(strategy?.howToExecute);
+  const agentPrompts = (strategy?.cursorAgentTestPrompts || []).filter(
+    item => item?.tool?.trim() && item?.prompt?.trim()
+  );
   const generating = isGeneratingHowToExecute || localGenerating;
   const canGenerateSteps =
     Boolean(onGenerateHowToExecute) && toolsUsed.length > 0 && !generating;
@@ -154,11 +206,11 @@ export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
                   'btn btn-primary btn-sm gap-1.5',
                   !canGenerateSteps && 'btn-disabled'
                 )}
-                aria-label={`Gerar passos com IA para ${strategy.testType}`}
+                aria-label={`Gerar passos e prompts do Agente para ${strategy.testType}`}
                 title={
                   toolsUsed.length === 0
                     ? 'Selecione ao menos uma ferramenta'
-                    : 'Gera um passo a passo alinhado às ferramentas e à análise da tarefa'
+                    : 'Gera o Como executar e um prompt do Agente do Cursor por ferramenta'
                 }
               >
                 {generating ? (
@@ -170,11 +222,11 @@ export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
               </button>
               {toolsUsed.length === 0 ? (
                 <p className={cn('mt-1.5 text-[11px]', leveTaskModalMutedXsClass)}>
-                  Selecione uma ferramenta para gerar o passo a passo.
+                  Selecione uma ferramenta para gerar o passo a passo e os prompts do Agente.
                 </p>
               ) : (
                 <p className={cn('mt-1.5 text-[11px]', leveTaskModalMutedXsClass)}>
-                  O “Como executar” aparece logo abaixo após a geração.
+                  Gera o “Como executar” e um prompt do Agente (código/collection) por ferramenta.
                 </p>
               )}
             </div>
@@ -187,7 +239,7 @@ export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
             </h3>
             {generating ? (
               <p className={cn('text-xs italic', leveTaskModalMutedXsClass)}>
-                Gerando passo a passo com IA…
+                Gerando passo a passo e prompts do Agente…
               </p>
             ) : steps.length > 0 ? (
               <ul className={testStrategyStepsListClass}>
@@ -217,26 +269,57 @@ export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
               </p>
             )}
           </div>
+
+          {(generating || agentPrompts.length > 0) && (
+            <div className="mt-4 space-y-3" aria-live="polite">
+              <h3 className={cn(leveTaskModalFieldLabelClass, 'flex items-center gap-1.5')}>
+                <Bot className="h-3.5 w-3.5" aria-hidden />
+                Prompts — Agente do Cursor
+              </h3>
+              {generating && agentPrompts.length === 0 ? (
+                <p className={cn('text-xs italic', leveTaskModalMutedXsClass)}>
+                  Montando prompts por ferramenta…
+                </p>
+              ) : (
+                agentPrompts.map(item => (
+                  <StrategyCursorPromptPanel key={item.tool} item={item} />
+                ))
+              )}
+            </div>
+          )}
         </div>
       )}
 
       {!onToolsChange && steps.length > 0 ? (
-        <div className="px-5 pb-5">
-          <h3 className={cn(leveTaskModalFieldLabelClass, 'mb-2 flex items-center gap-1.5')}>
-            <ListChecks className="h-3.5 w-3.5" aria-hidden />
-            Como executar
-          </h3>
-          <ul className={testStrategyStepsListClass}>
-            {steps.map((step, i) => (
-              <li
-                key={`${i}-${step.slice(0, 24)}`}
-                className={cn('flex items-start gap-2 text-xs', leveTaskModalStrongClass)}
-              >
-                <Circle className={cn('mt-0.5 h-4 w-4 shrink-0', leveTaskModalMutedClass)} aria-hidden />
-                <span>{step}</span>
-              </li>
-            ))}
-          </ul>
+        <div className="space-y-4 px-5 pb-5">
+          <div>
+            <h3 className={cn(leveTaskModalFieldLabelClass, 'mb-2 flex items-center gap-1.5')}>
+              <ListChecks className="h-3.5 w-3.5" aria-hidden />
+              Como executar
+            </h3>
+            <ul className={testStrategyStepsListClass}>
+              {steps.map((step, i) => (
+                <li
+                  key={`${i}-${step.slice(0, 24)}`}
+                  className={cn('flex items-start gap-2 text-xs', leveTaskModalStrongClass)}
+                >
+                  <Circle className={cn('mt-0.5 h-4 w-4 shrink-0', leveTaskModalMutedClass)} aria-hidden />
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          {agentPrompts.length > 0 ? (
+            <div className="space-y-3">
+              <h3 className={cn(leveTaskModalFieldLabelClass, 'flex items-center gap-1.5')}>
+                <Bot className="h-3.5 w-3.5" aria-hidden />
+                Prompts — Agente do Cursor
+              </h3>
+              {agentPrompts.map(item => (
+                <StrategyCursorPromptPanel key={item.tool} item={item} />
+              ))}
+            </div>
+          ) : null}
         </div>
       ) : null}
     </div>

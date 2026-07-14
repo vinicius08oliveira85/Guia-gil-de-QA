@@ -1170,7 +1170,7 @@ export const TasksView: React.FC<{
         const key = `${taskId}:${strategyIndex}`;
         setGeneratingStrategyHowToKey(key);
         try {
-          const howToExecute = await generateStrategyHowToExecute({
+          const generated = await generateStrategyHowToExecute({
             task,
             strategy,
             tools,
@@ -1180,14 +1180,18 @@ export const TasksView: React.FC<{
           const latestTask = storeProject.tasks.find(t => t.id === taskId) ?? task;
           const strategies = [...(latestTask.testStrategy ?? [])];
           if (!strategies[strategyIndex]) return;
-          strategies[strategyIndex] = { ...strategies[strategyIndex], howToExecute };
+          strategies[strategyIndex] = {
+            ...strategies[strategyIndex],
+            howToExecute: generated.howToExecute,
+            cursorAgentTestPrompts: generated.cursorAgentTestPrompts,
+          };
           const updatedTask = { ...latestTask, testStrategy: strategies };
           await onUpdateProject({
             ...storeProject,
             tasks: storeProject.tasks.map(t => (t.id === taskId ? updatedTask : t)),
           });
           propagateTaskUpdate(updatedTask);
-          handleSuccess('Passo a passo gerado e salvo no banco.');
+          handleSuccess('Passos e prompts do Agente gerados e salvos no banco.');
         } catch (error) {
           notifyAiError(error, 'Gerar passos da estratégia');
         } finally {

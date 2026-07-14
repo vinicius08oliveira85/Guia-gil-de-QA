@@ -50,6 +50,11 @@ const buildProjectFingerprint = (project: Project): string =>
         descriptionLength: strategy.description?.length ?? 0,
         howToExecuteLengths: (strategy.howToExecute || []).map(step => step.length),
         toolsLength: strategy.tools?.length ?? 0,
+        cursorAgentPrompts: (strategy.cursorAgentTestPrompts || []).map(item => ({
+          tool: item.tool,
+          promptLength: item.prompt?.length ?? 0,
+          action: item.action,
+        })),
       })),
       strategyToolsFingerprint: JSON.stringify(task.strategyTools ?? {}),
       attachmentsCount: task.jiraAttachments?.length ?? 0,

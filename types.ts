@@ -81,6 +81,11 @@ export interface TestStrategy {
   description: string;
   howToExecute: string[];
   tools: string;
+  /**
+   * Prompts prontos para o Agente do Cursor criar artefatos de teste
+   * (código/collection) — um item por ferramenta selecionada no Gerar passos.
+   */
+  cursorAgentTestPrompts?: StrategyCursorAgentTestPrompt[];
 }
 
 export interface BddScenario {
@@ -640,6 +645,13 @@ export interface ChecklistItem {
 }
 
 export type CursorAgentAction = 'create' | 'modify' | 'delete';
+
+/** Prompt do Agente do Cursor para criar teste automatizado (código/collection) de uma ferramenta. */
+export interface StrategyCursorAgentTestPrompt {
+  tool: string;
+  prompt: string;
+  action?: CursorAgentAction;
+}
 
 export interface DevGuidanceStep {
   order: number;
