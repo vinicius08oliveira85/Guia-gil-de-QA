@@ -6,6 +6,7 @@ import {
   importProjectFromJSON,
   importTasksFromExcel,
   importTasksFromCSV,
+  importTasksFromJSON,
   importTestCasesFromExcel,
   importDocument,
   autoImportFile,
@@ -72,13 +73,15 @@ export const FileImportModal: React.FC<FileImportModalProps> = React.memo(
               break;
 
             case 'tasks':
-              if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+              if (file.name.endsWith('.json') || file.type === 'application/json') {
+                result = await importTasksFromJSON(file, { validateData: true });
+              } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
                 result = await importTasksFromExcel(file, { validateData: true });
               } else if (file.name.endsWith('.csv')) {
                 result = await importTasksFromCSV(file, { validateData: true });
               } else {
                 throw new Error(
-                  'Formato inválido. Use um arquivo Excel (.xlsx, .xls) ou CSV para importar tarefas.'
+                  'Formato inválido. Use JSON (.json), Excel (.xlsx, .xls) ou CSV para importar tarefas.'
                 );
               }
               if (result.success && result.data && onImportTasks) {
@@ -203,7 +206,7 @@ export const FileImportModal: React.FC<FileImportModalProps> = React.memo(
         case 'project':
           return '.json,application/json';
         case 'tasks':
-          return '.xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv';
+          return '.json,.xlsx,.xls,.csv,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv';
         case 'test-cases':
           return '.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel';
         case 'document':
@@ -256,7 +259,10 @@ export const FileImportModal: React.FC<FileImportModalProps> = React.memo(
           <div className="text-sm text-base-content/75">
             {selectedType === 'project' && <p>Importe um projeto completo de um arquivo JSON.</p>}
             {selectedType === 'tasks' && (
-              <p>Importe tarefas de um arquivo Excel (.xlsx, .xls) ou CSV.</p>
+              <p>
+                Importe tarefas de um arquivo JSON (.json), Excel (.xlsx, .xls) ou CSV. Exportações
+                de projeto no formato {'{ "project": { "tasks": [...] } }'} também são aceitas.
+              </p>
             )}
             {selectedType === 'test-cases' && (
               <p>Importe casos de teste de um arquivo Excel (.xlsx, .xls).</p>

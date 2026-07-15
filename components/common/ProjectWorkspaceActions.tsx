@@ -145,11 +145,13 @@ export const ProjectWorkspaceActions: React.FC<ProjectWorkspaceActionsProps> = (
 
   const handleImportTasks = useCallback(
     (tasks: Project['tasks']) => {
-      const merged = [...(project.tasks ?? []), ...tasks];
-      void updateProject({ ...project, tasks: merged });
-      handleSuccess(`${tasks.length} tarefa(s) importada(s) para o projeto.`);
+      const byId = new Map((project.tasks ?? []).map(task => [task.id, task]));
+      for (const incoming of tasks) {
+        byId.set(incoming.id, incoming);
+      }
+      void updateProject({ ...project, tasks: Array.from(byId.values()) });
     },
-    [project, updateProject, handleSuccess]
+    [project, updateProject]
   );
 
   const handleConfirmDelete = useCallback(async () => {
@@ -195,7 +197,7 @@ export const ProjectWorkspaceActions: React.FC<ProjectWorkspaceActionsProps> = (
         disabled={busy}
         className={btnClass}
         aria-label="Importar tarefas para este projeto"
-        title="Importar tarefas (CSV/Excel) neste projeto"
+        title="Importar tarefas (JSON, CSV ou Excel) neste projeto"
       >
         <Upload className="h-3.5 w-3.5 shrink-0" aria-hidden />
         <span className={variant === 'card' ? 'text-xs' : 'hidden sm:inline'}>Importar</span>

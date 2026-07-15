@@ -118,6 +118,111 @@ export const importProjectFromJSON = async (file: File): Promise<ImportResult<Pr
 };
 
 /**
+ * Importa tarefas de um arquivo JSON.
+ * Aceita: array de tarefas, `{ tasks: [...] }`, `{ project: { tasks: [...] } }` ou uma tarefa única.
+ */
+export const importTasksFromJSON = async (
+  file: File,
+  options: ImportOptions = {}
+): Promise<ImportResult<JiraTask[]>> => {
+  try {
+    validateFileSize(file);
+    validateFileType(file, ['json', 'application/json']);
+
+    const text = await file.text();
+    const json = JSON.parse(text) as unknown;
+
+    let rawTasks: unknown[] = [];
+    if (Array.isArray(json)) {
+      rawTasks = json;
+    } else if (json && typeof json === 'object') {
+      const root = json as Record<string, unknown>;
+      const projectNode =
+        root.project && typeof root.project === 'object'
+          ? (root.project as Record<string, unknown>)
+          : null;
+      if (Array.isArray(root.tasks)) {
+        rawTasks = root.tasks;
+      } else if (projectNode && Array.isArray(projectNode.tasks)) {
+        rawTasks = projectNode.tasks;
+      } else if (typeof root.id === 'string' && typeof root.title === 'string') {
+        rawTasks = [root];
+      }
+    }
+
+    if (rawTasks.length === 0) {
+      return {
+        success: false,
+        error:
+          'Arquivo JSON inválido: nenhuma tarefa encontrada. Use um array, { "tasks": [...] } ou export de projeto ({ "project": { "tasks": [...] } }).',
+      };
+    }
+
+    const tasks: JiraTask[] = [];
+    const warnings: string[] = [];
+
+    for (let i = 0; i < rawTasks.length; i++) {
+      const item = rawTasks[i];
+      if (!item || typeof item !== 'object') {
+        warnings.push(`Item ${i + 1}: formato inválido, pulado`);
+        continue;
+      }
+
+      const row = item as Record<string, unknown>;
+      const id = typeof row.id === 'string' ? row.id.trim() : '';
+      const title = typeof row.title === 'string' ? row.title.trim() : '';
+
+      if (options.validateData !== false && (!id || !title)) {
+        warnings.push(`Item ${i + 1}: tarefa sem id ou título, pulada`);
+        continue;
+      }
+
+      const task = {
+        ...row,
+        id: id || `imported-${Date.now()}-${i}`,
+        title: title || `Tarefa ${i + 1}`,
+        type: (row.type as JiraTaskType) || 'Tarefa',
+        status: (row.status as JiraTask['status']) || 'To Do',
+        priority: (row.priority as JiraTask['priority']) || 'Média',
+        description: typeof row.description === 'string' ? row.description : '',
+        testCases: Array.isArray(row.testCases) ? row.testCases : [],
+        testStrategy: Array.isArray(row.testStrategy) ? row.testStrategy : [],
+        bddScenarios: Array.isArray(row.bddScenarios) ? row.bddScenarios : [],
+        tags: Array.isArray(row.tags) ? (row.tags as string[]) : [],
+        createdAt:
+          typeof row.createdAt === 'string' ? row.createdAt : new Date().toISOString(),
+      } as JiraTask;
+
+      tasks.push(task);
+    }
+
+    if (tasks.length === 0) {
+      return {
+        success: false,
+        error: 'Nenhuma tarefa válida encontrada no JSON',
+        warnings: warnings.length > 0 ? warnings : undefined,
+      };
+    }
+
+    logger.info(`${tasks.length} tarefa(s) importada(s) do JSON`, 'FileImportService');
+
+    return {
+      success: true,
+      data: tasks,
+      warnings: warnings.length > 0 ? warnings : undefined,
+    };
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Erro desconhecido ao importar JSON';
+    logger.error('Erro ao importar tarefas do JSON', 'FileImportService', error);
+    return {
+      success: false,
+      error: `Erro ao importar JSON: ${errorMessage}`,
+    };
+  }
+};
+
+/**
  * Importa tarefas de um arquivo Excel
  */
 export const importTasksFromExcel = async (
@@ -523,9 +628,31 @@ export const autoImportFile = async (
   const fileName = file.name.toLowerCase();
   const fileType = file.type;
 
-  // Projeto JSON
+  // JSON: projeto completo ou lista de tarefas
   if (fileName.endsWith('.json') || fileType === 'application/json') {
-    return await importProjectFromJSON(file);
+    const text = await file.text();
+    const jsonFile = new File([text], file.name, { type: 'application/json' });
+    try {
+      const json = JSON.parse(text) as unknown;
+      if (Array.isArray(json)) {
+        return await importTasksFromJSON(jsonFile, options);
+      }
+      if (json && typeof json === 'object') {
+        const root = json as Record<string, unknown>;
+        const hasProjectShape =
+          (root.project && typeof root.project === 'object') ||
+          (typeof root.id === 'string' && typeof root.name === 'string');
+        if (hasProjectShape) {
+          return await importProjectFromJSON(jsonFile);
+        }
+      }
+      return await importTasksFromJSON(jsonFile, options);
+    } catch (error) {
+      return {
+        success: false,
+        error: `Erro ao importar JSON: ${error instanceof Error ? error.message : 'JSON inválido'}`,
+      };
+    }
   }
 
   // Tarefas Excel
