@@ -7,14 +7,16 @@ import {
   importTasksFromExcel,
   importTasksFromCSV,
   importTasksFromJSON,
+  importTaskQaArtifactsFromJSON,
   importTestCasesFromExcel,
   importDocument,
   autoImportFile,
   ImportResult,
 } from '../../services/fileImportService';
 import { Project, JiraTask, TestCase, ProjectDocument } from '../../types';
+import type { TaskQaArtifacts } from '../../utils/taskQaArtifactsExport';
 
-export type ImportType = 'project' | 'tasks' | 'test-cases' | 'document' | 'auto';
+export type ImportType = 'project' | 'tasks' | 'test-cases' | 'document' | 'task-qa' | 'auto';
 
 export interface FileImportModalProps {
   isOpen: boolean;
@@ -24,6 +26,8 @@ export interface FileImportModalProps {
   onImportTasks?: (tasks: JiraTask[]) => void;
   onImportTestCases?: (testCases: TestCase[], taskId?: string) => void;
   onImportDocument?: (document: ProjectDocument) => void;
+  /** Importa BDD + estratégias + casos na tarefa aberta. */
+  onImportTaskQa?: (artifacts: TaskQaArtifacts) => void | Promise<void>;
   taskId?: string; // Para importar casos de teste de uma tarefa específica
 }
 
@@ -39,6 +43,7 @@ export const FileImportModal: React.FC<FileImportModalProps> = React.memo(
     onImportTasks,
     onImportTestCases,
     onImportDocument,
+    onImportTaskQa,
     taskId,
   }) => {
     const [selectedType, setSelectedType] = useState<ImportType>(importType);
@@ -90,6 +95,21 @@ export const FileImportModal: React.FC<FileImportModalProps> = React.memo(
                 if (result.warnings && result.warnings.length > 0) {
                   handleWarning(`Avisos: ${result.warnings.join('; ')}`);
                 }
+                onClose();
+              }
+              break;
+
+            case 'task-qa':
+              if (!(file.name.endsWith('.json') || file.type === 'application/json')) {
+                throw new Error('Formato inválido. Use um arquivo JSON do pacote QA da tarefa.');
+              }
+              result = await importTaskQaArtifactsFromJSON(file);
+              if (result.success && result.data && onImportTaskQa) {
+                await Promise.resolve(onImportTaskQa(result.data));
+                const a = result.data;
+                handleSuccess(
+                  `Pacote QA importado: ${a.bddScenarios.length} BDD, ${a.testStrategy.length} estratégias, ${a.testCases.length} casos.`
+                );
                 onClose();
               }
               break;
@@ -160,9 +180,9 @@ export const FileImportModal: React.FC<FileImportModalProps> = React.memo(
               break;
           }
 
-          if (!result.success) {
-            handleError(new Error(result.error || 'Erro ao importar arquivo'), 'Importar arquivo');
-            setImportResult(result);
+          if (!result!.success) {
+            handleError(new Error(result!.error || 'Erro ao importar arquivo'), 'Importar arquivo');
+            setImportResult(result!);
           }
         } catch (error) {
           handleError(error, 'Importar arquivo');
@@ -185,6 +205,7 @@ export const FileImportModal: React.FC<FileImportModalProps> = React.memo(
         onImportTasks,
         onImportTestCases,
         onImportDocument,
+        onImportTaskQa,
         onClose,
         handleError,
         handleSuccess,
@@ -204,6 +225,7 @@ export const FileImportModal: React.FC<FileImportModalProps> = React.memo(
     const getAcceptedFileTypes = (): string => {
       switch (selectedType) {
         case 'project':
+        case 'task-qa':
           return '.json,application/json';
         case 'tasks':
           return '.json,.xlsx,.xls,.csv,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv';
@@ -262,6 +284,12 @@ export const FileImportModal: React.FC<FileImportModalProps> = React.memo(
               <p>
                 Importe tarefas de um arquivo JSON (.json), Excel (.xlsx, .xls) ou CSV. Exportações
                 de projeto no formato {'{ "project": { "tasks": [...] } }'} também são aceitas.
+              </p>
+            )}
+            {selectedType === 'task-qa' && (
+              <p>
+                Importe o pacote QA de uma tarefa (JSON): cenários BDD, estratégias e casos de
+                teste. Os dados serão aplicados à tarefa aberta.
               </p>
             )}
             {selectedType === 'test-cases' && (

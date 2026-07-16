@@ -1,9 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   Sparkles,
   Download,
+  Upload,
   Zap,
   User,
   UserCircle2,
@@ -32,6 +33,12 @@ import { VersionBadges } from '../VersionBadge';
 import { QuickActions } from '../../common/QuickActions';
 import { Button } from '../../common/Button';
 import { Spinner } from '../../common/Spinner';
+import { FileExportModal } from '../../common/FileExportModal';
+import { FileImportModal } from '../../common/FileImportModal';
+import {
+  applyTaskQaArtifactsToTask,
+  type TaskQaArtifacts,
+} from '../../../utils/taskQaArtifactsExport';
 import {
   taskUiTagClass,
   taskUiTagInfoClass,
@@ -137,6 +144,8 @@ export const TaskOverviewSection: React.FC = () => {
     onViewJiraAttachment,
     loadingJiraAttachmentId,
   } = useTaskDetail();
+  const [showExportQaModal, setShowExportQaModal] = useState(false);
+  const [showImportQaModal, setShowImportQaModal] = useState(false);
   const nextStep = getNextStepForTask(task);
   const jiraSyncedRelative = useMemo(
     () => formatRelativeTimestamp(task.jiraSyncedAt),
@@ -149,11 +158,24 @@ export const TaskOverviewSection: React.FC = () => {
   const hideQaUi = hideTestFeatures || devMode;
   const showJiraSync = Boolean(onUpdateFromJira && /^[A-Z]+-\d+$/.test(task.id));
   const showGenerateAll = Boolean(onGenerateAll && !hideQaUi);
+  const showTaskQaTransfer = Boolean(!hideQaUi && onUpdateProject && project);
   const showDevGuidanceAction =
     devMode &&
     Boolean(onGenerateDevGuidance) &&
     (task.type === 'Tarefa' || task.type === 'Bug');
   const isAiBusy = Boolean(isGenerating || isGeneratingBdd || isGeneratingAll || isGeneratingDevGuidance);
+
+  const handleImportTaskQa = useCallback(
+    (artifacts: TaskQaArtifacts) => {
+      if (!project || !onUpdateProject) return;
+      const updatedTask = applyTaskQaArtifactsToTask(task, artifacts);
+      onUpdateProject({
+        ...project,
+        tasks: project.tasks.map(t => (t.id === task.id ? updatedTask : t)),
+      });
+    },
+    [project, onUpdateProject, task]
+  );
 
   const jiraAttachmentItems = useMemo(() => {
     const jiraUrl = getJiraConfig()?.url ?? '';
@@ -179,6 +201,7 @@ export const TaskOverviewSection: React.FC = () => {
   );
 
   return (
+    <>
     <div className={taskDetailsOverviewGridClass}>
       {/* Coluna principal */}
       <div className={taskDetailsOverviewMainClass}>
@@ -397,7 +420,7 @@ export const TaskOverviewSection: React.FC = () => {
 
       {/* Sidebar: Atualizar do Jira + Gerar Tudo + Campos do Jira + Ações Rápidas */}
       <aside className="space-y-3">
-        {(showJiraSync || showGenerateAll || showDevGuidanceAction) && (
+        {(showJiraSync || showGenerateAll || showDevGuidanceAction || showTaskQaTransfer) && (
           <div className={cn(taskDetailsModalSectionClass, 'space-y-4 p-4')}>
             {showJiraSync && (
               <div>
@@ -457,9 +480,44 @@ export const TaskOverviewSection: React.FC = () => {
               </div>
             )}
 
-            {showDevGuidanceAction && (
+            {showTaskQaTransfer ? (
               <div>
                 {(showJiraSync || showGenerateAll) && (
+                  <div className="mb-4 border-t border-[color-mix(in_srgb,var(--leve-purple)_12%,transparent)]" />
+                )}
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="brandOutline"
+                    size="sm"
+                    className={taskDetailsModalJiraBtnClass}
+                    onClick={() => setShowExportQaModal(true)}
+                    aria-label="Exportar BDD, estratégias e casos de teste em JSON"
+                  >
+                    <Download className="h-4 w-4" aria-hidden />
+                    Exportar QA (JSON)
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="brandOutline"
+                    size="sm"
+                    className={taskDetailsModalJiraBtnClass}
+                    onClick={() => setShowImportQaModal(true)}
+                    aria-label="Importar BDD, estratégias e casos de teste de JSON"
+                  >
+                    <Upload className="h-4 w-4" aria-hidden />
+                    Importar QA (JSON)
+                  </Button>
+                </div>
+                <p className={cn(leveTaskModalMutedXsClass, 'mt-2')}>
+                  Exporta ou importa somente esta tarefa: cenários BDD, estratégias e casos de teste.
+                </p>
+              </div>
+            ) : null}
+
+            {showDevGuidanceAction && (
+              <div>
+                {(showJiraSync || showGenerateAll || showTaskQaTransfer) && (
                   <div className="mb-4 border-t border-[color-mix(in_srgb,var(--leve-purple)_12%,transparent)]" />
                 )}
                 <Button
@@ -627,6 +685,20 @@ export const TaskOverviewSection: React.FC = () => {
         )}
       </aside>
     </div>
+
+    <FileExportModal
+      isOpen={showExportQaModal}
+      onClose={() => setShowExportQaModal(false)}
+      exportType="task-qa"
+      tasks={[task]}
+    />
+    <FileImportModal
+      isOpen={showImportQaModal}
+      onClose={() => setShowImportQaModal(false)}
+      importType="task-qa"
+      onImportTaskQa={handleImportTaskQa}
+    />
+    </>
   );
 };
 

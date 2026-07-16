@@ -12,9 +12,10 @@ import {
   exportTestCasesToCSV,
   exportDevTasksToCSV,
   generateProjectReport,
+  downloadFile,
 } from '../../utils/exportService';
+import { exportTaskQaArtifactsToJSON } from '../../utils/taskQaArtifactsExport';
 import { Project, JiraTask } from '../../types';
-import { downloadFile } from '../../utils/exportService';
 import { cn } from '../../utils/cn';
 import {
   tasksPanelExportFormatOptionClass,
@@ -29,7 +30,7 @@ import {
   tasksPanelNeuModalTitleClass,
 } from '../tasks/tasksPanelNeuStyles';
 
-export type ExportType = 'project' | 'tasks' | 'test-cases';
+export type ExportType = 'project' | 'tasks' | 'test-cases' | 'task-qa';
 export type ExportFormat = 'json' | 'csv' | 'excel' | 'pdf' | 'word' | 'markdown';
 
 export interface FileExportModalProps {
@@ -60,6 +61,8 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(
           return devMode ? ['csv'] : ['csv', 'excel'];
         case 'test-cases':
           return ['csv'];
+        case 'task-qa':
+          return ['json'];
         default:
           return ['json', 'csv', 'excel'];
       }
@@ -78,7 +81,7 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(
         return;
       }
 
-      if (!tasks && (exportType === 'tasks' || exportType === 'test-cases')) {
+      if (!tasks && (exportType === 'tasks' || exportType === 'test-cases' || exportType === 'task-qa')) {
         handleError(new Error('Tarefas não disponíveis para exportação'), 'Exportar');
         return;
       }
@@ -171,6 +174,17 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(
               }
             }
             break;
+
+          case 'task-qa': {
+            const task = tasks?.[0];
+            if (!task) break;
+            const jsonContent = exportTaskQaArtifactsToJSON(task);
+            const safeId = task.id.replace(/[^\w.-]+/g, '_');
+            fileName = `Tarefa_QA_${safeId}_${dateStr}.json`;
+            mimeType = 'application/json';
+            downloadFile(jsonContent, fileName, mimeType);
+            break;
+          }
         }
 
         handleSuccess('Exportação concluída com sucesso!');
@@ -193,7 +207,10 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(
     };
 
     const formatHint: Partial<Record<ExportFormat, string>> = {
-      json: 'Formato JSON completo com todos os dados do projeto.',
+      json:
+        exportType === 'task-qa'
+          ? 'JSON da tarefa com cenários BDD, estratégias e casos de teste (para reimportar).'
+          : 'Formato JSON completo com todos os dados do projeto.',
       csv: 'Formato CSV para uso em planilhas. Contém dados tabulares.',
       excel: 'Arquivo Excel com múltiplas planilhas organizadas.',
       pdf: 'Documento PDF formatado para impressão e compartilhamento.',
@@ -233,6 +250,15 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(
                 tarefa(s)
               </p>
             )}
+            {exportType === 'task-qa' && tasks?.[0] && (
+              <p>
+                Exportando pacote QA da tarefa{' '}
+                <strong className={tasksPanelExportModalInfoStrongClass}>
+                  {tasks[0].id}
+                </strong>
+                : BDD, estratégias e casos de teste.
+              </p>
+            )}
           </div>
 
           <div>
@@ -241,7 +267,8 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(
               className={cn(
                 tasksPanelExportFormatStripClass,
                 'mt-2',
-                availableFormats.length === 2 && 'grid-cols-2 sm:grid-cols-2'
+                availableFormats.length === 2 && 'grid-cols-2 sm:grid-cols-2',
+                availableFormats.length === 1 && 'grid-cols-1 sm:grid-cols-1'
               )}
               role="radiogroup"
               aria-label="Formato de exportação"

@@ -3,6 +3,10 @@ import { Project, JiraTask, TestCase, ProjectDocument, JiraTaskType, TeamRole } 
 import { logger } from '../utils/logger';
 import { migrateTestCase } from '../utils/testCaseMigration';
 import { normalizeProjectWorkflowFields } from '../utils/projectWorkflow';
+import {
+  parseTaskQaArtifactsFromJson,
+  type TaskQaArtifacts,
+} from '../utils/taskQaArtifactsExport';
 
 const MAX_DOCUMENT_SIZE = 50 * 1024 * 1024; // 50MB
 
@@ -113,6 +117,37 @@ export const importProjectFromJSON = async (file: File): Promise<ImportResult<Pr
     return {
       success: false,
       error: `Erro ao importar JSON: ${errorMessage}`,
+    };
+  }
+};
+
+/**
+ * Importa pacote QA de uma única tarefa (BDD + estratégias + casos de teste).
+ */
+export const importTaskQaArtifactsFromJSON = async (
+  file: File
+): Promise<ImportResult<TaskQaArtifacts>> => {
+  try {
+    validateFileSize(file);
+    validateFileType(file, ['json', 'application/json']);
+
+    const text = await file.text();
+    const json = JSON.parse(text) as unknown;
+    const artifacts = parseTaskQaArtifactsFromJson(json);
+
+    logger.info(
+      `Pacote QA importado da tarefa ${artifacts.id}: ${artifacts.bddScenarios.length} BDD, ${artifacts.testStrategy.length} estratégias, ${artifacts.testCases.length} casos`,
+      'FileImportService'
+    );
+
+    return { success: true, data: artifacts };
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Erro desconhecido ao importar JSON da tarefa';
+    logger.error('Erro ao importar pacote QA da tarefa', 'FileImportService', error);
+    return {
+      success: false,
+      error: `Erro ao importar JSON da tarefa: ${errorMessage}`,
     };
   }
 };
