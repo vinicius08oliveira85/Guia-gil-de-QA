@@ -47,6 +47,32 @@ export const canInstallApp = (): boolean => {
 };
 
 /**
+ * Em desenvolvimento, remove SWs/caches residuais (vite-plugin-pwa / Workbox).
+ * Evita ERR_FAILED e "no-response" quando o Vite ainda não está no ar.
+ */
+export const unregisterDevServiceWorkers = async (): Promise<void> => {
+  if (!import.meta.env.DEV || !isServiceWorkerSupported()) {
+    return;
+  }
+
+  try {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map(r => r.unregister()));
+    if (typeof caches !== 'undefined') {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+    if (regs.length > 0) {
+      logger.info('Service Workers de desenvolvimento removidos', 'pwa', {
+        count: regs.length,
+      });
+    }
+  } catch (error) {
+    logger.warn('Falha ao remover Service Workers em dev', 'pwa', error);
+  }
+};
+
+/**
  * Registra o service worker
  *
  * O registro efetivo costuma vir do cliente gerado pelo vite-plugin-pwa (`registerSW`).
@@ -59,6 +85,12 @@ export const canInstallApp = (): boolean => {
 export const registerServiceWorker = async (): Promise<void> => {
   if (!isServiceWorkerSupported()) {
     logger.warn('Service Workers não são suportados neste navegador', 'pwa');
+    return;
+  }
+
+  // Em dev o SW não deve controlar a página (vite-plugin-pwa.devOptions.enabled = false)
+  if (import.meta.env.DEV) {
+    await unregisterDevServiceWorkers();
     return;
   }
 
@@ -131,6 +163,11 @@ export const initializePWA = (): void => {
     return;
   }
   pwaInitialized = true;
+
+  if (import.meta.env.DEV) {
+    void unregisterDevServiceWorkers();
+    return;
+  }
 
   // Listener para o evento beforeinstallprompt
   // AVISO NO CONSOLE (esperado): O Chrome pode exibir "Banner not shown: beforeinstallpromptevent.preventDefault()".

@@ -171,6 +171,21 @@ export const ProjectWorkspaceActions: React.FC<ProjectWorkspaceActionsProps> = (
   const isSyncingJira = isWorkspaceJiraSyncing || isProjectLinkingJira;
   const busy = isSaving || isSyncingJira || isDeleting;
 
+  const lastJiraSyncLabel = (() => {
+    if (!project.lastJiraSyncAt) return null;
+    try {
+      return new Date(project.lastJiraSyncAt).toLocaleString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch {
+      return project.lastJiraSyncAt;
+    }
+  })();
+
   const actionButtons = (
     <>
       <button
@@ -220,8 +235,16 @@ export const ProjectWorkspaceActions: React.FC<ProjectWorkspaceActionsProps> = (
         onClick={() => void handleJira()}
         disabled={busy}
         className={btnClass}
-        aria-label="Atualizar projetos QA, Dev e acompanhamentos do Jira"
-        title="Atualizar tudo do Jira (Projetos QA, Dev e Acompanhamentos) e salvar no banco"
+        aria-label={
+          lastJiraSyncLabel
+            ? `Atualizar do Jira. Última sincronização: ${lastJiraSyncLabel}`
+            : 'Atualizar projetos QA, Dev e acompanhamentos do Jira'
+        }
+        title={
+          lastJiraSyncLabel
+            ? `Última sync Jira: ${lastJiraSyncLabel}`
+            : 'Atualizar tudo do Jira (Projetos QA, Dev e Acompanhamentos) e salvar no banco'
+        }
       >
         {isSyncingJira ? (
           <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden />
@@ -230,6 +253,16 @@ export const ProjectWorkspaceActions: React.FC<ProjectWorkspaceActionsProps> = (
         )}
         <span className={variant === 'card' ? 'text-xs' : 'hidden sm:inline'}>Jira</span>
       </button>
+
+      {variant === 'toolbar' && lastJiraSyncLabel ? (
+        <span
+          className="hidden max-w-[11rem] truncate px-2 text-[11px] text-base-content/55 sm:inline"
+          title={`Última sincronização com o Jira: ${lastJiraSyncLabel}`}
+          aria-label={`Última sincronização com o Jira: ${lastJiraSyncLabel}`}
+        >
+          Sync {lastJiraSyncLabel}
+        </span>
+      ) : null}
 
       {showDelete && onDeleteProject ? (
         <>

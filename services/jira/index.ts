@@ -49,7 +49,8 @@ export {
   updateSingleTaskFromJira,
 } from './taskSync';
 
-export { importJiraProject, addNewJiraTasks } from './importSync';
+export { importJiraProject, addNewJiraTasks, previewJiraImport } from './importSync';
+export type { ImportJiraProjectOptions, ImportPreview } from './importSync';
 export { syncJiraProject } from './syncJiraProject';
 export { jiraIssueToTask } from './issueToTask';
 export type { JiraIssueToTaskOptions } from './issueToTask';

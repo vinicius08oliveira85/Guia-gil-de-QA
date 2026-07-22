@@ -2,9 +2,21 @@ import type { Project } from '../../types';
 import { useProjectsStore } from '../../store/projectsStore';
 import { logger } from '../../utils/logger';
 import { getJiraConfig, syncJiraProject } from '../jiraService';
+import { jiraSyncQueue } from '../jiraSyncQueue';
 import { syncFilasQueuesFromJira } from './filasQueueSync';
 
+const LAST_AUTO_SYNC_KEY = 'jira-last-auto-sync';
 let syncInProgress = false;
+
+/** Retorna o timestamp ISO da última sync automática (global). */
+export function getLastAutoSyncTimestamp(): string | null {
+  return localStorage.getItem(LAST_AUTO_SYNC_KEY);
+}
+
+/** Atualiza o timestamp da última sync automática. */
+function setLastAutoSyncTimestamp(): void {
+  localStorage.setItem(LAST_AUTO_SYNC_KEY, new Date().toISOString());
+}
 
 /** Resolve a chave Jira de um projeto (settings ou prefixo da primeira issue). */
 export function resolveJiraProjectKey(project: Project): string | null {
@@ -20,10 +32,14 @@ export function resolveJiraProjectKey(project: Project): string | null {
 }
 
 /**
- * Sincroniza todos os projetos locais vinculados ao Jira.
+ * Sincroniza todos os projetos locais vinculados ao Jira (via fila singleton).
+ * Suporta sync incremental via updatedAfter.
  * @returns Quantidade de projetos sincronizados com sucesso.
  */
-export async function syncAllJiraProjects(options?: { silent?: boolean }): Promise<number> {
+export async function syncAllJiraProjects(options?: {
+  silent?: boolean;
+  updatedAfter?: string;
+}): Promise<number> {
   const config = getJiraConfig();
   if (!config) return 0;
 
@@ -35,12 +51,25 @@ export async function syncAllJiraProjects(options?: { silent?: boolean }): Promi
     if (!jiraProjectKey) continue;
 
     try {
-      const latestProject =
-        useProjectsStore.getState().projects.find(item => item.id === project.id) ?? project;
-      const updatedProject = await syncJiraProject(config, latestProject, jiraProjectKey);
-      await updateProject(updatedProject, { silent: options?.silent ?? true });
-      syncedCount += 1;
+      await jiraSyncQueue.enqueue(`sync-${project.id}`, async () => {
+        const latestProject =
+          useProjectsStore.getState().projects.find(item => item.id === project.id) ?? project;
+        const updatedProject = await syncJiraProject(
+          config,
+          latestProject,
+          jiraProjectKey,
+          options?.updatedAfter
+        );
+        await updateProject(updatedProject, { silent: options?.silent ?? true });
+        syncedCount += 1;
+      });
     } catch (error) {
+      if (error instanceof Error && error.message.includes('Substituído por nova solicitação')) {
+        logger.debug('Sync automática substituída por nova solicitação', 'jiraAutoSync', {
+          projectId: project.id,
+        });
+        continue;
+      }
       logger.warn('Falha ao sincronizar projeto com Jira', 'jiraAutoSync', {
         projectId: project.id,
         jiraProjectKey,
@@ -60,6 +89,7 @@ export interface JiraAutoSyncSummary {
 
 /**
  * Executa sincronização automática de projetos e Filas (Jira).
+ * Usa sync incremental (apenas issues modificadas desde a última sync).
  * Ignora chamadas concorrentes e quando a aba está oculta.
  */
 export async function runJiraAutoSync(): Promise<JiraAutoSyncSummary | null> {
@@ -69,10 +99,20 @@ export async function runJiraAutoSync(): Promise<JiraAutoSyncSummary | null> {
 
   syncInProgress = true;
   try {
-    logger.info('Iniciando sincronização automática com Jira', 'jiraAutoSync');
+    const lastSync = getLastAutoSyncTimestamp();
+    logger.info('Iniciando sincronização automática com Jira', 'jiraAutoSync', {
+      incremental: !!lastSync,
+      lastSync,
+    });
 
-    const projectsSynced = await syncAllJiraProjects({ silent: true });
-    const filasResult = await syncFilasQueuesFromJira();
+    const projectsSynced = await syncAllJiraProjects({
+      silent: true,
+      updatedAfter: lastSync ?? undefined,
+    });
+
+    const filasResult = await jiraSyncQueue.enqueue('sync-filas', () => syncFilasQueuesFromJira());
+
+    setLastAutoSyncTimestamp();
 
     const summary: JiraAutoSyncSummary = {
       projectsSynced,

@@ -13,6 +13,12 @@ export type GetJiraIssuesOptions = {
    * Use quando os campos completos virão de `getJiraIssuesByKeysBulk` em seguida.
    */
   discoveryOnly?: boolean;
+  /**
+   * Data ISO 8601 para filtro incremental: retorna apenas issues atualizadas após esta data.
+   * Ex.: "2025-01-01T00:00:00.000Z"
+   * Adiciona `AND updated >= {updatedAfter}` ao JQL automaticamente.
+   */
+  updatedAfter?: string;
 };
 
 export const getJiraIssuesByJql = async (
@@ -36,12 +42,27 @@ export const getJiraIssues = async (
   onProgress?: (current: number, total?: number) => void,
   options?: GetJiraIssuesOptions
 ): Promise<JiraIssue[]> => {
-  const jql =
+  let baseJql =
     options?.jql?.trim() ||
-    (projectKey ? `project = ${projectKey} ORDER BY created DESC` : '');
-  if (!jql) {
+    (projectKey ? `project = ${projectKey}` : '');
+  if (!baseJql) {
     throw new Error('Informe o projeto ou um JQL para buscar issues.');
   }
+
+  // Filtro incremental: buscar apenas issues atualizadas após uma data
+  if (options?.updatedAfter) {
+    const updatedFilter = `updated >= "${options.updatedAfter}"`;
+    baseJql = baseJql.includes('ORDER BY')
+      ? baseJql.replace(/(ORDER BY.*)/i, `${updatedFilter} $1`)
+      : `${baseJql} AND ${updatedFilter}`;
+  }
+
+  // Adicionar ordenação se não existir
+  if (!baseJql.includes('ORDER BY')) {
+    baseJql += ' ORDER BY created DESC';
+  }
+
+  const jql = baseJql;
   const pageSize = 100;
   const CONCURRENT_REQUESTS = 4;
   const allIssues: JiraIssue[] = [];

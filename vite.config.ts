@@ -1,74 +1,38 @@
-import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { defineConfig, type Plugin } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { VitePWA } from 'vite-plugin-pwa';
+import { devApiMiddlewarePlugin } from './vite/devApiMiddlewarePlugin';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-/** Em `vite` puro, `/api/*` é encaminhado ao Vercel (3000). Sem `vercel dev`, `/api/manifest` quebrava o PWA. */
-function devApiManifestPlugin(): Plugin {
-  return {
-    name: 'dev-api-manifest',
-    enforce: 'pre',
-    configureServer(server) {
-      server.middlewares.use((req, res, next) => {
-        const pathname = (req.url ?? '').split('?')[0] ?? '';
-        if (pathname !== '/api/manifest') {
-          next();
-          return;
-        }
-        if (req.method !== 'GET' && req.method !== 'HEAD') {
-          next();
-          return;
-        }
-        try {
-          const file = path.resolve(__dirname, 'public', 'manifest.json');
-          const body = fs.readFileSync(file, 'utf-8');
-          JSON.parse(body);
-          res.statusCode = 200;
-          res.setHeader('Content-Type', 'application/manifest+json');
-          res.setHeader('Cache-Control', 'public, max-age=0');
-          res.end(body);
-        } catch {
-          const fallback: Record<string, unknown> = {
-            name: 'QA Agile Guide',
-            short_name: 'QA Guide',
-            description: 'Ferramenta de gestão de projetos de QA',
-            start_url: '/',
-            display: 'standalone',
-            background_color: '#ffffff',
-            theme_color: '#0E6DFD',
-            icons: [],
-          };
-          res.statusCode = 200;
-          res.setHeader('Content-Type', 'application/manifest+json');
-          res.setHeader('Cache-Control', 'no-cache');
-          res.end(JSON.stringify(fallback));
-        }
-      });
-    },
-  };
-}
-
 export default defineConfig({
   server: {
+    // 127.0.0.1 evita IPv6/localhost e SW antigo registrado só em "localhost"
     port: 5173,
-    host: true, // true = escuta em 0.0.0.0 e mostra URL local (localhost)
-    strictPort: false, // se 5173 estiver em uso, tenta a próxima porta livre
-    open: true, // abre o app em http://localhost:5173 ao rodar npm run dev
-    // Em desenvolvimento local: encaminha /api/* para o servidor que expõe o proxy Supabase (ex.: vercel dev na porta 3000)
+    host: '127.0.0.1',
+    strictPort: true, // falha se 5173 ocupada (atalho não abre porta errada)
+    open: false, // start-local.bat abre o browser depois que o HTTP responde
+    // Demais /api/* (ex.: supabaseProxy) → vercel dev na :3000, se estiver rodando
     proxy: {
       '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,
+        bypass(req) {
+          const url = req.url ?? '';
+          // false = nao encaminhar ao :3000; o middleware Vite atende
+          if (url.startsWith('/api/manifest') || url.startsWith('/api/jira-proxy')) {
+            return false;
+          }
+          return undefined;
+        },
       },
     },
   },
   plugins: [
-    devApiManifestPlugin(),
+    devApiMiddlewarePlugin(__dirname),
     react(),
     VitePWA({
       registerType: 'autoUpdate',
@@ -210,8 +174,9 @@ export default defineConfig({
         ],
       },
       devOptions: {
-        enabled: true,
-        type: 'module',
+        // Desligado em dev: SW/Workbox ativo no localhost faz ERR_FAILED
+        // quando o Vite ainda não subiu ou a porta muda.
+        enabled: false,
       },
     }),
     // Bundle analyzer (apenas em build de análise)

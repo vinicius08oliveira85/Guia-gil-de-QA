@@ -11,6 +11,7 @@ import { useProjectsStore } from '../store/projectsStore';
 import { useErrorHandler } from './useErrorHandler';
 import { logger } from '../utils/logger';
 import { propagateJiraTaskUpdatesToLinkedProjects } from '../utils/jiraCrossProjectSync';
+import { jiraSyncQueue } from '../services/jiraSyncQueue';
 
 type OnUpdateProject = (project: Project, options?: { silent?: boolean }) => Promise<void>;
 
@@ -22,7 +23,6 @@ export function useJiraSync(project: Project | null, onUpdateProject: OnUpdatePr
     Array<{ key: string; name: string }>
   >([]);
   const [selectedJiraProjectKey, setSelectedJiraProjectKey] = useState<string>('');
-
   const extractJiraProjectKey = useCallback((): string | null => {
     if (!project?.tasks?.length) return null;
     const firstTaskId = project.tasks[0].id;
@@ -271,7 +271,7 @@ export function useJiraSync(project: Project | null, onUpdateProject: OnUpdatePr
       }
       return;
     }
-    await performSync(config, jiraProjectKey);
+    await jiraSyncQueue.enqueue(`sync-${project.id}`, () => performSync(config, jiraProjectKey));
   }, [project, extractJiraProjectKey, handleError, performSync]);
 
   const handleConfirmJiraProject = useCallback(async () => {
@@ -285,9 +285,11 @@ export function useJiraSync(project: Project | null, onUpdateProject: OnUpdatePr
       return;
     }
     setShowJiraProjectSelector(false);
-    await performSync(config, selectedJiraProjectKey);
+    await jiraSyncQueue.enqueue(`sync-${project?.id || 'confirm'}`, () =>
+      performSync(config, selectedJiraProjectKey)
+    );
     setSelectedJiraProjectKey('');
-  }, [selectedJiraProjectKey, performSync, handleError]);
+  }, [selectedJiraProjectKey, performSync, handleError, project?.id]);
 
   return {
     handleSyncJira,
@@ -298,5 +300,14 @@ export function useJiraSync(project: Project | null, onUpdateProject: OnUpdatePr
     selectedJiraProjectKey,
     setSelectedJiraProjectKey,
     handleConfirmJiraProject,
+    syncQueue: {
+      clearQueue: () => jiraSyncQueue.clearQueue(),
+      get queueSize() {
+        return jiraSyncQueue.queueSize;
+      },
+      get isProcessing() {
+        return jiraSyncQueue.isProcessing;
+      },
+    },
   };
 }

@@ -119,6 +119,7 @@ export const ProjectSchema = z.object({
   businessRuleCategoryPresets: z.array(z.string()).optional(),
   tasks: z.array(z.any()).default([]), // TaskSchema é muito complexo, manter any por enquanto
   phases: z.array(PhaseSchema).default([]),
+  lastJiraSyncAt: z.string().optional(),
 });
 
 export const TaskSchema = z.object({

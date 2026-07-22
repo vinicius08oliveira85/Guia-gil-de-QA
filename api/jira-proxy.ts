@@ -1,113 +1,27 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { executeJiraProxy, type JiraProxyRequestBody } from './jiraProxyCore';
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
-  // Permitir apenas requisições POST
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
   }
 
-  const {
-    url,
-    email,
-    apiToken,
-    endpoint,
-    method = 'GET',
-    body,
-    isBinary = false,
-    apiRoot = 'api/3',
-    urlMode = 'rest',
-    extraHeaders = {},
-  } = req.body;
+  const result = await executeJiraProxy(req.body as JiraProxyRequestBody);
 
-  if (!url || !email || !apiToken || !endpoint) {
-    res.status(400).json({ error: 'Missing required parameters' });
+  if (!result.ok) {
+    res.status(result.status).json({ error: result.error });
     return;
   }
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 segundos
-
-  try {
-    // Criar credenciais Basic Auth
-    const credentials = Buffer.from(`${email}:${apiToken}`).toString('base64');
-
-    // Se o endpoint contém /secure/attachment/, é uma imagem/anexo binário
-    const isAttachment = endpoint.includes('/secure/attachment/') || isBinary;
-
-    // Construir URL: se for attachment, usar URL direta; senão, usar REST API
-    const baseUrl = url.replace(/\/$/, '');
-    const normalizedEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
-    const jiraUrl = isAttachment
-      ? `${baseUrl}/${normalizedEndpoint}`
-      : urlMode === 'atlassian'
-        ? `https://api.atlassian.com/${normalizedEndpoint}`
-        : urlMode === 'site'
-          ? `${baseUrl}/${normalizedEndpoint}`
-          : `${baseUrl}/rest/${apiRoot}/${normalizedEndpoint}`;
-
-    // Headers apropriados para binário ou JSON
-    const headers: Record<string, string> = {
-      Authorization: `Basic ${credentials}`,
-      ...(extraHeaders && typeof extraHeaders === 'object' ? extraHeaders : {}),
-    };
-
-    if (isAttachment) {
-      // Para anexos/imagens, aceitar qualquer tipo de mídia
-      headers['Accept'] = '*/*';
-    } else {
-      headers['Accept'] = 'application/json';
-      headers['Content-Type'] = 'application/json';
-    }
-
-    // Fazer requisição ao Jira com timeout de 60 segundos
-    const response = await fetch(jiraUrl, {
-      method,
-      headers,
-      body: body && !isAttachment ? JSON.stringify(body) : body,
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      res.status(response.status).json({
-        error: `Jira API Error (${response.status}): ${errorText}`,
-      });
-      return;
-    }
-
-    // Se for binário (imagem/anexo), retornar blob
-    if (isAttachment) {
-      const blob = await response.blob();
-      const contentType = response.headers.get('content-type') || 'application/octet-stream';
-
-      res.setHeader('Content-Type', contentType);
-      res.setHeader('Content-Length', blob.size.toString());
-      res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache de 1 hora
-
-      const buffer = await blob.arrayBuffer();
-      res.status(200).send(Buffer.from(buffer));
-      return;
-    }
-
-    // Caso contrário, retornar JSON
-    const data = await response.json();
-    res.status(200).json(data);
-  } catch (error) {
-    clearTimeout(timeoutId);
-
-    if (error instanceof Error && error.name === 'AbortError') {
-      res.status(504).json({
-        error: 'Timeout: A requisição ao Jira demorou mais de 60 segundos',
-      });
-      return;
-    }
-
-    console.error('Jira proxy error:', error);
-    res.status(500).json({
-      error: error instanceof Error ? error.message : 'Internal server error',
-    });
+  if (result.isBinary) {
+    const buffer = result.payload as Buffer;
+    res.setHeader('Content-Type', result.contentType);
+    res.setHeader('Content-Length', buffer.length.toString());
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.status(200).send(buffer);
+    return;
   }
+
+  res.status(200).json(result.payload);
 }

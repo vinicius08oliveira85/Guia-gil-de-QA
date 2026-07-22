@@ -1,8 +1,73 @@
 import type { JiraConfig } from './types';
 import { logger } from '../../utils/logger';
+import { RateLimiter } from '../../utils/rateLimiter';
 
 type JiraApiRoot = 'api/3' | 'agile/1.0' | 'servicedeskapi' | 'proforma/1';
 type JiraUrlMode = 'rest' | 'site' | 'atlassian';
+
+/** Rate limiter global para chamadas Jira (50 req/min com delay de 200ms). */
+const jiraRateLimiter = new RateLimiter({
+  maxRequests: 50,
+  windowMs: 60000,
+  minDelayMs: 200,
+  maxConcurrent: 4,
+});
+
+/** Rastreia backoff adaptativo para 429. */
+let consecutive429s = 0;
+let backoffUntil = 0;
+
+const MAX_RETRIES = 3;
+
+async function executeWithRetry<T>(
+  fn: () => Promise<T>,
+  attempt: number = 1
+): Promise<T> {
+  try {
+    return await fn();
+  } catch (error) {
+    const is429 = error instanceof Error && error.message.includes('429');
+    const isTimeout = error instanceof Error && error.name === 'AbortError';
+    const isNetwork = error instanceof TypeError;
+
+    if (!is429 && !isTimeout && !isNetwork) {
+      throw error; // Erro não recuperável
+    }
+
+    if (attempt >= MAX_RETRIES) {
+      if (is429) {
+        throw new Error(
+          'Jira API rate limit excedido após 3 tentativas. Aguarde alguns instantes e tente novamente.'
+        );
+      }
+      throw error;
+    }
+
+    if (is429) {
+      consecutive429s++;
+      // Backoff exponencial: 2^tentativa segundos, mínimo 5s, máximo 60s
+      const backoffMs = Math.min(5000 * Math.pow(2, attempt - 1), 60000);
+      // Reduzir concurrency dinamicamente
+      const newConcurrent = Math.max(1, 4 - consecutive429s);
+      logger.warn(
+        `Rate limit (429) na tentativa ${attempt}/${MAX_RETRIES}. Backoff de ${backoffMs}ms, reduzindo concurrency para ${newConcurrent}.`,
+        'jiraApi'
+      );
+      backoffUntil = Date.now() + backoffMs;
+      await new Promise(resolve => setTimeout(resolve, backoffMs));
+    } else {
+      // Timeout ou erro de rede: backoff mais curto
+      const waitMs = Math.min(1000 * attempt, 10000);
+      logger.debug(
+        `Erro recuperável (tentativa ${attempt}/${MAX_RETRIES}): ${error instanceof Error ? error.message : 'desconhecido'}. Aguardando ${waitMs}ms.`,
+        'jiraApi'
+      );
+      await new Promise(resolve => setTimeout(resolve, waitMs));
+    }
+
+    return executeWithRetry(fn, attempt + 1);
+  }
+}
 
 async function jiraRequest<T>(
   config: JiraConfig,
@@ -21,92 +86,154 @@ async function jiraRequest<T>(
   const timeout = options.timeout || 60000;
   const apiRoot = options.apiRoot ?? 'api/3';
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-  try {
-    const requestBody = {
-      url: config.url,
-      email: config.email,
-      apiToken: config.apiToken,
-      endpoint,
-      apiRoot,
-      urlMode: options.urlMode ?? 'rest',
-      extraHeaders: options.extraHeaders,
-      method: options.method || 'GET',
-      body: options.body
-        ? typeof options.body === 'string'
-          ? JSON.parse(options.body)
-          : options.body
-        : undefined,
-    };
-
-    logger.debug('Fazendo requisição ao proxy Jira', 'jiraService', {
-      endpoint,
-      apiRoot,
-      method: requestBody.method,
-    });
-
-    const response = await fetch('/api/jira-proxy', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    logger.debug('Resposta do proxy', 'jiraService', { status: response.status, ok: response.ok });
-
-    const responseText = await response.text();
-
-    if (!response.ok) {
-      let errorData: { error?: string };
-      const isQuietHttpError =
-        options.quietHttpErrors && (response.status === 403 || response.status === 404);
-      const logHttpError = isQuietHttpError ? logger.debug.bind(logger) : logger.error.bind(logger);
-      try {
-        errorData = JSON.parse(responseText) as { error?: string };
-        logHttpError('Erro do proxy', 'jiraService', errorData);
-      } catch {
-        logHttpError('Erro do proxy (texto)', 'jiraService', responseText);
-        errorData = { error: responseText || `Jira API Error (${response.status})` };
-      }
-      throw new Error(errorData.error || `Jira API Error (${response.status})`);
-    }
-
-    if (!responseText.trim()) {
-      return undefined as T;
-    }
-
-    const data = JSON.parse(responseText) as T;
-    logger.debug('Dados recebidos do proxy', 'jiraService', data);
-    return data;
-  } catch (error) {
-    clearTimeout(timeoutId);
-    if (error instanceof Error && error.name === 'AbortError') {
-      logger.error('Timeout na requisição', 'jiraService', error);
-      throw new Error(
-        `Timeout: A requisição demorou mais de ${timeout / 1000} segundos. Verifique sua conexão ou tente novamente.`
-      );
-    }
-    if (options.quietHttpErrors && error instanceof Error) {
-      const msg = error.message.toLowerCase();
-      if (
-        msg.includes('403') ||
-        msg.includes('404') ||
-        msg.includes('forbidden') ||
-        msg.includes('not found')
-      ) {
-        logger.debug('Requisição Jira opcional falhou', 'jiraService', error);
-        throw error;
-      }
-    }
-    logger.error('Erro na requisição', 'jiraService', error);
-    throw error;
+  // Aguardar backoff se estiver em período de resfriamento por 429
+  if (Date.now() < backoffUntil) {
+    const waitTime = backoffUntil - Date.now();
+    logger.debug(`Aguardando backoff de 429 por ${waitTime}ms`, 'jiraApi');
+    await new Promise(resolve => setTimeout(resolve, Math.min(waitTime, 5000)));
   }
+
+  // Acquire rate limiter
+  await jiraRateLimiter.acquire();
+
+  return executeWithRetry(async () => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    try {
+      const requestBody = {
+        url: config.url,
+        email: config.email,
+        apiToken: config.apiToken,
+        endpoint,
+        apiRoot,
+        urlMode: options.urlMode ?? 'rest',
+        extraHeaders: options.extraHeaders,
+        method: options.method || 'GET',
+        body: options.body
+          ? typeof options.body === 'string'
+            ? JSON.parse(options.body)
+            : options.body
+          : undefined,
+      };
+
+      logger.debug('Fazendo requisição ao proxy Jira', 'jiraService', {
+        endpoint,
+        apiRoot,
+        method: requestBody.method,
+      });
+
+      let response: Response;
+      try {
+        response = await fetch('/api/jira-proxy', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+          signal: controller.signal,
+        });
+      } catch (proxyError) {
+        // Fallback: proxy offline → tentar chamada direta (CORS permitting)
+        clearTimeout(timeoutId);
+        logger.warn('Proxy Jira indisponível, tentando chamada direta', 'jiraApi', proxyError);
+
+        const baseUrl = config.url.replace(/\/$/, '');
+        const directUrl = `${baseUrl}/rest/${apiRoot}/${endpoint}`;
+        const auth = btoa(`${config.email}:${config.apiToken}`);
+
+        const newController = new AbortController();
+        const newTimeoutId = setTimeout(() => newController.abort(), timeout);
+
+        try {
+          response = await fetch(directUrl, {
+            method: requestBody.method,
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Basic ${auth}`,
+              ...(options.extraHeaders || {}),
+            },
+            body: requestBody.body ? JSON.stringify(requestBody.body) : undefined,
+            signal: newController.signal,
+          });
+          clearTimeout(newTimeoutId);
+          logger.info('Chamada direta ao Jira bem-sucedida (fallback)', 'jiraApi', {
+            endpoint,
+            status: response.status,
+          });
+        } catch (directError) {
+          clearTimeout(newTimeoutId);
+          throw new Error(
+            `Proxy Jira indisponível e chamada direta falhou. Verifique sua conexão de rede e se o servidor proxy está rodando.`
+          );
+        }
+      }
+
+      clearTimeout(timeoutId);
+
+      logger.debug('Resposta do proxy', 'jiraService', { status: response.status, ok: response.ok });
+
+      if (response.status === 429) {
+        consecutive429s++;
+        await jiraRateLimiter.release();
+        throw new Error(`Jira API Error (429) - Rate limit`);
+      }
+
+      // Reset contagem de 429 em sucesso
+      consecutive429s = 0;
+
+      const responseText = await response.text();
+
+      if (!response.ok) {
+        let errorData: { error?: string };
+        const isQuietHttpError =
+          options.quietHttpErrors && (response.status === 403 || response.status === 404);
+        const logHttpError = isQuietHttpError ? logger.debug.bind(logger) : logger.error.bind(logger);
+        try {
+          errorData = JSON.parse(responseText) as { error?: string };
+          logHttpError('Erro do proxy', 'jiraService', errorData);
+        } catch {
+          logHttpError('Erro do proxy (texto)', 'jiraService', responseText);
+          errorData = { error: responseText || `Jira API Error (${response.status})` };
+        }
+        throw new Error(errorData.error || `Jira API Error (${response.status})`);
+      }
+
+      await jiraRateLimiter.release();
+
+      if (!responseText.trim()) {
+        return undefined as T;
+      }
+
+      const data = JSON.parse(responseText) as T;
+      logger.debug('Dados recebidos do proxy', 'jiraService', data);
+      return data;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      await jiraRateLimiter.release();
+
+      if (error instanceof Error && error.name === 'AbortError') {
+        logger.error('Timeout na requisição', 'jiraService', error);
+        throw new Error(
+          `Timeout: A requisição demorou mais de ${timeout / 1000} segundos. Verifique sua conexão ou tente novamente.`
+        );
+      }
+      if (options.quietHttpErrors && error instanceof Error) {
+        const msg = error.message.toLowerCase();
+        if (
+          msg.includes('403') ||
+          msg.includes('404') ||
+          msg.includes('forbidden') ||
+          msg.includes('not found')
+        ) {
+          logger.debug('Requisição Jira opcional falhou', 'jiraService', error);
+          throw error;
+        }
+      }
+      logger.error('Erro na requisição', 'jiraService', error);
+      throw error;
+    }
+  });
 }
 
 export const jiraApiCall = async <T>(

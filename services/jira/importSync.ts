@@ -1,28 +1,70 @@
-import type { Project, JiraTask, ProjectWorkflow } from '../../types';
+import type { Project, JiraTask } from '../../types';
 import type { JiraConfig } from './types';
-import { EPIC_LINK_FIELD_KEYS } from './types';
 import { getJiraProjects, getJiraStatuses, getJiraPriorities } from './metadata';
 import { getJiraIssues } from './issues';
-import {
-  mapJiraStatusToTaskStatus,
-  mapJiraTypeToTaskType,
-  mapJiraPriorityToTaskPriority,
-  mapJiraSeverity,
-  extractEpicLink,
-  extractJiraComments,
-} from './mappers';
+import { mapJiraStatusToTaskStatus } from './mappers';
 import { loadTestStatusesByJiraKeys } from '../localTestStatusService';
-import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
 import { logger } from '../../utils/logger';
 import { normalizeTasksParentIdsAcyclic } from '../../utils/taskParentCycle';
-import { assignStoryPointsToTask } from '../../utils/taskStoryPoints';
-import { assignSprintsToTaskSync } from '../../utils/jiraSprintFields';
 import { buildJiraSprintSyncContext } from './sprintSync';
 import { DEFAULT_PROJECT_WORKFLOW, normalizeProjectWorkflow } from '../../utils/projectWorkflow';
+import { jiraIssueToTask } from './issueToTask';
+import type { ProjectWorkflow } from '../../types';
 
 export interface ImportJiraProjectOptions {
   workflow?: ProjectWorkflow;
+  /** JQL customizado para filtrar as issues importadas. Ex.: "project = PROJ AND type in (Bug, Task)" */
+  jql?: string;
 }
+
+export interface ImportPreview {
+  total: number;
+  epics: number;
+  stories: number;
+  tasks: number;
+  bugs: number;
+  others: number;
+  types: string[];
+}
+
+/**
+ * Retorna um preview da importação (breakdown por tipo) sem importar de fato.
+ */
+export const previewJiraImport = async (
+  config: JiraConfig,
+  jiraProjectKey: string,
+  jql?: string
+): Promise<ImportPreview> => {
+  const sprintCtx = await buildJiraSprintSyncContext(config, jiraProjectKey);
+  const issues = await getJiraIssues(config, jiraProjectKey, undefined, undefined, {
+    sprintFieldIds: sprintCtx.sprintFieldIds,
+    jql,
+  });
+
+  const uniqueTypes = [...new Set(issues.map(i => i.fields?.issuetype?.name).filter(Boolean))];
+  const count = (predicate: (name: string) => boolean) =>
+    issues.filter(i => predicate((i.fields?.issuetype?.name || '').toLowerCase())).length;
+
+  const epics = count(n => n.includes('epic') || n === 'épico' || n === 'epico');
+  const stories = count(n => n.includes('story') || n.includes('história') || n.includes('historia'));
+  const bugs = count(n => n.includes('bug') || n === 'erro' || n === 'defeito');
+  const tasks = count(
+    n =>
+      n.includes('task') ||
+      n.includes('tarefa') ||
+      (!n.includes('epic') && !n.includes('bug') && !n.includes('story') && n !== 'história')
+  );
+
+  return {
+    total: issues.length,
+    epics,
+    stories,
+    tasks,
+    bugs,
+    others: issues.length - epics - stories - tasks - bugs,
+    types: uniqueTypes as string[],
+  };
+};
 
 export const importJiraProject = async (
   config: JiraConfig,
@@ -43,6 +85,7 @@ export const importJiraProject = async (
   const sprintCtx = await buildJiraSprintSyncContext(config, jiraProjectKey);
   const jiraIssues = await getJiraIssues(config, jiraProjectKey, undefined, onProgress, {
     sprintFieldIds: sprintCtx.sprintFieldIds,
+    jql: options?.jql,
   });
 
   const jiraKeys = jiraIssues.map(issue => issue.key).filter(Boolean) as string[];
@@ -51,233 +94,16 @@ export const importJiraProject = async (
   logger.info(`Buscando status de testes para ${jiraKeys.length} chaves Jira`, 'jiraService');
 
   const tasks: JiraTask[] = await Promise.all(
-    jiraIssues.map(async (issue, index) => {
-      const taskType = mapJiraTypeToTaskType(issue.fields?.issuetype?.name);
-      const isBug = taskType === 'Bug';
-
-      let jiraAttachments: Array<{
-        id: string;
-        filename: string;
-        size: number;
-        created: string;
-        author: string;
-      }> = [];
-      if (issue.fields?.attachment && issue.fields.attachment.length > 0) {
-        jiraAttachments = issue.fields.attachment.map((att: any) => ({
-          id: att.id,
-          filename: att.filename,
-          size: att.size,
-          created: att.created,
-          author: att.author?.displayName || 'Desconhecido',
-        }));
-      }
-
-      let description = '';
-      if (issue.renderedFields?.description) {
-        description = parseJiraDescriptionHTML(
-          issue.renderedFields.description,
-          config.url,
-          jiraAttachments
-        );
-      } else if (issue.fields?.description) {
-        description = parseJiraDescriptionHTML(
-          issue.fields.description,
-          config.url,
-          jiraAttachments
-        );
-      }
-
-      if (index < 3) {
-        logger.debug(`Tarefa ${issue.key}`, 'jiraService', {
-          title: issue.fields?.summary,
-          type: taskType,
-          hasDescription: !!description,
-          descriptionLength: description.length,
-          descriptionPreview: description.substring(0, 100),
-          attachmentsCount: jiraAttachments.length,
-        });
-      }
-
-      const jiraComments = await extractJiraComments(config, issue, jiraAttachments);
-
-      const jiraStatusName = issue.fields?.status?.name || '';
-      const jiraKey = issue.key || `jira-${Date.now()}-${Math.random()}`;
-
-      const savedTestCases = savedTestStatuses.get(jiraKey) || [];
-
-      const task: JiraTask = {
-        id: jiraKey,
-        title: issue.fields?.summary || 'Sem título',
-        description: description || '',
-        jiraIssueTypeIconUrl: issue.fields?.issuetype?.iconUrl,
-        status: mapJiraStatusToTaskStatus(jiraStatusName),
-        jiraStatus: jiraStatusName,
-        type: taskType,
-        priority: mapJiraPriorityToTaskPriority(issue.fields?.priority?.name),
-        jiraPriority: issue.fields?.priority?.name,
-        createdAt: issue.fields?.created || new Date().toISOString(),
-        completedAt: issue.fields?.resolutiondate,
-        tags: issue.fields?.labels || [],
-        testCases: savedTestCases,
-        bddScenarios: [],
-        comments: jiraComments,
-      };
-
-      if (savedTestCases.length > 0) {
-        logger.debug(
-          `Preservando ${savedTestCases.length} testCases salvos para ${jiraKey}`,
-          'jiraService'
-        );
-      }
-
-      if (isBug) {
-        task.severity = mapJiraSeverity(issue.fields?.labels);
-      }
-
-      if (issue.fields?.parent?.key) {
-        task.parentId = issue.fields.parent.key;
-      }
-
-      const epicKey = extractEpicLink(issue.fields);
-      if (epicKey) {
-        task.epicKey = epicKey;
-      }
-
-      if (issue.fields?.assignee?.emailAddress) {
-        const email = issue.fields.assignee.emailAddress.toLowerCase();
-        if (email.includes('qa') || email.includes('test')) {
-          task.assignee = 'QA';
-        } else if (email.includes('dev') || email.includes('developer')) {
-          task.assignee = 'Dev';
-        } else {
-          task.assignee = 'Product';
-        }
-      } else {
-        task.assignee = 'Product';
-      }
-      if (issue.fields?.assignee) {
-        task.jiraAssignee = {
-          displayName: issue.fields.assignee.displayName,
-          emailAddress: issue.fields.assignee.emailAddress,
-        };
-      } else {
-        task.jiraAssignee = undefined;
-      }
-
-      if (issue.fields?.duedate) {
-        task.dueDate = issue.fields.duedate;
-      }
-
-      if (issue.fields?.timetracking) {
-        task.timeTracking = {
-          originalEstimate: issue.fields.timetracking.originalEstimate,
-          remainingEstimate: issue.fields.timetracking.remainingEstimate,
-          timeSpent: issue.fields.timetracking.timeSpent,
-        };
-      }
-
-      if (issue.fields?.components && issue.fields.components.length > 0) {
-        task.components = issue.fields.components.map((comp: any) => ({
-          id: comp.id,
-          name: comp.name,
-        }));
-      }
-
-      if (issue.fields?.fixVersions && issue.fields.fixVersions.length > 0) {
-        task.fixVersions = issue.fields.fixVersions.map((version: any) => ({
-          id: version.id,
-          name: version.name,
-        }));
-      }
-
-      if (issue.fields?.environment) {
-        task.environment = issue.fields.environment;
-      }
-
-      if (issue.fields?.reporter) {
-        task.reporter = {
-          displayName: issue.fields.reporter.displayName,
-          emailAddress: issue.fields.reporter.emailAddress,
-        };
-      }
-
-      if (issue.fields?.watches) {
-        task.watchers = {
-          watchCount: issue.fields.watches.watchCount || 0,
-          isWatching: issue.fields.watches.isWatching || false,
-        };
-      }
-
-      if (issue.fields?.issuelinks && issue.fields.issuelinks.length > 0) {
-        task.issueLinks = issue.fields.issuelinks.map((link: any) => ({
-          id: link.id,
-          type: link.type?.name || '',
-          relatedKey: link.outwardIssue?.key || link.inwardIssue?.key || '',
-          direction: link.outwardIssue ? 'outward' : 'inward',
-        }));
-      }
-
-      if (issue.fields?.attachment && issue.fields.attachment.length > 0) {
-        task.jiraAttachments = issue.fields.attachment.map((att: any) => ({
-          id: att.id,
-          filename: att.filename,
-          size: att.size,
-          created: att.created,
-          author: att.author?.displayName || 'Desconhecido',
-        }));
-      }
-
-      const standardFields = [
-        'summary',
-        'description',
-        'issuetype',
-        'status',
-        'priority',
-        'assignee',
-        'reporter',
-        'created',
-        'updated',
-        'resolutiondate',
-        'labels',
-        'parent',
-        'subtasks',
-        'comment',
-        'duedate',
-        'timetracking',
-        'components',
-        'fixVersions',
-        'environment',
-        'watches',
-        'issuelinks',
-        'attachment',
-      ];
-      const customFields: { [key: string]: any } = {};
-      Object.keys(issue.fields).forEach(key => {
-        if (
-          !standardFields.includes(key) &&
-          !key.startsWith('_') &&
-          !EPIC_LINK_FIELD_KEYS.includes(key)
-        ) {
-          customFields[key] = issue.fields[key];
-        }
-      });
-      if (Object.keys(customFields).length > 0) {
-        task.jiraCustomFields = customFields;
-      }
-      assignStoryPointsToTask(task);
-      assignSprintsToTaskSync(task, {
-        issueFields: issue.fields as Record<string, unknown>,
-        sprintFieldIds: sprintCtx.sprintFieldIds,
-        sprintCatalog: sprintCtx.sprintCatalog,
-      });
-
-      return task;
+    jiraIssues.map(async issue => {
+      const savedTestCases = savedTestStatuses.get(issue.key) || [];
+      const task = await jiraIssueToTask(config, issue, { jiraProjectKey, sprintCtx });
+      return savedTestCases.length > 0 ? { ...task, testCases: savedTestCases } : task;
     })
   );
 
   const tasksNormalized = normalizeTasksParentIdsAcyclic(tasks);
 
-  const project: Project = {
+  return {
     id: `jira-${jiraProject.id}-${Date.now()}`,
     name: jiraProject.name,
     description: jiraProject.description || `Projeto importado do Jira: ${jiraProjectKey}`,
@@ -293,10 +119,12 @@ export const importJiraProject = async (
       jiraProjectKey: jiraProjectKey,
     },
   };
-
-  return project;
 };
 
+/**
+ * Adiciona issues novas e atualiza as existentes via {@link jiraIssueToTask}
+ * (preserva testCases/bddScenarios e artefatos locais).
+ */
 export const addNewJiraTasks = async (
   config: JiraConfig,
   project: Project,
@@ -318,219 +146,46 @@ export const addNewJiraTasks = async (
   });
 
   const existingTasksMap = new Map(project.tasks.map(t => [t.id, t]));
+  const newIssues = jiraIssues.filter(issue => issue.key && !existingTasksMap.has(issue.key));
+  const existingIssues = jiraIssues.filter(issue => issue.key && existingTasksMap.has(issue.key));
 
-  const newIssues = jiraIssues.filter(issue => !existingTasksMap.has(issue.key));
+  let updatedStatusCount = 0;
+  for (const issue of existingIssues) {
+    const existingTask = existingTasksMap.get(issue.key!);
+    if (!existingTask) continue;
+    const jiraStatusName = issue.fields?.status?.name || '';
+    const mappedStatus = mapJiraStatusToTaskStatus(jiraStatusName);
+    if (existingTask.status !== mappedStatus || existingTask.jiraStatus !== jiraStatusName) {
+      updatedStatusCount++;
+      logger.debug(
+        `Status atualizado para ${issue.key}: "${existingTask.jiraStatus}" → "${jiraStatusName}"`,
+        'importSync'
+      );
+    }
+  }
 
-  const updatedStatusCount = 0;
-
-  if (newIssues.length === 0) {
-    return { project, newTasksCount: 0, updatedStatusCount };
+  if (newIssues.length === 0 && existingIssues.length === 0) {
+    return { project, newTasksCount: 0, updatedStatusCount: 0 };
   }
 
   const newTasks: JiraTask[] = await Promise.all(
-    newIssues.map(async issue => {
-      const taskType = mapJiraTypeToTaskType(issue.fields?.issuetype?.name);
-      const isBug = taskType === 'Bug';
+    newIssues.map(issue => jiraIssueToTask(config, issue, { jiraProjectKey, sprintCtx }))
+  );
 
-      let jiraAttachments: Array<{
-        id: string;
-        filename: string;
-        size: number;
-        created: string;
-        author: string;
-      }> = [];
-      if (issue.fields?.attachment && issue.fields.attachment.length > 0) {
-        jiraAttachments = issue.fields.attachment.map((att: any) => ({
-          id: att.id,
-          filename: att.filename,
-          size: att.size,
-          created: att.created,
-          author: att.author?.displayName || 'Desconhecido',
-        }));
-      }
-
-      let description = '';
-      if (issue.renderedFields?.description) {
-        description = parseJiraDescriptionHTML(
-          issue.renderedFields.description,
-          config.url,
-          jiraAttachments
-        );
-      } else if (issue.fields?.description) {
-        description = parseJiraDescriptionHTML(
-          issue.fields.description,
-          config.url,
-          jiraAttachments
-        );
-      }
-
-      const jiraComments = await extractJiraComments(config, issue, jiraAttachments);
-
-      const jiraStatusName = issue.fields?.status?.name || '';
-      const task: JiraTask = {
-        id: issue.key || `jira-${Date.now()}-${Math.random()}`,
-        title: issue.fields?.summary || 'Sem título',
-        description: description || '',
-        jiraIssueTypeIconUrl: issue.fields?.issuetype?.iconUrl,
-        status: mapJiraStatusToTaskStatus(jiraStatusName),
-        jiraStatus: jiraStatusName,
-        type: taskType,
-        priority: mapJiraPriorityToTaskPriority(issue.fields?.priority?.name),
-        jiraPriority: issue.fields?.priority?.name,
-        createdAt: issue.fields?.created || new Date().toISOString(),
-        completedAt: issue.fields?.resolutiondate,
-        tags: issue.fields?.labels || [],
-        testCases: [],
-        bddScenarios: [],
-        comments: jiraComments,
-      };
-
-      if (isBug) {
-        task.severity = mapJiraSeverity(issue.fields?.labels);
-      }
-
-      if (issue.fields?.parent?.key) {
-        task.parentId = issue.fields.parent.key;
-      }
-
-      const epicKey = extractEpicLink(issue.fields);
-      if (epicKey) {
-        task.epicKey = epicKey;
-      }
-
-      if (issue.fields?.assignee?.emailAddress) {
-        const email = issue.fields.assignee.emailAddress.toLowerCase();
-        if (email.includes('qa') || email.includes('test')) {
-          task.assignee = 'QA';
-        } else if (email.includes('dev') || email.includes('developer')) {
-          task.assignee = 'Dev';
-        } else {
-          task.assignee = 'Product';
-        }
-      } else {
-        task.assignee = 'Product';
-      }
-      if (issue.fields?.assignee) {
-        task.jiraAssignee = {
-          displayName: issue.fields.assignee.displayName,
-          emailAddress: issue.fields.assignee.emailAddress,
-        };
-      } else {
-        task.jiraAssignee = undefined;
-      }
-
-      if (issue.fields?.duedate) {
-        task.dueDate = issue.fields.duedate;
-      }
-
-      if (issue.fields?.timetracking) {
-        task.timeTracking = {
-          originalEstimate: issue.fields.timetracking.originalEstimate,
-          remainingEstimate: issue.fields.timetracking.remainingEstimate,
-          timeSpent: issue.fields.timetracking.timeSpent,
-        };
-      }
-
-      if (issue.fields?.components && issue.fields.components.length > 0) {
-        task.components = issue.fields.components.map((comp: any) => ({
-          id: comp.id,
-          name: comp.name,
-        }));
-      }
-
-      if (issue.fields?.fixVersions && issue.fields.fixVersions.length > 0) {
-        task.fixVersions = issue.fields.fixVersions.map((version: any) => ({
-          id: version.id,
-          name: version.name,
-        }));
-      }
-
-      if (issue.fields?.environment) {
-        task.environment = issue.fields.environment;
-      }
-
-      if (issue.fields?.reporter) {
-        task.reporter = {
-          displayName: issue.fields.reporter.displayName,
-          emailAddress: issue.fields.reporter.emailAddress,
-        };
-      }
-
-      if (issue.fields?.watches) {
-        task.watchers = {
-          watchCount: issue.fields.watches.watchCount || 0,
-          isWatching: issue.fields.watches.isWatching || false,
-        };
-      }
-
-      if (issue.fields?.issuelinks && issue.fields.issuelinks.length > 0) {
-        task.issueLinks = issue.fields.issuelinks.map((link: any) => ({
-          id: link.id,
-          type: link.type?.name || '',
-          relatedKey: link.outwardIssue?.key || link.inwardIssue?.key || '',
-          direction: link.outwardIssue ? 'outward' : 'inward',
-        }));
-      }
-
-      if (issue.fields?.attachment && issue.fields.attachment.length > 0) {
-        task.jiraAttachments = issue.fields.attachment.map((att: any) => ({
-          id: att.id,
-          filename: att.filename,
-          size: att.size,
-          created: att.created,
-          author: att.author?.displayName || 'Desconhecido',
-        }));
-      }
-
-      const standardFields = [
-        'summary',
-        'description',
-        'issuetype',
-        'status',
-        'priority',
-        'assignee',
-        'reporter',
-        'created',
-        'updated',
-        'resolutiondate',
-        'labels',
-        'parent',
-        'subtasks',
-        'comment',
-        'duedate',
-        'timetracking',
-        'components',
-        'fixVersions',
-        'environment',
-        'watches',
-        'issuelinks',
-        'attachment',
-      ];
-      const customFields: { [key: string]: any } = {};
-      Object.keys(issue.fields).forEach(key => {
-        if (
-          !standardFields.includes(key) &&
-          !key.startsWith('_') &&
-          !EPIC_LINK_FIELD_KEYS.includes(key)
-        ) {
-          customFields[key] = issue.fields[key];
-        }
+  const existingByKey = new Map(existingIssues.map(i => [i.key!, i]));
+  const updatedExistingTasks: JiraTask[] = await Promise.all(
+    project.tasks.map(async task => {
+      const issue = existingByKey.get(task.id);
+      if (!issue) return task;
+      return jiraIssueToTask(config, issue, {
+        jiraProjectKey,
+        existingTask: task,
+        sprintCtx,
       });
-      if (Object.keys(customFields).length > 0) {
-        task.jiraCustomFields = customFields;
-      }
-      assignStoryPointsToTask(task);
-      assignSprintsToTaskSync(task, {
-        issueFields: issue.fields as Record<string, unknown>,
-        sprintFieldIds: sprintCtx.sprintFieldIds,
-        sprintCatalog: sprintCtx.sprintCatalog,
-      });
-
-      return task;
     })
   );
 
-  const allTasks = normalizeTasksParentIdsAcyclic([...project.tasks, ...newTasks]);
+  const allTasks = normalizeTasksParentIdsAcyclic([...updatedExistingTasks, ...newTasks]);
 
   return {
     project: {

@@ -3,6 +3,12 @@ import { JIRA_CONFIG_KEY, JIRA_LAST_URL_KEY } from './types';
 import { jiraApiCall } from './api';
 import { logger } from '../../utils/logger';
 import { flushLocalFolderSync } from '../../utils/localFolderSyncScheduler';
+import {
+  saveEncryptedConfig,
+  loadDecryptedConfig,
+  removeEncryptedConfig,
+  hasEncryptedConfig,
+} from '../../utils/jiraConfigCrypto';
 
 function syncFolderBackupAfterConfigChange(): void {
   void flushLocalFolderSync({ force: true }).catch(() => {
@@ -11,7 +17,7 @@ function syncFolderBackupAfterConfigChange(): void {
 }
 
 export const saveJiraConfig = (config: JiraConfig): void => {
-  localStorage.setItem(JIRA_CONFIG_KEY, JSON.stringify(config));
+  saveEncryptedConfig(config);
   if (config.url?.trim()) {
     localStorage.setItem(JIRA_LAST_URL_KEY, config.url.trim());
   }
@@ -20,7 +26,20 @@ export const saveJiraConfig = (config: JiraConfig): void => {
 
 export const getJiraConfig = (): JiraConfig | null => {
   const stored = localStorage.getItem(JIRA_CONFIG_KEY);
-  return stored ? JSON.parse(stored) : null;
+  if (stored) {
+    // Fallback: migrar configuração antiga (plain text) para o novo formato criptografado
+    try {
+      const plain = JSON.parse(stored) as JiraConfig;
+      if (plain.apiToken && !hasEncryptedConfig()) {
+        saveEncryptedConfig(plain);
+        localStorage.removeItem(JIRA_CONFIG_KEY);
+      }
+      return plain;
+    } catch {
+      // ignorar formato inválido antigo
+    }
+  }
+  return loadDecryptedConfig();
 };
 
 export const getJiraLastUrl = (): string => {
@@ -36,6 +55,7 @@ export const setJiraLastUrl = (url: string): void => {
 
 export const deleteJiraConfig = (): void => {
   localStorage.removeItem(JIRA_CONFIG_KEY);
+  removeEncryptedConfig();
   syncFolderBackupAfterConfigChange();
 };
 

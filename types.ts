@@ -607,6 +607,8 @@ export interface Project {
    * @deprecated Conteúdo legado de nota única — migrado automaticamente para `notepadPages`.
    */
   notepadContent?: string;
+  /** ISO date da última sincronização bem-sucedida com o Jira (por projeto). */
+  lastJiraSyncAt?: string;
 }
 
 /** Aba interna do Bloco de Notas do projeto. */

@@ -16,9 +16,11 @@ export * from './jira';
 export async function syncJiraProject(
   config: JiraConfig,
   project: Project,
-  jiraProjectKey: string
+  jiraProjectKey: string,
+  updatedAfter?: string
 ): Promise<Project> {
   return jira.syncJiraProject(config, project, jiraProjectKey, () =>
-    useProjectsStore.getState().projects.find(p => p.id === project.id)
+    useProjectsStore.getState().projects.find(p => p.id === project.id),
+    updatedAfter
   );
 }
