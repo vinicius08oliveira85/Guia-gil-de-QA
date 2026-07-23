@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { Modal } from './Modal';
+import { Button } from './Button';
 import { Spinner } from './Spinner';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import {
@@ -311,10 +312,11 @@ export const FileImportModal: React.FC<FileImportModalProps> = React.memo(
           />
 
           {/* Botão para selecionar arquivo */}
-          <button
+          <Button
             onClick={handleFileButtonClick}
             disabled={isImporting}
-            className="btn btn-primary w-full"
+            variant="default"
+            className="w-full"
           >
             {isImporting ? (
               <>
@@ -324,7 +326,7 @@ export const FileImportModal: React.FC<FileImportModalProps> = React.memo(
             ) : (
               'Selecionar Arquivo'
             )}
-          </button>
+          </Button>
 
           {/* Resultado da importação */}
           {importResult && !importResult.success && (

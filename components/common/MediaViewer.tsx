@@ -155,9 +155,9 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
               <p className="text-sm text-base-content/70 mt-4 mb-4">
                 Visualização de {mediaType} será implementada em breve
               </p>
-              <button onClick={handleOpenExternal} className="btn btn-primary">
+              <Button onClick={handleOpenExternal} variant="default">
                 Abrir arquivo
-              </button>
+              </Button>
             </div>
           )}
         </div>

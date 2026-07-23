@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from './Button';
 import {
   FileText,
   Image as ImageIcon,
@@ -219,9 +220,9 @@ export const PDFPreview: React.FC<
         )}
       </div>
       {onView && (
-        <button onClick={onView} className="btn btn-sm btn-outline mt-2">
+        <Button onClick={onView} size="sm" variant="outline" className="mt-2">
           Visualizar PDF
-        </button>
+        </Button>
       )}
     </div>
   );

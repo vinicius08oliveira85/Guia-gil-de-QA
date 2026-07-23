@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Button } from './Button';
 import { Document, Page, pdfjs } from 'react-pdf';
 import {
   ChevronLeft,
@@ -90,10 +91,10 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
           <p className="text-lg font-semibold">{error}</p>
         </div>
         {onOpenExternal && (
-          <button onClick={onOpenExternal} className="btn btn-primary">
+          <Button onClick={onOpenExternal} variant="default">
             <ExternalLink size={16} className="mr-2" />
             Abrir PDF no navegador
-          </button>
+          </Button>
         )}
       </div>
     );
@@ -104,69 +105,69 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
       {/* Controles */}
       <div className="pdf-viewer-controls flex items-center justify-between p-2 bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] rounded-t-lg border-b border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]">
         <div className="flex items-center gap-2">
-          <button
+          <Button
             onClick={goToPrevPage}
             disabled={pageNumber <= 1}
-            className="btn btn-sm btn-ghost"
+            size="sm" variant="ghost"
             title="Página anterior"
           >
             <ChevronLeft size={16} />
-          </button>
+          </Button>
           <span className="text-sm font-medium px-2">
             {pageNumber} / {numPages || '?'}
           </span>
-          <button
+          <Button
             onClick={goToNextPage}
             disabled={!numPages || pageNumber >= numPages}
-            className="btn btn-sm btn-ghost"
+            size="sm" variant="ghost"
             title="Próxima página"
           >
             <ChevronRight size={16} />
-          </button>
+          </Button>
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          <Button
             onClick={zoomOut}
             disabled={scale <= 0.5}
-            className="btn btn-sm btn-ghost"
+            size="sm" variant="ghost"
             title="Diminuir zoom"
           >
             <ZoomOut size={16} />
-          </button>
+          </Button>
           <span className="text-sm font-medium px-2 min-w-[60px] text-center">
             {Math.round(scale * 100)}%
           </span>
-          <button
+          <Button
             onClick={zoomIn}
             disabled={scale >= 3.0}
-            className="btn btn-sm btn-ghost"
+            size="sm" variant="ghost"
             title="Aumentar zoom"
           >
             <ZoomIn size={16} />
-          </button>
-          <button onClick={resetZoom} className="btn btn-sm btn-ghost" title="Resetar zoom">
+          </Button>
+          <Button onClick={resetZoom} size="sm" variant="ghost" title="Resetar zoom">
             Reset
-          </button>
-          <button onClick={rotate} className="btn btn-sm btn-ghost" title="Rotacionar">
+          </Button>
+          <Button onClick={rotate} size="sm" variant="ghost" title="Rotacionar">
             <RotateCw size={16} />
-          </button>
+          </Button>
         </div>
 
         <div className="flex items-center gap-2">
           {onDownload && (
-            <button onClick={onDownload} className="btn btn-sm btn-ghost" title="Download">
+            <Button onClick={onDownload} size="sm" variant="ghost" title="Download">
               <Download size={16} />
-            </button>
+            </Button>
           )}
           {onOpenExternal && (
-            <button
+            <Button
               onClick={onOpenExternal}
-              className="btn btn-sm btn-ghost"
+              size="sm" variant="ghost"
               title="Abrir em nova aba"
             >
               <ExternalLink size={16} />
-            </button>
+            </Button>
           )}
         </div>
       </div>

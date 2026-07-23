@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { Button } from './Button';
 import { Attachment, JiraTask, Project } from '../../types';
 import {
   createAttachment,
@@ -104,9 +105,9 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
             Anexos ({attachments.length})
           </h3>
           {onClose && (
-            <button type="button" onClick={onClose} className="btn btn-ghost btn-sm btn-circle">
+            <Button type="button" onClick={onClose} size="circle" variant="ghost">
               ✕
-            </button>
+            </Button>
           )}
         </div>
       )}
@@ -187,22 +188,26 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
                     </button>
                   ) : null;
                 })()}
-                <button
+                <Button
                   type="button"
                   onClick={() => handleDownload(attachment)}
-                  className="btn btn-outline btn-sm rounded-full"
+                  size="sm"
+                  variant="outline"
+                  className="rounded-full"
                   title="Download"
                 >
                   ⬇️
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={() => handleRemove(attachment.id)}
-                  className="btn btn-ghost btn-sm btn-circle text-error"
+                  size="circle"
+                  variant="ghost"
+                  className="text-error"
                   title="Remover"
                 >
                   ✕
-                </button>
+                </Button>
               </div>
             </div>
           ))}

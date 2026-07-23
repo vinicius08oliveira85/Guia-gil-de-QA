@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChecklistItem } from '../../types';
 import { getChecklistProgress, canMoveToNextPhase } from '../../utils/checklistService';
+import { Button } from './Button';
 import { cn } from '../../utils/cn';
 import {
   neuCardClass,
@@ -164,22 +165,25 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
             {(onEditItem || onDeleteItem) && (
               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                 {onEditItem && !editingItemId && (
-                  <button
-                    type="button"
+                  <Button
                     onClick={() => handleStartEdit(item)}
-                    className={cn('btn btn-ghost btn-xs btn-square rounded-lg text-base-content/60', neuHoverSubtleClass)}
+                    size="iconSm"
+                    variant="ghost"
+                    className={cn('rounded-lg text-base-content/60', neuHoverSubtleClass)}
                   >
                     ✏️
-                  </button>
+                  </Button>
                 )}
                 {onDeleteItem && (
-                  <button
+                  <Button
                     type="button"
                     onClick={() => onDeleteItem(item.id)}
-                    className="btn btn-ghost btn-xs btn-square rounded-lg hover:bg-error/10 text-error/70 hover:text-error"
+                    size="iconSm"
+                    variant="ghost"
+                    className="rounded-lg hover:bg-error/10 text-error/70 hover:text-error"
                   >
                     ✕
-                  </button>
+                  </Button>
                 )}
               </div>
             )}

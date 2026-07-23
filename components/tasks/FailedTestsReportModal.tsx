@@ -7,6 +7,7 @@ import {
 } from '../../utils/failedTestsReportGenerator';
 import { downloadFile } from '../../utils/exportService';
 import { Badge } from '../common/Badge';
+import { Button } from '../common/Button';
 import { logger } from '../../utils/logger';
 import { generateFailedTestsAnalysisForPO } from '../../services/ai/failedTestsAnalysisService';
 import { generateFailedTestsPDF } from '../../utils/failedTestsPDFGenerator';
@@ -692,13 +693,12 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                       (searchQuery.trim() ? 1 : 0)}
                     )
                   </span>
-                  <button
-                    type="button"
+                  <Button
                     onClick={handleClearAllFilters}
-                    className="btn btn-xs btn-ghost"
+                    size="xs" variant="ghost"
                   >
                     Limpar Todos
-                  </button>
+                  </Button>
                 </div>
               )}
 
@@ -773,17 +773,14 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
               </p>
               <div className="flex gap-xs">
                 {formatOptions.map(option => (
-                  <button
+                  <Button
                     key={option.value}
-                    type="button"
                     onClick={() => setFormat(option.value)}
-                    className={`
-                      btn btn-xs
-                      ${format === option.value ? 'btn-primary' : 'btn-ghost'}
-                    `}
+                    size="xs"
+                    variant={format === option.value ? 'default' : 'ghost'}
                   >
                     {option.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -818,11 +815,11 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
             {/* Ações principais */}
             <div className="flex-shrink-0 flex flex-wrap items-center justify-between gap-md pt-md border-t border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]">
               <div className="flex items-center gap-xs">
-                <button
-                  type="button"
+                <Button
                   onClick={handleGenerateAIAnalysis}
                   disabled={isGeneratingAnalysis || filteredTests.length === 0}
-                  className="btn btn-primary btn-md flex items-center gap-2 disabled:opacity-50"
+                  size="default" variant="default"
+                  className="flex items-center gap-2 disabled:opacity-50"
                 >
                   {isGeneratingAnalysis ? (
                     <>
@@ -847,14 +844,14 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                       <span>Análise IA</span>
                     </>
                   )}
-                </button>
+                </Button>
               </div>
 
               <div className="flex items-center gap-xs">
-                <button
-                  type="button"
+                <Button
                   onClick={handleDownload}
-                  className="btn btn-ghost btn-md flex items-center gap-2"
+                  size="default" variant="ghost"
+                  className="flex items-center gap-2"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
@@ -865,11 +862,11 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                     />
                   </svg>
                   <span>Baixar</span>
-                </button>
-                <button
-                  type="button"
+                </Button>
+                <Button
                   onClick={handleCopy}
-                  className={`btn btn-ghost btn-md flex items-center gap-2 ${copied ? '!bg-success !text-success-content' : ''}`}
+                  size="default" variant="ghost"
+                  className={`flex items-center gap-2 ${copied ? '!bg-success !text-success-content' : ''}`}
                 >
                   {copied ? (
                     <>
@@ -906,7 +903,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                       <span>Copiar</span>
                     </>
                   )}
-                </button>
+                </Button>
                 <ActionMenu items={actionMenuItems} />
               </div>
             </div>
@@ -920,10 +917,10 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
               <p className={taskCardFieldLabelClass}>
                 Preview do Relatório
               </p>
-              <button
-                type="button"
+              <Button
                 onClick={() => setShowPreview(!showPreview)}
-                className="btn btn-xs btn-ghost lg:hidden"
+                size="xs" variant="ghost"
+                className="lg:hidden"
                 aria-label={showPreview ? 'Ocultar preview' : 'Mostrar preview'}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -943,7 +940,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                     />
                   )}
                 </svg>
-              </button>
+              </Button>
             </div>
             <div className="flex-1 min-h-0">
               <ReportPreview reportText={reportText} format={format} onFormatChange={setFormat} />
@@ -959,11 +956,10 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                 Análise IA - Relatório para PO
               </p>
               <div className="flex gap-xs">
-                <button
-                  type="button"
+                <Button
                   onClick={handleCopyAIAnalysis}
+                  size="sm" variant="ghost"
                   className={`
-                    btn btn-sm btn-ghost
                     ${aiAnalysisCopied ? '!bg-green-500 hover:!bg-green-600 text-white' : ''}
                   `}
                 >
@@ -1002,11 +998,10 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                       <span>Copiar</span>
                     </>
                   )}
-                </button>
-                <button
-                  type="button"
+                </Button>
+                <Button
                   onClick={handleSaveAIAnalysis}
-                  className="btn btn-sm btn-ghost"
+                  size="sm" variant="ghost"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
@@ -1017,11 +1012,10 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                     />
                   </svg>
                   <span>Salvar</span>
-                </button>
-                <button
-                  type="button"
+                </Button>
+                <Button
                   onClick={handleGeneratePDF}
-                  className="btn btn-sm btn-outline"
+                  size="sm" variant="outline"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
@@ -1032,9 +1026,10 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                     />
                   </svg>
                   <span>Gerar PDF</span>
-                </button>
+                  </Button>
+                </div>
+
               </div>
-            </div>
             <textarea
               value={aiAnalysisText}
               readOnly

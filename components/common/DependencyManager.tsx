@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Button } from './Button';
 import { Project, JiraTask } from '../../types';
 import {
   getTaskDependencies,
@@ -82,9 +83,9 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
     <div className="space-y-4 p-5">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-base-content">Dependências da Tarefa</h3>
-        <button type="button" onClick={onClose} className="btn btn-ghost btn-sm btn-circle">
+        <Button type="button" onClick={onClose} size="circle" variant="ghost">
           ✕
-        </button>
+        </Button>
       </div>
 
       {/* Status da tarefa */}
@@ -146,14 +147,16 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
                           : 'A Fazer'}
                     </div>
                   </div>
-                  <button
+                  <Button
                     type="button"
                     onClick={() => handleRemoveDependency(dep.id)}
-                    className="btn btn-ghost btn-sm btn-circle text-error"
+                    size="circle"
+                    variant="ghost"
+                    className="text-error"
                     title="Remover dependência"
                   >
                     ✕
-                  </button>
+                  </Button>
                 </div>
               );
             })}
@@ -179,14 +182,16 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
               </option>
             ))}
           </AppSelect>
-          <button
+          <Button
             type="button"
             onClick={handleAddDependency}
             disabled={!selectedTaskId}
-            className="btn btn-primary btn-sm rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+            size="sm"
+            variant="default"
+            className="rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Adicionar
-          </button>
+          </Button>
         </div>
       </div>
 

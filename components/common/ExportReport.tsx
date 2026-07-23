@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Button } from './Button';
 import { Project } from '../../types';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
@@ -218,12 +219,12 @@ export const ExportReport: React.FC<ExportReportProps> = ({ project, onClose }) 
       </div>
 
       <div className={cn('flex gap-2 border-t pt-4', neuDividerClass)}>
-        <button onClick={onClose} className="flex-1 btn btn-secondary">
+        <Button onClick={onClose} variant="secondary" className="flex-1">
           Cancelar
-        </button>
-        <button onClick={handleExport} className="flex-1 btn btn-primary">
+        </Button>
+        <Button onClick={handleExport} variant="default" className="flex-1">
           Exportar Relatório
-        </button>
+        </Button>
       </div>
     </div>
   );

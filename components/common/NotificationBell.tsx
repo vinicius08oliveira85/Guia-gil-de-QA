@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Button } from './Button';
 import toast from 'react-hot-toast';
 import { X } from 'lucide-react';
 import {
@@ -87,17 +88,19 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
       t => (
         <span className="flex items-center gap-3">
           Notificação excluída
-          <button
+          <Button
             onClick={() => {
               restoreNotification(notification);
               setNotifications(getNotifications().slice(0, 10));
               setUnreadCount(getUnreadCount());
               toast.dismiss(t.id);
             }}
-            className="btn btn-xs btn-ghost underline"
+            size="xs"
+            variant="ghost"
+            className="underline"
           >
             Desfazer
-          </button>
+          </Button>
         </span>
       ),
       { duration: 4000 }
@@ -158,13 +161,15 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
               <h3 className="font-semibold text-[var(--foreground)]">Notificações</h3>
               <div className="flex items-center gap-1">
                 {unreadCount > 0 && (
-                  <button
+                  <Button
                     onClick={handleMarkAllAsRead}
-                    className="btn btn-ghost btn-xs rounded-full"
+                    size="xs"
+                    variant="ghost"
+                    className="rounded-full"
                     type="button"
                   >
                     Marcar todas como lidas
-                  </button>
+                  </Button>
                 )}
                 <button
                   type="button"
@@ -206,17 +211,19 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                           {new Date(notification.createdAt).toLocaleString('pt-BR')}
                         </p>
                       </div>
-                      <button
+                      <Button
                         onClick={e => {
                           e.stopPropagation();
                           handleDelete(notification);
                         }}
-                        className="btn btn-ghost btn-xs btn-circle text-base-content/60 hover:text-error hover:bg-error/10"
+                        size="circle"
+                        variant="ghost"
+                        className="text-base-content/60 hover:text-error hover:bg-error/10"
                         type="button"
                         aria-label="Excluir notificação"
                       >
                         <X className="w-3 h-3" />
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ))

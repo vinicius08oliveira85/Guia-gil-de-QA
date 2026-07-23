@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FilterOptions } from '../../hooks/useFilters';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from './Button';
 import { ModernIcons } from './ModernIcons';
 import { cn } from '../../utils/cn';
 import { appPanelClass } from './viewUi';
@@ -135,9 +136,11 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           )}
         </h3>
         {activeFiltersCount > 0 && (
-          <button
+          <Button
             onClick={onClearFilters}
-            className="btn btn-ghost btn-sm text-xs hover:bg-error/10 hover:text-error transition-colors"
+            size="sm"
+            variant="ghost"
+            className="text-xs hover:bg-error/10 hover:text-error transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -148,7 +151,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               />
             </svg>
             Limpar todos
-          </button>
+          </Button>
         )}
       </div>
 

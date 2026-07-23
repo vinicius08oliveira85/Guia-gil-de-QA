@@ -6,6 +6,7 @@ import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { Spinner } from '../common/Spinner';
 import { FileExportModal } from '../common/FileExportModal';
 import { ClipboardList, Download, X, SlidersHorizontal } from 'lucide-react';
+import { Button } from '../common/Button';
 import { cn } from '../../utils/cn';
 import {
   leveSettingsSectionIconWrapClass,
@@ -232,23 +233,23 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                       aria-hidden
                     />
                     {TEST_CASE_STATUS_LABEL[s]}
-                    <button
-                      type="button"
+                    <Button
                       onClick={() => toggleStatusFilter(s)}
-                      className="btn btn-ghost btn-xs btn-circle p-0 min-h-0 h-4 w-4"
+                      size="circle" variant="ghost"
+                      className="p-0 min-h-0 h-4 w-4"
                       aria-label={`Remover filtro ${TEST_CASE_STATUS_LABEL[s]}`}
                     >
                       <X className="w-3 h-3" />
-                    </button>
+                    </Button>
                   </span>
                 ))}
-                <button
-                  type="button"
+                <Button
                   onClick={clearAllFilters}
-                  className="btn btn-ghost btn-sm text-error hover:bg-error/10 text-xs"
+                  size="sm" variant="ghost"
+                  className="text-error hover:bg-error/10 text-xs"
                 >
                   Limpar filtros
-                </button>
+                </Button>
               </div>
             )}
 
@@ -318,20 +319,18 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
               <span className={cn('text-sm font-medium', leveTaskModalStrongClass)}>
                 {selectedIds.size} selecionado(s)
               </span>
-              <button
-                type="button"
+              <Button
                 onClick={handleApproveSelected}
-                className="btn btn-success btn-xs"
+                size="xs" variant="success"
               >
                 Aprovar
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 onClick={() => setSelectedIds(new Set())}
-                className="btn btn-ghost btn-xs"
+                size="xs" variant="ghost"
               >
                 Limpar seleção
-              </button>
+              </Button>
             </div>
           )}
 

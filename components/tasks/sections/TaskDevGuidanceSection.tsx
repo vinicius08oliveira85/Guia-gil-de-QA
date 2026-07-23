@@ -11,6 +11,7 @@ import {
 import { Sparkles, Copy, Download, AlertTriangle, Bot, FileCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { dashboardPanelClass } from '../../dashboard/dashboardNeuUi';
+import { Button } from '../../common/Button';
 import { useTaskDetail } from './TaskDetailContext';
 import { StructuredCursorPrompt } from '../StructuredCursorPrompt';
 
@@ -49,15 +50,15 @@ const CursorPromptPanel: React.FC<{
           </span>
         ) : null}
       </div>
-      <button
-        type="button"
+      <Button
         onClick={() => void copyText('Prompt', prompt)}
-        className="btn btn-primary btn-xs gap-1"
+        size="xs" variant="default"
+        className="gap-1"
         aria-label={copyLabel}
       >
         <Copy className="h-3.5 w-3.5" aria-hidden />
         {copyLabel}
-      </button>
+                  </Button>
     </div>
     <StructuredCursorPrompt prompt={prompt} />
   </div>
@@ -115,34 +116,34 @@ export const TaskDevGuidanceSection: React.FC<TaskDevGuidanceSectionProps> = ({
           ) : null}
         </div>
         <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
+          <Button
             onClick={() => void onGenerate()}
             disabled={isGenerating}
-            className="btn btn-primary btn-sm gap-1.5"
+            size="sm" variant="default"
+            className="gap-1.5"
           >
             <Sparkles className="h-4 w-4" aria-hidden />
             {isGenerating ? 'Gerando…' : guidance ? 'Regenerar guia' : 'Gerar guia com IA'}
-          </button>
+                      </Button>
           {guidance ? (
             <>
-              <button type="button" onClick={() => void handleCopyAll()} className="btn btn-ghost btn-sm gap-1">
+              <Button onClick={() => void handleCopyAll()} size="sm" variant="ghost" className="gap-1">
                 <Copy className="h-4 w-4" aria-hidden />
                 Copiar tudo
-              </button>
-              <button type="button" onClick={handleDownload} className="btn btn-ghost btn-sm gap-1">
+              </Button>
+              <Button onClick={handleDownload} size="sm" variant="ghost" className="gap-1">
                 <Download className="h-4 w-4" aria-hidden />
                 Baixar .md
-              </button>
+              </Button>
               {onShowDevImplementationReport ? (
-                <button
-                  type="button"
+                <Button
                   onClick={onShowDevImplementationReport}
-                  className="btn btn-secondary btn-sm gap-1"
+                  size="sm" variant="secondary"
+                  className="gap-1"
                 >
                   <FileCheck className="h-4 w-4" aria-hidden />
                   {task.devImplementationRecord ? 'Ver registro' : 'Registrar implementação'}
-                </button>
+                </Button>
               ) : null}
             </>
           ) : null}

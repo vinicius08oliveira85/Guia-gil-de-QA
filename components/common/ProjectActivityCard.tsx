@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Project, JiraTask, TaskPriority } from '../../types';
 import { Activity, ArrowUpRight, Target, CheckCircle2 } from 'lucide-react';
+import { Button } from './Button';
 import { cn } from '../../utils/cn';
 import { calculateProjectMetrics } from '../../hooks/useProjectMetrics';
 import { getTaskStatusCategory } from '../../utils/jiraStatusCategorizer';
@@ -281,18 +282,20 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
           </p>
         </div>
         {onDelete && (
-          <button
+          <Button
             type="button"
             onClick={e => {
               e.stopPropagation();
               e.preventDefault();
               onDelete();
             }}
-            className="btn btn-ghost btn-xs btn-circle opacity-100 sm:opacity-0 hover:opacity-100 group-hover:opacity-100 text-base-content/60 hover:text-error hover:bg-error/10 transition-all flex-shrink-0"
+            size="circle"
+            variant="ghost"
+            className="opacity-100 sm:opacity-0 hover:opacity-100 group-hover:opacity-100 text-base-content/60 hover:text-error hover:bg-error/10 transition-all flex-shrink-0"
             aria-label={`Excluir projeto ${project.name}`}
           >
             ×
-          </button>
+          </Button>
         )}
       </div>
 

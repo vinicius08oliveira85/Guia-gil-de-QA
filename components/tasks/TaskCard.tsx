@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Card } from '../common/Card';
+import { Button } from '../common/Button';
 import { Badge } from '../common/Badge';
 import { TestMetricBadge } from '../common/TestMetricBadge';
 import { TaskTestStatusBadge } from '../common/TaskTestStatusBadge';
@@ -116,16 +117,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
             }
           />
         </div>
-        <button
-          type="button"
+        <Button
           onClick={handleToggleExpand}
-          className="btn btn-ghost btn-sm btn-circle shrink-0 min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 p-0 [&_svg]:size-[18px] sm:[&_svg]:size-5"
+          size="circle" variant="ghost"
+          className="shrink-0 min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 p-0 [&_svg]:size-[18px] sm:[&_svg]:size-5"
           aria-expanded={isExpanded}
           aria-controls={contentId}
           aria-label={isExpanded ? 'Recolher detalhes' : 'Expandir detalhes'}
         >
           {isExpanded ? <ChevronUp aria-hidden="true" /> : <ChevronDown aria-hidden="true" />}
-        </button>
+        </Button>
       </div>
 
       <div className="mt-3 flex flex-col gap-tasks-panel-tight sm:gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -146,27 +147,29 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
 
         <div className="flex w-full flex-wrap items-center gap-tasks-panel-tight lg:w-auto lg:flex-nowrap lg:justify-end">
           {testStatus.status !== 'teste_concluido' && testStatus.status !== 'sem_testes' && (
-            <button
-              className={cn(
-                'min-w-[8.75rem] justify-center',
+            <Button
+              size="sm"
+              variant={
                 testStatus.status === 'testar'
-                  ? 'btn btn-info btn-sm'
+                  ? 'info'
                   : testStatus.status === 'testando'
-                    ? 'btn btn-secondary btn-sm'
-                    : 'btn btn-warning btn-sm'
-              )}
+                    ? 'secondary'
+                    : 'warning'
+              }
+              className="min-w-[8.75rem] justify-center"
               onClick={() => onStartTest?.(task.id)}
             >
               {testStatus.status === 'testar' ? 'Iniciar Teste' : 'Continuar'}
-            </button>
+            </Button>
           )}
           {testStatus.status === 'teste_concluido' && (
-            <button
-              className="btn btn-success btn-sm min-w-[8.75rem] justify-center"
+            <Button
+              size="sm" variant="success"
+              className="min-w-[8.75rem] justify-center"
               onClick={() => onCompleteTest?.(task.id)}
             >
               Concluir
-            </button>
+            </Button>
           )}
         </div>
       </div>
