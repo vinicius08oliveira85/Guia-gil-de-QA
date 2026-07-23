@@ -6,10 +6,10 @@ import { BddScenarioForm, BddScenarioItem } from '../BddScenario';
 import { BddScenarioActionBar } from '../BddScenarioActionBar';
 import {
   leveTaskModalMutedClass,
-  leveTaskModalPageTitleClass,
+  leveTaskModalStrongClass,
   leveTaskModalTabBadgeIdleClass,
 } from '../../common/projectCardUi';
-import { taskDetailsModalSectionClass } from '../taskDetailsNeuUi';
+import { taskDetailsModalSectionHeaderClass } from '../taskDetailsNeuUi';
 import { useTaskDetail } from './TaskDetailContext';
 
 /** Aba «Cenários BDD» do detalhe da tarefa. */
@@ -38,18 +38,18 @@ export const TaskBddSection: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4">
-      <header className={cn(taskDetailsModalSectionClass, 'mb-4 space-y-1 p-4')}>
-        <h2 className={leveTaskModalPageTitleClass}>Cenários de Teste BDD</h2>
-        <p className={cn(leveTaskModalMutedClass, 'mt-1 text-sm')}>
-          Gerencie e visualize seus critérios de aceite em formato Gherkin.
-        </p>
-        <span className={cn(leveTaskModalTabBadgeIdleClass, 'mt-2 inline-flex px-2.5 py-1')}>
+    <div className="space-y-2.5">
+      <header className={taskDetailsModalSectionHeaderClass}>
+        <h2 className={cn('text-base font-bold', leveTaskModalStrongClass)}>Cenários BDD</h2>
+        <span className={cn(leveTaskModalTabBadgeIdleClass, 'px-2 py-0.5 normal-case')}>
           {bddCount} cenário(s)
         </span>
+        <p className={cn(leveTaskModalMutedClass, 'basis-full text-xs leading-snug')}>
+          Critérios de aceite em formato Gherkin.
+        </p>
       </header>
 
-      <div className="space-y-4">
+      <div className="space-y-2.5">
         {(task.bddScenarios || []).map(sc =>
           editingBddScenario?.id === sc.id ? (
             <BddScenarioForm

@@ -68,6 +68,12 @@ export const taskDetailsModalStatusPillClass = (active: boolean) =>
 /** Seção/card interno do modal. */
 export const taskDetailsModalSectionClass = cn('task-modal-section', taskDetailsNeuRaisedClass, 'font-sans');
 
+/** Cabeçalho compacto de seção (título + badge + ações). */
+export const taskDetailsModalSectionHeaderClass = cn(
+  taskDetailsModalSectionClass,
+  'mb-2.5 flex flex-wrap items-center gap-2 px-3 py-2'
+);
+
 export const taskDetailsModalPanelShellClass = cn(
   taskDetailsNeuInsetDeepClass,
   'rounded-box p-2 sm:p-2.5'

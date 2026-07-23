@@ -19,6 +19,7 @@ import {
 } from '../../common/projectCardUi';
 import {
   taskDetailsModalSectionClass,
+  taskDetailsModalSectionHeaderClass,
   taskDetailsModalSubTabClass,
   taskDetailsModalTabsScrollWrapClass,
   taskDetailsModalTabsTrackClass,
@@ -102,7 +103,7 @@ export const TaskTestsSection: React.FC = () => {
 
       {activeTestSubSection === 'strategy' && (
         <div>
-          <header className={cn(taskDetailsModalSectionClass, 'mb-2.5 flex flex-wrap items-center gap-2 px-3 py-2')}>
+          <header className={taskDetailsModalSectionHeaderClass}>
             <span className={cn(leveSettingsSectionIconWrapClass, 'h-8 w-8')}>
               <BarChart3 className="h-4 w-4" aria-hidden />
             </span>

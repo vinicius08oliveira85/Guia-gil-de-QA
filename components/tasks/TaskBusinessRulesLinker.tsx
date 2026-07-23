@@ -14,9 +14,9 @@ import {
   leveTaskModalFieldLabelClass,
   leveTaskModalInsetClass,
   leveTaskModalMutedClass,
-  leveTaskModalSectionClass,
   leveTaskModalStrongClass,
 } from '../common/projectCardUi';
+import { taskDetailsModalSectionClass } from './taskDetailsNeuUi';
 import { BusinessRuleLinkCard } from './BusinessRuleLinkCard';
 
 export interface TaskBusinessRulesLinkerProps {
@@ -74,13 +74,16 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
   );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2.5">
       <section
-        className={cn(leveTaskModalSectionClass, 'space-y-3 p-4')}
+        className={cn(taskDetailsModalSectionClass, 'space-y-2 px-3 py-2.5')}
         aria-labelledby={`task-br-heading-${safeDomId}`}
       >
-        <h3 id={`task-br-heading-${safeDomId}`} className={leveTaskModalFieldLabelClass}>
+        <h3 id={`task-br-heading-${safeDomId}`} className={cn(leveTaskModalFieldLabelClass, 'mb-0')}>
           Regras vinculadas
+          <span className="ml-2 font-normal normal-case tracking-normal text-base-content/60">
+            ({linkedRules.length})
+          </span>
         </h3>
 
         {projectRules.length === 0 ? (
@@ -110,7 +113,7 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
             {linkedRules.map(rule => (
               <li
                 key={rule.id}
-                className="flex items-start justify-between gap-3 border-b border-base-300/30 py-3 last:border-0"
+                className="flex items-start justify-between gap-2 border-b border-base-300/30 py-2 last:border-0"
               >
                 <div className="min-w-0 flex-1">
                   <p className={cn('text-sm font-semibold', leveTaskModalStrongClass)}>
@@ -146,23 +149,22 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
 
       {projectRules.length > 0 && canEdit && (
         <section
-          className={cn(leveTaskModalSectionClass, 'space-y-3 p-4')}
+          className={cn(taskDetailsModalSectionClass, 'space-y-2 px-3 py-2.5')}
           aria-labelledby={`task-br-link-heading-${safeDomId}`}
         >
-          <h3 id={`task-br-link-heading-${safeDomId}`} className={leveTaskModalFieldLabelClass}>
-            <span className="inline-flex items-center gap-2">
-              <Link2 className="h-4 w-4" aria-hidden />
+          <h3 id={`task-br-link-heading-${safeDomId}`} className={cn(leveTaskModalFieldLabelClass, 'mb-0')}>
+            <span className="inline-flex items-center gap-1.5">
+              <Link2 className="h-3.5 w-3.5" aria-hidden />
               Vincular outra regra
             </span>
           </h3>
-          <p className={leveTaskModalMutedClass}>
-            Selecione uma regra do projeto para associar a esta tarefa. A regra não é excluída ao
-            desvincular.
+          <p className={cn(leveTaskModalMutedClass, 'text-xs')}>
+            Associe uma regra do projeto. Desvincular não exclui a regra.
           </p>
           {availableToLink.length === 0 ? (
             <p className={leveTaskModalMutedClass}>Todas as regras do projeto já estão vinculadas.</p>
           ) : (
-            <ul className="space-y-2" role="list">
+            <ul className="space-y-1.5" role="list">
               {availableToLink.map(rule => (
                 <li key={rule.id}>
                   <BusinessRuleLinkCard

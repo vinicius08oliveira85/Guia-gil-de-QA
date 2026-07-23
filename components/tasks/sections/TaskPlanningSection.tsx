@@ -9,15 +9,18 @@ import { TaskLinksView } from '../TaskLinksView';
 import {
   leveTaskModalFieldLabelClass,
   leveTaskModalMutedClass,
-  leveTaskModalPageTitleClass,
+  leveTaskModalStrongClass,
   leveTaskModalTabBadgeIdleClass,
 } from '../../common/projectCardUi';
-import { taskDetailsModalSectionClass } from '../taskDetailsNeuUi';
+import {
+  taskDetailsModalSectionClass,
+  taskDetailsModalSectionHeaderClass,
+} from '../taskDetailsNeuUi';
 import { useTaskDetail } from './TaskDetailContext';
 
 const CARD_TITLE_CLASS = cn(
   leveTaskModalFieldLabelClass,
-  'mb-3 flex items-center gap-2 !border-b-0 !pb-0 normal-case tracking-normal'
+  'mb-2 flex items-center gap-1.5 !border-b-0 !pb-0 text-sm normal-case tracking-normal'
 );
 
 /** Aba «Planejamento»: dependências, anexos, checklist e estimativas. */
@@ -32,15 +35,15 @@ export const TaskPlanningSection: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4">
-      <header className={cn(taskDetailsModalSectionClass, 'p-4')}>
-        <h2 className={leveTaskModalPageTitleClass}>Planejamento</h2>
+    <div className="space-y-2.5">
+      <header className={taskDetailsModalSectionHeaderClass}>
+        <h2 className={cn('text-base font-bold', leveTaskModalStrongClass)}>Planejamento</h2>
       </header>
-      <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-12">
-        <div className="min-w-0 space-y-3 sm:space-y-4 lg:col-span-7">
-          <section className={cn(taskDetailsModalSectionClass, 'p-3 sm:p-4')}>
+      <div className="grid grid-cols-1 gap-2.5 sm:gap-3 lg:grid-cols-12">
+        <div className="min-w-0 space-y-2.5 lg:col-span-7">
+          <section className={cn(taskDetailsModalSectionClass, 'px-3 py-2.5')}>
             <h2 className={CARD_TITLE_CLASS}>
-              <Link className="h-4 w-4 shrink-0 text-primary sm:h-5 sm:w-5" aria-hidden />
+              <Link className="h-4 w-4 shrink-0 text-primary" aria-hidden />
               Dependências
             </h2>
             <TaskLinksView
@@ -51,9 +54,9 @@ export const TaskPlanningSection: React.FC = () => {
             />
           </section>
 
-          <section className={cn(taskDetailsModalSectionClass, 'p-3 sm:p-4')}>
+          <section className={cn(taskDetailsModalSectionClass, 'px-3 py-2.5')}>
             <h2 className={CARD_TITLE_CLASS}>
-              <Paperclip className="h-4 w-4 shrink-0 text-primary sm:h-5 sm:w-5" aria-hidden />
+              <Paperclip className="h-4 w-4 shrink-0 text-primary" aria-hidden />
               Anexos
               <span
                 className={cn(
@@ -68,7 +71,7 @@ export const TaskPlanningSection: React.FC = () => {
           </section>
 
           {task.checklist && task.checklist.length > 0 && (
-            <section className={cn(taskDetailsModalSectionClass, 'p-3 sm:p-4')}>
+            <section className={cn(taskDetailsModalSectionClass, 'px-3 py-2.5')}>
               <h2 className={CARD_TITLE_CLASS}>Checklist</h2>
               <ChecklistView
                 checklist={task.checklist}
@@ -88,9 +91,9 @@ export const TaskPlanningSection: React.FC = () => {
 
         {/* Coluna direita - Estimativas (fixa ao lado ao rolar) */}
         <div className="lg:col-span-5 min-w-0 self-start">
-          <section className={cn(taskDetailsModalSectionClass, 'sticky top-20 p-3 sm:p-4 lg:top-24')}>
+          <section className={cn(taskDetailsModalSectionClass, 'sticky top-20 px-3 py-2.5 lg:top-24')}>
             <h2 className={CARD_TITLE_CLASS}>
-              <Timer className="h-4 w-4 shrink-0 text-primary sm:h-5 sm:w-5" aria-hidden />
+              <Timer className="h-4 w-4 shrink-0 text-primary" aria-hidden />
               Estimativas
             </h2>
             <EstimationInput

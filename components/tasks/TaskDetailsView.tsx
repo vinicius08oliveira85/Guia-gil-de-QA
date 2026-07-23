@@ -405,14 +405,12 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
   const renderBusinessRulesSection = () => {
     if (!project || !onUpdateProject) return null;
     return (
-      <div className="space-y-4">
-        <TaskBusinessRulesLinker
-          task={task}
-          project={project}
-          onUpdateProject={onUpdateProject}
-          onNavigateToTab={onNavigateToTab}
-        />
-      </div>
+      <TaskBusinessRulesLinker
+        task={task}
+        project={project}
+        onUpdateProject={onUpdateProject}
+        onNavigateToTab={onNavigateToTab}
+      />
     );
   };
 
