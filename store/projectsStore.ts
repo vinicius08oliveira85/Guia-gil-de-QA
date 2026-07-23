@@ -67,12 +67,17 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
     try {
       logger.debug('Carregando projetos do IndexedDB...', 'ProjectsStore');
       const indexedDBProjects = await loadProjectsFromIndexedDB();
+      const safeProjects = indexedDBProjects.map(p => ({
+        ...p,
+        tasks: Array.isArray(p.tasks) ? p.tasks : [],
+        documents: Array.isArray(p.documents) ? p.documents : [],
+      }));
       logger.info(
-        `Projetos carregados do IndexedDB: ${indexedDBProjects.length}`,
+        `Projetos carregados do IndexedDB: ${safeProjects.length}`,
         'ProjectsStore'
       );
       set({
-        projects: indexedDBProjects,
+        projects: safeProjects,
         isLoading: false,
         hasBootstrapLoaded: true,
         error: null,
@@ -230,7 +235,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
 
         // Verificar se algum status foi perdido no novo projeto
         let statusPerdidos = 0;
-        const restoredTasks = project.tasks.map(task => {
+        const restoredTasks = (project.tasks || []).map(task => {
           const restoredTestCases = (task.testCases || []).map(tc => {
             const oldStatus = oldStatusMap.get(`${task.id}-${tc.id}`);
             if (oldStatus && tc.status === 'Not Run') {
@@ -402,7 +407,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
 
     const updatedProject: Project = {
       ...project,
-      tasks: project.tasks.map(task => (task.id === taskId ? { ...task, ...updates } : task)),
+      tasks: (project.tasks || []).map(task => (task.id === taskId ? { ...task, ...updates } : task)),
     };
 
     await get().updateProject(updatedProject);
@@ -426,7 +431,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
 
     const updatedProject: Project = {
       ...project,
-      tasks: project.tasks.filter(task => task.id !== taskId),
+      tasks: (project.tasks || []).filter(task => task.id !== taskId),
     };
 
     await get().updateProject(updatedProject);

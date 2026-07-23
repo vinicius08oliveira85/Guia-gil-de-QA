@@ -2,6 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   SUMÁRIO — index.css (8320 linhas)
+   ═══════════════════════════════════════════════════════════════════════════
+   @layer base       (L007–L562)   Design tokens, variáveis CSS, temas
+   @layer utilities  (L564–L2777)  Utilitários de componente (scopes)
+     ├─ .documents-view-scope           L1447
+     ├─ .business-rules-view-scope      L1765
+     ├─ .settings-view-scope            L2066
+     └─ .modal-neu-* / .create-project-* L2413
+   @layer components (L2779–L6728)  Classes de componente reutilizáveis
+     ├─ .project-card-* / .app-neu-*    L2780
+     ├─ .tasks-panel-* / .workspace-*   L3400
+     ├─ .dashboard-* / .glass-*         L4800
+     └─ .header-* / .landing-*          L6100
+   Fora de @layer    (L6727–L8320)  Overrides de alta prioridade
+     ├─ Sidebar / painéis escuros       L6732
+     ├─ Responsivo (767px)              L6340
+     └─ Padronização de relevo          L8291
+
+   🔧 NOVOS ESTILOS: adicione em styles/ separado, importe em index.tsx
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 /* Nota: `@theme inline { … }` é sintaxe Tailwind v4; este projeto usa Tailwind v3 — tokens em :root / [data-theme]. */
 
 @layer base {

@@ -451,6 +451,12 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-base-100 font-body text-base-content">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[99999] focus:rounded-[var(--rounded-btn)] focus:bg-[var(--leve-neu-bg,#fff)] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-[var(--brand-cta,#e65100)] focus:shadow-[var(--neu-relief)] focus:outline-none"
+      >
+        Pular para o conteúdo principal
+      </a>
       <div id="aria-live-region" className="sr-only" aria-live="polite" aria-atomic="true" />
       <Toaster
         position={isMobile ? 'top-center' : 'top-right'}

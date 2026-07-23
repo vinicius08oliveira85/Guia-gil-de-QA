@@ -1,0 +1,11 @@
+@layer components {
+  /**
+   * Componentes extraídos do index.css para organização.
+   * Este arquivo é importado em index.tsx após index.css.
+   *
+   * Convenção:
+   * - Cada view/scopo tem seu próprio prefixo de classe
+   * - Use CSS custom properties do :root / [data-theme] para consistência
+   * - Evite !important; prefira especificidade controlada
+   */
+}

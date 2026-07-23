@@ -144,6 +144,7 @@ import {
 } from '../../utils/taskSprintDisplay';
 import { TasksViewListModeToggle } from './TasksViewListModeToggle';
 import { AppSelect } from '../common/AppSelect';
+import { TasksViewSortGroupMobile } from './TasksViewSortGroupMobile';
 
 export const TasksView: React.FC<{
   project: Project;
@@ -2816,7 +2817,7 @@ export const TasksView: React.FC<{
                         : ''}
                     </button>
                     {!backlogOnly && (
-                      <div className={tasksPanelToolbarFieldClass}>
+                      <div className={cn(tasksPanelToolbarFieldClass, 'max-md:hidden')}>
                         <label htmlFor="tasks-sort-by" className={tasksPanelToolbarLabelClass}>
                           Ordenar
                         </label>
@@ -2837,7 +2838,7 @@ export const TasksView: React.FC<{
                       </div>
                     )}
                     {!backlogOnly && (
-                      <div className={tasksPanelToolbarFieldClass}>
+                      <div className={cn(tasksPanelToolbarFieldClass, 'max-md:hidden')}>
                         <label htmlFor="tasks-group-by" className={tasksPanelToolbarLabelClass}>
                           Agrupar
                         </label>
@@ -2853,6 +2854,16 @@ export const TasksView: React.FC<{
                           <option value="priority">Prioridade</option>
                           <option value="type">Tipo</option>
                         </AppSelect>
+                      </div>
+                    )}
+                    {!onOpenTaskTab && !backlogOnly && (
+                      <div className="md:hidden">
+                        <TasksViewSortGroupMobile
+                          sortBy={sortBy}
+                          onSortChange={v => setSortBy(v as TaskSortBy)}
+                          groupBy={groupBy}
+                          onGroupChange={v => setGroupBy(v as TaskGroupBy)}
+                        />
                       </div>
                     )}
                   </div>
