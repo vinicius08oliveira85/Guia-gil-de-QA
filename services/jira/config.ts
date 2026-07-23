@@ -115,7 +115,19 @@ export const testJiraConnection = async (config: JiraConfig): Promise<boolean> =
     await jiraApiCall(config, 'myself');
     return true;
   } catch (error) {
-    logger.error('Jira connection test failed', 'jiraService', error);
-    return false;
+    const msg = error instanceof Error ? error.message : String(error);
+    if (msg.includes('401') || msg.toLowerCase().includes('unauthorized')) {
+      throw new Error('Credenciais inválidas (HTTP 401). Verifique o e-mail e o API Token do Jira.');
+    }
+    if (msg.includes('403') || msg.toLowerCase().includes('forbidden')) {
+      throw new Error('Acesso negado (HTTP 403). Seu token não tem permissão para acessar este Jira.');
+    }
+    if (msg.includes('404') || msg.toLowerCase().includes('not found')) {
+      throw new Error('URL do Jira não encontrada (HTTP 404). Verifique a URL do servidor.');
+    }
+    if (msg.includes('proxy') || msg.includes('Proxy')) {
+      throw new Error(`Erro no proxy: ${msg}`);
+    }
+    throw new Error(`Falha ao conectar ao Jira: ${msg}`);
   }
 };

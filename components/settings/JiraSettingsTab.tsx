@@ -212,7 +212,8 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
         toast.error('Falha na conexão. Verifique suas credenciais.');
       }
     } catch (error) {
-      toast.error('Erro ao testar conexão com Jira.');
+      const msg = error instanceof Error ? error.message : 'Erro ao testar conexão com Jira.';
+      toast.error(msg);
       logger.error('Teste de conexão falhou', 'JiraSettingsTab', error);
     } finally {
       setIsTesting(false);
