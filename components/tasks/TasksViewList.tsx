@@ -1,6 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import type { TaskTestStatus, TestCase } from '../../types';
+import type { BugSeverity, TaskTestStatus, TestCase } from '../../types';
 import {
   tasksPanelActiveFilterChipBtnClass,
   tasksPanelActiveFilterChipClass,
@@ -25,6 +25,10 @@ export interface TasksViewListProps {
   setTestCaseExecutionStatusFilter: (
     v: TestCase['status'][] | ((prev: TestCase['status'][]) => TestCase['status'][])
   ) => void;
+  bugSeverityFilter: BugSeverity[];
+  setBugSeverityFilter: (v: BugSeverity[] | ((prev: BugSeverity[]) => BugSeverity[])) => void;
+  bugModuleFilter: string[];
+  setBugModuleFilter: (v: string[] | ((prev: string[]) => string[])) => void;
   qualityFilter: string[];
   setQualityFilter: (v: string[] | ((prev: string[]) => string[])) => void;
   searchQuery: string;
@@ -71,6 +75,10 @@ export const TasksViewList: React.FC<TasksViewListProps> = ({
   setTestStatusFilter,
   testCaseExecutionStatusFilter,
   setTestCaseExecutionStatusFilter,
+  bugSeverityFilter,
+  setBugSeverityFilter,
+  bugModuleFilter,
+  setBugModuleFilter,
   qualityFilter,
   setQualityFilter,
   searchQuery,
@@ -168,6 +176,34 @@ export const TasksViewList: React.FC<TasksViewListProps> = ({
                 onClick={() => setTestCaseExecutionStatusFilter(prev => prev.filter(x => x !== st))}
                 className={tasksPanelActiveFilterChipBtnClass}
                 aria-label={`Remover filtro ${CASE_EXECUTION_LABEL[st]}`}
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          ))}
+        {!devMode &&
+          bugSeverityFilter.map(sev => (
+            <span key={`bugSev-${sev}`} className={tasksPanelActiveFilterChipClass}>
+              Severidade: {sev}
+              <button
+                type="button"
+                onClick={() => setBugSeverityFilter(prev => prev.filter(x => x !== sev))}
+                className={tasksPanelActiveFilterChipBtnClass}
+                aria-label={`Remover filtro Severidade: ${sev}`}
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          ))}
+        {!devMode &&
+          bugModuleFilter.map(mod => (
+            <span key={`bugMod-${mod}`} className={tasksPanelActiveFilterChipClass}>
+              Módulo: {mod}
+              <button
+                type="button"
+                onClick={() => setBugModuleFilter(prev => prev.filter(x => x !== mod))}
+                className={tasksPanelActiveFilterChipBtnClass}
+                aria-label={`Remover filtro Módulo: ${mod}`}
               >
                 <X className="w-3 h-3" />
               </button>

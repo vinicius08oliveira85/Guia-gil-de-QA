@@ -87,6 +87,7 @@ import { DEV_TASKS_COPY } from '../../utils/devTasksUi';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useTaskFilters } from '../../hooks/useTaskFilters';
 import { GlassIndicatorCards } from '../dashboard/GlassIndicatorCards';
+import type { InsightDrillDownPayload } from '../dashboard/insights/insightDrillDown';
 import {
   tasksViewContentClass,
   tasksViewHeroChromeClass,
@@ -156,6 +157,9 @@ export const TasksView: React.FC<{
   /** Incrementado pelo ProjectView ao abrir com filtro de resultado de casos (ex.: falhas). */
   tasksExecutionNavKey?: number;
   tasksExecutionNavStatuses?: TestCase['status'][];
+  /** Incrementado pelo ProjectView ao drill-down de severidade/módulo no dashboard. */
+  tasksInsightNavKey?: number;
+  tasksInsightNav?: InsightDrillDownPayload | null;
   /** Subvisão dentro da aba Tarefas & Testes (controlada pelo ProjectView / URL). */
   listMode?: TasksListMode;
   onListModeChange?: (mode: TasksListMode) => void;
@@ -169,6 +173,8 @@ export const TasksView: React.FC<{
   onTaskDetailsOpenChange,
   tasksExecutionNavKey = 0,
   tasksExecutionNavStatuses = [],
+  tasksInsightNavKey = 0,
+  tasksInsightNav = null,
   listMode: listModeProp = 'all',
   onListModeChange,
   onOpenTaskTab,
@@ -373,9 +379,15 @@ export const TasksView: React.FC<{
     priorityOptions,
     testCaseExecutionStatusFilter,
     setTestCaseExecutionStatusFilter,
+    bugSeverityFilter,
+    setBugSeverityFilter,
+    bugModuleFilter,
+    setBugModuleFilter,
   } = useTaskFilters(filterScopeProject, {
     executionStatusNavKey: tasksExecutionNavKey,
     executionStatusNavStatuses: tasksExecutionNavStatuses,
+    insightNavKey: tasksInsightNavKey,
+    insightNav: tasksInsightNav,
     devMode: isDevProject,
   });
 
@@ -2029,6 +2041,8 @@ export const TasksView: React.FC<{
     setPriorityFilter([]);
     setTestStatusFilter([]);
     setTestCaseExecutionStatusFilter([]);
+    setBugSeverityFilter([]);
+    setBugModuleFilter([]);
   }, [
     setSearchQuery,
     setStatusFilter,
@@ -2037,6 +2051,8 @@ export const TasksView: React.FC<{
     setPriorityFilter,
     setTestStatusFilter,
     setTestCaseExecutionStatusFilter,
+    setBugSeverityFilter,
+    setBugModuleFilter,
   ]);
 
   const indicatorItems = useMemo(
@@ -2616,6 +2632,8 @@ export const TasksView: React.FC<{
                     preset.filters.testCaseExecutionStatusFilter ?? []
                   );
                 }
+                setBugSeverityFilter([]);
+                setBugModuleFilter([]);
                 setQualityFilter(preset.filters.qualityFilter);
                 setSortBy(preset.filters.sortBy);
                 setGroupBy(preset.filters.groupBy);
@@ -2636,6 +2654,10 @@ export const TasksView: React.FC<{
             setTestStatusFilter={setTestStatusFilter}
             testCaseExecutionStatusFilter={testCaseExecutionStatusFilter}
             setTestCaseExecutionStatusFilter={setTestCaseExecutionStatusFilter}
+            bugSeverityFilter={bugSeverityFilter}
+            setBugSeverityFilter={setBugSeverityFilter}
+            bugModuleFilter={bugModuleFilter}
+            setBugModuleFilter={setBugModuleFilter}
             qualityFilter={qualityFilter}
             setQualityFilter={setQualityFilter}
             searchQuery={searchQuery}

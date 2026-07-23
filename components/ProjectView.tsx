@@ -6,6 +6,7 @@ import { PrintableReport } from './PrintableReport';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
 import { QADashboard } from './dashboard/QADashboard';
 import { DevDashboard } from './dashboard/DevDashboard';
+import type { InsightDrillDownPayload } from './dashboard/insights/insightDrillDown';
 import { lazyWithRetry } from '../utils/lazyWithRetry';
 
 const TasksView = lazyWithRetry(() =>
@@ -104,6 +105,9 @@ export const ProjectView: React.FC<{
   const [tasksExecutionNavStatuses, setTasksExecutionNavStatuses] = useState<TestCase['status'][]>(
     []
   );
+  /** Deep link dos cards de insight: filtrar bugs por severidade ou módulo. */
+  const [tasksInsightNavKey, setTasksInsightNavKey] = useState(0);
+  const [tasksInsightNav, setTasksInsightNav] = useState<InsightDrillDownPayload | null>(null);
   /** Tarefa com detalhes inline ou modal aberto — terceiro nível do breadcrumb. */
   const [breadcrumbTaskId, setBreadcrumbTaskId] = useState<string | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
@@ -316,6 +320,15 @@ export const ProjectView: React.FC<{
     (statuses: TestCase['status'][]) => {
       setTasksExecutionNavStatuses(statuses);
       setTasksExecutionNavKey(k => k + 1);
+      setActiveTab('tasks');
+    },
+    [setActiveTab]
+  );
+
+  const handleNavigateToTasksWithInsightFilter = useCallback(
+    (payload: InsightDrillDownPayload) => {
+      setTasksInsightNav(payload);
+      setTasksInsightNavKey(k => k + 1);
       setActiveTab('tasks');
     },
     [setActiveTab]
@@ -649,6 +662,7 @@ export const ProjectView: React.FC<{
                     onNavigateToTasksWithExecutionStatuses={
                       handleNavigateToTasksWithExecutionStatuses
                     }
+                    onNavigateToTasksWithInsightFilter={handleNavigateToTasksWithInsightFilter}
                   />
                 )}
               </Suspense>
@@ -668,6 +682,8 @@ export const ProjectView: React.FC<{
                   onTaskDetailsOpenChange={handleTaskDetailsOpenChange}
                   tasksExecutionNavKey={tasksExecutionNavKey}
                   tasksExecutionNavStatuses={tasksExecutionNavStatuses}
+                  tasksInsightNavKey={tasksInsightNavKey}
+                  tasksInsightNav={tasksInsightNav}
                   listMode={tasksListMode}
                   onListModeChange={handleTasksListModeChange}
                 />

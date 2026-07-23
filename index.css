@@ -5874,6 +5874,18 @@
     box-shadow: var(--app-neu-inset);
   }
 
+  .dashboard-neu-scope .dashboard-insight-drill-row {
+    cursor: pointer;
+  }
+
+  .dashboard-neu-scope .dashboard-insight-drill-row:hover {
+    background: color-mix(
+      in srgb,
+      var(--insight-drill-accent, var(--project-dashboard-insight-accent)) 10%,
+      transparent
+    );
+  }
+
   .dashboard-neu-scope .dashboard-pass-rate-ring {
     filter: drop-shadow(0 6px 16px color-mix(in srgb, var(--radial-accent, var(--project-dashboard-insight-accent)) 22%, transparent));
   }

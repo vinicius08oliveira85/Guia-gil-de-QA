@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
-import { Project, JiraTask, TaskTestStatus, TestCase } from '../types';
+import { Project, TaskTestStatus, TestCase, BugSeverity } from '../types';
 import {
   getStatusFilterOptions,
   getPriorityFilterOptions,
@@ -11,6 +11,13 @@ import {
   type TaskGroupBy,
 } from '../components/tasks/tasksViewHelpers';
 import { testCaseLooksAutomated } from '../utils/testCaseMigration';
+import {
+  getBugSeverity,
+  isOpenBug,
+  taskMatchesBugModule,
+} from '../components/dashboard/projectDashboardHelpers';
+import type { InsightDrillDownPayload } from '../components/dashboard/insights/insightDrillDown';
+import { isBugSeverity } from '../components/dashboard/insights/insightDrillDown';
 
 const TASKS_FILTERS_STORAGE_KEY = 'tasks_filters';
 
@@ -23,6 +30,12 @@ export interface UseTaskFiltersOptions {
    */
   executionStatusNavKey?: number;
   executionStatusNavStatuses?: TestCaseExecutionStatus[];
+  /**
+   * Incrementado ao navegar dos cards de insight (severidade / módulo)
+   * para aplicar `insightNav` uma vez na aba Tarefas.
+   */
+  insightNavKey?: number;
+  insightNav?: InsightDrillDownPayload | null;
   /** Projeto Dev: oculta filtros de QA e habilita filtros de guia de implementação. */
   devMode?: boolean;
 }
@@ -59,6 +72,12 @@ export interface UseTaskFiltersResult {
   setTestCaseExecutionStatusFilter: (
     v: TestCaseExecutionStatus[] | ((prev: TestCaseExecutionStatus[]) => TestCaseExecutionStatus[])
   ) => void;
+  /** Severidade de bugs abertos (drill-down do dashboard). */
+  bugSeverityFilter: BugSeverity[];
+  setBugSeverityFilter: (v: BugSeverity[] | ((prev: BugSeverity[]) => BugSeverity[])) => void;
+  /** Módulo/tag/componente de bugs abertos (drill-down do dashboard). */
+  bugModuleFilter: string[];
+  setBugModuleFilter: (v: string[] | ((prev: string[]) => string[])) => void;
   activeFiltersCount: number;
   clearAllFilters: () => void;
   statusOptions: string[];
@@ -78,11 +97,14 @@ export function useTaskFilters(
   const [testCaseExecutionStatusFilter, setTestCaseExecutionStatusFilter] = useState<
     TestCaseExecutionStatus[]
   >([]);
+  const [bugSeverityFilter, setBugSeverityFilter] = useState<BugSeverity[]>([]);
+  const [bugModuleFilter, setBugModuleFilter] = useState<string[]>([]);
   const [qualityFilter, setQualityFilter] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<TaskSortBy>('id');
   const [groupBy, setGroupBy] = useState<TaskGroupBy>('none');
   const filtersRestoredForProjectRef = useRef<string | null>(null);
   const lastExecutionStatusNavKeyRef = useRef(0);
+  const lastInsightNavKeyRef = useRef(0);
 
   const jiraStatuses = project.settings?.jiraStatuses;
   const jiraPriorities = project.settings?.jiraPriorities;
@@ -114,6 +136,15 @@ export function useTaskFilters(
             setTestCaseExecutionStatusFilter(parsed);
           }
           if (Array.isArray(data.qualityFilter)) setQualityFilter(data.qualityFilter as string[]);
+          if (Array.isArray(data.bugSeverityFilter)) {
+            const parsed = (data.bugSeverityFilter as string[]).filter(isBugSeverity);
+            setBugSeverityFilter(parsed);
+          }
+          if (Array.isArray(data.bugModuleFilter)) {
+            setBugModuleFilter(
+              (data.bugModuleFilter as string[]).filter(x => typeof x === 'string' && x.length > 0)
+            );
+          }
           if (typeof data.searchQuery === 'string') setSearchQuery(data.searchQuery);
           if (
             typeof data.sortBy === 'string' &&
@@ -134,6 +165,7 @@ export function useTaskFilters(
     }
     filtersRestoredForProjectRef.current = project.id;
     lastExecutionStatusNavKeyRef.current = 0;
+    lastInsightNavKeyRef.current = 0;
   }, [project?.id]);
 
   useEffect(() => {
@@ -147,6 +179,22 @@ export function useTaskFilters(
   }, [options?.executionStatusNavKey, options?.executionStatusNavStatuses]);
 
   useEffect(() => {
+    const navKey = options?.insightNavKey ?? 0;
+    if (navKey <= 0 || navKey === lastInsightNavKeyRef.current) return;
+    lastInsightNavKeyRef.current = navKey;
+    const payload = options?.insightNav;
+    if (!payload?.value) return;
+    setTypeFilter(['Bug']);
+    if (payload.kind === 'severity' && isBugSeverity(payload.value)) {
+      setBugSeverityFilter([payload.value]);
+      setBugModuleFilter([]);
+    } else if (payload.kind === 'module') {
+      setBugModuleFilter([payload.value]);
+      setBugSeverityFilter([]);
+    }
+  }, [options?.insightNavKey, options?.insightNav]);
+
+  useEffect(() => {
     if (!project?.id || filtersRestoredForProjectRef.current !== project.id) return;
     const key = `${TASKS_FILTERS_STORAGE_KEY}_${project.id}`;
     const payload = {
@@ -155,6 +203,8 @@ export function useTaskFilters(
       typeFilter,
       testStatusFilter,
       testCaseExecutionStatusFilter,
+      bugSeverityFilter,
+      bugModuleFilter,
       qualityFilter,
       searchQuery,
       sortBy,
@@ -175,6 +225,8 @@ export function useTaskFilters(
     typeFilter,
     testStatusFilter,
     testCaseExecutionStatusFilter,
+    bugSeverityFilter,
+    bugModuleFilter,
     qualityFilter,
     searchQuery,
     sortBy,
@@ -213,6 +265,18 @@ export function useTaskFilters(
         )
       ) {
         return false;
+      }
+      if (bugSeverityFilter.length > 0 || bugModuleFilter.length > 0) {
+        if (!isOpenBug(task)) return false;
+        if (bugSeverityFilter.length > 0 && !bugSeverityFilter.includes(getBugSeverity(task))) {
+          return false;
+        }
+        if (
+          bugModuleFilter.length > 0 &&
+          !bugModuleFilter.some(label => taskMatchesBugModule(task, label))
+        ) {
+          return false;
+        }
       }
       if (qualityFilter.length > 0) {
         const hasBDD = task.bddScenarios && task.bddScenarios.length > 0;
@@ -256,6 +320,8 @@ export function useTaskFilters(
     typeFilter,
     testStatusFilter,
     testCaseExecutionStatusFilter,
+    bugSeverityFilter,
+    bugModuleFilter,
     qualityFilter,
   ]);
 
@@ -303,6 +369,8 @@ export function useTaskFilters(
       typeFilter.length +
       testStatusFilter.length +
       testCaseExecutionStatusFilter.length +
+      bugSeverityFilter.length +
+      bugModuleFilter.length +
       qualityFilter.length;
 
   const activeFiltersCount = chipFiltersCount + (searchQuery.trim() ? 1 : 0);
@@ -313,6 +381,8 @@ export function useTaskFilters(
     setTypeFilter([]);
     setTestStatusFilter([]);
     setTestCaseExecutionStatusFilter([]);
+    setBugSeverityFilter([]);
+    setBugModuleFilter([]);
     setQualityFilter([]);
     setSearchQuery('');
     setSortBy('id');
@@ -332,6 +402,10 @@ export function useTaskFilters(
     setTestStatusFilter,
     testCaseExecutionStatusFilter,
     setTestCaseExecutionStatusFilter,
+    bugSeverityFilter,
+    setBugSeverityFilter,
+    bugModuleFilter,
+    setBugModuleFilter,
     qualityFilter,
     setQualityFilter,
     sortBy,

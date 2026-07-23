@@ -1,18 +1,45 @@
-import { JiraTask } from '../../types';
+import { BugSeverity, JiraTask } from '../../types';
 import { getTaskStatusCategory } from '../../utils/jiraStatusCategorizer';
 
 const MS_DAY = 86400000;
+
+export const BUG_SEVERITY_ORDER: readonly BugSeverity[] = [
+  'Crítico',
+  'Alto',
+  'Médio',
+  'Baixo',
+] as const;
+
+/** Label de módulo alinhado ao card «Bugs por módulo» (tag → componente → Sem módulo). */
+export function getBugModuleLabel(task: JiraTask): string {
+  return (
+    (task.tags && task.tags[0]?.trim()) ||
+    (task.components && task.components[0]?.name?.trim()) ||
+    'Sem módulo'
+  );
+}
+
+/** True se o bug aberto casa com o label de módulo do dashboard. */
+export function taskMatchesBugModule(task: JiraTask, moduleLabel: string): boolean {
+  return getBugModuleLabel(task) === moduleLabel;
+}
+
+/** Severidade efetiva (default Médio), igual a useProjectMetrics. */
+export function getBugSeverity(task: JiraTask): BugSeverity {
+  return task.severity || 'Médio';
+}
+
+/** Bug aberto (não concluído) — mesma regra dos cards de insight. */
+export function isOpenBug(task: JiraTask): boolean {
+  return task.type === 'Bug' && getTaskStatusCategory(task) !== 'Concluído';
+}
 
 /** Agrupa bugs abertos por primeira tag ou componente (volumetria por área). */
 export function computeOpenBugsByModule(tasks: JiraTask[]): { label: string; count: number }[] {
   const map = new Map<string, number>();
   for (const t of tasks) {
-    if (t.type !== 'Bug') continue;
-    if (getTaskStatusCategory(t) === 'Concluído') continue;
-    const label =
-      (t.tags && t.tags[0]?.trim()) ||
-      (t.components && t.components[0]?.name?.trim()) ||
-      'Sem módulo';
+    if (!isOpenBug(t)) continue;
+    const label = getBugModuleLabel(t);
     map.set(label, (map.get(label) ?? 0) + 1);
   }
   return [...map.entries()]

@@ -27,6 +27,7 @@ import {
 import { ProjectDashboard } from './ProjectDashboard';
 import { RecentActivity } from './RecentActivity';
 import { QADashboardHeaderToolbar } from './QADashboardHeaderToolbar';
+import type { InsightDrillDownPayload } from './insights/insightDrillDown';
 
 interface QADashboardProps {
   project: Project;
@@ -35,6 +36,8 @@ interface QADashboardProps {
   /** Abre Tarefas & Testes no modo Backlog. */
   onNavigateToBacklog?: () => void;
   onNavigateToTasksWithExecutionStatuses?: (statuses: TestCase['status'][]) => void;
+  /** Drill-down dos cards de insight (severidade / módulo). */
+  onNavigateToTasksWithInsightFilter?: (payload: InsightDrillDownPayload) => void;
   syncLoading?: boolean;
   syncError?: Error | null;
 }
@@ -43,7 +46,14 @@ interface QADashboardProps {
  * Dashboard do projeto orientado a dados reais das tarefas (sem geração por IA).
  */
 export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
-  const { project, onNavigateToTab, onNavigateToBacklog, syncLoading, syncError } = props;
+  const {
+    project,
+    onNavigateToTab,
+    onNavigateToBacklog,
+    onNavigateToTasksWithInsightFilter,
+    syncLoading,
+    syncError,
+  } = props;
   const { projects, selectedProjectId, isLoading, error } = useProjectsStore();
 
   const showLoadingBanner = syncLoading !== undefined ? syncLoading : isLoading;
@@ -254,6 +264,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
       <ProjectDashboard
         project={filteredProject}
         isLoading={showLoadingBanner && !filteredProject.tasks?.length}
+        onInsightDrillDown={onNavigateToTasksWithInsightFilter}
       />
 
       {!showLoadingBanner && dashboardMetrics.totalTasks === 0 && (

@@ -29,6 +29,7 @@ import {
 } from '../common/projectCardUi';
 import {
   averageBugLeadTimeDays,
+  BUG_SEVERITY_ORDER,
   computeOpenBugsByModule,
   computeStoryWorkflow,
   countBugsWithReopenLinks,
@@ -43,6 +44,8 @@ import { InsightMetricCard } from './insights/InsightMetricCard';
 import { ExecutionStatusDonut } from './insights/ExecutionStatusDonut';
 import { DefectTrendChart } from './insights/DefectTrendChart';
 import { INSIGHT_COLORS } from './insights/insightTokens';
+import type { InsightDrillDownPayload } from './insights/insightDrillDown';
+import type { BugSeverity } from '../../types';
 
 const LABEL_CLASS = projectDashboardInsightMutedClass;
 const VALUE_STRONG_CLASS = projectDashboardInsightTextClass;
@@ -99,10 +102,12 @@ function PassRateRing(props: { percent: number; tooltip: React.ReactNode }) {
 export interface ProjectDashboardProps {
   project: Project;
   isLoading?: boolean;
+  /** Ao clicar em severidade/módulo, navega para filtrar bugs na aba Tarefas. */
+  onInsightDrillDown?: (payload: InsightDrillDownPayload) => void;
 }
 
 export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
-  ({ project, isLoading }) => {
+  ({ project, isLoading, onInsightDrillDown }) => {
     const m = useProjectMetrics(project);
     const tasks = project.tasks ?? [];
 
@@ -113,9 +118,16 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
     const defectSeries = useMemo(() => defectCreatedPerWeekSeries(tasks, 10), [tasks]);
 
     const manualCases = Math.max(0, m.totalTestCases - m.automatedTestCases);
-    const severityOrder = ['Crítico', 'Alto', 'Médio', 'Baixo'] as const;
+    const severityOrder = BUG_SEVERITY_ORDER;
     const maxModule = Math.max(...bugsByModule.map(b => b.count), 1);
     const openBugsTotal = severityOrder.reduce((acc, sev) => acc + m.bugsBySeverity[sev], 0);
+
+    const drillSeverity = (sev: BugSeverity) => {
+      onInsightDrillDown?.({ kind: 'severity', value: sev });
+    };
+    const drillModule = (label: string) => {
+      onInsightDrillDown?.({ kind: 'module', value: label });
+    };
 
     if (isLoading) {
       return (
@@ -239,7 +251,11 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
           icon={AlertTriangle}
           tone={m.bugsBySeverity.Crítico > 0 ? 'danger' : openBugsTotal > 0 ? 'warning' : 'success'}
           index={2}
-          hint="Passe o mouse em cada severidade para ver a contagem. Crítico pulsa quando há bugs."
+          hint={
+            onInsightDrillDown
+              ? 'Clique em uma severidade para filtrar bugs abertos na aba Tarefas. Crítico pulsa quando há bugs.'
+              : 'Passe o mouse em cada severidade para ver a contagem. Crítico pulsa quando há bugs.'
+          }
         >
           <div className="mb-3 flex items-baseline justify-between gap-2">
             <span className={cn('text-xs font-medium', LABEL_CLASS)}>Abertos agora</span>
@@ -247,15 +263,16 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
               {openBugsTotal}
             </span>
           </div>
-          <ul className="space-y-2.5">
+          <ul className="space-y-2.5" aria-label="Bugs abertos por severidade">
             {severityOrder.map(sev => {
               const count = m.bugsBySeverity[sev];
               const maxSev = Math.max(...severityOrder.map(s => m.bugsBySeverity[s]), 1);
               const barPct = (count / maxSev) * 100;
               const meta = SEVERITY_META[sev];
               const SevIcon = meta.icon;
-              return (
-                <li key={sev} className="space-y-1">
+              const interactive = Boolean(onInsightDrillDown) && count > 0;
+              const rowInner = (
+                <>
                   <div className="flex items-center justify-between gap-2 text-xs">
                     <span className={cn('inline-flex items-center gap-1.5 font-semibold', VALUE_STRONG_CLASS)}>
                       <SevIcon
@@ -276,6 +293,23 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
                       }}
                     />
                   </div>
+                </>
+              );
+              return (
+                <li key={sev} className="space-y-1">
+                  {interactive ? (
+                    <button
+                      type="button"
+                      className="dashboard-insight-drill-row w-full rounded-lg px-1 py-1 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--project-dashboard-insight-accent)_45%,transparent)]"
+                      style={{ ['--insight-drill-accent' as string]: meta.color }}
+                      onClick={() => drillSeverity(sev)}
+                      aria-label={`Filtrar bugs abertos com severidade ${sev}: ${count}`}
+                    >
+                      {rowInner}
+                    </button>
+                  ) : (
+                    <div className="px-1 py-1">{rowInner}</div>
+                  )}
                 </li>
               );
             })}
@@ -313,41 +347,67 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
           icon={Layers}
           tone="warning"
           index={4}
-          hint="Volume de bugs abertos agrupados pela primeira tag ou componente Jira."
+          hint={
+            onInsightDrillDown
+              ? 'Clique em um módulo para filtrar bugs abertos na aba Tarefas.'
+              : 'Volume de bugs abertos agrupados pela primeira tag ou componente Jira.'
+          }
         >
           {bugsByModule.length === 0 ? (
             <p className={cn('text-sm', LABEL_CLASS)}>Nenhum bug aberto com tag ou componente.</p>
           ) : (
-            <ul className="space-y-2.5">
+            <ul className="space-y-2.5" aria-label="Bugs abertos por módulo">
               {bugsByModule.map(row => {
                 const pctBar = Math.round((row.count / maxModule) * 100);
+                const interactive = Boolean(onInsightDrillDown) && row.count > 0;
+                const rowBody = (
+                  <>
+                    <div className="mb-1 flex justify-between gap-2 text-xs">
+                      <span className={cn('truncate font-medium', LABEL_CLASS)}>{row.label}</span>
+                      <span className={cn('shrink-0 tabular-nums font-bold', VALUE_STRONG_CLASS)}>
+                        {row.count}
+                      </span>
+                    </div>
+                    <div className={cn(projectDashboardInsightTrackClass, 'h-2 w-full')}>
+                      <div
+                        className={cn(
+                          projectDashboardInsightTrackFillClass,
+                          'transition-all duration-500'
+                        )}
+                        style={{ width: `${(row.count / maxModule) * 100}%` }}
+                      />
+                    </div>
+                  </>
+                );
                 return (
                   <li key={row.label}>
-                    <Tooltip
-                      content={
-                        <span>
-                          <strong>{row.label}</strong>: {row.count} bug{row.count === 1 ? '' : 's'} abertos
-                          <br />
-                          Proporção relativa ao maior módulo: {pctBar}%
-                        </span>
-                      }
-                      delay={100}
-                    >
-                      <div className="dashboard-insight-module-row cursor-default rounded-lg px-1 py-1">
-                        <div className="mb-1 flex justify-between gap-2 text-xs">
-                          <span className={cn('truncate font-medium', LABEL_CLASS)}>{row.label}</span>
-                          <span className={cn('shrink-0 tabular-nums font-bold', VALUE_STRONG_CLASS)}>
-                            {row.count}
+                    {interactive ? (
+                      <button
+                        type="button"
+                        className="dashboard-insight-drill-row dashboard-insight-module-row w-full rounded-lg px-1 py-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--project-dashboard-insight-accent)_45%,transparent)]"
+                        onClick={() => drillModule(row.label)}
+                        aria-label={`Filtrar bugs abertos do módulo ${row.label}: ${row.count}`}
+                        title={`${row.label}: ${row.count} bug${row.count === 1 ? '' : 's'} (${pctBar}% do maior)`}
+                      >
+                        {rowBody}
+                      </button>
+                    ) : (
+                      <Tooltip
+                        content={
+                          <span>
+                            <strong>{row.label}</strong>: {row.count} bug{row.count === 1 ? '' : 's'}{' '}
+                            abertos
+                            <br />
+                            Proporção relativa ao maior módulo: {pctBar}%
                           </span>
+                        }
+                        delay={100}
+                      >
+                        <div className="dashboard-insight-module-row cursor-default rounded-lg px-1 py-1">
+                          {rowBody}
                         </div>
-                        <div className={cn(projectDashboardInsightTrackClass, 'h-2 w-full')}>
-                          <div
-                            className={cn(projectDashboardInsightTrackFillClass, 'transition-all duration-500')}
-                            style={{ width: `${(row.count / maxModule) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                    </Tooltip>
+                      </Tooltip>
+                    )}
                   </li>
                 );
               })}
