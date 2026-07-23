@@ -20,8 +20,11 @@ export const buttonVariants = cva(
       size: {
         default: 'btn-md min-h-[44px] sm:min-h-0',
         sm: 'btn-sm min-h-[44px] sm:min-h-0',
+        xs: 'btn-xs min-h-[44px] sm:min-h-0 gap-1 text-xs',
         lg: 'btn-lg',
         icon: 'btn-square btn-md px-0 min-h-[44px] min-w-[44px]',
+        iconSm: 'btn-square btn-sm px-0 min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8',
+        circle: 'btn-circle btn-sm min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8',
         panel:
           'px-2.5 py-1.5 text-xs min-h-[44px] sm:min-h-0 sm:px-3 sm:py-2 sm:text-sm',
         panelSm:

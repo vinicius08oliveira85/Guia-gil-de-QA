@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Modal } from '../common/Modal';
+import { Button } from '../common/Button';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { cn } from '../../utils/cn';
 import { neuCardInsetClass } from '../common/neuUi';
@@ -66,21 +67,17 @@ export const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ forceOpen = fa
           <p className="mt-2 text-sm leading-relaxed text-base-content/80">{content.body}</p>
         </div>
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <button type="button" className="btn btn-ghost rounded-full" onClick={handleClose}>
+          <Button variant="ghost" className="rounded-full" onClick={handleClose}>
             Agora não
-          </button>
+          </Button>
           {!isLast ? (
-            <button
-              type="button"
-              className="btn btn-primary rounded-full"
-              onClick={() => setStep(s => s + 1)}
-            >
+            <Button variant="default" className="rounded-full" onClick={() => setStep(s => s + 1)}>
               Próximo
-            </button>
+            </Button>
           ) : (
-            <button type="button" className="btn btn-primary rounded-full" onClick={handleFinish}>
+            <Button variant="default" className="rounded-full" onClick={handleFinish}>
               Começar
-            </button>
+            </Button>
           )}
         </div>
       </div>

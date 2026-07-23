@@ -1,6 +1,7 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
 import toast from 'react-hot-toast';
 import { Card } from './Card';
+import { Button } from './Button';
 import { logger } from '../../utils/logger';
 
 interface Props {
@@ -162,16 +163,17 @@ User Agent: ${typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'}
                 <details className="text-left mb-6 bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] dark:bg-[color-mix(in_srgb,var(--leve-neu-dark)_18%,var(--leve-neu-bg))] p-4 rounded-md">
                   <summary className="cursor-pointer text-text-primary font-semibold mb-2 flex items-center gap-2">
                     <span>Detalhes do erro</span>
-                    <button
+                    <Button
                       onClick={e => {
                         e.stopPropagation();
                         this.handleCopyError();
                       }}
-                      className="btn btn-xs btn-ghost"
+                      size="xs"
+                      variant="ghost"
                       title="Copiar detalhes do erro"
                     >
                       📋 Copiar
-                    </button>
+                    </Button>
                   </summary>
                   <div className="mt-2 space-y-2">
                     <div>
@@ -205,12 +207,12 @@ User Agent: ${typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'}
               )}
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button onClick={this.handleReset} className="btn btn-primary">
+                <Button onClick={this.handleReset} variant="default">
                   Tentar Novamente
-                </button>
-                <button onClick={() => window.location.reload()} className="btn btn-secondary">
+                </Button>
+                <Button onClick={() => window.location.reload()} variant="secondary">
                   Recarregar Página
-                </button>
+                </Button>
               </div>
             </div>
           </Card>

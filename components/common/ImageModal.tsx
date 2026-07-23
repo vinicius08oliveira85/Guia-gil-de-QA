@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from './Modal';
 import { ImageIcon } from 'lucide-react';
 import { Spinner } from './Spinner';
+import { Button } from './Button';
 
 interface ImageModalProps {
   url: string;
@@ -55,13 +56,14 @@ export const ImageModal: React.FC<ImageModalProps> = ({ url, fileName, onClose, 
           <div className="flex flex-col items-center justify-center py-12 bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] rounded-xl text-error">
             <ImageIcon size={48} className="mb-2" aria-hidden="true" />
             <span className="text-sm font-medium">Erro ao carregar</span>
-            <button
-              type="button"
+            <Button
               onClick={handleOpenInNewTab}
-              className="btn btn-sm btn-primary mt-4"
+              variant="default"
+              size="sm"
+              className="mt-4"
             >
               Abrir em nova aba
-            </button>
+            </Button>
           </div>
         ) : showLoading ? (
           <div className="flex flex-col items-center justify-center py-12 bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))] rounded-xl">
@@ -80,9 +82,9 @@ export const ImageModal: React.FC<ImageModalProps> = ({ url, fileName, onClose, 
         )}
         {!loadError && !showLoading && (
           <div className="flex justify-end">
-            <button type="button" onClick={handleOpenInNewTab} className="btn btn-sm btn-ghost">
+            <Button onClick={handleOpenInNewTab} variant="ghost" size="sm">
               Abrir em nova aba
-            </button>
+            </Button>
           </div>
         )}
       </div>
