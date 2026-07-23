@@ -65,9 +65,8 @@ describe('ProjectCard', () => {
     expect(screen.getByRole('button', { name: /abrir projeto: portal qa moderno/i })).toBeInTheDocument();
     expect(screen.getByText('Jira: QA')).toBeInTheDocument();
     expect(screen.getByText('Atenção')).toBeInTheDocument();
-    expect(screen.getByText('1 bug')).toBeInTheDocument();
     expect(screen.getByRole('img', { name: /conclusão de tarefas: 33%/i })).toBeInTheDocument();
     expect(screen.getByRole('progressbar', { name: /exec\.: 100%/i })).toBeInTheDocument();
-    expect(screen.getByRole('progressbar', { name: /sucesso: 100%/i })).toBeInTheDocument();
+    expect(screen.getByText('QA')).toBeInTheDocument();
   });
 });

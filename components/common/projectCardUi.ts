@@ -77,8 +77,11 @@ export const projectCardActionDividerClass = 'project-card-action-divider';
 
 /** Indicador KPI compacto (grid 2×2 no rodapé do card) — chip neumórfico com barra. */
 export const projectCardIndicatorChipClass = cn(
-  'project-card-neu-chip flex min-w-0 flex-col gap-1.5 px-2.5 py-2.5'
+  'project-card-neu-chip flex min-w-0 flex-col gap-1.5 px-2.5 py-2'
 );
+
+export const projectCardIndicatorIconWrapClass =
+  'flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--project-card-accent)_12%,transparent)]';
 
 export const projectCardIndicatorLabelClass =
   'text-[10px] font-semibold text-[var(--project-card-text-muted)]';

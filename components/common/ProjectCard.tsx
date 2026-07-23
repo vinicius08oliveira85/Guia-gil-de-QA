@@ -6,7 +6,6 @@ import {
   Bug,
   Clock,
   Users,
-  TrendingUp,
   CheckCircle2,
   Zap,
   Activity,
@@ -14,6 +13,8 @@ import {
   ShieldAlert,
   AlertTriangle,
   Trash2,
+  Crosshair,
+  Bot,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '../../utils/cn';
@@ -25,6 +26,7 @@ import {
   type ProjectHealthTone,
 } from '../../utils/workspaceAnalytics';
 import { getProjectIconMeta } from '../../utils/projectIcon';
+import { normalizeProjectWorkflow } from '../../utils/projectWorkflow';
 import { RadialProgress } from './RadialProgress';
 import { ConfirmDialog } from './ConfirmDialog';
 import {
@@ -36,12 +38,9 @@ import {
   projectCardIndicatorBarClass,
   projectCardIndicatorBarFillClass,
   projectCardIndicatorChipClass,
+  projectCardIndicatorIconWrapClass,
   projectCardIndicatorLabelClass,
   projectCardIndicatorValueClass,
-  projectCardMetricFillClass,
-  projectCardMetricKnobClass,
-  projectCardMetricRowClass,
-  projectCardMetricTrackClass,
   projectCardOrbCtaClass,
   projectCardOrbHighlightClass,
   projectCardShellClass,
@@ -63,40 +62,6 @@ export interface ProjectCardProps {
   onDeleteProject?: () => void | Promise<void>;
   icon?: LucideIcon;
   className?: string;
-}
-
-function NeumorphicProgressBar({
-  value,
-  label,
-  ariaLabel,
-}: {
-  value: number;
-  label: string;
-  ariaLabel: string;
-}) {
-  const progress = Math.min(100, Math.max(0, value));
-  const knobLeft = `clamp(0px, calc(${progress}% - 6px), calc(100% - 12px))`;
-
-  return (
-    <div
-      className={projectCardMetricTrackClass}
-      role="progressbar"
-      aria-valuenow={progress}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-label={ariaLabel}
-    >
-      <div className={projectCardMetricFillClass} style={{ width: `${progress}%` }} />
-      {progress > 0 ? (
-        <span
-          className={projectCardMetricKnobClass}
-          style={{ left: knobLeft }}
-          aria-hidden
-        />
-      ) : null}
-      <span className="sr-only">{label}: {progress}%</span>
-    </div>
-  );
 }
 
 function StatTile({
@@ -182,6 +147,12 @@ export const ProjectCard = React.memo<ProjectCardProps>(
     const HealthIcon = healthMeta.icon;
 
     const jiraKey = project.settings?.jiraProjectKey;
+    const workflow = normalizeProjectWorkflow(project.workflow);
+    const workflowLabel = workflow === 'qa' ? 'QA' : 'Dev';
+
+    const hasNoTestCases = metrics.totalTestCases === 0;
+    const hasNoExecutedTests = metrics.executedTestCases === 0;
+    const hasNoTasks = metrics.totalTasks === 0;
 
     const latestCompletedTask = useMemo(() => {
       const completed = tasks
@@ -215,6 +186,9 @@ export const ProjectCard = React.memo<ProjectCardProps>(
         setShowDeleteConfirm(false);
       }
     }, [onDeleteProject]);
+
+    const dividerClass =
+      'my-2.5 border-t border-[color-mix(in_srgb,var(--project-card-neu-dark)_14%,transparent)]';
 
     return (
       <div
@@ -255,12 +229,30 @@ export const ProjectCard = React.memo<ProjectCardProps>(
           </div>
 
           <div className="min-w-0 flex-1 space-y-1">
-            <h3
-              className="truncate font-sans text-[0.9375rem] font-extrabold leading-tight text-[var(--project-card-text)] transition-colors duration-200 group-hover:text-[var(--project-card-accent)] sm:text-base"
-              title={project.name}
-            >
-              {project.name}
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3
+                className="truncate font-sans text-[0.9375rem] font-extrabold leading-tight text-[var(--project-card-text)] transition-colors duration-200 group-hover:text-[var(--project-card-accent)] sm:text-base"
+                title={project.name}
+              >
+                {project.name}
+              </h3>
+              <span
+                className={cn(
+                  projectCardChipClass,
+                  'inline-flex shrink-0 items-center gap-1 px-1.5 py-0.5',
+                  'text-[9px] font-bold uppercase tracking-wider',
+                  workflow === 'qa'
+                    ? 'text-primary'
+                    : 'text-[color-mix(in_srgb,var(--project-card-text)_80%,transparent)]'
+                )}
+              >
+                <span
+                  className="h-1 w-1 shrink-0 rounded-full bg-current opacity-70"
+                  aria-hidden
+                />
+                {workflowLabel}
+              </span>
+            </div>
             {jiraKey ? (
               <span
                 className={cn(
@@ -304,88 +296,93 @@ export const ProjectCard = React.memo<ProjectCardProps>(
             <span className={projectCardHealthDotClass(healthTone)} aria-hidden />
             {healthMeta.label}
           </span>
-          {openBugsCount > 0 ? (
-            <span
-              className={cn(
-                projectCardChipClass,
-                'inline-flex items-center gap-1 px-2.5 py-1'
-              )}
-            >
-              <Bug
-                className="h-3 w-3 shrink-0 text-[color-mix(in_srgb,#dc2626_88%,var(--project-card-accent))]"
-                aria-hidden
-              />
-              <span className="text-[11px] font-bold tabular-nums text-[color-mix(in_srgb,#b91c1c_82%,var(--project-card-text))]">
-                {openBugsCount} {openBugsCount === 1 ? 'bug' : 'bugs'}
-              </span>
-            </span>
-          ) : null}
         </div>
 
-        <div className="mt-3 flex gap-2 sm:mt-3.5">
+        <div className={dividerClass} />
+
+        <div className="flex gap-2">
           <StatTile value={testsPercent} label="Exec." icon={Zap} />
-          <StatTile value={metrics.testPassRate} label="Sucesso" icon={TrendingUp} />
         </div>
 
         {(project.phases?.length ?? 0) > 0 && (
-          <div className={cn(projectCardMetricRowClass, 'mt-3 sm:mt-3.5')}>
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5 text-[var(--project-card-text-muted)]">
-                <Activity className="h-3 w-3 shrink-0 opacity-80" aria-hidden />
-                <span className="text-[10px] font-semibold uppercase tracking-wide sm:text-[11px]">
-                  Fase SDLC
-                </span>
-              </div>
-              <span className="text-[11px] font-bold tabular-nums text-[var(--project-card-accent)] sm:text-xs">
-                {phaseCompletionPercent}%
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 text-[var(--project-card-text-muted)]">
+              <Activity className="h-3 w-3 shrink-0 opacity-80" aria-hidden />
+              <span className="text-[10px] font-semibold uppercase tracking-wide">
+                SDLC
               </span>
             </div>
-            <NeumorphicProgressBar
-              value={phaseCompletionPercent}
-              label="Fase SDLC"
-              ariaLabel={`Fase SDLC: ${phaseCompletionPercent}%`}
-            />
+            <span className={cn(projectCardIndicatorValueClass, 'ml-auto')}>
+              {phaseCompletionPercent}%
+            </span>
+          </div>
+        )}
+        {(project.phases?.length ?? 0) > 0 && (
+          <div className={cn(projectCardIndicatorBarClass, 'mt-1.5')} role="progressbar" aria-valuenow={phaseCompletionPercent} aria-valuemin={0} aria-valuemax={100} aria-label={`Fase SDLC: ${phaseCompletionPercent}%`}>
+            <div className={projectCardIndicatorBarFillClass} style={{ width: `${phaseCompletionPercent}%` }} />
           </div>
         )}
 
-        <div className="mt-3 grid grid-cols-2 gap-2">
+        <div className={dividerClass} />
+
+        <div className="grid grid-cols-2 gap-2">
           <div className={projectCardIndicatorChipClass}>
-            <div className="flex items-center justify-between">
-              <span className={projectCardIndicatorLabelClass}>Cobertura</span>
-              <span className={projectCardIndicatorValueClass}>{metrics.testCoverage}%</span>
+            <div className="flex items-center gap-2">
+              <div className={projectCardIndicatorIconWrapClass}>
+                <Crosshair className="h-3 w-3 text-[var(--project-card-accent)]" aria-hidden />
+              </div>
+              <div className="flex min-w-0 flex-1 items-center justify-between gap-1">
+                <span className={projectCardIndicatorLabelClass}>Cobertura</span>
+                <span className={projectCardIndicatorValueClass}>{hasNoTasks ? '\u2014' : `${metrics.testCoverage}%`}</span>
+              </div>
             </div>
-            <div className={projectCardIndicatorBarClass} role="progressbar" aria-valuenow={metrics.testCoverage} aria-valuemin={0} aria-valuemax={100} aria-label={`Cobertura: ${metrics.testCoverage}%`}>
-              <div className={projectCardIndicatorBarFillClass} style={{ width: `${metrics.testCoverage}%` }} />
+            <div className={projectCardIndicatorBarClass} role="progressbar" aria-valuenow={hasNoTasks ? 0 : metrics.testCoverage} aria-valuemin={0} aria-valuemax={100} aria-label={`Cobertura: ${hasNoTasks ? 'sem dados' : `${metrics.testCoverage}%`}`}>
+              <div className={projectCardIndicatorBarFillClass} style={{ width: `${hasNoTasks ? 0 : metrics.testCoverage}%` }} />
+            </div>
+          </div>
+          <div className={cn(projectCardIndicatorChipClass, 'max-sm:hidden')}>
+            <div className="flex items-center gap-2">
+              <div className={projectCardIndicatorIconWrapClass}>
+                <Bot className="h-3 w-3 text-[var(--project-card-accent)]" aria-hidden />
+              </div>
+              <div className="flex min-w-0 flex-1 items-center justify-between gap-1">
+                <span className={projectCardIndicatorLabelClass}>Automação</span>
+                <span className={projectCardIndicatorValueClass}>{hasNoTestCases ? '\u2014' : `${metrics.automationRatio}%`}</span>
+              </div>
+            </div>
+            <div className={projectCardIndicatorBarClass} role="progressbar" aria-valuenow={hasNoTestCases ? 0 : metrics.automationRatio} aria-valuemin={0} aria-valuemax={100} aria-label={`Automação: ${hasNoTestCases ? 'sem dados' : `${metrics.automationRatio}%`}`}>
+              <div className={projectCardIndicatorBarFillClass} style={{ width: `${hasNoTestCases ? 0 : metrics.automationRatio}%` }} />
             </div>
           </div>
           <div className={projectCardIndicatorChipClass}>
-            <div className="flex items-center justify-between">
-              <span className={projectCardIndicatorLabelClass}>Automação</span>
-              <span className={projectCardIndicatorValueClass}>{metrics.automationRatio}%</span>
+            <div className="flex items-center gap-2">
+              <div className={projectCardIndicatorIconWrapClass}>
+                <CheckCircle2 className="h-3 w-3 text-[var(--project-card-accent)]" aria-hidden />
+              </div>
+              <div className="flex min-w-0 flex-1 items-center justify-between gap-1">
+                <span className={projectCardIndicatorLabelClass}>Aprovação</span>
+                <span className={projectCardIndicatorValueClass}>{hasNoExecutedTests ? '\u2014' : `${metrics.testPassRate}%`}</span>
+              </div>
             </div>
-            <div className={projectCardIndicatorBarClass} role="progressbar" aria-valuenow={metrics.automationRatio} aria-valuemin={0} aria-valuemax={100} aria-label={`Automação: ${metrics.automationRatio}%`}>
-              <div className={projectCardIndicatorBarFillClass} style={{ width: `${metrics.automationRatio}%` }} />
-            </div>
-          </div>
-          <div className={projectCardIndicatorChipClass}>
-            <div className="flex items-center justify-between">
-              <span className={projectCardIndicatorLabelClass}>Aprovação</span>
-              <span className={projectCardIndicatorValueClass}>{metrics.testPassRate}%</span>
-            </div>
-            <div className={projectCardIndicatorBarClass} role="progressbar" aria-valuenow={metrics.testPassRate} aria-valuemin={0} aria-valuemax={100} aria-label={`Aprovação: ${metrics.testPassRate}%`}>
-              <div className={projectCardIndicatorBarFillClass} style={{ width: `${metrics.testPassRate}%` }} />
+            <div className={projectCardIndicatorBarClass} role="progressbar" aria-valuenow={hasNoExecutedTests ? 0 : metrics.testPassRate} aria-valuemin={0} aria-valuemax={100} aria-label={`Aprovação: ${hasNoExecutedTests ? 'sem dados' : `${metrics.testPassRate}%`}`}>
+              <div className={projectCardIndicatorBarFillClass} style={{ width: `${hasNoExecutedTests ? 0 : metrics.testPassRate}%` }} />
             </div>
           </div>
-          <div className={projectCardIndicatorChipClass}>
-            <div className="flex items-center justify-between">
-              <span className={projectCardIndicatorLabelClass}>Bugs</span>
-              <span className={cn(projectCardIndicatorValueClass, openBugsCount > 0 && 'text-error')}>{openBugsCount}</span>
+          <div className={cn(projectCardIndicatorChipClass, 'max-sm:hidden')}>
+            <div className="flex items-center gap-2">
+              <div className={projectCardIndicatorIconWrapClass}>
+                <Bug className="h-3 w-3 text-[var(--project-card-accent)]" aria-hidden />
+              </div>
+              <div className="flex min-w-0 flex-1 items-center justify-between gap-1">
+                <span className={projectCardIndicatorLabelClass}>Bugs</span>
+                <span className={cn(projectCardIndicatorValueClass, openBugsCount > 0 && 'text-error')}>{openBugsCount}</span>
+              </div>
             </div>
-            <div className={projectCardIndicatorBarClass} role="progressbar" aria-valuenow={Math.min(openBugsCount, 10)} aria-valuemin={0} aria-valuemax={10} aria-label={`Bugs abertos: ${openBugsCount}`}>
+            <div className={projectCardIndicatorBarClass} role="progressbar" aria-valuenow={Math.min(openBugsCount + (openBugsCount > 0 ? 1 : 0), 10)} aria-valuemin={0} aria-valuemax={10} aria-label={`Bugs abertos: ${openBugsCount}`}>
               <div
                 className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-500 ease-out"
                 style={{
-                  width: `${Math.min(openBugsCount * 10, 100)}%`,
+                  width: `${openBugsCount > 0 ? Math.min((openBugsCount / 20) * 100, 100) : 0}%`,
                   background: openBugsCount > 0
                     ? 'linear-gradient(90deg, color-mix(in srgb, #dc2626 72%, white) 0%, #dc2626 100%)'
                     : 'var(--project-card-progress-fill)',
@@ -396,51 +393,40 @@ export const ProjectCard = React.memo<ProjectCardProps>(
         </div>
 
         <div className="mt-auto flex items-center justify-between gap-2 pt-3 sm:pt-3.5">
-          {updatedAtLabel ? (
-            <div className={cn(projectCardChipClass, 'flex min-w-0 items-center gap-1 px-2 py-1')}>
-              <Clock className="h-3 w-3 shrink-0 text-[var(--project-card-text-muted)]" aria-hidden />
-              <span className="truncate text-[10px] font-medium text-[var(--project-card-text-muted)] sm:text-[11px]">
-                {updatedAtLabel}
-              </span>
-            </div>
-          ) : (
-            <span />
-          )}
-          <div className="flex items-center gap-1.5">
-            <div
+          <div className={cn(projectCardChipClass, 'flex min-w-0 items-center gap-1.5 px-2 py-1')}>
+            <Clock className="h-3 w-3 shrink-0 text-[var(--project-card-text-muted)]" aria-hidden />
+            <span className="truncate text-[10px] font-medium text-[var(--project-card-text-muted)] sm:text-[11px]">
+              {updatedAtLabel || 'sem atividade'}
+            </span>
+            <span className="text-[var(--project-card-text-muted)] opacity-30" aria-hidden>·</span>
+            <Users className="h-3 w-3 shrink-0 text-[var(--project-card-text-muted)]" aria-hidden />
+            <span className="text-[10px] font-semibold tabular-nums text-[var(--project-card-text-muted)] sm:text-[11px]">
+              {tasks.length}
+            </span>
+          </div>
+          {onDeleteProject ? (
+            <button
+              type="button"
+              data-delete-btn
+              onClick={e => {
+                e.stopPropagation();
+                setShowDeleteConfirm(true);
+              }}
               className={cn(
                 projectCardChipClass,
-                'flex shrink-0 items-center gap-1 px-2 py-1 tabular-nums'
+                'flex shrink-0 items-center gap-1 px-2 py-1',
+                'opacity-0 group-hover:opacity-100 focus-visible:opacity-100',
+                'text-[color-mix(in_srgb,#dc2626_72%,var(--project-card-text-muted))]',
+                'hover:text-error hover:bg-[color-mix(in_srgb,#dc2626_8%,var(--project-card-bg))]',
+                'transition-all duration-200',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,#dc2626_35%,transparent)]'
               )}
+              aria-label={`Excluir projeto ${project.name}`}
+              title="Excluir este projeto"
             >
-              <Users className="h-3 w-3 text-[var(--project-card-text-muted)]" aria-hidden />
-              <span className="text-[10px] font-semibold text-[var(--project-card-text-muted)] sm:text-[11px]">
-                {tasks.length}
-              </span>
-            </div>
-            {onDeleteProject ? (
-              <button
-                type="button"
-                data-delete-btn
-                onClick={e => {
-                  e.stopPropagation();
-                  setShowDeleteConfirm(true);
-                }}
-                className={cn(
-                  projectCardChipClass,
-                  'flex shrink-0 items-center gap-1 px-2 py-1',
-                  'text-[color-mix(in_srgb,#dc2626_72%,var(--project-card-text-muted))]',
-                  'hover:text-error hover:bg-[color-mix(in_srgb,#dc2626_8%,var(--project-card-bg))]',
-                  'transition-colors duration-200',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,#dc2626_35%,transparent)]'
-                )}
-                aria-label={`Excluir projeto ${project.name}`}
-                title="Excluir este projeto"
-              >
-                <Trash2 className="h-3 w-3 shrink-0" aria-hidden />
-              </button>
-            ) : null}
-          </div>
+              <Trash2 className="h-3 w-3 shrink-0" aria-hidden />
+            </button>
+          ) : null}
         </div>
 
         <ConfirmDialog
