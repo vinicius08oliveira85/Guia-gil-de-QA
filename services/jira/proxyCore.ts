@@ -1,6 +1,7 @@
 /**
- * Lógica compartilhada do proxy Jira (Vercel serverless + Vite middleware em dev).
- * Prefixo `_` em `api/_jiraProxyCore.ts`: helper privado na Vercel (não vira endpoint).
+ * Lógica compartilhada do proxy Jira (Vite middleware em dev + testes).
+ * A function Vercel (`api/jira-proxy.ts`) é autocontida — não importar daqui
+ * (ESM na Vercel quebra imports relativos sem extensão → FUNCTION_INVOCATION_FAILED).
  */
 
 export interface JiraProxyRequestBody {
@@ -21,7 +22,6 @@ export type JiraProxyResult =
       ok: true;
       status: number;
       contentType: string;
-      /** JSON serializável ou buffer binário */
       payload: unknown;
       isBinary: boolean;
     }
@@ -31,9 +31,7 @@ export type JiraProxyResult =
       error: string;
     };
 
-/**
- * Normaliza o body da request (objeto, JSON string ou Buffer).
- */
+/** Normaliza o body da request (objeto, JSON string ou Buffer). */
 export function parseJiraProxyBody(raw: unknown): JiraProxyRequestBody {
   if (raw == null) {
     return {};
@@ -54,10 +52,10 @@ export function parseJiraProxyBody(raw: unknown): JiraProxyRequestBody {
   throw new Error('Invalid request body type');
 }
 
-/**
- * Encaminha a chamada ao Jira Cloud com Basic Auth.
- */
-export async function executeJiraProxy(body: JiraProxyRequestBody | null | undefined): Promise<JiraProxyResult> {
+/** Encaminha a chamada ao Jira Cloud com Basic Auth. */
+export async function executeJiraProxy(
+  body: JiraProxyRequestBody | null | undefined
+): Promise<JiraProxyResult> {
   if (!body || typeof body !== 'object') {
     return { ok: false, status: 400, error: 'Missing or invalid request body' };
   }

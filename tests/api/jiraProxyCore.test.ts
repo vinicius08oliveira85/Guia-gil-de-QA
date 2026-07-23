@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, afterEach } from 'vitest';
-import { executeJiraProxy, parseJiraProxyBody } from '../../api/_jiraProxyCore';
+import { executeJiraProxy, parseJiraProxyBody } from '../../services/jira/proxyCore';
 
 describe('parseJiraProxyBody', () => {
   it('aceita objeto', () => {
