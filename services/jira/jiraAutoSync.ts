@@ -63,13 +63,10 @@ export async function syncAllJiraProjects(options?: {
       await jiraSyncQueue.enqueue(`sync-${project.id}`, async () => {
         const latestProject =
           useProjectsStore.getState().projects.find(item => item.id === project.id) ?? project;
-        const updatedProject = await syncJiraProject(
-          config,
-          latestProject,
-          jiraProjectKey,
-          options?.updatedAfter
-        );
-        await updateProject(updatedProject, { silent: options?.silent ?? true });
+        const syncResult = await syncJiraProject(config, latestProject, jiraProjectKey, {
+          updatedAfter: options?.updatedAfter,
+        });
+        await updateProject(syncResult.data, { silent: options?.silent ?? true });
         syncedCount += 1;
       });
     } catch (error) {

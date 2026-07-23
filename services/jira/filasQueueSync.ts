@@ -80,13 +80,26 @@ async function loadQueuesForProjects(
   config: JiraConfig,
   projectKeys: string[]
 ): Promise<JiraQueue[]> {
-  const results = await Promise.all(
+  const settled = await Promise.allSettled(
     projectKeys.map(projectKey => getJiraQueuesForProject(config, projectKey))
   );
   const uniqueById = new Map<string, JiraQueue>();
-  for (const queue of results.flat()) {
-    uniqueById.set(queue.id, queue);
-  }
+  settled.forEach((result, index) => {
+    if (result.status === 'fulfilled') {
+      for (const queue of result.value) {
+        uniqueById.set(queue.id, {
+          ...queue,
+          projectKey: queue.projectKey ?? projectKeys[index],
+        });
+      }
+      return;
+    }
+    logger.warn(
+      `Falha ao carregar filas do projeto ${projectKeys[index]}; ignorando.`,
+      'filasQueueSync',
+      result.reason
+    );
+  });
   return Array.from(uniqueById.values());
 }
 
@@ -171,7 +184,7 @@ export async function syncFilasQueuesFromJira(
   const discoveredKeySet = new Set(discoveredKeys);
 
   const issues = Array.from(issueByKey.values());
-  const converted = await Promise.all(
+  const convertedSettled = await Promise.allSettled(
     issues.map(issue => {
       const issueProjectKey = issue.key?.split('-')[0] ?? projectKeys[0];
       return jiraIssueToTask(config, issue, {
@@ -181,6 +194,23 @@ export async function syncFilasQueuesFromJira(
       });
     })
   );
+  const converted: JiraTask[] = [];
+  convertedSettled.forEach((result, index) => {
+    if (result.status === 'fulfilled') {
+      converted.push(result.value);
+      return;
+    }
+    logger.warn(
+      `Falha ao converter issue ${issues[index]?.key ?? index} na sync de filas; pulando.`,
+      'filasQueueSync',
+      result.reason
+    );
+  });
+  if (converted.length === 0 && issues.length > 0) {
+    throw new Error(
+      'Nenhuma issue da fila pôde ser convertida. Verifique permissões Browse Issues no Jira.'
+    );
+  }
 
   const withRelated = await importFilasRelatedIssues(config, converted, {
     jiraProjectKey: projectKeys[0],

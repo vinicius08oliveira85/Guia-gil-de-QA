@@ -277,19 +277,38 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
     let cancelled = false;
     setIsLoadingQueues(true);
 
-    Promise.all(
+    Promise.allSettled(
       selectedProjectKeys.map(projectKey =>
         getJiraQueuesForProject(config, projectKey).then(queues => ({ projectKey, queues }))
       )
     )
       .then(results => {
         if (cancelled) return;
-        const merged = results.flatMap(({ queues }) => queues);
+        const merged = results.flatMap(result => {
+          if (result.status === 'fulfilled') return result.value.queues;
+          logger.warn(
+            'Falha ao carregar filas de um projeto selecionado',
+            'JiraFilasPanel',
+            result.reason
+          );
+          return [];
+        });
         const uniqueById = new Map<string, JiraQueue>();
         for (const queue of merged) {
           uniqueById.set(queue.id, queue);
         }
         setJiraQueues(Array.from(uniqueById.values()));
+
+        const failed = results.filter(r => r.status === 'rejected').length;
+        if (failed > 0 && merged.length === 0) {
+          handleError(
+            new Error(
+              'Sem permissão para listar filas do Jira Service Management nos projetos selecionados. ' +
+                'Confira se o usuário do token é agente JSM e tem acesso aos projetos.'
+            ),
+            'Carregar filas do Jira'
+          );
+        }
       })
       .catch(err => {
         if (!cancelled) {

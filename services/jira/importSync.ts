@@ -93,13 +93,40 @@ export const importJiraProject = async (
 
   logger.info(`Buscando status de testes para ${jiraKeys.length} chaves Jira`, 'jiraService');
 
-  const tasks: JiraTask[] = await Promise.all(
+  const settled = await Promise.allSettled(
     jiraIssues.map(async issue => {
       const savedTestCases = savedTestStatuses.get(issue.key) || [];
       const task = await jiraIssueToTask(config, issue, { jiraProjectKey, sprintCtx });
       return savedTestCases.length > 0 ? { ...task, testCases: savedTestCases } : task;
     })
   );
+
+  const tasks: JiraTask[] = [];
+  let failed = 0;
+  settled.forEach((result, index) => {
+    if (result.status === 'fulfilled') {
+      tasks.push(result.value);
+      return;
+    }
+    failed += 1;
+    logger.warn(
+      `Falha ao converter issue ${jiraIssues[index]?.key ?? index} na importação; pulando.`,
+      'importSync',
+      result.reason
+    );
+  });
+
+  if (tasks.length === 0 && jiraIssues.length > 0) {
+    throw new Error(
+      'Nenhuma issue pôde ser importada. Verifique se o token tem permissão Browse Issues no projeto.'
+    );
+  }
+  if (failed > 0) {
+    logger.warn(
+      `Importação parcial: ${tasks.length} ok, ${failed} falha(s) (ex.: permissão 403).`,
+      'importSync'
+    );
+  }
 
   const tasksNormalized = normalizeTasksParentIdsAcyclic(tasks);
 
@@ -168,12 +195,24 @@ export const addNewJiraTasks = async (
     return { project, newTasksCount: 0, updatedStatusCount: 0 };
   }
 
-  const newTasks: JiraTask[] = await Promise.all(
+  const newTasksSettled = await Promise.allSettled(
     newIssues.map(issue => jiraIssueToTask(config, issue, { jiraProjectKey, sprintCtx }))
   );
+  const newTasks: JiraTask[] = [];
+  newTasksSettled.forEach((result, index) => {
+    if (result.status === 'fulfilled') {
+      newTasks.push(result.value);
+      return;
+    }
+    logger.warn(
+      `Falha ao converter nova issue ${newIssues[index]?.key ?? index}; pulando.`,
+      'importSync',
+      result.reason
+    );
+  });
 
   const existingByKey = new Map(existingIssues.map(i => [i.key!, i]));
-  const updatedExistingTasks: JiraTask[] = await Promise.all(
+  const updatedExistingSettled = await Promise.allSettled(
     project.tasks.map(async task => {
       const issue = existingByKey.get(task.id);
       if (!issue) return task;
@@ -184,6 +223,12 @@ export const addNewJiraTasks = async (
       });
     })
   );
+  const updatedExistingTasks: JiraTask[] = project.tasks.map((task, index) => {
+    const result = updatedExistingSettled[index];
+    if (result.status === 'fulfilled') return result.value;
+    logger.warn(`Falha ao atualizar issue ${task.id}; mantendo versão local.`, 'importSync', result.reason);
+    return task;
+  });
 
   const allTasks = normalizeTasksParentIdsAcyclic([...updatedExistingTasks, ...newTasks]);
 

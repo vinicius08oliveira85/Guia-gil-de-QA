@@ -2,6 +2,7 @@ import type { JiraConfig, JiraQueue } from './types';
 import { jiraServiceDeskApiCall } from './api';
 import { getCache, setCache } from '../../utils/apiCache';
 import { logger } from '../../utils/logger';
+import { formatJiraPermissionError, isJiraPermissionError } from './permissionErrors';
 
 interface JiraServiceDesk {
   id: string;
@@ -27,6 +28,9 @@ interface JiraQueueListResponse {
 /**
  * Lista filas (queues) do Jira Service Management para um projeto.
  * Ex.: projeto "Sustentação" → fila "Solus".
+ *
+ * Em 401/403 retorna lista vazia (projeto sem Service Desk / sem licença de agente)
+ * para não derrubar o carregamento multi-projeto via Promise.all.
  */
 export async function getJiraQueuesForProject(
   config: JiraConfig,
@@ -49,7 +53,7 @@ export async function getJiraQueuesForProject(
     const desksResponse = await jiraServiceDeskApiCall<JiraServiceDeskListResponse>(
       config,
       'servicedesk',
-      { timeout: 20000 }
+      { timeout: 20000, quietHttpErrors: true }
     );
     const serviceDesk = (desksResponse.values ?? []).find(
       desk => desk.projectKey?.toUpperCase() === normalizedKey
@@ -64,7 +68,7 @@ export async function getJiraQueuesForProject(
     const queuesResponse = await jiraServiceDeskApiCall<JiraQueueListResponse>(
       config,
       `servicedesk/${serviceDesk.id}/queue`,
-      { timeout: 20000 }
+      { timeout: 20000, quietHttpErrors: true }
     );
 
     const queues = (queuesResponse.values ?? [])
@@ -74,6 +78,7 @@ export async function getJiraQueuesForProject(
         name: queue.name,
         jql: queue.jql,
         serviceDeskId: String(serviceDesk.id),
+        projectKey: normalizedKey,
       }))
       .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
 
@@ -83,7 +88,15 @@ export async function getJiraQueuesForProject(
 
     return queues;
   } catch (error) {
+    if (isJiraPermissionError(error)) {
+      logger.warn(
+        `Sem permissão para listar filas JSM do projeto ${normalizedKey}; retornando vazio.`,
+        'jiraService',
+        error
+      );
+      return [];
+    }
     logger.error('Erro ao buscar filas do Jira Service Management', 'jiraService', error);
-    throw error;
+    throw formatJiraPermissionError(error, `listar filas do projeto ${normalizedKey}`);
   }
 }

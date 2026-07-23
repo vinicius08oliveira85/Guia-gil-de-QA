@@ -125,7 +125,10 @@ export const testJiraConnection = async (config: JiraConfig): Promise<boolean> =
       throw new Error('Credenciais inválidas (HTTP 401). Verifique o e-mail e o API Token do Jira.');
     }
     if (msg.includes('403') || msg.toLowerCase().includes('forbidden')) {
-      throw new Error('Acesso negado (HTTP 403). Seu token não tem permissão para acessar este Jira.');
+      throw new Error(
+        'Acesso negado (HTTP 403). Seu token não tem permissão para esta operação no Jira. ' +
+          'Confira Browse Projects, Browse Issues e, para Filas, licença de agente do Service Management.'
+      );
     }
     if (msg.includes('404') || msg.toLowerCase().includes('not found')) {
       throw new Error('URL do Jira não encontrada (HTTP 404). Verifique a URL do servidor.');

@@ -29,6 +29,8 @@ export {
 
 export { getJiraQueuesForProject } from './queues';
 
+export { isJiraPermissionError, formatJiraPermissionError } from './permissionErrors';
+
 export { getJiraIssueSlas, enrichTasksWithJiraSlas, normalizeJiraSlaApiItem } from './sla';
 export type { EnrichTasksWithJiraSlasOptions } from './sla';
 

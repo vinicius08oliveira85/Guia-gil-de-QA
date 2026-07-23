@@ -129,6 +129,8 @@ export interface JiraQueue {
   name: string;
   jql: string;
   serviceDeskId: string;
+  /** Chave do projeto Jira dono da fila (quando conhecida). */
+  projectKey?: string;
 }
 
 export const JIRA_CONFIG_KEY = 'jira_config';

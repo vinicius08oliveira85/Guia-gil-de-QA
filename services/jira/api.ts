@@ -327,8 +327,19 @@ export const jiraAgileApiCall = async <T>(
 export const jiraServiceDeskApiCall = async <T>(
   config: JiraConfig,
   endpoint: string,
-  options: { method?: string; body?: unknown; timeout?: number } = {}
-): Promise<T> => jiraRequest<T>(config, endpoint, { ...options, apiRoot: 'servicedeskapi' });
+  options: {
+    method?: string;
+    body?: unknown;
+    timeout?: number;
+    quietHttpErrors?: boolean;
+  } = {}
+): Promise<T> =>
+  jiraRequest<T>(config, endpoint, {
+    ...options,
+    apiRoot: 'servicedeskapi',
+    // JSM costuma retornar 403 em projetos sem Service Desk / sem licença de agente.
+    quietHttpErrors: options.quietHttpErrors ?? true,
+  });
 
 /** Chamadas fora de `/rest/*` (ex.: `/_edge/tenant_info`, `/jira/forms/...`). */
 export const jiraSitePathCall = async <T>(

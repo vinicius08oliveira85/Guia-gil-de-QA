@@ -46,16 +46,21 @@ export async function getSprintFieldIds(config: JiraConfig): Promise<string[]> {
   const cached = getCache<string[]>(cacheKey);
   if (cached?.length) return cached;
 
-  const fields = await getJiraFields(config);
-  const ids = fields
-    .filter(f => SPRINT_FIELD_NAME_RE.test(f.name.trim()))
-    .map(f => f.id)
-    .filter((id): id is string => !!id);
+  try {
+    const fields = await getJiraFields(config);
+    const ids = fields
+      .filter(f => SPRINT_FIELD_NAME_RE.test(f.name.trim()))
+      .map(f => f.id)
+      .filter((id): id is string => !!id);
 
-  const unique = [...new Set([...ids, 'customfield_10020', 'customfield_10021'])];
-  setCache(cacheKey, unique, 15 * 60 * 1000);
-  logger.info(`Campos Sprint Jira: ${unique.join(', ') || 'nenhum (usando fallbacks)'}`, 'jiraService');
-  return unique;
+    const unique = [...new Set([...ids, 'customfield_10020', 'customfield_10021'])];
+    setCache(cacheKey, unique, 15 * 60 * 1000);
+    logger.info(`Campos Sprint Jira: ${unique.join(', ') || 'nenhum (usando fallbacks)'}`, 'jiraService');
+    return unique;
+  } catch (error) {
+    logger.warn('Não foi possível listar campos Sprint; usando fallbacks.', 'jiraService', error);
+    return ['customfield_10020', 'customfield_10021'];
+  }
 }
 
 /** Paginação genérica para Agile API (que retorna {values, startAt, maxResults, total}). */
@@ -105,7 +110,7 @@ export async function fetchProjectSprintCatalog(
     const boards = await paginateAgileApi<{ id: number }>(
       config,
       `board?projectKeyOrId=${encodeURIComponent(projectKey)}`,
-      { timeout: 30000 }
+      { timeout: 30000, quietHttpErrors: true }
     );
     if (!boards.length) {
       logger.warn(`Nenhum board Scrum/Kanban para ${projectKey}`, 'jiraService');
@@ -174,7 +179,7 @@ export async function fetchIssueSprintsFromAgileApi(
     const issue = await jiraAgileApiCall<{ fields?: Record<string, unknown> }>(
       config,
       `issue/${encodeURIComponent(issueKey)}`,
-      { timeout: 30000 }
+      { timeout: 30000, quietHttpErrors: true }
     );
     return parseSprintsFromIssueFields(issue.fields, { sprintFieldIds, sprintCatalog });
   } catch {
