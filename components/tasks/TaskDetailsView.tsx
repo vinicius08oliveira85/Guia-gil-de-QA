@@ -504,7 +504,7 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
 
   const innerContent = (
     <TaskDetailProvider value={taskDetailValue}>
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       <BackButton
         className={cn('task-details-neu-back-btn self-start -ml-1', taskDetailsModalGhostBtnClass)}
         onClick={onClose}
@@ -516,33 +516,33 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
       />
       {presentation === 'workspace' && openTaskNav && openTaskNav.total > 1 ? (
         <nav
-          className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-base-300/50 bg-base-200/40 px-3 py-2"
+          className="flex items-center justify-between gap-2 rounded-selector border border-base-300/45 bg-base-200/35 px-2 py-1"
           aria-label="Navegação entre tarefas abertas"
         >
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className={cn(taskDetailsModalGhostBtnClass, 'gap-1')}
+            className={cn(taskDetailsModalGhostBtnClass, 'gap-0.5 px-2')}
             onClick={openTaskNav.onPrev}
             aria-label="Tarefa anterior (Alt + seta esquerda)"
           >
-            <ChevronLeft className="h-4 w-4 shrink-0" aria-hidden />
-            Tarefa anterior
+            <ChevronLeft className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            <span className="hidden sm:inline">Anterior</span>
           </Button>
-          <span className="text-xs text-base-content/70" aria-live="polite">
+          <span className="text-[11px] font-medium tabular-nums text-base-content/70" aria-live="polite">
             {openTaskNav.currentIndex} de {openTaskNav.total}
           </span>
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className={cn(taskDetailsModalGhostBtnClass, 'gap-1')}
+            className={cn(taskDetailsModalGhostBtnClass, 'gap-0.5 px-2')}
             onClick={openTaskNav.onNext}
             aria-label="Próxima tarefa (Alt + seta direita)"
           >
-            Próxima tarefa
-            <ChevronRight className="h-4 w-4 shrink-0" aria-hidden />
+            <span className="hidden sm:inline">Próxima</span>
+            <ChevronRight className="h-3.5 w-3.5 shrink-0" aria-hidden />
           </Button>
         </nav>
       ) : null}
@@ -568,7 +568,7 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
                       setActiveSection(tab.id);
                     }}
                   >
-                    <TabIcon className="h-4 w-4 shrink-0" aria-hidden />
+                    <TabIcon className="h-3.5 w-3.5 shrink-0" aria-hidden />
                     <span>{tab.label}</span>
                     {typeof tab.badge === 'number' && tab.badge > 0 ? (
                       <span

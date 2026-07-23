@@ -5,29 +5,25 @@ import { EmptyState } from '../common/EmptyState';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { Spinner } from '../common/Spinner';
 import { FileExportModal } from '../common/FileExportModal';
-import { ClipboardList, Download, X, SlidersHorizontal } from 'lucide-react';
+import { ClipboardList, Download, SlidersHorizontal } from 'lucide-react';
 import { Button } from '../common/Button';
 import { cn } from '../../utils/cn';
 import {
   leveSettingsSectionIconWrapClass,
-  leveTaskModalGhostBtnClass,
   leveTaskModalMutedClass,
   leveTaskModalMutedXsClass,
   leveTaskModalSectionAccentClass,
-  leveTaskModalSectionClass,
-  leveTaskModalStatPillActiveClass,
   leveTaskModalStrongClass,
   leveTaskModalTabBadgeIdleClass,
 } from '../common/projectCardUi';
 import {
+  taskDetailsModalGhostBtnClass,
   taskDetailsModalSectionClass,
+  taskDetailsModalStatusPillClass,
   taskDetailsModalStatusTrackClass,
-  taskDetailsModalTabClass,
 } from './taskDetailsNeuUi';
 import {
   TEST_CASE_STATUS_BADGE_TONE,
-  TEST_CASE_STATUS_DOT_COLOR,
-  TEST_CASE_STATUS_LABEL,
   TEST_CASE_TOTAL_BADGE_TONE,
 } from './testCaseStatusVisuals';
 
@@ -156,37 +152,35 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
 
   return (
     <div className="font-sans tracking-[var(--letter-spacing)] text-base-content">
-      <header className="mb-4 flex flex-col gap-3">
-        <div
-          className={cn(
-            leveTaskModalSectionClass,
-            'flex flex-wrap items-center gap-3 p-4'
-          )}
-        >
-          <span className={leveSettingsSectionIconWrapClass}>
-            <ClipboardList className="h-5 w-5" aria-hidden />
+      <header className={cn(taskDetailsModalSectionClass, 'mb-2.5 overflow-visible')}>
+        <div className="flex flex-wrap items-center gap-2 px-3 py-2">
+          <span className={cn(leveSettingsSectionIconWrapClass, 'h-8 w-8')}>
+            <ClipboardList className="h-4 w-4" aria-hidden />
           </span>
-          <h2 className={cn('text-lg font-bold', leveTaskModalStrongClass)}>Casos de Teste</h2>
-          <span className={cn(leveTaskModalTabBadgeIdleClass, 'px-3 py-1 normal-case')}>
+          <h2 className={cn('text-base font-bold', leveTaskModalStrongClass)}>Casos de Teste</h2>
+          <span className={cn(leveTaskModalTabBadgeIdleClass, 'px-2 py-0.5 normal-case')}>
             {stats.total} caso(s)
           </span>
           {cases.length > 0 && (
             <button
               type="button"
               onClick={() => setShowExportModal(true)}
-              className={cn(leveTaskModalGhostBtnClass, 'ml-auto gap-1.5')}
+              className={cn(taskDetailsModalGhostBtnClass, 'ml-auto gap-1')}
               aria-label="Exportar lista de casos de teste"
             >
-              <Download className="w-4 h-4" />
+              <Download className="h-3.5 w-3.5" aria-hidden />
               <span className="hidden sm:inline">Exportar</span>
             </button>
           )}
         </div>
 
         {cases.length > 0 && (
-          <>
-            {/* Indicadores clicáveis */}
-            <div className={cn(taskDetailsModalStatusTrackClass, 'flex flex-wrap items-center gap-1.5')}>
+          <div className="flex flex-wrap items-center gap-1.5 border-t border-base-300/45 px-2.5 py-1.5">
+            <div
+              className={cn(taskDetailsModalStatusTrackClass, 'min-w-0 flex-1')}
+              role="group"
+              aria-label="Filtrar casos por status"
+            >
               {indicatorItems.map(item => (
                 <button
                   key={item.label}
@@ -201,7 +195,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                         ? `Filtrar por: ${item.label}`
                         : 'Ver todos'
                   }
-                  className={taskDetailsModalTabClass(item.isActive)}
+                  className={taskDetailsModalStatusPillClass(item.isActive)}
                   aria-pressed={item.isActive}
                 >
                   {!item.isActive && (
@@ -210,7 +204,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                   <span>{item.label}</span>
                   <span
                     className={cn(
-                      'ml-1 rounded-full px-1.5 text-[11px] font-bold tabular-nums',
+                      'rounded-full px-1 text-[10px] font-bold tabular-nums',
                       item.tone
                     )}
                   >
@@ -219,47 +213,25 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                 </button>
               ))}
             </div>
-
-            {/* Chips de filtros ativos (status via KPIs) */}
             {statusFilter.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2">
-                {statusFilter.map(s => (
-                  <span
-                    key={s}
-                    className={cn(leveTaskModalStatPillActiveClass, 'gap-1.5 pr-1 py-1.5')}
-                  >
-                    <span
-                      className={cn('h-2 w-2 shrink-0 rounded-full', TEST_CASE_STATUS_DOT_COLOR[s])}
-                      aria-hidden
-                    />
-                    {TEST_CASE_STATUS_LABEL[s]}
-                    <Button
-                      onClick={() => toggleStatusFilter(s)}
-                      size="circle" variant="ghost"
-                      className="p-0 min-h-0 h-4 w-4"
-                      aria-label={`Remover filtro ${TEST_CASE_STATUS_LABEL[s]}`}
-                    >
-                      <X className="w-3 h-3" />
-                    </Button>
-                  </span>
-                ))}
+              <div className="flex flex-wrap items-center gap-1.5">
                 <Button
                   onClick={clearAllFilters}
-                  size="sm" variant="ghost"
-                  className="text-error hover:bg-error/10 text-xs"
+                  size="sm"
+                  variant="ghost"
+                  className="min-h-7 px-2 text-xs text-error hover:bg-error/10"
+                  aria-label="Limpar filtros de status"
                 >
                   Limpar filtros
                 </Button>
+                {filteredCases.length !== cases.length && (
+                  <span className={cn(leveTaskModalMutedXsClass, 'tabular-nums')}>
+                    {filteredCases.length}/{cases.length}
+                  </span>
+                )}
               </div>
             )}
-
-            {/* Contador exibindo X de Y */}
-            {statusFilter.length > 0 && filteredCases.length !== cases.length && (
-              <p className={leveTaskModalMutedXsClass}>
-                Exibindo {filteredCases.length} de {cases.length} caso(s)
-              </p>
-            )}
-          </>
+          </div>
         )}
       </header>
 

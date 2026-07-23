@@ -19,7 +19,7 @@ import {
 } from '../../common/projectCardUi';
 import {
   taskDetailsModalSectionClass,
-  taskDetailsModalTabClass,
+  taskDetailsModalSubTabClass,
   taskDetailsModalTabsScrollWrapClass,
   taskDetailsModalTabsTrackClass,
   taskDetailsModalPrimaryCtaClass,
@@ -60,15 +60,19 @@ export const TaskTestsSection: React.FC = () => {
   const hasTests = !!(task.testCases && task.testCases.length > 0);
 
   return (
-    <div className={cn('space-y-4', taskCardTypography, taskTextStrongClass)}>
+    <div className={cn('space-y-2.5', taskCardTypography, taskTextStrongClass)}>
       <div className={taskDetailsModalTabsScrollWrapClass}>
-        <div className={taskDetailsModalTabsTrackClass} role="tablist" aria-label="Sub-abas de testes">
+        <div
+          className={cn(taskDetailsModalTabsTrackClass, 'w-fit max-w-full')}
+          role="tablist"
+          aria-label="Sub-abas de testes"
+        >
           <button
             type="button"
             role="tab"
             aria-selected={activeTestSubSection === 'strategy'}
             onClick={() => setActiveTestSubSection('strategy')}
-            className={taskDetailsModalTabClass(activeTestSubSection === 'strategy')}
+            className={taskDetailsModalSubTabClass(activeTestSubSection === 'strategy')}
           >
             Estratégia
           </button>
@@ -77,7 +81,7 @@ export const TaskTestsSection: React.FC = () => {
             role="tab"
             aria-selected={activeTestSubSection === 'test-cases'}
             onClick={() => setActiveTestSubSection('test-cases')}
-            className={taskDetailsModalTabClass(activeTestSubSection === 'test-cases')}
+            className={taskDetailsModalSubTabClass(activeTestSubSection === 'test-cases')}
           >
             Casos de teste
             {task.testCases?.length ? (
@@ -98,12 +102,12 @@ export const TaskTestsSection: React.FC = () => {
 
       {activeTestSubSection === 'strategy' && (
         <div>
-          <header className={cn(taskDetailsModalSectionClass, 'mb-4 flex flex-wrap items-center gap-3 p-4')}>
-            <span className={leveSettingsSectionIconWrapClass}>
-              <BarChart3 className="h-5 w-5" aria-hidden />
+          <header className={cn(taskDetailsModalSectionClass, 'mb-2.5 flex flex-wrap items-center gap-2 px-3 py-2')}>
+            <span className={cn(leveSettingsSectionIconWrapClass, 'h-8 w-8')}>
+              <BarChart3 className="h-4 w-4" aria-hidden />
             </span>
-            <h2 className={cn('text-lg font-bold', leveTaskModalStrongClass)}>Estratégia de Teste</h2>
-            <span className={cn(leveTaskModalTabBadgeIdleClass, 'px-3 py-1')}>
+            <h2 className={cn('text-base font-bold', leveTaskModalStrongClass)}>Estratégia de Teste</h2>
+            <span className={cn(leveTaskModalTabBadgeIdleClass, 'px-2 py-0.5')}>
               {task.testStrategy?.length || 0} item(ns)
             </span>
           </header>
@@ -164,13 +168,13 @@ export const TaskTestsSection: React.FC = () => {
         />
       )}
 
-      <section className={cn(taskDetailsModalSectionClass, 'mt-6 overflow-visible')}>
-        <div className="flex flex-col gap-4 p-4 lg:flex-row lg:items-center lg:gap-5">
+      <section className={cn(taskDetailsModalSectionClass, 'mt-3 overflow-visible')}>
+        <div className="flex flex-col gap-3 p-3 lg:flex-row lg:items-center lg:gap-4">
           <div className="flex-grow">
             {onTaskToolsChange && (
               <>
-                <h3 className={cn(leveTaskModalFieldLabelClass, 'mb-3 flex items-center gap-2 !normal-case')}>
-                  <Wrench className="h-5 w-5 text-primary" aria-hidden />
+                <h3 className={cn(leveTaskModalFieldLabelClass, 'mb-2 flex items-center gap-2 !normal-case')}>
+                  <Wrench className="h-4 w-4 text-primary" aria-hidden />
                   Ferramentas Utilizadas (Geral)
                 </h3>
                 <ToolsSelector
@@ -184,7 +188,7 @@ export const TaskTestsSection: React.FC = () => {
             )}
             {!onTaskToolsChange && <div className="h-0" />}
           </div>
-          <div className="flex min-w-0 flex-col gap-4 border-t border-base-300/55 pt-5 lg:w-80 lg:shrink-0 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+          <div className="flex min-w-0 flex-col gap-3 border-t border-base-300/55 pt-3 lg:w-72 lg:shrink-0 lg:border-l lg:border-t-0 lg:pl-4 lg:pt-0">
             <TestCaseDetailLevelControl
               idPrefix={task.id}
               value={detailLevel}

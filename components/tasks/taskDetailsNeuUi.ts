@@ -29,31 +29,39 @@ export const taskDetailsNeuInsetClass = 'task-details-neu-inset';
 /** Superfície rebaixada profunda (trilhos, painel de conteúdo). */
 export const taskDetailsNeuInsetDeepClass = 'task-details-neu-inset-deep';
 
-/** Trilho segmentado — inset. */
+/** Trilho segmentado — inset (compacto). */
 export const taskDetailsModalTabsTrackClass = cn(
-  'task-details-neu-track flex w-full flex-wrap gap-1 overflow-visible rounded-selector p-1.5'
+  'task-details-neu-track flex w-full flex-wrap items-center gap-0.5 overflow-visible rounded-selector p-1'
 );
 
 const tabBaseClass =
-  'task-details-neu-tab inline-flex min-h-[2rem] shrink-0 snap-start items-center gap-1.5 rounded-selector px-2.5 py-1.5 font-sans text-sm font-semibold leading-tight transition-[box-shadow,color,transform]';
+  'task-details-neu-tab inline-flex min-h-[1.75rem] shrink-0 snap-start items-center gap-1 rounded-selector px-2 py-1 font-sans text-xs font-semibold leading-tight transition-[box-shadow,color,transform] sm:min-h-[1.875rem] sm:px-2.5 sm:text-sm';
 
 /** Chip de aba — raised; ativo = inset. */
 export const taskDetailsModalTabClass = (active: boolean) =>
   cn(tabBaseClass, active ? 'task-details-neu-chip--active' : 'task-details-neu-chip');
 
+/** Aba secundária (sub-nav) — denser que a primary. */
+export const taskDetailsModalSubTabClass = (active: boolean) =>
+  cn(
+    'task-details-neu-tab inline-flex min-h-[1.5rem] shrink-0 snap-start items-center gap-1 rounded-selector px-2 py-0.5',
+    'font-sans text-[11px] font-semibold leading-tight transition-[box-shadow,color,transform] sm:text-xs',
+    active ? 'task-details-neu-chip--active' : 'task-details-neu-chip'
+  );
+
 /** Wrapper com scroll horizontal sem cortar sombra dos chips. */
 export const taskDetailsModalTabsScrollWrapClass =
-  'overflow-x-auto overflow-y-visible px-0.5 py-1 -mx-0.5';
+  'overflow-x-auto overflow-y-visible px-0.5 py-0.5 -mx-0.5';
 
 /** Trilho de status (Ações rápidas). */
 export const taskDetailsModalStatusTrackClass = cn(
-  'task-details-neu-track task-details-neu-status-track inline-flex flex-wrap items-stretch gap-1 overflow-visible rounded-selector p-1.5'
+  'task-details-neu-track task-details-neu-status-track inline-flex max-w-full flex-wrap items-center gap-0.5 overflow-visible rounded-selector p-1'
 );
 
 export const taskDetailsModalStatusPillClass = (active: boolean) =>
   cn(
-    'task-details-neu-status-pill inline-flex min-h-[2.25rem] items-center justify-center rounded-selector px-3 py-1.5',
-    'font-sans text-xs font-semibold transition-[box-shadow,color,transform] sm:min-h-0',
+    'task-details-neu-status-pill inline-flex min-h-[1.75rem] items-center justify-center rounded-selector px-2 py-1',
+    'font-sans text-[11px] font-semibold transition-[box-shadow,color,transform] sm:min-h-0 sm:text-xs',
     active ? 'task-details-neu-chip--status-active' : 'task-details-neu-chip'
   );
 
@@ -62,7 +70,7 @@ export const taskDetailsModalSectionClass = cn('task-modal-section', taskDetails
 
 export const taskDetailsModalPanelShellClass = cn(
   taskDetailsNeuInsetDeepClass,
-  'rounded-box p-2.5 sm:p-3'
+  'rounded-box p-2 sm:p-2.5'
 );
 
 /** Rótulo de seção no Resumo (Descrição, Comentários, cartões). */
@@ -95,7 +103,7 @@ export const taskDetailsModalDescriptionClass = cn(
 
 export const taskDetailsModalGhostBtnClass = cn(
   'task-details-neu-ghost-btn task-details-neu-chip',
-  'inline-flex min-h-[44px] items-center gap-2 rounded-selector px-4 sm:min-h-9'
+  'inline-flex min-h-8 items-center gap-1.5 rounded-selector px-2.5 text-xs sm:min-h-8 sm:px-3 sm:text-sm'
 );
 
 export const taskDetailsModalIconBtnClass = cn(
