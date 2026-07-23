@@ -12,6 +12,7 @@ export type {
 export {
   saveJiraConfig,
   getJiraConfig,
+  waitForJiraConfig,
   getJiraLastUrl,
   setJiraLastUrl,
   deleteJiraConfig,

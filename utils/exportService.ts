@@ -63,12 +63,13 @@ export const exportProjectToCSV = (project: Project): string => {
   ];
   const rows: string[] = [headers.join(',')];
 
+  const openBugsCount = project.tasks.filter(t => t.type === 'Bug' && t.status !== 'Done').length;
+
   project.tasks.forEach(task => {
     const testCases = task.testCases || [];
     const executed = testCases.filter(tc => tc.status !== 'Not Run').length;
     const passed = testCases.filter(tc => tc.status === 'Passed').length;
     const failed = testCases.filter(tc => tc.status === 'Failed').length;
-    const bugs = project.tasks.filter(t => t.type === 'Bug' && t.status !== 'Done').length;
 
     const row = [
       task.id,
@@ -79,7 +80,7 @@ export const exportProjectToCSV = (project: Project): string => {
       executed.toString(),
       passed.toString(),
       failed.toString(),
-      bugs.toString(),
+      openBugsCount.toString(),
     ];
     rows.push(row.join(','));
   });
@@ -245,10 +246,26 @@ export const downloadFile = (content: string, filename: string, mimeType: string
   const link = document.createElement('a');
   link.href = url;
   link.download = filename;
+  link.style.display = 'none';
   document.body.appendChild(link);
+
+  const cleanup = () => {
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  link.addEventListener('click', link.click.bind(link));
   link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+
+  // Revogar após um curto delay para garantir que o download iniciou
+  setTimeout(cleanup, 100);
+};
+
+/** BOM UTF-8 para compatibilidade com Excel ao abrir CSVs com acentos. */
+const CSV_BOM = '\uFEFF';
+
+export const downloadCsvFile = (content: string, filename: string) => {
+  downloadFile(`${CSV_BOM}${content}`, filename, 'text/csv;charset=utf-8');
 };
 
 /**
@@ -332,6 +349,7 @@ export const exportProjectToExcel = async (project: Project): Promise<void> => {
 
 /**
  * Exporta projeto para PDF
+ * Nota: Apenas as primeiras 20 tarefas são incluídas (limitação de formatação manual de PDF).
  */
 export const exportProjectToPDF = async (project: Project): Promise<void> => {
   try {

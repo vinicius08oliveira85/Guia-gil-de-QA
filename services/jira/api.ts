@@ -104,12 +104,11 @@ async function executeWithRetry<T>(
     }
 
     if (is429) {
+      const backoffMs = lastRetryAfter > 0
+        ? lastRetryAfter * 1000
+        : Math.min(5000 * Math.pow(2, attempt - 1), 60000);
       await withRateLimitLock(() => {
         consecutive429s++;
-        // Usar Retry-After do header se disponível, senão backoff exponencial
-        const backoffMs = lastRetryAfter > 0
-          ? lastRetryAfter * 1000
-          : Math.min(5000 * Math.pow(2, attempt - 1), 60000);
         lastRetryAfter = 0;
         const newConcurrent = Math.max(1, 4 - consecutive429s);
         logger.warn(
@@ -200,40 +199,12 @@ async function jiraRequest<T>(
           signal: controller.signal,
         });
       } catch (proxyError) {
-        // Fallback: proxy offline → tentar chamada direta (CORS permitting)
         controller.abort();
         clearTimeout(timeoutId);
-        logger.warn('Proxy Jira indisponível, tentando chamada direta', 'jiraApi', proxyError);
-
-        const baseUrl = config.url.replace(/\/$/, '');
-        const directUrl = `${baseUrl}/rest/${apiRoot}/${endpoint}`;
-        const auth = btoa(`${config.email}:${config.apiToken}`);
-
-        const newController = new AbortController();
-        const newTimeoutId = setTimeout(() => newController.abort(), timeout);
-
-        try {
-          response = await fetch(directUrl, {
-            method: requestBody.method,
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Basic ${auth}`,
-              ...(options.extraHeaders || {}),
-            },
-            body: requestBody.body ? JSON.stringify(requestBody.body) : undefined,
-            signal: newController.signal,
-          });
-          clearTimeout(newTimeoutId);
-          logger.info('Chamada direta ao Jira bem-sucedida (fallback)', 'jiraApi', {
-            endpoint,
-            status: response.status,
-          });
-        } catch (directError) {
-          clearTimeout(newTimeoutId);
-          throw new Error(
-            `Proxy Jira indisponível e chamada direta falhou. Verifique sua conexão de rede e se o servidor proxy está rodando.`
-          );
-        }
+        logger.warn('Proxy Jira indisponível', 'jiraApi', proxyError);
+        throw new Error(
+          `Proxy Jira indisponível. Verifique sua conexão de rede e tente novamente.`
+        );
       }
 
       clearTimeout(timeoutId);
@@ -259,6 +230,7 @@ async function jiraRequest<T>(
         resetRateLimitState();
       });
 
+      const contentType = response.headers.get('content-type') || '';
       const responseText = await response.text();
 
       if (!response.ok) {
@@ -266,11 +238,22 @@ async function jiraRequest<T>(
         const isQuietHttpError =
           options.quietHttpErrors && (response.status === 403 || response.status === 404);
         const logHttpError = isQuietHttpError ? logger.debug.bind(logger) : logger.error.bind(logger);
+
+        if (contentType.includes('text/html')) {
+          logHttpError('Proxy retornou HTML (possível erro de deploy ou rota)', 'jiraService', {
+            status: response.status,
+            snippet: responseText.substring(0, 300),
+          });
+          throw new Error(
+            `Erro no servidor proxy (HTTP ${response.status}). Verifique se a URL do proxy está correta e tente novamente.`
+          );
+        }
+
         try {
           errorData = JSON.parse(responseText) as { error?: string };
           logHttpError('Erro do proxy', 'jiraService', errorData);
         } catch {
-          logHttpError('Erro do proxy (texto)', 'jiraService', responseText);
+          logHttpError('Erro do proxy (texto)', 'jiraService', responseText.substring(0, 500));
           errorData = { error: responseText || `Jira API Error (${response.status})` };
         }
         throw new Error(errorData.error || `Jira API Error (${response.status})`);
@@ -281,6 +264,14 @@ async function jiraRequest<T>(
 
       if (!responseText.trim()) {
         return undefined as T;
+      }
+
+      if (contentType.includes('text/html')) {
+        logger.error('Proxy retornou HTML inesperado em resposta 200', 'jiraService', {
+          endpoint,
+          snippet: responseText.substring(0, 300),
+        });
+        throw new Error('Resposta inesperada do servidor proxy. Tente novamente.');
       }
 
       const data = JSON.parse(responseText) as T;

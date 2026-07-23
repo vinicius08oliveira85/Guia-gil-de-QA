@@ -13,6 +13,7 @@ import {
   exportDevTasksToCSV,
   generateProjectReport,
   downloadFile,
+  downloadCsvFile,
 } from '../../utils/exportService';
 import { exportTaskQaArtifactsToJSON } from '../../utils/taskQaArtifactsExport';
 import { Project, JiraTask } from '../../types';
@@ -109,8 +110,7 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(
               case 'csv': {
                 const csvContent = exportProjectToCSV(project);
                 fileName = `${project.name}_${dateStr}.csv`;
-                mimeType = 'text/csv';
-                downloadFile(csvContent, fileName, mimeType);
+                downloadCsvFile(csvContent, fileName);
                 break;
               }
 
@@ -148,8 +148,7 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(
                       tasks: tasks,
                     } as Project);
                 fileName = devMode ? `Tarefas_Dev_${dateStr}.csv` : `Tarefas_${dateStr}.csv`;
-                mimeType = 'text/csv';
-                downloadFile(csvContent, fileName, mimeType);
+                downloadCsvFile(csvContent, fileName);
                 break;
               }
 
@@ -168,8 +167,7 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(
               case 'csv': {
                 const csvContent = exportTestCasesToCSV(tasks);
                 fileName = `CasosDeTeste_${dateStr}.csv`;
-                mimeType = 'text/csv';
-                downloadFile(csvContent, fileName, mimeType);
+                downloadCsvFile(csvContent, fileName);
                 break;
               }
             }
@@ -206,6 +204,10 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(
       markdown: 'Markdown (.md)',
     };
 
+    const wordTaskCount = (project?.tasks?.length ?? tasks?.length ?? 0);
+    const wordTruncated = wordTaskCount > 50;
+    const pdfTruncated = wordTaskCount > 20;
+
     const formatHint: Partial<Record<ExportFormat, string>> = {
       json:
         exportType === 'task-qa'
@@ -213,8 +215,12 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(
           : 'Formato JSON completo com todos os dados do projeto.',
       csv: 'Formato CSV para uso em planilhas. Contém dados tabulares.',
       excel: 'Arquivo Excel com múltiplas planilhas organizadas.',
-      pdf: 'Documento PDF formatado para impressão e compartilhamento.',
-      word: 'Documento Word editável com formatação.',
+      pdf: pdfTruncated
+        ? `Documento PDF para impressão. ATENÇÃO: apenas as primeiras 20 de ${wordTaskCount} tarefas serão incluídas.`
+        : 'Documento PDF formatado para impressão e compartilhamento.',
+      word: wordTruncated
+        ? `Documento Word editável. ATENÇÃO: apenas as primeiras 50 de ${wordTaskCount} tarefas serão incluídas na tabela.`
+        : 'Documento Word editável com formatação.',
       markdown: 'Relatório em Markdown para documentação.',
     };
 

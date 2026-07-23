@@ -7,6 +7,7 @@ import {
   exportTestCasesToCSV,
   generateProjectReport,
   downloadFile,
+  downloadCsvFile,
 } from '../../utils/exportService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 
@@ -35,7 +36,7 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({ project, onClose }) => {
   const handleExportCSV = () => {
     try {
       const csv = exportProjectToCSV(project);
-      downloadFile(csv, `${project.name}-tasks.csv`, 'text/csv');
+      downloadCsvFile(csv, `${project.name}-tasks.csv`);
       toast.success('Tarefas exportadas como CSV com sucesso!');
       onClose();
     } catch (error) {
@@ -49,7 +50,7 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({ project, onClose }) => {
   const handleExportTestCasesCSV = () => {
     try {
       const csv = exportTestCasesToCSV(project.tasks);
-      downloadFile(csv, `${project.name}-testcases.csv`, 'text/csv');
+      downloadCsvFile(csv, `${project.name}-testcases.csv`);
       toast.success('Casos de teste exportados como CSV com sucesso!');
       onClose();
     } catch (error) {

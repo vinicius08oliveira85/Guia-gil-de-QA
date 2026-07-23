@@ -284,6 +284,11 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
         setImportProgress({ current, total })
       );
       setImportProgress(null);
+
+      // Invalidar cache de projetos para refletir mudanças
+      const cacheKey = `jira_projects_${savedConfig.url}`;
+      localStorage.removeItem(cacheKey);
+
       onProjectImported?.(project);
       handleSuccess(
         `Projeto "${project.name}" importado do Jira com sucesso! ${project.tasks.length} tarefas importadas.`

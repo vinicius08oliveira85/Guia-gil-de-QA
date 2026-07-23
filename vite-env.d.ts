@@ -23,6 +23,8 @@ interface ImportMetaEnv {
   readonly GEMINI_API_KEY?: string;
   /** Opcional: sobrescreve o modelo padrão (ex.: gemini-2.5-flash, gemini-2.0-flash, gemini-1.5-flash-latest). */
   readonly VITE_GEMINI_MODEL?: string;
+  /** Chave de criptografia para dados sensíveis no localStorage (client-side). */
+  readonly VITE_CRYPTO_PASSPHRASE?: string;
 }
 
 interface ImportMeta {

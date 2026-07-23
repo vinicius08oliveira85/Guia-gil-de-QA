@@ -3,7 +3,7 @@ import type { JiraConfig } from '../services/jira/types';
 const ENC_PREFIX = 'aes:';
 const STORAGE_KEY = 'jira-config-encrypted';
 const LEGACY_PREFIX = 'enc:';
-const APP_PASSPHRASE = 'qa-agile-guide-v1';
+const APP_PASSPHRASE = import.meta.env.VITE_CRYPTO_PASSPHRASE || 'qa-agile-guide-v1';
 
 let cachedConfig: JiraConfig | null = null;
 

@@ -7,7 +7,6 @@ import {
   saveEncryptedConfig,
   getCachedConfig,
   removeEncryptedConfig,
-  hasEncryptedConfig,
 } from '../../utils/jiraConfigCrypto';
 
 function syncFolderBackupAfterConfigChange(): void {
@@ -72,6 +71,24 @@ async function loadDecryptedConfigAsync(): Promise<JiraConfig | null> {
   }
 }
 
+/**
+ * Aguarda a carga async da config e retorna.
+ * Deve ser chamado no bootstrap da aplicação para garantir que a config
+ * esteja disponível antes de operações que dependem dela (auto-sync, etc.).
+ */
+let bootstrapPromise: Promise<JiraConfig | null> | null = null;
+export function waitForJiraConfig(): Promise<JiraConfig | null> {
+  if (!bootstrapPromise) {
+    const cached = getCachedConfig();
+    if (cached) {
+      bootstrapPromise = Promise.resolve(cached);
+    } else {
+      bootstrapPromise = loadDecryptedConfigAsync();
+    }
+  }
+  return bootstrapPromise;
+}
+
 export const getJiraLastUrl = (): string => {
   return localStorage.getItem(JIRA_LAST_URL_KEY) ?? '';
 };
@@ -86,6 +103,7 @@ export const setJiraLastUrl = (url: string): void => {
 export const deleteJiraConfig = (): void => {
   localStorage.removeItem(JIRA_CONFIG_KEY);
   removeEncryptedConfig();
+  bootstrapPromise = null;
   syncFolderBackupAfterConfigChange();
 };
 
