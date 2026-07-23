@@ -19,13 +19,16 @@ export const DB_NAME = 'QAProjectsDB';
  * - 1: store inicial `projects`
  * - 2: novo store `testGenerationCache` (persiste artefatos gerados pela IA por taskId)
  * - 3: novo store `localFolderHandles` (persiste handle da pasta de backup automático)
+ * - 4: novo store `taskTracking` (persiste dados do Acompanhamento de Tarefas / Filas Jira)
  */
-export const DB_VERSION = 3;
+export const DB_VERSION = 4;
 export const STORE_NAME = 'projects';
 /** Object store que persiste o cache de `TestGenerationArtifacts` por `taskId`. */
 export const TEST_GENERATION_CACHE_STORE = 'testGenerationCache';
 /** Object store que persiste o `FileSystemDirectoryHandle` da pasta de backup local. */
 export const LOCAL_FOLDER_HANDLES_STORE = 'localFolderHandles';
+/** Object store que persiste dados do Acompanhamento de Tarefas (Filas Jira). */
+export const TASK_TRACKING_STORE = 'taskTracking';
 
 export const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 export const ALLOWED_FILE_TYPES = [

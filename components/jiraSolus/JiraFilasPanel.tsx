@@ -959,13 +959,7 @@ export const JiraFilasPanel: React.FC<JiraFilasPanelProps> = ({
     selectedQueueStatuses.length > 0 &&
     selectedQueues.length > 0 &&
     !isBusy;
-  const canUpdateFromSelection =
-    hasJiraConfig &&
-    selectedProjectKeys.length > 0 &&
-    selectedQueueCategories.length > 0 &&
-    selectedQueueStatuses.length > 0 &&
-    selectedQueues.length > 0 &&
-    !isBusy;
+  const canUpdateFromSelection = canImportQueue;
   const canUpdateQueue = canUpdateFromSelection || (hasJiraConfig && tasks.length > 0 && !isBusy);
 
   const setHeaderJiraAction = useTaskTrackingHeaderStore(s => s.setJiraAction);

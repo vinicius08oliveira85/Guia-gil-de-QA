@@ -1,6 +1,6 @@
 import type { JiraSprint } from '../../types';
 import type { JiraConfig, JiraFieldInfo } from './types';
-import { jiraApiCall, jiraAgileApiCall } from './api';
+import { jiraAgileApiCall } from './api';
 import { getJiraFields } from './metadata';
 import { getCache, setCache } from '../../utils/apiCache';
 import { parseSprintsFromIssueFields } from '../../utils/jiraSprintFields';
@@ -58,6 +58,36 @@ export async function getSprintFieldIds(config: JiraConfig): Promise<string[]> {
   return unique;
 }
 
+/** Paginação genérica para Agile API (que retorna {values, startAt, maxResults, total}). */
+async function paginateAgileApi<T>(
+  config: JiraConfig,
+  baseEndpoint: string,
+  options?: { timeout?: number; quietHttpErrors?: boolean }
+): Promise<T[]> {
+  const all: T[] = [];
+  let startAt = 0;
+  const maxResults = 100;
+  for (;;) {
+    const sep = baseEndpoint.includes('?') ? '&' : '?';
+    const response = await jiraAgileApiCall<{
+      values?: T[];
+      startAt?: number;
+      maxResults?: number;
+      total?: number;
+    }>(config, `${baseEndpoint}${sep}startAt=${startAt}&maxResults=${maxResults}`, {
+      timeout: options?.timeout ?? 30000,
+      quietHttpErrors: options?.quietHttpErrors,
+    });
+    all.push(...(response.values ?? []));
+    if (typeof response.total !== 'number' || typeof response.maxResults !== 'number') break;
+    if (response.total === 0) break;
+    const fetched = response.startAt ?? startAt;
+    if (fetched + response.maxResults >= response.total) break;
+    startAt = fetched + response.maxResults;
+  }
+  return all;
+}
+
 /** Catálogo id → sprint via API Agile (boards do projeto). */
 export async function fetchProjectSprintCatalog(
   config: JiraConfig,
@@ -72,12 +102,11 @@ export async function fetchProjectSprintCatalog(
   const catalog = new Map<number, JiraSprint>();
 
   try {
-    const boardsResponse = await jiraAgileApiCall<{ values?: Array<{ id: number }> }>(
+    const boards = await paginateAgileApi<{ id: number }>(
       config,
       `board?projectKeyOrId=${encodeURIComponent(projectKey)}`,
       { timeout: 30000 }
     );
-    const boards = boardsResponse.values ?? [];
     if (!boards.length) {
       logger.warn(`Nenhum board Scrum/Kanban para ${projectKey}`, 'jiraService');
       return catalog;
@@ -85,22 +114,20 @@ export async function fetchProjectSprintCatalog(
 
     for (const board of boards) {
       try {
-        const sprintResponse = await jiraAgileApiCall<{
-          values?: Array<{
-            id: number;
-            name: string;
-            state?: string;
-            startDate?: string;
-            endDate?: string;
-            completeDate?: string;
-            goal?: string;
-          }>;
+        const sprints = await paginateAgileApi<{
+          id: number;
+          name: string;
+          state?: string;
+          startDate?: string;
+          endDate?: string;
+          completeDate?: string;
+          goal?: string;
         }>(
           config,
-          `board/${board.id}/sprint?state=active,future,closed&maxResults=100`,
+          `board/${board.id}/sprint?state=active,future,closed`,
           { timeout: 30000, quietHttpErrors: true }
         );
-        for (const s of sprintResponse.values ?? []) {
+        for (const s of sprints) {
           if (s?.id != null && s?.name) {
             catalog.set(s.id, agileSprintToJiraSprint(s));
           }

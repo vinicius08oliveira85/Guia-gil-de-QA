@@ -13,9 +13,69 @@ const jiraRateLimiter = new RateLimiter({
   maxConcurrent: 4,
 });
 
-/** Rastreia backoff adaptativo para 429. */
-let consecutive429s = 0;
-let backoffUntil = 0;
+const RATE_LIMIT_STORAGE_KEY = 'jira-rate-limit-state';
+
+/** Rastreia backoff adaptativo para 429 — persistido em sessionStorage para sobreviver a reloads. */
+function loadRateLimitState(): { consecutive429s: number; backoffUntil: number } {
+  try {
+    const raw = sessionStorage.getItem(RATE_LIMIT_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const now = Date.now();
+      // Ignorar estado expirado
+      if (parsed.backoffUntil && parsed.backoffUntil <= now) {
+        sessionStorage.removeItem(RATE_LIMIT_STORAGE_KEY);
+        return { consecutive429s: 0, backoffUntil: 0 };
+      }
+      return {
+        consecutive429s: typeof parsed.consecutive429s === 'number' ? parsed.consecutive429s : 0,
+        backoffUntil: typeof parsed.backoffUntil === 'number' ? parsed.backoffUntil : 0,
+      };
+    }
+  } catch {
+    /* sessionStorage indisponível */
+  }
+  return { consecutive429s: 0, backoffUntil: 0 };
+}
+
+function saveRateLimitState(consecutive429s: number, backoffUntil: number): void {
+  try {
+    sessionStorage.setItem(
+      RATE_LIMIT_STORAGE_KEY,
+      JSON.stringify({ consecutive429s, backoffUntil })
+    );
+  } catch {
+    /* sessionStorage indisponível */
+  }
+}
+
+function resetRateLimitState(): void {
+  consecutive429s = 0;
+  backoffUntil = 0;
+  try {
+    sessionStorage.removeItem(RATE_LIMIT_STORAGE_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+let { consecutive429s, backoffUntil } = loadRateLimitState();
+/** Retry-After header da última resposta 429 (passado da fn interna para executeWithRetry). */
+let lastRetryAfter = 0;
+
+/** Mutex simples para serializar mutações no estado global de rate limit. */
+let rateLimitLock: Promise<void> = Promise.resolve();
+async function withRateLimitLock<T>(fn: () => T | Promise<T>): Promise<T> {
+  const prev = rateLimitLock;
+  let nextResolve: () => void;
+  rateLimitLock = new Promise<void>(resolve => { nextResolve = resolve; });
+  await prev;
+  try {
+    return await fn();
+  } finally {
+    nextResolve!();
+  }
+}
 
 const MAX_RETRIES = 3;
 
@@ -44,16 +104,21 @@ async function executeWithRetry<T>(
     }
 
     if (is429) {
-      consecutive429s++;
-      // Backoff exponencial: 2^tentativa segundos, mínimo 5s, máximo 60s
-      const backoffMs = Math.min(5000 * Math.pow(2, attempt - 1), 60000);
-      // Reduzir concurrency dinamicamente
-      const newConcurrent = Math.max(1, 4 - consecutive429s);
-      logger.warn(
-        `Rate limit (429) na tentativa ${attempt}/${MAX_RETRIES}. Backoff de ${backoffMs}ms, reduzindo concurrency para ${newConcurrent}.`,
-        'jiraApi'
-      );
-      backoffUntil = Date.now() + backoffMs;
+      await withRateLimitLock(() => {
+        consecutive429s++;
+        // Usar Retry-After do header se disponível, senão backoff exponencial
+        const backoffMs = lastRetryAfter > 0
+          ? lastRetryAfter * 1000
+          : Math.min(5000 * Math.pow(2, attempt - 1), 60000);
+        lastRetryAfter = 0;
+        const newConcurrent = Math.max(1, 4 - consecutive429s);
+        logger.warn(
+          `Rate limit (429) na tentativa ${attempt}/${MAX_RETRIES}. Backoff de ${backoffMs}ms, reduzindo concurrency para ${newConcurrent}.`,
+          'jiraApi'
+        );
+        backoffUntil = Date.now() + backoffMs;
+        saveRateLimitState(consecutive429s, backoffUntil);
+      });
       await new Promise(resolve => setTimeout(resolve, backoffMs));
     } else {
       // Timeout ou erro de rede: backoff mais curto
@@ -100,6 +165,7 @@ async function jiraRequest<T>(
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
+    let rateLimitReleased = false;
     try {
       const requestBody = {
         url: config.url,
@@ -174,13 +240,23 @@ async function jiraRequest<T>(
       logger.debug('Resposta do proxy', 'jiraService', { status: response.status, ok: response.ok });
 
       if (response.status === 429) {
-        consecutive429s++;
+        // Apenas lê Retry-After, sem mutar estado (executeWithRetry gerencia)
+        const retryAfter = response.headers.get('Retry-After');
+        if (retryAfter) {
+          const seconds = parseInt(retryAfter, 10);
+          if (!isNaN(seconds) && seconds > 0) {
+            lastRetryAfter = seconds;
+          }
+        }
         await jiraRateLimiter.release();
+        rateLimitReleased = true;
         throw new Error(`Jira API Error (429) - Rate limit`);
       }
 
       // Reset contagem de 429 em sucesso
-      consecutive429s = 0;
+      await withRateLimitLock(() => {
+        resetRateLimitState();
+      });
 
       const responseText = await response.text();
 
@@ -200,6 +276,7 @@ async function jiraRequest<T>(
       }
 
       await jiraRateLimiter.release();
+      rateLimitReleased = true;
 
       if (!responseText.trim()) {
         return undefined as T;
@@ -210,7 +287,9 @@ async function jiraRequest<T>(
       return data;
     } catch (error) {
       clearTimeout(timeoutId);
-      await jiraRateLimiter.release();
+      if (!rateLimitReleased) {
+        await jiraRateLimiter.release();
+      }
 
       if (error instanceof Error && error.name === 'AbortError') {
         logger.error('Timeout na requisição', 'jiraService', error);

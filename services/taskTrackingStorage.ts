@@ -1,6 +1,7 @@
 import type { JiraTask } from '../types';
 import { DEFAULT_SLA_RISK_WINDOW_HOURS } from '../utils/jiraFilasMetrics';
 import { scheduleLocalFolderSync } from '../utils/localFolderSyncScheduler';
+import { writeTasksToIndexedDB, readTasksFromIndexedDB, clearTasksFromIndexedDB } from './taskTrackingDbService';
 import { logger } from '../utils/logger';
 
 /** Chaves de persistência do Acompanhamento de Tarefas (Filas Jira). */
@@ -38,6 +39,13 @@ export interface TaskTrackingQueueSelection {
   queueCategories?: string[];
   /** Rótulos de status de fila (ex.: Abertos, Concluídos). */
   queueStatuses?: string[];
+}
+
+/** Cache em memória para evitar JSON.parse a cada render. */
+let cachedSnapshot: TaskTrackingSnapshot | null = null;
+
+function invalidateCache(): void {
+  cachedSnapshot = null;
 }
 
 /** Snapshot exportável do Acompanhamento de Tarefas. */
@@ -238,8 +246,10 @@ function readStoredQueueSelection(): TaskTrackingQueueSelection | null {
 
 /**
  * Lê o estado persistido do Acompanhamento de Tarefas (localStorage + sessionStorage).
+ * Usa cache em memória para evitar JSON.parse a cada render.
  */
-export function readTaskTrackingSnapshot(): TaskTrackingSnapshot {
+export function readTaskTrackingSnapshot(forceReload?: boolean): TaskTrackingSnapshot {
+  if (!forceReload && cachedSnapshot) return cachedSnapshot;
   const queueSelection = readStoredQueueSelection();
   const tasks = readStoredTasks();
   const selectedProjectKey = readSessionItem(FILAS_PROJECT_STORAGE_KEY)?.trim() ?? '';
@@ -280,7 +290,7 @@ export function readTaskTrackingSnapshot(): TaskTrackingSnapshot {
         ? (jiraStatusesByProject[normalizedFilter] ?? [])
         : (jiraStatusesByProject[importedProjectKeys[0] ?? ''] ?? []);
 
-  return {
+  const snapshot: TaskTrackingSnapshot = {
     selectedProjectKey,
     queueSelection,
     tasks,
@@ -290,12 +300,17 @@ export function readTaskTrackingSnapshot(): TaskTrackingSnapshot {
     importedProjectKeys,
     jiraStatusesByProject,
   };
+  if (!forceReload) {
+    cachedSnapshot = snapshot;
+  }
+  return snapshot;
 }
 
 /**
  * Persiste o snapshot do Acompanhamento de Tarefas nos storages do navegador.
  */
 export function writeTaskTrackingSnapshot(snapshot: TaskTrackingSnapshot): void {
+  invalidateCache();
   const projectKey = snapshot.selectedProjectKey.trim();
   writeSessionItem(FILAS_PROJECT_STORAGE_KEY, projectKey || null);
 
@@ -314,6 +329,7 @@ export function writeTaskTrackingSnapshot(snapshot: TaskTrackingSnapshot): void 
   }
 
   writeLocalItem(FILAS_TASKS_STORAGE_KEY, JSON.stringify(snapshot.tasks));
+  writeTasksToIndexedDB(snapshot.tasks, () => {});
   writeLocalItem(FILAS_SLA_RISK_WINDOW_STORAGE_KEY, String(snapshot.slaRiskWindowHours));
   writeLocalItem(
     FILAS_JIRA_STATUSES_STORAGE_KEY,

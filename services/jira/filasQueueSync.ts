@@ -100,7 +100,8 @@ export async function syncFilasQueuesFromJira(
   const config = getJiraConfig();
   if (!config) return null;
 
-  const selection = readFilasImportSelection();
+  try {
+    const selection = readFilasImportSelection();
   const projectKeys = selection?.projectKeys ?? [];
   const queueCategories = selection?.queueCategories ?? [];
   const queueStatuses = selection?.queueStatuses ?? [];
@@ -190,7 +191,9 @@ export async function syncFilasQueuesFromJira(
 
   // Composição atual da fila: membros do JQL + relacionadas/subtarefas ligadas a
   // eles. Apenas estas são (re)enriquecidas com SLA/JSM.
-  const scope = new Set(projectKeys);
+  // Scope restrito a projetos com filas resolvidas para evitar remoção cruzada
+  const queueProjectKeys = selectedQueues.map(q => q.projectKey).filter(Boolean) as string[];
+  const scope = new Set(queueProjectKeys.length > 0 ? queueProjectKeys : projectKeys);
   const reachableIds = collectQueueReachableIds(withRelated, discoveredKeySet);
   const syncedInScope = withRelated.filter(task => reachableIds.has(task.id));
   const enriched = await enrichFilasTasks(config, syncedInScope, onProgress);
@@ -215,4 +218,8 @@ export async function syncFilasQueuesFromJira(
   dispatchTaskTrackingRestored();
 
   return { tasks: mergedTasks, queueCount: selectedQueues.length };
+  } catch (error) {
+    logger.error('Falha ao sincronizar filas do Jira', 'filasQueueSync', error);
+    return null;
+  }
 }

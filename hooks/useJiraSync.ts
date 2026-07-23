@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import { Project } from '../types';
-import type { TestCase } from '../types';
 import {
   syncJiraProject,
   getJiraConfig,
@@ -12,6 +11,7 @@ import { useErrorHandler } from './useErrorHandler';
 import { logger } from '../utils/logger';
 import { propagateJiraTaskUpdatesToLinkedProjects } from '../utils/jiraCrossProjectSync';
 import { jiraSyncQueue } from '../services/jiraSyncQueue';
+import { formatSyncErrors } from '../utils/syncErrorDetail';
 
 type OnUpdateProject = (project: Project, options?: { silent?: boolean }) => Promise<void>;
 
@@ -79,7 +79,14 @@ export function useJiraSync(project: Project | null, onUpdateProject: OnUpdatePr
           }
         );
 
-        const updatedProject = await syncJiraProject(config, projectToSync, jiraProjectKey);
+        const syncResult = await syncJiraProject(config, projectToSync, jiraProjectKey);
+        const updatedProject = syncResult.data;
+        if (syncResult.totalErrors > 0) {
+          logger.warn(
+            `Sincronização concluída com ${syncResult.totalErrors} erro(s): ${formatSyncErrors(syncResult.errors)}`,
+            'useJiraSync'
+          );
+        }
 
         const currentTaskIds = new Set(projectToSync.tasks.map(t => t.id));
         const updatedTaskIds = new Set(updatedProject.tasks.map(t => t.id));
@@ -106,99 +113,23 @@ export function useJiraSync(project: Project | null, onUpdateProject: OnUpdatePr
           }
         }
 
-        logger.info(
-          'Iniciando validação final de status antes de atualizar projeto',
-          'useJiraSync',
-          {
-            projectId: project.id,
-            totalStatusNoUpdatedProject: updatedProject.tasks.flatMap(t =>
-              (t.testCases || []).filter(tc => tc.status !== 'Not Run')
-            ).length,
-          }
+        logger.debug(
+          'Chamando onUpdateProject com updatedProject (proteção de status via syncValidator + projectsStore)',
+          'useJiraSync'
         );
+        await onUpdateProject(updatedProject);
 
-        const { projects: finalProjects } = useProjectsStore.getState();
-        const latestProjectAfterSync = finalProjects.find(p => p.id === project.id);
-
-        if (latestProjectAfterSync) {
-          const storeStatusMap = new Map<string, TestCase['status']>();
-          latestProjectAfterSync.tasks.forEach(task => {
-            (task.testCases || []).forEach(tc => {
-              if (tc.id && tc.status !== 'Not Run')
-                storeStatusMap.set(`${task.id}-${tc.id}`, tc.status);
-            });
-          });
-          let statusPerdidos = 0;
-          const restoredTasks = updatedProject.tasks.map(task => {
-            const restoredTestCases = (task.testCases || []).map(tc => {
-              const storeStatus = storeStatusMap.get(`${task.id}-${tc.id}`);
-              if (storeStatus && tc.status === 'Not Run') {
-                statusPerdidos++;
-                logger.warn(
-                  `Status perdido detectado em useJiraSync: taskId=${task.id}, testCaseId=${tc.id}. Restaurando status "${storeStatus}" do store`,
-                  'useJiraSync',
-                  {
-                    taskId: task.id,
-                    testCaseId: tc.id,
-                  }
-                );
-                return { ...tc, status: storeStatus };
-              }
-              return tc;
-            });
-            return { ...task, testCases: restoredTestCases };
-          });
-          if (statusPerdidos > 0) {
-            logger.warn(
-              `VALIDAÇÃO FINAL EM useJiraSync: ${statusPerdidos} status foram perdidos e restaurados do store`,
-              'useJiraSync',
-              {
-                statusRestaurados: statusPerdidos,
-              }
-            );
-            await onUpdateProject({ ...updatedProject, tasks: restoredTasks });
-          } else {
-            logger.debug(
-              'Chamando onUpdateProject com updatedProject (sem perda de status)',
-              'useJiraSync'
-            );
-            await onUpdateProject(updatedProject);
-          }
-
-          const { projects: allAfterSync, updateProject: persistProject } =
-            useProjectsStore.getState();
-          const mergedProjects = propagateJiraTaskUpdatesToLinkedProjects(
-            updatedProject,
-            allAfterSync
-          );
-          const crossProjectUpdates = mergedProjects.filter(candidate => {
-            if (candidate.id === updatedProject.id) return false;
-            const before = allAfterSync.find(p => p.id === candidate.id);
-            return !!before && before !== candidate;
-          });
-          for (const linkedProject of crossProjectUpdates) {
+        const { projects: allAfterSync, updateProject: persistProject } =
+          useProjectsStore.getState();
+        const mergedProjects = propagateJiraTaskUpdatesToLinkedProjects(
+          updatedProject,
+          allAfterSync
+        );
+        for (const linkedProject of mergedProjects) {
+          if (linkedProject.id === updatedProject.id) continue;
+          const before = allAfterSync.find(p => p.id === linkedProject.id);
+          if (before && before !== linkedProject) {
             await persistProject(linkedProject, { silent: true });
-          }
-        } else {
-          logger.warn(
-            'VALIDAÇÃO FINAL EM useJiraSync: Projeto não encontrado no store após sincronização',
-            'useJiraSync',
-            { projectId: project.id }
-          );
-          await onUpdateProject(updatedProject);
-
-          const { projects: allAfterSync, updateProject: persistProject } =
-            useProjectsStore.getState();
-          const mergedProjects = propagateJiraTaskUpdatesToLinkedProjects(
-            updatedProject,
-            allAfterSync
-          );
-          for (const linkedProject of mergedProjects) {
-            if (linkedProject.id === updatedProject.id) continue;
-            const before = allAfterSync.find(p => p.id === linkedProject.id);
-            if (before && before !== linkedProject) {
-              await persistProject(linkedProject, { silent: true });
-            }
           }
         }
 
@@ -271,7 +202,11 @@ export function useJiraSync(project: Project | null, onUpdateProject: OnUpdatePr
       }
       return;
     }
-    await jiraSyncQueue.enqueue(`sync-${project.id}`, () => performSync(config, jiraProjectKey));
+    await jiraSyncQueue.enqueue(
+      `sync-${project.id}`,
+      () => performSync(config, jiraProjectKey),
+      { group: project.id, priority: 'high' }
+    );
   }, [project, extractJiraProjectKey, handleError, performSync]);
 
   const handleConfirmJiraProject = useCallback(async () => {
@@ -285,8 +220,10 @@ export function useJiraSync(project: Project | null, onUpdateProject: OnUpdatePr
       return;
     }
     setShowJiraProjectSelector(false);
-    await jiraSyncQueue.enqueue(`sync-${project?.id || 'confirm'}`, () =>
-      performSync(config, selectedJiraProjectKey)
+    await jiraSyncQueue.enqueue(
+      `sync-${project?.id || 'confirm'}`,
+      () => performSync(config, selectedJiraProjectKey),
+      { group: project?.id || 'confirm', priority: 'high' }
     );
     setSelectedJiraProjectKey('');
   }, [selectedJiraProjectKey, performSync, handleError, project?.id]);

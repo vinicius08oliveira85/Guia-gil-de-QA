@@ -127,6 +127,34 @@ function applyRestoration(
   return false;
 }
 
+/** Compara arrays de forma profunda, ignorando ordem dos elementos. */
+function arrayEqual<T>(a: T[], b: T[]): boolean {
+  if (a.length !== b.length) return false;
+  if (a.length === 0) return true;
+  const sorted = (arr: T[]) =>
+    [...arr].sort((x, y) => {
+      const sx = typeof x === 'object' && x !== null ? JSON.stringify(x, Object.keys(x as object).sort()) : String(x);
+      const sy = typeof y === 'object' && y !== null ? JSON.stringify(y, Object.keys(y as object).sort()) : String(y);
+      return sx < sy ? -1 : sx > sy ? 1 : 0;
+    });
+  const sa = sorted(a);
+  const sb = sorted(b);
+  return sa.every((v, i) => JSON.stringify(v) === JSON.stringify(sb[i]));
+}
+
+/** Compara dois valores (incluindo objetos/arrays) desconsiderando ordem de arrays. */
+function relaxedEqual(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (Array.isArray(a) && Array.isArray(b)) return arrayEqual(a, b);
+  if (typeof a === 'object' && typeof b === 'object' && a !== null && b !== null) {
+    const keysA = Object.keys(a as object);
+    const keysB = Object.keys(b as object);
+    if (keysA.length !== keysB.length) return false;
+    return keysA.every(k => relaxedEqual((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]));
+  }
+  return false;
+}
+
 /**
  * Verifica se uma tarefa existente teve alterações nos campos do Jira.
  */
@@ -139,25 +167,25 @@ export function hasTaskChanges(oldTask: JiraTask, newTask: JiraTask): boolean {
     oldTask.type !== newTask.type ||
     oldTask.priority !== newTask.priority ||
     oldTask.jiraPriority !== newTask.jiraPriority ||
-    JSON.stringify(oldTask.jiraAssignee || {}) !== JSON.stringify(newTask.jiraAssignee || {}) ||
-    JSON.stringify(oldTask.tags || []) !== JSON.stringify(newTask.tags || []) ||
+    !relaxedEqual(oldTask.jiraAssignee || {}, newTask.jiraAssignee || {}) ||
+    !relaxedEqual(oldTask.tags || [], newTask.tags || []) ||
     oldTask.severity !== newTask.severity ||
     oldTask.completedAt !== newTask.completedAt ||
     oldTask.dueDate !== newTask.dueDate ||
     oldTask.parentId !== newTask.parentId ||
     oldTask.epicKey !== newTask.epicKey ||
     oldTask.assignee !== newTask.assignee ||
-    JSON.stringify(oldTask.timeTracking) !== JSON.stringify(newTask.timeTracking) ||
-    JSON.stringify(oldTask.components || []) !== JSON.stringify(newTask.components || []) ||
-    JSON.stringify(oldTask.fixVersions || []) !== JSON.stringify(newTask.fixVersions || []) ||
+    !relaxedEqual(oldTask.timeTracking, newTask.timeTracking) ||
+    !relaxedEqual(oldTask.components || [], newTask.components || []) ||
+    !relaxedEqual(oldTask.fixVersions || [], newTask.fixVersions || []) ||
     oldTask.environment !== newTask.environment ||
-    JSON.stringify(oldTask.reporter) !== JSON.stringify(newTask.reporter) ||
-    JSON.stringify(oldTask.watchers) !== JSON.stringify(newTask.watchers) ||
-    JSON.stringify(oldTask.issueLinks || []) !== JSON.stringify(newTask.issueLinks || []) ||
-    JSON.stringify(oldTask.jiraAttachments || []) !== JSON.stringify(newTask.jiraAttachments || []) ||
-    JSON.stringify(oldTask.jiraCustomFields || {}) !== JSON.stringify(newTask.jiraCustomFields || {}) ||
+    !relaxedEqual(oldTask.reporter, newTask.reporter) ||
+    !relaxedEqual(oldTask.watchers || [], newTask.watchers || []) ||
+    !relaxedEqual(oldTask.issueLinks || [], newTask.issueLinks || []) ||
+    !relaxedEqual(oldTask.jiraAttachments || [], newTask.jiraAttachments || []) ||
+    !relaxedEqual(oldTask.jiraCustomFields || {}, newTask.jiraCustomFields || {}) ||
     oldTask.storyPoints !== newTask.storyPoints ||
-    JSON.stringify(oldTask.sprints) !== JSON.stringify(newTask.sprints)
+    !relaxedEqual(oldTask.sprints, newTask.sprints)
   );
 }
 

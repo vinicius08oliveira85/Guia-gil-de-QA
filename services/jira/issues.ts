@@ -19,6 +19,12 @@ export type GetJiraIssuesOptions = {
    * Adiciona `AND updated >= {updatedAfter}` ao JQL automaticamente.
    */
   updatedAfter?: string;
+  /**
+   * Offset inicial para paginação incremental (cursor).
+   * Permite retomar de onde parou na última sincronização,
+   * em vez de buscar todas as páginas desde o início.
+   */
+  startAt?: number;
 };
 
 export const getJiraIssuesByJql = async (
@@ -42,18 +48,24 @@ export const getJiraIssues = async (
   onProgress?: (current: number, total?: number) => void,
   options?: GetJiraIssuesOptions
 ): Promise<JiraIssue[]> => {
+  if (projectKey && !/^[A-Z][A-Z0-9]+$/i.test(projectKey.trim())) {
+    throw new Error(`Chave de projeto inválida: "${projectKey}". Use apenas letras e números.`);
+  }
+  const cleanProjectKey = projectKey.trim();
   let baseJql =
     options?.jql?.trim() ||
-    (projectKey ? `project = ${projectKey}` : '');
+    (cleanProjectKey ? `project = ${cleanProjectKey}` : '');
   if (!baseJql) {
     throw new Error('Informe o projeto ou um JQL para buscar issues.');
   }
 
   // Filtro incremental: buscar apenas issues atualizadas após uma data
   if (options?.updatedAfter) {
-    const updatedFilter = `updated >= "${options.updatedAfter}"`;
+    // Escapar double quotes para evitar injeção JQL
+    const escapedDate = options.updatedAfter.replace(/"/g, '\\"');
+    const updatedFilter = `updated >= "${escapedDate}"`;
     baseJql = baseJql.includes('ORDER BY')
-      ? baseJql.replace(/(ORDER BY.*)/i, `${updatedFilter} $1`)
+      ? baseJql.replace(/(ORDER BY[\s\S]*)/i, `${updatedFilter} $1`)
       : `${baseJql} AND ${updatedFilter}`;
   }
 
@@ -140,7 +152,8 @@ export const getJiraIssues = async (
       : `Buscando issues via JQL: ${jql.slice(0, 120)}`,
     'jiraService'
   );
-  const firstResponse = await fetchPage({ startAt: 0 }, 'Página 1');
+  const initialStartAt = options?.startAt ?? 0;
+  const firstResponse = await fetchPage({ startAt: initialStartAt }, `Página 1 (startAt=${initialStartAt})`);
   pushIssues(firstResponse.issues || [], firstResponse.total);
 
   if (maxResults !== undefined && allIssues.length >= maxResults) {
@@ -182,10 +195,15 @@ export const getJiraIssues = async (
 
     outer: for (let i = 0; i < startIndices.length; i += CONCURRENT_REQUESTS) {
       const chunkStarts = startIndices.slice(i, i + CONCURRENT_REQUESTS);
-      const responses = await Promise.all(
+      const settled = await Promise.allSettled(
         chunkStarts.map(start => fetchPage({ startAt: start }, `Página ${start / pageSize + 1}`))
       );
-      for (const response of responses) {
+      for (const result of settled) {
+        if (result.status === 'rejected') {
+          logger.warn(`Falha ao buscar página ${i / CONCURRENT_REQUESTS + 1}, continuando...`, 'jiraService', result.reason);
+          continue;
+        }
+        const response = result.value;
         const issues = response.issues || [];
         pushIssues(issues, response.total);
         if (!shouldContinue()) {

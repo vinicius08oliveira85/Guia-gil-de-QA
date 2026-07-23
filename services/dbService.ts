@@ -1,4 +1,5 @@
 import { Phase, PhaseName, Project } from '../types';
+import type { VersionedProject } from '../utils/dataMigration';
 import { normalizeProjectBusinessRules } from '../utils/businessRuleDefaults';
 import { normalizeProjectWorkflowFields } from '../utils/projectWorkflow';
 import {
@@ -7,10 +8,12 @@ import {
   LOCAL_FOLDER_HANDLES_STORE,
   PHASE_NAMES,
   STORE_NAME,
+  TASK_TRACKING_STORE,
   TEST_GENERATION_CACHE_STORE,
 } from '../utils/constants';
 import { autoBackupBeforeOperation } from './backupService';
 import { migrateTestCases } from '../utils/testCaseMigration';
+import { migrateProject, CURRENT_PROJECT_SCHEMA_VERSION } from '../utils/dataMigration';
 import { logger } from '../utils/logger';
 import {
   cleanupTestCasesForProjects,
@@ -84,6 +87,9 @@ const openDB = (): Promise<IDBDatabase> => {
       if (!dbInstance.objectStoreNames.contains(LOCAL_FOLDER_HANDLES_STORE)) {
         dbInstance.createObjectStore(LOCAL_FOLDER_HANDLES_STORE, { keyPath: 'id' });
       }
+      if (!dbInstance.objectStoreNames.contains(TASK_TRACKING_STORE)) {
+        dbInstance.createObjectStore(TASK_TRACKING_STORE, { keyPath: 'id' });
+      }
     };
   });
 };
@@ -111,17 +117,19 @@ export const loadProjectsFromIndexedDB = async (): Promise<Project[]> => {
     request.onsuccess = () => resolve(request.result || []);
   });
 
-  // Migrar TestCases dos projetos do IndexedDB (otimizado)
-  const migratedIndexedDBProjects = indexedDBProjects.map(project =>
+  // Aplicar migrações de schema + TestCases dos projetos do IndexedDB (otimizado)
+  const migratedIndexedDBProjects = indexedDBProjects.map(raw =>
     normalizeProjectWorkflowFields(
-      normalizeProjectBusinessRules({
-        ...project,
-        businessRules: project.businessRules ?? [],
-        tasks: (project.tasks || []).map(task => ({
-          ...task,
-          testCases: migrateTestCases(task.testCases || []),
-        })),
-      })
+      normalizeProjectBusinessRules(
+        migrateProject({
+          ...raw,
+          businessRules: raw.businessRules ?? [],
+          tasks: (raw.tasks || []).map(task => ({
+            ...task,
+            testCases: migrateTestCases(task.testCases || []),
+          })),
+        })
+      )
     )
   );
 
@@ -146,14 +154,16 @@ export const getProjectById = async (projectId: string): Promise<Project | null>
   });
   if (!raw) return null;
   const migrated = normalizeProjectWorkflowFields(
-    normalizeProjectBusinessRules({
-      ...raw,
-      businessRules: raw.businessRules ?? [],
-      tasks: raw.tasks.map(task => ({
-        ...task,
-        testCases: migrateTestCases(task.testCases || []),
-      })),
-    })
+    normalizeProjectBusinessRules(
+      migrateProject({
+        ...raw,
+        businessRules: raw.businessRules ?? [],
+        tasks: raw.tasks.map(task => ({
+          ...task,
+          testCases: migrateTestCases(task.testCases || []),
+        })),
+      })
+    )
   );
   const [cleaned] = cleanupTestCasesForProjects([migrated]);
   if (!cleaned) return null;
@@ -173,6 +183,7 @@ export const addProject = async (project: Project): Promise<SaveResult> => {
       normalizeProjectWorkflowFields(normalizeProjectBusinessRules(project))
     )
   );
+  (cleanedProject as VersionedProject)._schemaVersion = CURRENT_PROJECT_SCHEMA_VERSION;
 
   const db = await openDB();
   await new Promise<void>((resolve, reject) => {
@@ -219,6 +230,11 @@ export const updateProject = async (
   return { savedToSupabase: false };
 };
 
+function stampSchemaVersion(p: Project): VersionedProject {
+  (p as VersionedProject)._schemaVersion = CURRENT_PROJECT_SCHEMA_VERSION;
+  return p as VersionedProject;
+}
+
 /**
  * Escreve um projeto apenas no IndexedDB (sem chamar Supabase).
  * Usado após Sincronizar (persistir lista final) e opcionalmente após Salvar (alinhar cache).
@@ -236,7 +252,7 @@ export const writeProjectToIndexedDBOnly = async (project: Project): Promise<voi
   const [toWrite] = cleanupTestCasesForProjects([migrated]);
   if (!toWrite) return;
 
-  const toPersist = withAcyclicTaskParents(toWrite);
+  const toPersist = stampSchemaVersion(withAcyclicTaskParents(toWrite));
 
   const db = await openDB();
   await new Promise<void>((resolve, reject) => {

@@ -5,7 +5,7 @@ import { logger } from '../../utils/logger';
 import { flushLocalFolderSync } from '../../utils/localFolderSyncScheduler';
 import {
   saveEncryptedConfig,
-  loadDecryptedConfig,
+  getCachedConfig,
   removeEncryptedConfig,
   hasEncryptedConfig,
 } from '../../utils/jiraConfigCrypto';
@@ -17,7 +17,9 @@ function syncFolderBackupAfterConfigChange(): void {
 }
 
 export const saveJiraConfig = (config: JiraConfig): void => {
-  saveEncryptedConfig(config);
+  saveEncryptedConfig(config).catch(err => {
+    logger.error('Falha ao criptografar config Jira. Token NÃO foi salvo.', 'jiraConfig', err);
+  });
   if (config.url?.trim()) {
     localStorage.setItem(JIRA_LAST_URL_KEY, config.url.trim());
   }
@@ -25,22 +27,39 @@ export const saveJiraConfig = (config: JiraConfig): void => {
 };
 
 export const getJiraConfig = (): JiraConfig | null => {
+  // Tentar cache em memória primeiro (rápido, síncrono)
+  const cached = getCachedConfig();
+  if (cached) return cached;
+
   const stored = localStorage.getItem(JIRA_CONFIG_KEY);
   if (stored) {
-    // Fallback: migrar configuração antiga (plain text) para o novo formato criptografado
     try {
       const plain = JSON.parse(stored) as JiraConfig;
-      if (plain.apiToken && !hasEncryptedConfig()) {
-        saveEncryptedConfig(plain);
-        localStorage.removeItem(JIRA_CONFIG_KEY);
+      if (plain.apiToken) {
+        saveEncryptedConfig(plain).then(() => {
+          localStorage.removeItem(JIRA_CONFIG_KEY);
+        }).catch(() => {
+          logger.warn('Falha ao migrar config legada, mantendo texto plano', 'jiraConfig');
+        });
       }
       return plain;
     } catch {
-      // ignorar formato inválido antigo
+      logger.debug('Config legada inválida ignorada', 'jiraConfig');
     }
   }
-  return loadDecryptedConfig();
+
+  // Se não tem cache e não tem legado, carregar async e retornar null por enquanto
+  loadDecryptedConfigAsync().catch(err => {
+    logger.warn('Falha ao carregar config criptografada', 'jiraConfig', err);
+  });
+  return null;
 };
+
+/** Carrega config criptografada do storage e popula o cache. */
+async function loadDecryptedConfigAsync(): Promise<JiraConfig | null> {
+  const { loadDecryptedConfig } = await import('../../utils/jiraConfigCrypto');
+  return loadDecryptedConfig();
+}
 
 export const getJiraLastUrl = (): string => {
   return localStorage.getItem(JIRA_LAST_URL_KEY) ?? '';
