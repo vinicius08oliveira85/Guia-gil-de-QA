@@ -50,7 +50,7 @@ import { TaskDevGuidanceSection } from './sections/TaskDevGuidanceSection';
 import { TaskPlanningSection } from './sections/TaskPlanningSection';
 import { TaskDetailProvider, type TaskDetailContextValue } from './sections/TaskDetailContext';
 
-import type { TaskDetailSectionId, OpenTaskNavProps } from '../../utils/workspaceSessionStorage';
+import type { TaskDetailSectionId } from '../../utils/workspaceSessionStorage';
 type DetailSection = TaskDetailSectionId;
 
 interface TaskDetailsViewProps {
@@ -104,8 +104,6 @@ interface TaskDetailsViewProps {
   /** Seção inicial restaurada da sessão do workspace. */
   initialSection?: DetailSection;
   onSectionChange?: (section: DetailSection) => void;
-  /** Navegação entre abas de tarefa abertas (modo workspace). */
-  openTaskNav?: OpenTaskNavProps;
 }
 
 export type { TaskDetailsViewProps };
@@ -149,7 +147,6 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
   isGeneratingDevGuidance = false,
   initialSection,
   onSectionChange,
-  openTaskNav,
 }) => {
   const [detailLevel, setDetailLevel] = useState<TestCaseDetailLevel>('Estruturado');
   const [showTestReport, setShowTestReport] = useState(false);
@@ -503,46 +500,12 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({
   const innerContent = (
     <TaskDetailProvider value={taskDetailValue}>
     <div className="flex flex-col gap-2">
-      <BackButton
-        className={cn('task-details-neu-back-btn self-start -ml-1', taskDetailsModalGhostBtnClass)}
-        onClick={onClose}
-        aria-label={
-          presentation === 'workspace'
-            ? 'Fechar aba da tarefa'
-            : 'Voltar para a lista de tarefas'
-        }
-      />
-      {presentation === 'workspace' && openTaskNav && openTaskNav.total > 1 ? (
-        <nav
-          className="flex items-center justify-between gap-2 rounded-selector border border-base-300/45 bg-base-200/35 px-2 py-1"
-          aria-label="Navegação entre tarefas abertas"
-        >
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className={cn(taskDetailsModalGhostBtnClass, 'gap-0.5 px-2')}
-            onClick={openTaskNav.onPrev}
-            aria-label="Tarefa anterior (Alt + seta esquerda)"
-          >
-            <ChevronLeft className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            <span className="hidden sm:inline">Anterior</span>
-          </Button>
-          <span className="text-[11px] font-medium tabular-nums text-base-content/70" aria-live="polite">
-            {openTaskNav.currentIndex} de {openTaskNav.total}
-          </span>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className={cn(taskDetailsModalGhostBtnClass, 'gap-0.5 px-2')}
-            onClick={openTaskNav.onNext}
-            aria-label="Próxima tarefa (Alt + seta direita)"
-          >
-            <span className="hidden sm:inline">Próxima</span>
-            <ChevronRight className="h-3.5 w-3.5 shrink-0" aria-hidden />
-          </Button>
-        </nav>
+      {presentation !== 'workspace' ? (
+        <BackButton
+          className={cn('task-details-neu-back-btn self-start -ml-1', taskDetailsModalGhostBtnClass)}
+          onClick={onClose}
+          aria-label="Voltar para a lista de tarefas"
+        />
       ) : null}
       <div className={taskDetailsModalTabsScrollWrapClass}>
         <div className={taskDetailsModalTabsTrackClass} role="tablist" aria-label="Seções da tarefa">

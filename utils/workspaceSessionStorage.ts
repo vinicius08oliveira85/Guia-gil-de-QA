@@ -7,13 +7,6 @@ import {
   type WorkspaceTabId,
 } from './workspaceTabs';
 
-export interface OpenTaskNavProps {
-  currentIndex: number;
-  total: number;
-  onPrev: () => void;
-  onNext: () => void;
-}
-
 export type WorkspaceScope = 'project' | 'jira-solus';
 
 export type TaskDetailSectionId =

@@ -13,7 +13,7 @@ import {
   tasksPanelNeuModalTitleClass,
 } from './tasksPanelNeuStyles';
 
-import type { TaskDetailSectionId, OpenTaskNavProps } from '../../utils/workspaceSessionStorage';
+import type { TaskDetailSectionId } from '../../utils/workspaceSessionStorage';
 
 export interface TaskWorkspacePanelProps {
   taskId: string;
@@ -29,7 +29,6 @@ export interface TaskWorkspacePanelProps {
   isUpdatingFromJira?: boolean;
   initialSection?: TaskDetailSectionId;
   onSectionChange?: (section: TaskDetailSectionId) => void;
-  openTaskNav?: OpenTaskNavProps;
 }
 
 /**
@@ -47,7 +46,6 @@ export const TaskWorkspacePanel: React.FC<TaskWorkspacePanelProps> = ({
   isUpdatingFromJira,
   initialSection,
   onSectionChange,
-  openTaskNav,
 }) => {
   const actions = useTaskDetailActions(project, onUpdateProject);
 
@@ -141,7 +139,6 @@ export const TaskWorkspacePanel: React.FC<TaskWorkspacePanelProps> = ({
         isGeneratingDevGuidance={actions.generatingDevGuidanceTaskId === taskId}
         initialSection={initialSection}
         onSectionChange={onSectionChange}
-        openTaskNav={openTaskNav}
       />
 
       {actions.testCaseEditorRef && !isDevProject ? (

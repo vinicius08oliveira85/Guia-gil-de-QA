@@ -422,16 +422,6 @@ export const JiraSolusView = React.memo(() => {
                 isUpdatingFromJira={filasBridge.isUpdatingFromJira === taskId}
                 initialSection={taskSections[taskId]}
                 onSectionChange={section => setTaskSection(taskId, section)}
-                openTaskNav={
-                  openTaskTabIds.length > 1
-                    ? {
-                        currentIndex: openTaskTabIds.indexOf(taskId) + 1,
-                        total: openTaskTabIds.length,
-                        onPrev: () => handleNavigateAdjacentTask('prev'),
-                        onNext: () => handleNavigateAdjacentTask('next'),
-                      }
-                    : undefined
-                }
               />
             ) : (
               <div className="rounded-lg border border-base-300/60 bg-base-100 p-4 text-sm text-base-content/80">

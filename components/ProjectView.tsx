@@ -623,16 +623,6 @@ export const ProjectView: React.FC<{
                 onClose={() => handleCloseTaskTab(taskId)}
                 initialSection={taskSections[taskId]}
                 onSectionChange={section => setTaskSection(taskId, section)}
-                openTaskNav={
-                  openTaskTabIds.length > 1
-                    ? {
-                        currentIndex: openTaskTabIds.indexOf(taskId) + 1,
-                        total: openTaskTabIds.length,
-                        onPrev: () => handleNavigateAdjacentTask('prev'),
-                        onNext: () => handleNavigateAdjacentTask('next'),
-                      }
-                    : undefined
-                }
               />
             </div>
           ))}
