@@ -2935,6 +2935,39 @@
   }
 
   /**
+   * Skin neumórfico CLARO dos cards da lista de projetos (ProjectsDashboard).
+   * Fundo branco (--color-base-100), texto roxo escuro (--color-base-content),
+   * laranja (--color-primary) como destaque. Neumorfismo adaptado para superfície clara.
+   * Escopo restrito a ProjectCard/NewProjectCard — não afeta outras telas.
+   */
+  .project-card-light {
+    --project-card-bg: oklch(100% 0 0);
+    --project-card-bg-hover: oklch(98% 0 0);
+    --project-card-text: #421d3a;
+    --project-card-text-muted: rgba(66, 29, 58, 0.72);
+    --project-card-text-subtle: rgba(66, 29, 58, 0.55);
+    --project-card-accent: #e65100;
+    --project-card-border: oklch(95% 0 0);
+    --project-card-chip: color-mix(in srgb, #421d3a 6%, transparent);
+    --project-card-radius: 1rem;
+    --project-card-inner-radius: 0.5rem;
+    --project-card-neu-light: oklch(100% 0 0);
+    --project-card-neu-dark: oklch(95% 0 0);
+    --project-card-neu-raised: var(--neu-flat-shadow);
+    --project-card-neu-raised-sm: var(--neu-flat-shadow-sm);
+    --project-card-neu-inset: var(--neu-flat-inset);
+    --project-card-neu-inset-deep: var(--neu-flat-inset);
+    --project-card-neu-hover:
+      var(--neu-flat-hover),
+      0 0 0 1px color-mix(in srgb, #e65100 22%, transparent);
+    --project-card-progress-fill: linear-gradient(
+      90deg,
+      color-mix(in srgb, #e65100 72%, white) 0%,
+      #e65100 100%
+    );
+  }
+
+  /**
    * Skin neumórfico ESCURO WARM dos cards da lista de projetos (ProjectsDashboard).
    * Re-tematiza apenas os tokens --project-card-* nas superfícies destes cards:
    * marrom #4B433D + laranja #E65100 + creme #FDF6E3. Sombras derivadas do bg

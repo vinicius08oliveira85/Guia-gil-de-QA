@@ -27,7 +27,7 @@ export const NewProjectCard: React.FC<NewProjectCardProps> = ({
     className={cn(
       projectCardShellClass,
       'project-card-neu-shell--cta',
-      'project-card-warm-dark',
+      'project-card-light',
       'min-h-[12.5rem] w-full cursor-pointer items-center justify-center gap-2.5 p-4 text-center sm:min-h-[14.5rem] sm:gap-3 sm:p-5',
       'border border-dashed border-[color-mix(in_srgb,var(--project-card-accent)_40%,transparent)]',
       'hover:border-[color-mix(in_srgb,var(--project-card-accent)_65%,transparent)]',

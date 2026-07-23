@@ -91,24 +91,22 @@ export const projectCardStatTileFillClass = cn(
 
 type HealthTone = 'healthy' | 'attention' | 'critical';
 
-/** Pill de saúde do projeto — verde/âmbar/vermelho sobre o creme neumórfico. */
+/** Pill de saúde do projeto — verde/âmbar/vermelho sobre o fundo claro. */
 export const projectCardHealthPillClass = (tone: HealthTone) =>
   cn(
     'project-card-neu-chip inline-flex items-center gap-1.5 px-2.5 py-1',
     'font-sans text-[10px] font-bold uppercase tracking-wide sm:text-[11px]',
-    tone === 'healthy' &&
-      'text-[color-mix(in_srgb,#16a34a_82%,var(--project-card-text))]',
-    tone === 'attention' &&
-      'text-[color-mix(in_srgb,#d97706_82%,var(--project-card-text))]',
-    tone === 'critical' && 'text-[color-mix(in_srgb,#dc2626_82%,var(--project-card-text))]'
+    tone === 'healthy' && 'text-success',
+    tone === 'attention' && 'text-warning',
+    tone === 'critical' && 'text-error'
   );
 
 export const projectCardHealthDotClass = (tone: HealthTone) =>
   cn(
     'h-1.5 w-1.5 shrink-0 rounded-full',
-    tone === 'healthy' && 'bg-[#16a34a]',
-    tone === 'attention' && 'bg-[#d97706]',
-    tone === 'critical' && 'bg-[#dc2626]'
+    tone === 'healthy' && 'bg-success',
+    tone === 'attention' && 'bg-warning',
+    tone === 'critical' && 'bg-error'
   );
 
 /** Painéis laterais — neumorfismo via `--workspace-panel-*` (claro ou escuro conforme o escopo). */
