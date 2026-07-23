@@ -1,6 +1,14 @@
 ﻿import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { executeJiraProxy, type JiraProxyRequestBody } from './jiraProxyCore';
+import {
+  executeJiraProxy,
+  parseJiraProxyBody,
+  type JiraProxyRequestBody,
+} from './_jiraProxyCore';
 
+/**
+ * Proxy serverless Jira (Vercel).
+ * Credenciais (email + API token) vêm no body; não há JIRA_PROXY_AUTH_TOKEN no código atual.
+ */
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
@@ -8,7 +16,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   }
 
   try {
-    const result = await executeJiraProxy(req.body as JiraProxyRequestBody);
+    let body: JiraProxyRequestBody;
+    try {
+      body = parseJiraProxyBody(req.body);
+    } catch (parseErr) {
+      const message = parseErr instanceof Error ? parseErr.message : 'Invalid JSON body';
+      console.error('[jira-proxy] Body parse error:', message);
+      res.status(400).json({ error: message });
+      return;
+    }
+
+    const result = await executeJiraProxy(body);
 
     if (!result.ok) {
       res.status(result.status).json({ error: result.error });

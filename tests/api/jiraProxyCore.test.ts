@@ -1,5 +1,19 @@
 import { describe, expect, it, vi, afterEach } from 'vitest';
-import { executeJiraProxy } from '../../api/jiraProxyCore';
+import { executeJiraProxy, parseJiraProxyBody } from '../../api/_jiraProxyCore';
+
+describe('parseJiraProxyBody', () => {
+  it('aceita objeto', () => {
+    expect(parseJiraProxyBody({ endpoint: 'myself' })).toEqual({ endpoint: 'myself' });
+  });
+
+  it('aceita JSON string', () => {
+    expect(parseJiraProxyBody('{"endpoint":"myself"}')).toEqual({ endpoint: 'myself' });
+  });
+
+  it('aceita null como objeto vazio', () => {
+    expect(parseJiraProxyBody(null)).toEqual({});
+  });
+});
 
 describe('executeJiraProxy', () => {
   afterEach(() => {
@@ -12,6 +26,14 @@ describe('executeJiraProxy', () => {
     if (!result.ok) {
       expect(result.status).toBe(400);
       expect(result.error).toContain('Missing');
+    }
+  });
+
+  it('retorna 400 para body inválido', async () => {
+    const result = await executeJiraProxy(null);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.status).toBe(400);
     }
   });
 

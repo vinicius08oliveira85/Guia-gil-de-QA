@@ -1,5 +1,6 @@
-﻿/**
- * L├│gica compartilhada do proxy Jira (Vercel serverless + Vite middleware em dev).
+/**
+ * Lógica compartilhada do proxy Jira (Vercel serverless + Vite middleware em dev).
+ * Prefixo `_` em `api/_jiraProxyCore.ts`: helper privado na Vercel (não vira endpoint).
  */
 
 export interface JiraProxyRequestBody {
@@ -20,7 +21,7 @@ export type JiraProxyResult =
       ok: true;
       status: number;
       contentType: string;
-      /** JSON serializ├ível ou buffer bin├írio */
+      /** JSON serializável ou buffer binário */
       payload: unknown;
       isBinary: boolean;
     }
@@ -31,9 +32,36 @@ export type JiraProxyResult =
     };
 
 /**
+ * Normaliza o body da request (objeto, JSON string ou Buffer).
+ */
+export function parseJiraProxyBody(raw: unknown): JiraProxyRequestBody {
+  if (raw == null) {
+    return {};
+  }
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim();
+    if (!trimmed) return {};
+    return JSON.parse(trimmed) as JiraProxyRequestBody;
+  }
+  if (typeof Buffer !== 'undefined' && Buffer.isBuffer(raw)) {
+    const trimmed = raw.toString('utf8').trim();
+    if (!trimmed) return {};
+    return JSON.parse(trimmed) as JiraProxyRequestBody;
+  }
+  if (typeof raw === 'object') {
+    return raw as JiraProxyRequestBody;
+  }
+  throw new Error('Invalid request body type');
+}
+
+/**
  * Encaminha a chamada ao Jira Cloud com Basic Auth.
  */
-export async function executeJiraProxy(body: JiraProxyRequestBody): Promise<JiraProxyResult> {
+export async function executeJiraProxy(body: JiraProxyRequestBody | null | undefined): Promise<JiraProxyResult> {
+  if (!body || typeof body !== 'object') {
+    return { ok: false, status: 400, error: 'Missing or invalid request body' };
+  }
+
   const {
     url,
     email,
@@ -82,7 +110,10 @@ export async function executeJiraProxy(body: JiraProxyRequestBody): Promise<Jira
     const response = await fetch(jiraUrl, {
       method,
       headers,
-      body: requestBody && !isAttachment ? JSON.stringify(requestBody) : (requestBody as BodyInit | undefined),
+      body:
+        requestBody && !isAttachment
+          ? JSON.stringify(requestBody)
+          : (requestBody as BodyInit | undefined),
       signal: controller.signal,
     });
 
@@ -124,7 +155,7 @@ export async function executeJiraProxy(body: JiraProxyRequestBody): Promise<Jira
       return {
         ok: false,
         status: 504,
-        error: 'Timeout: A requisi├º├úo ao Jira demorou mais de 60 segundos',
+        error: 'Timeout: A requisição ao Jira demorou mais de 60 segundos',
       };
     }
 

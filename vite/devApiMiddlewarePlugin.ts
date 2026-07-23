@@ -2,7 +2,7 @@
 import path from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { Plugin } from 'vite';
-import { executeJiraProxy, type JiraProxyRequestBody } from '../api/jiraProxyCore';
+import { executeJiraProxy, type JiraProxyRequestBody } from '../api/_jiraProxyCore';
 
 async function readJsonBody(req: IncomingMessage): Promise<unknown> {
   const chunks: Buffer[] = [];

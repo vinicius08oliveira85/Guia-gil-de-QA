@@ -116,9 +116,9 @@ export const testJiraConnection = async (config: JiraConfig): Promise<boolean> =
     return true;
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
-    if (msg.includes('FUNCTION_INVOCATION_FAILED')) {
+    if (msg.includes('FUNCTION_INVOCATION_FAILED') || msg.includes('FUNCTION_INVOCATION_TIMEOUT')) {
       throw new Error(
-        'O proxy do Jira no Vercel falhou (FUNCTION_INVOCATION_FAILED). Verifique os logs do deployment e se as variáveis de ambiente (JIRA_PROXY_AUTH_TOKEN, VITE_PROXY_AUTH_TOKEN) estão configuradas corretamente.'
+        'O proxy do Jira na Vercel falhou ao executar (/api/jira-proxy). Abra o deployment → Runtime Logs da function e confira o erro. Em geral não é credencial Jira (401/403); costuma ser crash ou timeout da serverless.'
       );
     }
     if (msg.includes('401') || msg.toLowerCase().includes('unauthorized')) {
