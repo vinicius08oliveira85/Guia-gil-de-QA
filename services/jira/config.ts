@@ -116,6 +116,11 @@ export const testJiraConnection = async (config: JiraConfig): Promise<boolean> =
     return true;
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
+    if (msg.includes('FUNCTION_INVOCATION_FAILED')) {
+      throw new Error(
+        'O proxy do Jira no Vercel falhou (FUNCTION_INVOCATION_FAILED). Verifique os logs do deployment e se as variáveis de ambiente (JIRA_PROXY_AUTH_TOKEN, VITE_PROXY_AUTH_TOKEN) estão configuradas corretamente.'
+      );
+    }
     if (msg.includes('401') || msg.toLowerCase().includes('unauthorized')) {
       throw new Error('Credenciais inválidas (HTTP 401). Verifique o e-mail e o API Token do Jira.');
     }

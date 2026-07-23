@@ -4,20 +4,20 @@ import { executeJiraProxy, type JiraProxyRequestBody } from './jiraProxyCore';
 const AUTH_TOKEN = process.env.JIRA_PROXY_AUTH_TOKEN;
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
-  if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Method not allowed' });
-    return;
-  }
-
-  if (AUTH_TOKEN) {
-    const provided = req.headers['x-proxy-token'];
-    if (provided && provided !== AUTH_TOKEN) {
-      res.status(401).json({ error: 'Unauthorized' });
+  try {
+    if (req.method !== 'POST') {
+      res.status(405).json({ error: 'Method not allowed' });
       return;
     }
-  }
 
-  try {
+    if (AUTH_TOKEN) {
+      const provided = req.headers['x-proxy-token'];
+      if (provided && provided !== AUTH_TOKEN) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+    }
+
     const result = await executeJiraProxy(req.body as JiraProxyRequestBody);
 
     if (!result.ok) {
@@ -37,8 +37,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     res.status(200).json(result.payload);
   } catch (err) {
     console.error('[jira-proxy] Unhandled error:', err);
-    if (!res.headersSent) {
-      res.status(500).json({ error: 'Internal server error' });
+    try {
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    } catch {
+      console.error('[jira-proxy] Failed to send error response');
     }
   }
 }

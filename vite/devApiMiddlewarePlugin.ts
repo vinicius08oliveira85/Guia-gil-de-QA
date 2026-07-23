@@ -65,21 +65,21 @@ export function devApiMiddlewarePlugin(projectRoot: string): Plugin {
         }
 
         if (pathname === '/api/jira-proxy') {
-          if (req.method !== 'POST') {
-            sendJson(res, 405, { error: 'Method not allowed' });
-            return;
-          }
-
-          if (AUTH_TOKEN) {
-            const provided = req.headers['x-proxy-token'];
-            if (provided && provided !== AUTH_TOKEN) {
-              sendJson(res, 401, { error: 'Unauthorized' });
-              return;
-            }
-          }
-
           void (async () => {
             try {
+              if (req.method !== 'POST') {
+                sendJson(res, 405, { error: 'Method not allowed' });
+                return;
+              }
+
+              if (AUTH_TOKEN) {
+                const provided = req.headers['x-proxy-token'];
+                if (provided && provided !== AUTH_TOKEN) {
+                  sendJson(res, 401, { error: 'Unauthorized' });
+                  return;
+                }
+              }
+
               let body: JiraProxyRequestBody;
               try {
                 body = (await readJsonBody(req)) as JiraProxyRequestBody;

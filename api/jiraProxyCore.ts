@@ -52,7 +52,7 @@ export async function executeJiraProxy(body: JiraProxyRequestBody): Promise<Jira
   }
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 60000);
+  const timeoutId = setTimeout(() => controller.abort(), 50000);
 
   try {
     const credentials = Buffer.from(`${email}:${apiToken}`).toString('base64');
