@@ -75,6 +75,26 @@ export const projectCardActionBtnDangerClass = cn(
 
 export const projectCardActionDividerClass = 'project-card-action-divider';
 
+/** Indicador KPI compacto (grid 2×2 no rodapé do card) — chip neumórfico com barra. */
+export const projectCardIndicatorChipClass = cn(
+  'project-card-neu-chip flex min-w-0 flex-col gap-1.5 px-2.5 py-2.5'
+);
+
+export const projectCardIndicatorLabelClass =
+  'text-[10px] font-semibold text-[var(--project-card-text-muted)]';
+
+export const projectCardIndicatorValueClass =
+  'text-[11px] font-extrabold tabular-nums text-[var(--project-card-accent)]';
+
+/** Mini barra de progresso dentro do chip indicador. */
+export const projectCardIndicatorBarClass = cn(
+  'project-card-neu-track relative h-1 w-full overflow-hidden'
+);
+
+export const projectCardIndicatorBarFillClass = cn(
+  'project-card-neu-fill absolute inset-y-0 left-0 transition-[width] duration-500 ease-out'
+);
+
 /** Tile compacto de métrica secundária (Exec. / Sucesso) — relevo rebaixado. */
 export const projectCardStatTileClass = cn(
   'project-card-neu-chip flex min-w-0 flex-1 flex-col gap-1 px-2.5 py-2'

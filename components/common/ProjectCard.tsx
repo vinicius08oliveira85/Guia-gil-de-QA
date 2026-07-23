@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Project } from '../../types';
@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   ShieldAlert,
   AlertTriangle,
+  Trash2,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '../../utils/cn';
@@ -24,14 +25,19 @@ import {
   type ProjectHealthTone,
 } from '../../utils/workspaceAnalytics';
 import { getProjectIconMeta } from '../../utils/projectIcon';
-import { ProjectWorkspaceActions } from './ProjectWorkspaceActions';
 import { RadialProgress } from './RadialProgress';
+import { ConfirmDialog } from './ConfirmDialog';
 import {
   projectCardAccentBarClass,
   projectCardChipClass,
   projectCardHealthDotClass,
   projectCardHealthPillClass,
   projectCardIconWrapClass,
+  projectCardIndicatorBarClass,
+  projectCardIndicatorBarFillClass,
+  projectCardIndicatorChipClass,
+  projectCardIndicatorLabelClass,
+  projectCardIndicatorValueClass,
   projectCardMetricFillClass,
   projectCardMetricKnobClass,
   projectCardMetricRowClass,
@@ -188,11 +194,27 @@ export const ProjectCard = React.memo<ProjectCardProps>(
       return completed[0] ?? null;
     }, [tasks]);
 
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
     const handleClick = (e: React.MouseEvent) => {
       const target = e.target as HTMLElement;
       if (target.closest('[data-task-link]')) return;
+      if (target.closest('[data-delete-btn]')) return;
       onSelect?.();
     };
+
+    const handleConfirmDelete = useCallback(async () => {
+      if (!onDeleteProject) return;
+      setIsDeleting(true);
+      try {
+        await onDeleteProject();
+        setShowDeleteConfirm(false);
+      } catch {
+        setIsDeleting(false);
+        setShowDeleteConfirm(false);
+      }
+    }, [onDeleteProject]);
 
     return (
       <div
@@ -326,6 +348,53 @@ export const ProjectCard = React.memo<ProjectCardProps>(
           </div>
         )}
 
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className={projectCardIndicatorChipClass}>
+            <div className="flex items-center justify-between">
+              <span className={projectCardIndicatorLabelClass}>Cobertura</span>
+              <span className={projectCardIndicatorValueClass}>{metrics.testCoverage}%</span>
+            </div>
+            <div className={projectCardIndicatorBarClass} role="progressbar" aria-valuenow={metrics.testCoverage} aria-valuemin={0} aria-valuemax={100} aria-label={`Cobertura: ${metrics.testCoverage}%`}>
+              <div className={projectCardIndicatorBarFillClass} style={{ width: `${metrics.testCoverage}%` }} />
+            </div>
+          </div>
+          <div className={projectCardIndicatorChipClass}>
+            <div className="flex items-center justify-between">
+              <span className={projectCardIndicatorLabelClass}>Automação</span>
+              <span className={projectCardIndicatorValueClass}>{metrics.automationRatio}%</span>
+            </div>
+            <div className={projectCardIndicatorBarClass} role="progressbar" aria-valuenow={metrics.automationRatio} aria-valuemin={0} aria-valuemax={100} aria-label={`Automação: ${metrics.automationRatio}%`}>
+              <div className={projectCardIndicatorBarFillClass} style={{ width: `${metrics.automationRatio}%` }} />
+            </div>
+          </div>
+          <div className={projectCardIndicatorChipClass}>
+            <div className="flex items-center justify-between">
+              <span className={projectCardIndicatorLabelClass}>Aprovação</span>
+              <span className={projectCardIndicatorValueClass}>{metrics.testPassRate}%</span>
+            </div>
+            <div className={projectCardIndicatorBarClass} role="progressbar" aria-valuenow={metrics.testPassRate} aria-valuemin={0} aria-valuemax={100} aria-label={`Aprovação: ${metrics.testPassRate}%`}>
+              <div className={projectCardIndicatorBarFillClass} style={{ width: `${metrics.testPassRate}%` }} />
+            </div>
+          </div>
+          <div className={projectCardIndicatorChipClass}>
+            <div className="flex items-center justify-between">
+              <span className={projectCardIndicatorLabelClass}>Bugs</span>
+              <span className={cn(projectCardIndicatorValueClass, openBugsCount > 0 && 'text-error')}>{openBugsCount}</span>
+            </div>
+            <div className={projectCardIndicatorBarClass} role="progressbar" aria-valuenow={Math.min(openBugsCount, 10)} aria-valuemin={0} aria-valuemax={10} aria-label={`Bugs abertos: ${openBugsCount}`}>
+              <div
+                className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-500 ease-out"
+                style={{
+                  width: `${Math.min(openBugsCount * 10, 100)}%`,
+                  background: openBugsCount > 0
+                    ? 'linear-gradient(90deg, color-mix(in srgb, #dc2626 72%, white) 0%, #dc2626 100%)'
+                    : 'var(--project-card-progress-fill)',
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
         <div className="mt-auto flex items-center justify-between gap-2 pt-3 sm:pt-3.5">
           {updatedAtLabel ? (
             <div className={cn(projectCardChipClass, 'flex min-w-0 items-center gap-1 px-2 py-1')}>
@@ -337,24 +406,53 @@ export const ProjectCard = React.memo<ProjectCardProps>(
           ) : (
             <span />
           )}
-          <div
-            className={cn(
-              projectCardChipClass,
-              'flex shrink-0 items-center gap-1 px-2 py-1 tabular-nums'
-            )}
-          >
-            <Users className="h-3 w-3 text-[var(--project-card-text-muted)]" aria-hidden />
-            <span className="text-[10px] font-semibold text-[var(--project-card-text-muted)] sm:text-[11px]">
-              {tasks.length}
-            </span>
+          <div className="flex items-center gap-1.5">
+            <div
+              className={cn(
+                projectCardChipClass,
+                'flex shrink-0 items-center gap-1 px-2 py-1 tabular-nums'
+              )}
+            >
+              <Users className="h-3 w-3 text-[var(--project-card-text-muted)]" aria-hidden />
+              <span className="text-[10px] font-semibold text-[var(--project-card-text-muted)] sm:text-[11px]">
+                {tasks.length}
+              </span>
+            </div>
+            {onDeleteProject ? (
+              <button
+                type="button"
+                data-delete-btn
+                onClick={e => {
+                  e.stopPropagation();
+                  setShowDeleteConfirm(true);
+                }}
+                className={cn(
+                  projectCardChipClass,
+                  'flex shrink-0 items-center gap-1 px-2 py-1',
+                  'text-[color-mix(in_srgb,#dc2626_72%,var(--project-card-text-muted))]',
+                  'hover:text-error hover:bg-[color-mix(in_srgb,#dc2626_8%,var(--project-card-bg))]',
+                  'transition-colors duration-200',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,#dc2626_35%,transparent)]'
+                )}
+                aria-label={`Excluir projeto ${project.name}`}
+                title="Excluir este projeto"
+              >
+                <Trash2 className="h-3 w-3 shrink-0" aria-hidden />
+              </button>
+            ) : null}
           </div>
         </div>
 
-        <ProjectWorkspaceActions
-          project={project}
-          variant="card"
-          showDelete={Boolean(onDeleteProject)}
-          onDeleteProject={onDeleteProject}
+        <ConfirmDialog
+          isOpen={showDeleteConfirm}
+          onClose={() => setShowDeleteConfirm(false)}
+          onConfirm={() => void handleConfirmDelete()}
+          title={`Excluir "${project.name}"`}
+          message="Esta ação não pode ser desfeita. Todas as tarefas, documentos e dados deste projeto serão removidos."
+          confirmText="Sim, excluir"
+          cancelText="Cancelar"
+          variant="danger"
+          isLoading={isDeleting}
         />
 
         {onTaskClick && latestCompletedTask ? (
