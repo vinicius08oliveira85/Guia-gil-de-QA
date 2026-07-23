@@ -1,10 +1,8 @@
-import fs from 'node:fs';
+﻿import fs from 'node:fs';
 import path from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { Plugin } from 'vite';
 import { executeJiraProxy, type JiraProxyRequestBody } from '../api/jiraProxyCore';
-
-const AUTH_TOKEN = process.env.VITE_PROXY_AUTH_TOKEN;
 
 async function readJsonBody(req: IncomingMessage): Promise<unknown> {
   const chunks: Buffer[] = [];
@@ -27,9 +25,9 @@ function sendJson(res: ServerResponse, status: number, data: unknown): void {
 }
 
 /**
- * Em `vite` puro (sem `vercel dev` na :3000), atende APIs locais necessárias.
- * - GET /api/manifest — PWA
- * - POST /api/jira-proxy — integração Jira (evita 404/timeout do proxy :3000)
+ * Em `vite` puro (sem `vercel dev` na :3000), atende APIs locais necess├írias.
+ * - GET /api/manifest ÔÇö PWA
+ * - POST /api/jira-proxy ÔÇö integra├º├úo Jira (evita 404/timeout do proxy :3000)
  */
 export function devApiMiddlewarePlugin(projectRoot: string): Plugin {
   return {
@@ -52,7 +50,7 @@ export function devApiMiddlewarePlugin(projectRoot: string): Plugin {
             const fallback: Record<string, unknown> = {
               name: 'QA Agile Guide',
               short_name: 'QA Guide',
-              description: 'Ferramenta de gestão de projetos de QA',
+              description: 'Ferramenta de gest├úo de projetos de QA',
               start_url: '/',
               display: 'standalone',
               background_color: '#ffffff',
@@ -65,21 +63,13 @@ export function devApiMiddlewarePlugin(projectRoot: string): Plugin {
         }
 
         if (pathname === '/api/jira-proxy') {
+          if (req.method !== 'POST') {
+            sendJson(res, 405, { error: 'Method not allowed' });
+            return;
+          }
+
           void (async () => {
             try {
-              if (req.method !== 'POST') {
-                sendJson(res, 405, { error: 'Method not allowed' });
-                return;
-              }
-
-              if (AUTH_TOKEN) {
-                const provided = req.headers['x-proxy-token'];
-                if (provided && provided !== AUTH_TOKEN) {
-                  sendJson(res, 401, { error: 'Unauthorized' });
-                  return;
-                }
-              }
-
               let body: JiraProxyRequestBody;
               try {
                 body = (await readJsonBody(req)) as JiraProxyRequestBody;

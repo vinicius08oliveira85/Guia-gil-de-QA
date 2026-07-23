@@ -1,7 +1,6 @@
 import type { JiraConfig } from './types';
 import { logger } from '../../utils/logger';
 import { RateLimiter } from '../../utils/rateLimiter';
-import { getJiraProxyHeaders } from '../../utils/jiraProxyHeaders';
 
 type JiraApiRoot = 'api/3' | 'agile/1.0' | 'servicedeskapi' | 'proforma/1';
 type JiraUrlMode = 'rest' | 'site' | 'atlassian';
@@ -193,7 +192,9 @@ async function jiraRequest<T>(
       try {
         response = await fetch('/api/jira-proxy', {
           method: 'POST',
-          headers: getJiraProxyHeaders(),
+          headers: {
+            'Content-Type': 'application/json',
+          },
           body: JSON.stringify(requestBody),
           signal: controller.signal,
         });
@@ -262,8 +263,7 @@ async function jiraRequest<T>(
       rateLimitReleased = true;
 
       if (!responseText.trim()) {
-        logger.debug('Resposta vazia do proxy Jira', 'jiraService', { endpoint });
-        return undefined as unknown as T;
+        return undefined as T;
       }
 
       if (contentType.includes('text/html')) {

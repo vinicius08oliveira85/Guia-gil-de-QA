@@ -1,5 +1,5 @@
-/**
- * Lógica compartilhada do proxy Jira (Vercel serverless + Vite middleware em dev).
+﻿/**
+ * L├│gica compartilhada do proxy Jira (Vercel serverless + Vite middleware em dev).
  */
 
 export interface JiraProxyRequestBody {
@@ -20,7 +20,7 @@ export type JiraProxyResult =
       ok: true;
       status: number;
       contentType: string;
-      /** JSON serializável ou buffer binário */
+      /** JSON serializ├ível ou buffer bin├írio */
       payload: unknown;
       isBinary: boolean;
     }
@@ -52,7 +52,7 @@ export async function executeJiraProxy(body: JiraProxyRequestBody): Promise<Jira
   }
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 50000);
+  const timeoutId = setTimeout(() => controller.abort(), 60000);
 
   try {
     const credentials = Buffer.from(`${email}:${apiToken}`).toString('base64');
@@ -90,15 +90,10 @@ export async function executeJiraProxy(body: JiraProxyRequestBody): Promise<Jira
 
     if (!response.ok) {
       const errorText = await response.text();
-      const sanitized = errorText
-        .replace(/https?:\/\/[^\s"']+/g, '[URL ocultada]')
-        .replace(/password[=:]\s*\S+/gi, 'password=[redacted]')
-        .replace(/token[=:]\s*\S+/gi, 'token=[redacted]')
-        .slice(0, 500);
       return {
         ok: false,
         status: response.status,
-        error: `Jira API Error (${response.status}): ${sanitized}`,
+        error: `Jira API Error (${response.status}): ${errorText}`,
       };
     }
 
@@ -129,16 +124,14 @@ export async function executeJiraProxy(body: JiraProxyRequestBody): Promise<Jira
       return {
         ok: false,
         status: 504,
-        error: 'Timeout: A requisição ao Jira demorou mais de 60 segundos',
+        error: 'Timeout: A requisi├º├úo ao Jira demorou mais de 60 segundos',
       };
     }
 
     return {
       ok: false,
       status: 500,
-      error: error instanceof Error
-        ? error.message.replace(/https?:\/\/[^\s"']+/g, '[URL ocultada]').slice(0, 500)
-        : 'Internal server error',
+      error: error instanceof Error ? error.message : 'Internal server error',
     };
   }
 }
