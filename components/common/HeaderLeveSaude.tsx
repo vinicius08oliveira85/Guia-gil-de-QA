@@ -1,5 +1,5 @@
 import React from 'react';
-import { ButtonLeve } from './ButtonLeve';
+import { Button } from './Button';
 
 interface HeaderLeveSaudeProps {
   logoUrl?: string;
@@ -88,14 +88,14 @@ export const HeaderLeveSaude = React.memo<HeaderLeveSaudeProps>(
 
           {ctaLabel && (
             <div className="flex items-center gap-4">
-              <ButtonLeve
-                variant="primary"
+              <Button
+                variant="brand"
                 onClick={onCtaClick}
                 aria-label={ctaLabel}
                 className="rounded-[var(--radius)]"
               >
                 {ctaLabel}
-              </ButtonLeve>
+              </Button>
             </div>
           )}
         </div>

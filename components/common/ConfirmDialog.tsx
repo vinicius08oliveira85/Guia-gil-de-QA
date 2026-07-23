@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal } from './Modal';
-import { cn } from '../../utils/cn';
-import { leveSettingsMutedTextClass, leveViewOutlineBtnClass, leveViewPrimaryBtnClass } from './projectCardUi';
+import { Button } from './Button';
+import { leveSettingsMutedTextClass } from './projectCardUi';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -41,22 +41,23 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       <div className="space-y-4">
         <p className={leveSettingsMutedTextClass}>{message}</p>
         <div className="flex justify-end gap-3 pt-4">
-          <button
+          <Button
             onClick={onClose}
             disabled={isLoading}
-            className={cn(leveViewOutlineBtnClass, 'min-h-10')}
-            type="button"
+            variant="outline"
           >
             {cancelText}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleConfirm}
             disabled={isLoading}
-            className={cn(leveViewPrimaryBtnClass, 'min-h-10', confirmVariantClass[variant])}
-            type="button"
+            isLoading={isLoading}
+            loadingText="Processando..."
+            variant={variant === 'danger' ? 'destructive' : 'default'}
+            className={variant === 'info' ? 'btn-primary' : ''}
           >
-            {isLoading ? 'Processando...' : confirmText}
-          </button>
+            {confirmText}
+          </Button>
         </div>
       </div>
     </Modal>

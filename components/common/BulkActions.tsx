@@ -3,6 +3,7 @@ import { Project } from '../../types';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { Modal } from './Modal';
 import { ConfirmDialog } from './ConfirmDialog';
+import { Button } from './Button';
 import { useProjectsStore } from '../../store/projectsStore';
 import { normalizeProjectWorkflow } from '../../utils/projectWorkflow';
 import {
@@ -14,6 +15,7 @@ import {
 } from './neuUi';
 import { cn } from '../../utils/cn';
 import { AppSelect } from '../common/AppSelect';
+import { ActionsMenuDropdown } from './ActionsMenuDropdown';
 
 interface BulkActionsProps {
   selectedTasks: string[] | Set<string>;
@@ -253,88 +255,25 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
             {selectedTasksArray.length > 1 ? 's' : ''}
           </span>
           <div className="custom-scrollbar flex min-w-0 flex-1 flex-nowrap items-center justify-start gap-1 overflow-x-auto pb-1 sm:ml-auto sm:justify-end sm:gap-1.5 sm:pb-0">
-            <button
-              type="button"
-              onClick={() => {
-                setAction('status');
-                setShowModal(true);
-              }}
-              className={toolbarActionClassName}
-            >
-              Alterar Status
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setAction('tag');
-                setShowModal(true);
-              }}
-              className={toolbarActionClassName}
-            >
-              Adicionar Tag
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setAction('assignee');
-                setShowModal(true);
-              }}
-              className={toolbarActionClassName}
-            >
-              Atribuir
-            </button>
-            {hasSelectedNonFavorited && (
-              <button
-                type="button"
-                onClick={handleBulkFavorite}
-                className={toolbarActionClassName}
-                aria-label="Favoritar tarefas selecionadas"
-              >
-                Favoritar
+            {([
+              { label: 'Alterar Status', onClick: () => { setAction('status'); setShowModal(true); }, className: toolbarActionClassName },
+              { label: 'Adicionar Tag', onClick: () => { setAction('tag'); setShowModal(true); }, className: toolbarActionClassName },
+              { label: 'Atribuir', onClick: () => { setAction('assignee'); setShowModal(true); }, className: toolbarActionClassName },
+              { label: 'Criar Projeto', onClick: handleCreateProjectClick, className: toolbarPrimaryActionClassName },
+              { label: 'Excluir', onClick: handleBulkDelete, className: toolbarDangerActionClassName },
+              { label: 'Limpar', onClick: onClearSelection, className: toolbarOutlineActionClassName },
+            ] as const).map(action => (
+              <button key={action.label} type="button" onClick={action.onClick} className={action.className}>
+                {action.label}
               </button>
-            )}
-            {hasSelectedFavorited && (
-              <button
-                type="button"
-                onClick={handleBulkUnfavorite}
-                className={toolbarActionClassName}
-                aria-label="Desfavoritar tarefas selecionadas"
-              >
-                Desfavoritar
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={handleCreateProjectClick}
-              className={toolbarPrimaryActionClassName}
-            >
-              Criar Projeto
-            </button>
-            {onEditTask && (
-              <button
-                type="button"
-                onClick={handleBulkEdit}
-                className={toolbarActionClassName}
-                aria-label="Editar tarefa selecionada"
-              >
-                Editar
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={handleBulkDelete}
-              className={toolbarDangerActionClassName}
-              aria-label="Excluir tarefas selecionadas"
-            >
-              Excluir
-            </button>
-            <button
-              type="button"
-              onClick={onClearSelection}
-              className={toolbarOutlineActionClassName}
-            >
-              Limpar
-            </button>
+            ))}
+            <ActionsMenuDropdown
+              actions={[
+                ...(hasSelectedNonFavorited ? [{ label: 'Favoritar' as const, onClick: handleBulkFavorite }] : []),
+                ...(hasSelectedFavorited ? [{ label: 'Desfavoritar' as const, onClick: handleBulkUnfavorite }] : []),
+                ...(onEditTask ? [{ label: 'Editar' as const, onClick: handleBulkEdit }] : []),
+              ]}
+            />
           </div>
         </div>
       </div>
@@ -363,13 +302,12 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
                 <option value="In Progress">Em Andamento</option>
                 <option value="Done">Concluído</option>
               </AppSelect>
-              <button
-                type="button"
+              <Button
                 onClick={handleBulkStatusChange}
                 className={modalPrimaryActionClassName}
               >
                 Aplicar status
-              </button>
+              </Button>
             </div>
           )}
 
@@ -386,13 +324,12 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
                 placeholder="Ex: crítico, regressão..."
                 className={cn('input input-bordered w-full', neuSurfaceClass)}
               />
-              <button
-                type="button"
+              <Button
                 onClick={handleBulkTagAdd}
                 className={modalPrimaryActionClassName}
               >
                 Adicionar tag
-              </button>
+              </Button>
             </div>
           )}
 
@@ -412,13 +349,12 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
                 <option value="QA">QA</option>
                 <option value="Dev">Desenvolvimento</option>
               </AppSelect>
-              <button
-                type="button"
+              <Button
                 onClick={handleBulkAssigneeChange}
                 className={modalPrimaryActionClassName}
               >
                 Atribuir
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -471,22 +407,23 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
             ))}
           </div>
           <div className={cn('flex justify-end gap-2 border-t pt-2', neuDividerClass)}>
-            <button
+            <Button
               onClick={() => {
                 setShowTaskSelectionModal(false);
                 setSelectedTasksForProject(new Set());
               }}
+              variant="outline"
               className={toolbarOutlineActionClassName}
             >
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleProceedToProjectName}
               disabled={selectedTasksForProject.size === 0}
               className={toolbarPrimaryActionClassName}
             >
               Gerar Projeto ({selectedTasksForProject.size})
-            </button>
+            </Button>
           </div>
         </div>
       </Modal>
@@ -537,23 +474,24 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
             </p>
           </div>
           <div className={cn('flex justify-end gap-2 border-t pt-2', neuDividerClass)}>
-            <button
+            <Button
               onClick={() => {
                 setShowProjectNameModal(false);
                 setProjectName('');
                 setProjectDescription('');
               }}
+              variant="outline"
               className={toolbarOutlineActionClassName}
             >
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleCreateProject}
               disabled={!projectName.trim()}
               className={toolbarPrimaryActionClassName}
             >
               Criar Projeto
-            </button>
+            </Button>
           </div>
         </div>
       </Modal>

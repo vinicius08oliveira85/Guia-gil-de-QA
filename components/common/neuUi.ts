@@ -74,6 +74,34 @@ export const neuBrandChipHoverClass =
 export const neuBrandTextMutedClass = 'text-base-content/72';
 export const neuBrandTextStrongClass = 'text-base-content';
 
+/** ── Hierarquia de botões neumórficos ──────────────────────── */
+
+export const neuBaseBtnClass = cn(
+  'inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 py-2',
+  'font-sans text-sm font-semibold',
+  'transition-[box-shadow,color,transform] duration-200',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
+  'disabled:cursor-not-allowed disabled:opacity-50',
+  'sm:min-h-9'
+);
+
+export const neuGhostBtnClass = cn(
+  neuBaseBtnClass,
+  'workspace-chrome-pill',
+  'text-base-content/72 hover:text-base-content'
+);
+
+export const neuPrimaryBtnClass = cn(
+  neuBaseBtnClass,
+  'workspace-chrome-pill-active',
+  'text-primary-content shadow-sm hover:brightness-110'
+);
+
+export const neuDangerBtnClass = cn(
+  neuGhostBtnClass,
+  'text-error hover:text-error'
+);
+
 export const neuHoverSubtleClass =
   'hover:bg-[color-mix(in_srgb,var(--leve-neu-dark)_10%,var(--leve-neu-bg))]';
 

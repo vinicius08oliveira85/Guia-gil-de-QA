@@ -6,13 +6,14 @@ import {
 } from './workspaceChromeActionUi';
 import { projectChromeSyncBtnClass, projectChromeToolbarDividerClass } from '../tasks/tasksPanelNeuStyles';
 import { JiraBrandIcon } from './JiraBrandIcon';
+import { WorkspaceActionButton } from './WorkspaceActionButton';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import {
   readTaskTrackingSnapshot,
   normalizeTaskTrackingBackup,
   restoreTaskTrackingFromBackup,
 } from '../../services/taskTrackingStorage';
-import { Download, Loader2, Save, Upload } from 'lucide-react';
+import { Download, Save, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export interface TaskTrackingWorkspaceActionsProps {
@@ -58,8 +59,8 @@ export const TaskTrackingWorkspaceActions: React.FC<TaskTrackingWorkspaceActions
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
 
-  const btnClass = variant === 'toolbar' ? projectChromeSyncBtnClass : appNeuActionBtnClass;
   const busy = isSaving || isJiraSyncing || isImporting;
+  const btnCls = variant === 'toolbar' ? projectChromeSyncBtnClass : appNeuActionBtnClass;
 
   const handleExport = useCallback(() => {
     try {
@@ -122,67 +123,54 @@ export const TaskTrackingWorkspaceActions: React.FC<TaskTrackingWorkspaceActions
         }}
       />
 
-      <button
-        type="button"
+      <WorkspaceActionButton
+        icon={<Save className="h-3.5 w-3.5 shrink-0" aria-hidden />}
+        label="Salvar"
         onClick={() => void onSave()}
         disabled={busy}
-        className={btnClass}
+        className={btnCls}
+        isLoading={isSaving}
+        labelVisibility={variant === 'inline' ? 'inline' : 'toolbar'}
         aria-label="Salvar todos os dados no banco de dados"
         title="Salvar tudo no banco de dados (projetos, acompanhamentos, filtros, bloco de notas e preferências)"
-      >
-        {isSaving ? (
-          <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden />
-        ) : (
-          <Save className="h-3.5 w-3.5 shrink-0" aria-hidden />
-        )}
-        <span className={variant === 'inline' ? 'text-xs' : 'hidden sm:inline'}>Salvar</span>
-      </button>
+      />
 
-      <button
-        type="button"
+      <WorkspaceActionButton
+        icon={<Upload className="h-3.5 w-3.5 shrink-0" aria-hidden />}
+        label="Importar"
         onClick={() => fileInputRef.current?.click()}
         disabled={busy}
-        className={btnClass}
+        className={btnCls}
+        isLoading={isImporting}
+        labelVisibility={variant === 'inline' ? 'inline' : 'toolbar'}
         aria-label="Importar acompanhamento"
         title="Importar backup deste acompanhamento"
-      >
-        {isImporting ? (
-          <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden />
-        ) : (
-          <Upload className="h-3.5 w-3.5 shrink-0" aria-hidden />
-        )}
-        <span className={variant === 'inline' ? 'text-xs' : 'hidden sm:inline'}>Importar</span>
-      </button>
+      />
 
-      <button
-        type="button"
+      <WorkspaceActionButton
+        icon={<Download className="h-3.5 w-3.5 shrink-0" aria-hidden />}
+        label="Exportar"
         onClick={handleExport}
         disabled={busy}
-        className={btnClass}
+        className={btnCls}
+        labelVisibility={variant === 'inline' ? 'inline' : 'toolbar'}
         aria-label="Exportar acompanhamento"
         title="Exportar dados deste acompanhamento"
-      >
-        <Download className="h-3.5 w-3.5 shrink-0" aria-hidden />
-        <span className={variant === 'inline' ? 'text-xs' : 'hidden sm:inline'}>Exportar</span>
-      </button>
+      />
 
       {variant === 'toolbar' ? <span className={projectChromeToolbarDividerClass} aria-hidden /> : null}
 
-      <button
-        type="button"
+      <WorkspaceActionButton
+        icon={<JiraBrandIcon className="h-3.5 w-3.5 shrink-0" />}
+        label="Jira"
         onClick={onJiraSync}
         disabled={busy || jiraDisabled}
-        className={btnClass}
+        className={btnCls}
+        isLoading={isJiraSyncing}
+        labelVisibility={variant === 'inline' ? 'inline' : 'toolbar'}
         aria-label="Atualizar tarefas do Jira"
         title={jiraTitle}
-      >
-        {isJiraSyncing ? (
-          <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden />
-        ) : (
-          <JiraBrandIcon className="h-3.5 w-3.5 shrink-0" />
-        )}
-        <span className={variant === 'inline' ? 'text-xs' : 'hidden sm:inline'}>Jira</span>
-      </button>
+      />
     </div>
   );
 };

@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { ButtonLeve } from '../components/common/ButtonLeve';
+import { Button } from '../components/common/Button';
 
-const meta: Meta<typeof ButtonLeve> = {
-  title: 'Common/ButtonLeve',
-  component: ButtonLeve,
+const meta: Meta<typeof Button> = {
+  title: 'Common/Button',
+  component: Button,
   parameters: {
     layout: 'padded',
     design: {
@@ -15,14 +15,11 @@ const meta: Meta<typeof ButtonLeve> = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['primary', 'secondary', 'ghost'],
+      options: ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link', 'brand', 'brandOutline'],
     },
     size: {
       control: 'select',
-      options: ['sm', 'md', 'lg'],
-    },
-    fullWidth: {
-      control: 'boolean',
+      options: ['default', 'sm', 'lg', 'icon', 'panel', 'panelSm', 'panelXs'],
     },
     disabled: {
       control: 'boolean',
@@ -31,21 +28,21 @@ const meta: Meta<typeof ButtonLeve> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof ButtonLeve>;
+type Story = StoryObj<typeof Button>;
 
 export const Primary: Story = {
   args: {
     children: 'Botão Primário',
-    variant: 'primary',
-    size: 'md',
+    variant: 'brand',
+    size: 'default',
   },
 };
 
 export const Secondary: Story = {
   args: {
     children: 'Botão Secundário',
-    variant: 'secondary',
-    size: 'md',
+    variant: 'brandOutline',
+    size: 'default',
   },
 };
 
@@ -53,16 +50,16 @@ export const Ghost: Story = {
   args: {
     children: 'Botão Ghost',
     variant: 'ghost',
-    size: 'md',
+    size: 'default',
   },
 };
 
 export const Sizes: Story = {
   render: () => (
     <div className="flex items-center gap-4">
-      <ButtonLeve size="sm">Pequeno</ButtonLeve>
-      <ButtonLeve size="md">Médio</ButtonLeve>
-      <ButtonLeve size="lg">Grande</ButtonLeve>
+      <Button size="sm">Pequeno</Button>
+      <Button size="default">Médio</Button>
+      <Button size="lg">Grande</Button>
     </div>
   ),
 };
@@ -70,9 +67,11 @@ export const Sizes: Story = {
 export const AllVariants: Story = {
   render: () => (
     <div className="flex flex-wrap items-center gap-4">
-      <ButtonLeve variant="primary">Primário</ButtonLeve>
-      <ButtonLeve variant="secondary">Secundário</ButtonLeve>
-      <ButtonLeve variant="ghost">Ghost</ButtonLeve>
+      <Button variant="brand">Primário</Button>
+      <Button variant="brandOutline">Secundário</Button>
+      <Button variant="ghost">Ghost</Button>
+      <Button variant="default">Default</Button>
+      <Button variant="outline">Outline</Button>
     </div>
   ),
 };
@@ -80,23 +79,15 @@ export const AllVariants: Story = {
 export const Disabled: Story = {
   render: () => (
     <div className="flex flex-wrap items-center gap-4">
-      <ButtonLeve variant="primary" disabled>
+      <Button variant="brand" disabled>
         Primário Desabilitado
-      </ButtonLeve>
-      <ButtonLeve variant="secondary" disabled>
+      </Button>
+      <Button variant="brandOutline" disabled>
         Secundário Desabilitado
-      </ButtonLeve>
-      <ButtonLeve variant="ghost" disabled>
+      </Button>
+      <Button variant="ghost" disabled>
         Ghost Desabilitado
-      </ButtonLeve>
+      </Button>
     </div>
   ),
-};
-
-export const FullWidth: Story = {
-  args: {
-    children: 'Botão de Largura Total',
-    variant: 'primary',
-    fullWidth: true,
-  },
 };

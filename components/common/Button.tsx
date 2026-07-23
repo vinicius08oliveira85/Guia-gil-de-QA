@@ -40,24 +40,30 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
+  isLoading?: boolean;
+  loadingText?: string;
 }
 
-/**
- * Componente Button reutilizável com variantes
- *
- * @example
- * ```tsx
- * <Button variant="default" size="sm">Clique aqui</Button>
- * <Button variant="outline" asChild>
- *   <a href="/link">Link</a>
- * </Button>
- * ```
- */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, isLoading, loadingText, children, disabled, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button';
     return (
-      <Comp className={cn(buttonVariants({ variant, size }), className)} ref={ref} {...props} />
+      <Comp
+        className={cn(buttonVariants({ variant, size }), className)}
+        ref={ref}
+        disabled={disabled || isLoading}
+        aria-busy={isLoading}
+        {...props}
+      >
+        {isLoading ? (
+          <span className="inline-flex items-center justify-center gap-2">
+            <span className="loading loading-spinner loading-xs" aria-hidden />
+            <span>{loadingText ?? 'Carregando…'}</span>
+          </span>
+        ) : (
+          children
+        )}
+      </Comp>
     );
   }
 );

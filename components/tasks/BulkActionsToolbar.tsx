@@ -1,4 +1,6 @@
 import React from 'react';
+import { Copy, FileDown, X } from 'lucide-react';
+import { Button } from '../common/Button';
 
 interface BulkActionsToolbarProps {
   selectedCount: number;
@@ -7,9 +9,6 @@ interface BulkActionsToolbarProps {
   onClearSelection?: () => void;
 }
 
-/**
- * Toolbar de ações em massa que aparece quando testes são selecionados
- */
 export const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
   selectedCount,
   onCopySelected,
@@ -23,68 +22,30 @@ export const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
   return (
     <div className="leve-neu-surface sticky top-0 z-20 border-0 border-b border-primary/25 px-md py-sm">
       <div className="flex items-center justify-between gap-md">
-        <div className="flex items-center gap-sm">
-          <span className="text-sm font-semibold text-base-content">
-            {selectedCount} {selectedCount === 1 ? 'teste selecionado' : 'testes selecionados'}
-          </span>
-        </div>
+        <span className="text-sm font-semibold text-base-content">
+          {selectedCount} {selectedCount === 1 ? 'teste selecionado' : 'testes selecionados'}
+        </span>
 
         <div className="flex items-center gap-xs">
           {onCopySelected && (
-            <button
-              type="button"
-              onClick={onCopySelected}
-              className="btn btn-sm btn-ghost"
-              aria-label="Copiar testes selecionados"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                />
-              </svg>
+            <Button variant="ghost" size="sm" onClick={onCopySelected} aria-label="Copiar testes selecionados">
+              <Copy className="h-4 w-4" />
               <span>Copiar</span>
-            </button>
+            </Button>
           )}
 
           {onExportSelected && (
-            <button
-              type="button"
-              onClick={onExportSelected}
-              className="btn btn-sm btn-ghost"
-              aria-label="Exportar testes selecionados"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v16h16M8 12h8m-8 4h5"
-                />
-              </svg>
+            <Button variant="ghost" size="sm" onClick={onExportSelected} aria-label="Exportar testes selecionados">
+              <FileDown className="h-4 w-4" />
               <span>Exportar</span>
-            </button>
+            </Button>
           )}
 
           {onClearSelection && (
-            <button
-              type="button"
-              onClick={onClearSelection}
-              className="btn btn-sm btn-ghost text-error"
-              aria-label="Limpar seleção"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+            <Button variant="ghost" size="sm" onClick={onClearSelection} className="text-error" aria-label="Limpar seleção">
+              <X className="h-4 w-4" />
               <span>Limpar</span>
-            </button>
+            </Button>
           )}
         </div>
       </div>

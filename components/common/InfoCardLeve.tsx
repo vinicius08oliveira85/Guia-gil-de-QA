@@ -1,5 +1,5 @@
 import React from 'react';
-import { ButtonLeve } from './ButtonLeve';
+import { Button } from './Button';
 
 interface InfoCardLeveProps {
   title: string;
@@ -27,9 +27,9 @@ export const InfoCardLeve = React.memo<InfoCardLeveProps>(
         <div className="card-text">{children}</div>
         {actionLabel && onAction && (
           <div className="mt-4">
-            <ButtonLeve variant="ghost" onClick={onAction}>
+            <Button variant="ghost" onClick={onAction}>
               {actionLabel}
-            </ButtonLeve>
+            </Button>
           </div>
         )}
       </div>

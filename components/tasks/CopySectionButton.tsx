@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { Copy, Check } from 'lucide-react';
+import { Button } from '../common/Button';
 
 interface CopySectionButtonProps {
   text: string;
@@ -7,9 +9,6 @@ interface CopySectionButtonProps {
   className?: string;
 }
 
-/**
- * Botão para copiar seção específica do relatório
- */
 export const CopySectionButton: React.FC<CopySectionButtonProps> = ({
   text,
   sectionName,
@@ -23,42 +22,22 @@ export const CopySectionButton: React.FC<CopySectionButtonProps> = ({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       toast.success(`${sectionName} copiado!`);
-    } catch (error) {
+    } catch {
       toast.error('Erro ao copiar. Tente novamente.');
     }
   };
 
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
+      size="sm"
       onClick={handleCopy}
-      className={`
-        btn btn-xs btn-ghost
-        ${copied ? '!bg-success !text-success-content' : ''}
-        ${className}
-      `}
+      className={copied ? '!bg-success !text-success-content' : ''}
       aria-label={`Copiar ${sectionName}`}
     >
-      {copied ? (
-        <>
-          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-          <span>Copiado!</span>
-        </>
-      ) : (
-        <>
-          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-            />
-          </svg>
-          <span>Copiar</span>
-        </>
-      )}
-    </button>
+      {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+      <span>{copied ? 'Copiado!' : 'Copiar'}</span>
+    </Button>
   );
 };

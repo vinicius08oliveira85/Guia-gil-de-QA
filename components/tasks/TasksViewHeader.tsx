@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Filter, ChevronDown, ClipboardList } from 'lucide-react';
 import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
+import { Button } from '../common/Button';
 import { cn } from '../../utils/cn';
 import { appMenuItemClass, appMenuPanelClass } from '../common/viewUi';
 import { viewHeroMobileActionBtnClass } from '../common/viewHeroChromeUi';
@@ -80,8 +81,7 @@ export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
         </div>
 
         <div className={tasksViewHeaderActionsClass}>
-          <button
-            type="button"
+          <Button
             onClick={onAddTask}
             disabled={isRunningGeneralAnalysis}
             title={isRunningGeneralAnalysis ? 'Conclua a análise em andamento' : undefined}
@@ -90,7 +90,7 @@ export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
             <Plus className="h-4 w-4 shrink-0" aria-hidden />
             <span className="hidden sm:inline">Adicionar Tarefa</span>
             <span className="sm:hidden">Tarefa</span>
-          </button>
+          </Button>
 
           {/* Desktop: IA + Filtros no trilho inset (modelo Filtrar/Exportar) */}
           <div

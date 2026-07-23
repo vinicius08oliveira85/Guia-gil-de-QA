@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 import { Modal } from '../components/common/Modal';
-import { ButtonLeve } from '../components/common/ButtonLeve';
+import { Button } from '../components/common/Button';
 
 const meta: Meta<typeof Modal> = {
   title: 'Common/Modal',
@@ -64,8 +64,8 @@ export const Medium: Story = {
     <ModalWrapper size="md">
       <p className="text-text-secondary mb-4">Modal médio com conteúdo padrão.</p>
       <div className="flex gap-2">
-        <ButtonLeve variant="primary">Confirmar</ButtonLeve>
-        <ButtonLeve variant="secondary">Cancelar</ButtonLeve>
+        <Button variant="brand">Confirmar</Button>
+        <Button variant="brandOutline">Cancelar</Button>
       </div>
     </ModalWrapper>
   ),
@@ -100,8 +100,8 @@ export const WithForm: Story = {
           <input type="email" className="input-field w-full" placeholder="Digite seu email" />
         </div>
         <div className="flex gap-2 justify-end">
-          <ButtonLeve variant="secondary">Cancelar</ButtonLeve>
-          <ButtonLeve variant="primary">Salvar</ButtonLeve>
+          <Button variant="brandOutline">Cancelar</Button>
+          <Button variant="brand">Salvar</Button>
         </div>
       </form>
     </ModalWrapper>

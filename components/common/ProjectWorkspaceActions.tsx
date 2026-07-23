@@ -6,6 +6,7 @@ import { useLandingWorkspaceActions } from '../../hooks/useLandingWorkspaceActio
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { FileExportModal } from './FileExportModal';
 import { FileImportModal } from './FileImportModal';
+import { Button } from './Button';
 import { ConfirmDialog } from './ConfirmDialog';
 import { Modal } from './Modal';
 import { AppSelect } from './AppSelect';
@@ -27,11 +28,11 @@ import { normalizeProjectWorkflow } from '../../utils/projectWorkflow';
 import {
   CheckCircle2,
   Download,
-  Loader2,
   Save,
   Trash2,
   Upload,
 } from 'lucide-react';
+import { WorkspaceActionButton } from './WorkspaceActionButton';
 
 export interface ProjectWorkspaceActionsProps {
   project: Project;
@@ -82,10 +83,13 @@ export const ProjectWorkspaceActions: React.FC<ProjectWorkspaceActionsProps> = (
     setSelectedJiraProjectKey,
   } = useJiraSync(project, updateProject);
 
-  const btnClass =
-    variant === 'toolbar' ? projectChromeSyncBtnClass : projectCardActionBtnClass;
-  const dangerClass =
-    variant === 'toolbar' ? projectChromeDangerBtnClass : projectCardActionBtnDangerClass;
+  const btnClass = useCallback(
+    (v: 'toolbar' | 'card', kind: 'default' | 'danger') =>
+      v === 'toolbar'
+        ? (kind === 'danger' ? projectChromeDangerBtnClass : projectChromeSyncBtnClass)
+        : (kind === 'danger' ? projectCardActionBtnDangerClass : projectCardActionBtnClass),
+    []
+  );
   const dividerClass =
     variant === 'toolbar' ? projectChromeToolbarDividerClass : projectCardActionDividerClass;
   const trackClass =
@@ -188,53 +192,48 @@ export const ProjectWorkspaceActions: React.FC<ProjectWorkspaceActionsProps> = (
 
   const actionButtons = (
     <>
-      <button
-        type="button"
+      <WorkspaceActionButton
+        icon={saveStatus === 'saved' ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" aria-hidden /> : <Save className="h-3.5 w-3.5 shrink-0" aria-hidden />}
+        label="Salvar"
         onClick={() => void handleSave()}
         disabled={busy}
-        className={btnClass}
+        className={btnClass(variant, 'default')}
+        isLoading={isSaving}
+        labelVisibility={variant === 'card' ? 'card' : 'toolbar'}
         aria-label="Salvar todos os dados no banco de dados"
         title="Salvar tudo no banco de dados (projetos, acompanhamentos, filtros, bloco de notas e preferências)"
-      >
-        {isSaving ? (
-          <Spinner size="sm" />
-        ) : saveStatus === 'saved' ? (
-          <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" aria-hidden />
-        ) : (
-          <Save className="h-3.5 w-3.5 shrink-0" aria-hidden />
-        )}
-        <span className={variant === 'card' ? 'text-xs' : 'hidden sm:inline'}>Salvar</span>
-      </button>
+      />
 
-      <button
-        type="button"
+      <WorkspaceActionButton
+        icon={<Upload className="h-3.5 w-3.5 shrink-0" aria-hidden />}
+        label="Importar"
         onClick={() => setShowImportModal(true)}
         disabled={busy}
-        className={btnClass}
+        className={btnClass(variant, 'default')}
+        labelVisibility={variant === 'card' ? 'card' : 'toolbar'}
         aria-label="Importar tarefas para este projeto"
         title="Importar tarefas (JSON, CSV ou Excel) neste projeto"
-      >
-        <Upload className="h-3.5 w-3.5 shrink-0" aria-hidden />
-        <span className={variant === 'card' ? 'text-xs' : 'hidden sm:inline'}>Importar</span>
-      </button>
+      />
 
-      <button
-        type="button"
+      <WorkspaceActionButton
+        icon={<Download className="h-3.5 w-3.5 shrink-0" aria-hidden />}
+        label="Exportar"
         onClick={() => setShowExportModal(true)}
         disabled={busy}
-        className={btnClass}
+        className={btnClass(variant, 'default')}
+        labelVisibility={variant === 'card' ? 'card' : 'toolbar'}
         aria-label="Exportar este projeto"
         title="Exportar dados deste projeto"
-      >
-        <Download className="h-3.5 w-3.5 shrink-0" aria-hidden />
-        <span className={variant === 'card' ? 'text-xs' : 'hidden sm:inline'}>Exportar</span>
-      </button>
+      />
 
-      <button
-        type="button"
+      <WorkspaceActionButton
+        icon={<JiraBrandIcon className="h-3.5 w-3.5 shrink-0" />}
+        label="Jira"
         onClick={() => void handleJira()}
         disabled={busy}
-        className={btnClass}
+        className={btnClass(variant, 'default')}
+        isLoading={isSyncingJira}
+        labelVisibility={variant === 'card' ? 'card' : 'toolbar'}
         aria-label={
           lastJiraSyncLabel
             ? `Atualizar do Jira. Última sincronização: ${lastJiraSyncLabel}`
@@ -245,14 +244,7 @@ export const ProjectWorkspaceActions: React.FC<ProjectWorkspaceActionsProps> = (
             ? `Última sync Jira: ${lastJiraSyncLabel}`
             : 'Atualizar tudo do Jira (Projetos QA, Dev e Acompanhamentos) e salvar no banco'
         }
-      >
-        {isSyncingJira ? (
-          <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden />
-        ) : (
-          <JiraBrandIcon className="h-3.5 w-3.5 shrink-0" />
-        )}
-        <span className={variant === 'card' ? 'text-xs' : 'hidden sm:inline'}>Jira</span>
-      </button>
+      />
 
       {variant === 'toolbar' && lastJiraSyncLabel ? (
         <span
@@ -267,17 +259,16 @@ export const ProjectWorkspaceActions: React.FC<ProjectWorkspaceActionsProps> = (
       {showDelete && onDeleteProject ? (
         <>
           <span className={dividerClass} aria-hidden />
-          <button
-            type="button"
+          <WorkspaceActionButton
+            icon={<Trash2 className="h-3.5 w-3.5 shrink-0" aria-hidden />}
+            label="Excluir"
             onClick={() => setShowDeleteConfirm(true)}
             disabled={busy}
-            className={dangerClass}
+            className={btnClass(variant, 'danger')}
+            labelVisibility={variant === 'card' ? 'card' : 'toolbar'}
             aria-label={`Excluir projeto ${project.name}`}
             title="Excluir este projeto"
-          >
-            <Trash2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            <span className={variant === 'card' ? 'text-xs' : 'hidden sm:inline'}>Excluir</span>
-          </button>
+          />
         </>
       ) : null}
     </>
@@ -361,24 +352,22 @@ export const ProjectWorkspaceActions: React.FC<ProjectWorkspaceActionsProps> = (
             </AppSelect>
           </div>
           <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              className="btn btn-ghost btn-sm"
+            <Button
+              variant="ghost"
               onClick={() => {
                 setShowJiraProjectSelector(false);
                 setSelectedJiraProjectKey('');
               }}
             >
               Cancelar
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary btn-sm"
+            </Button>
+            <Button
+              variant="default"
               disabled={!selectedJiraProjectKey || isSyncingJira}
               onClick={() => void handleConfirmJiraLink()}
             >
               {isSyncingJira ? 'Atualizando…' : 'Vincular e atualizar'}
-            </button>
+            </Button>
           </div>
         </div>
       </Modal>
