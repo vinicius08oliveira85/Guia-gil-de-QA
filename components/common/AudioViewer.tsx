@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Play, Pause, Volume2, VolumeX, Download, ExternalLink } from 'lucide-react';
+import { Button } from './Button';
 
 interface AudioViewerProps {
   /** URL do áudio */
@@ -90,13 +91,14 @@ export const AudioViewer: React.FC<AudioViewerProps> = ({
   return (
     <div className={`audio-viewer flex flex-col gap-4 p-6 leve-neu-surface rounded-lg ${className}`}>
       <div className="flex items-center gap-4">
-        <button
+        <Button
           onClick={togglePlay}
-          className="btn btn-circle btn-lg btn-primary"
+          size="circleLg"
+          variant="default"
           title={isPlaying ? 'Pausar' : 'Reproduzir'}
         >
           {isPlaying ? <Pause size={24} /> : <Play size={24} />}
-        </button>
+        </Button>
 
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
@@ -116,13 +118,9 @@ export const AudioViewer: React.FC<AudioViewerProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={toggleMute}
-            className="btn btn-circle btn-sm btn-ghost"
-            title={isMuted ? 'Ativar som' : 'Silenciar'}
-          >
+          <Button onClick={toggleMute} size="circle" variant="ghost" title={isMuted ? 'Ativar som' : 'Silenciar'}>
             {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-          </button>
+          </Button>
           <input
             type="range"
             min="0"
@@ -135,19 +133,20 @@ export const AudioViewer: React.FC<AudioViewerProps> = ({
         </div>
 
         {onDownload && (
-          <button onClick={onDownload} className="btn btn-circle btn-sm btn-ghost" title="Download">
+          <Button onClick={onDownload} size="circle" variant="ghost" title="Download">
             <Download size={16} />
-          </button>
+          </Button>
         )}
 
         {onOpenExternal && (
-          <button
+          <Button
             onClick={onOpenExternal}
-            className="btn btn-circle btn-sm btn-ghost"
+            size="circle"
+            variant="ghost"
             title="Abrir em nova aba"
           >
             <ExternalLink size={16} />
-          </button>
+          </Button>
         )}
       </div>
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
+import { Button } from './Button';
 import { FilePreview, PDFPreview } from './FilePreview';
 import { PDFViewer } from './PDFViewer';
 import { VideoViewer } from './VideoViewer';
@@ -83,16 +84,12 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
             {filename}
           </h3>
           <div className="flex gap-2">
-            <button onClick={handleDownload} className="btn btn-sm btn-ghost" title="Download">
+            <Button onClick={handleDownload} size="sm" variant="ghost" title="Download">
               <Download size={16} />
-            </button>
-            <button
-              onClick={handleOpenExternal}
-              className="btn btn-sm btn-ghost"
-              title="Abrir em nova aba"
-            >
+            </Button>
+            <Button onClick={handleOpenExternal} size="sm" variant="ghost" title="Abrir em nova aba">
               <ExternalLink size={16} />
-            </button>
+            </Button>
           </div>
         </div>
 

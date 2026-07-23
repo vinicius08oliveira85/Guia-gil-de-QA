@@ -10,6 +10,9 @@ export const buttonVariants = cva(
       variant: {
         default: 'btn-primary',
         destructive: 'btn-error',
+        success: 'btn-success',
+        warning: 'btn-warning',
+        info: 'btn-info',
         outline: 'btn-outline border-[color-mix(in_srgb,var(--leve-neu-light)_35%,transparent)]',
         secondary: 'btn-secondary',
         ghost: 'btn-ghost text-base-content hover:bg-base-300/25',
@@ -25,6 +28,7 @@ export const buttonVariants = cva(
         icon: 'btn-square btn-md px-0 min-h-[44px] min-w-[44px]',
         iconSm: 'btn-square btn-sm px-0 min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8',
         circle: 'btn-circle btn-sm min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8',
+        circleLg: 'btn-circle btn-lg min-h-[44px] min-w-[44px] sm:min-h-12 sm:min-w-12',
         panel:
           'px-2.5 py-1.5 text-xs min-h-[44px] sm:min-h-0 sm:px-3 sm:py-2 sm:text-sm',
         panelSm:

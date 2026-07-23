@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Play, Pause, Volume2, VolumeX, Maximize, Download, ExternalLink } from 'lucide-react';
+import { Button } from './Button';
 
 interface VideoViewerProps {
   /** URL do vídeo */
@@ -84,22 +85,26 @@ export const VideoViewer: React.FC<VideoViewerProps> = ({
         {/* Controles customizados */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
           <div className="flex items-center gap-2">
-            <button
+            <Button
               onClick={togglePlay}
-              className="btn btn-circle btn-sm btn-ghost text-white"
+              size="circle"
+              variant="ghost"
+              className="text-white"
               title={isPlaying ? 'Pausar' : 'Reproduzir'}
             >
               {isPlaying ? <Pause size={20} /> : <Play size={20} />}
-            </button>
+            </Button>
 
             <div className="flex items-center gap-2 flex-1">
-              <button
+              <Button
                 onClick={toggleMute}
-                className="btn btn-circle btn-sm btn-ghost text-white"
+                size="circle"
+                variant="ghost"
+                className="text-white"
                 title={isMuted ? 'Ativar som' : 'Silenciar'}
               >
                 {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-              </button>
+              </Button>
               <input
                 type="range"
                 min="0"
@@ -111,32 +116,38 @@ export const VideoViewer: React.FC<VideoViewerProps> = ({
               />
             </div>
 
-            <button
+            <Button
               onClick={handleFullscreen}
-              className="btn btn-circle btn-sm btn-ghost text-white"
+              size="circle"
+              variant="ghost"
+              className="text-white"
               title="Tela cheia"
             >
               <Maximize size={16} />
-            </button>
+            </Button>
 
             {onDownload && (
-              <button
+              <Button
                 onClick={onDownload}
-                className="btn btn-circle btn-sm btn-ghost text-white"
+                size="circle"
+                variant="ghost"
+                className="text-white"
                 title="Download"
               >
                 <Download size={16} />
-              </button>
+              </Button>
             )}
 
             {onOpenExternal && (
-              <button
+              <Button
                 onClick={onOpenExternal}
-                className="btn btn-circle btn-sm btn-ghost text-white"
+                size="circle"
+                variant="ghost"
+                className="text-white"
                 title="Abrir em nova aba"
               >
                 <ExternalLink size={16} />
-              </button>
+              </Button>
             )}
           </div>
         </div>

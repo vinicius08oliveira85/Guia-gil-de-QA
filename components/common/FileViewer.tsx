@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { Button } from './Button';
 import {
   viewFile,
   downloadFile,
@@ -82,26 +83,16 @@ const ImageViewer: React.FC<{ src: string; alt: string }> = ({ src, alt }) => {
     <div className="relative w-full h-full flex flex-col">
       {/* Controles de zoom */}
       <div className="flex gap-2 justify-end mb-2 p-2 bg-surface/50 rounded">
-        <button
-          onClick={handleZoomOut}
-          className="btn btn-sm btn-secondary"
-          disabled={scale <= 0.5}
-          title="Diminuir zoom"
-        >
+        <Button onClick={handleZoomOut} size="sm" variant="secondary" disabled={scale <= 0.5} title="Diminuir zoom">
           ➖
-        </button>
+        </Button>
         <span className="px-3 py-1 text-sm text-text-secondary">{Math.round(scale * 100)}%</span>
-        <button
-          onClick={handleZoomIn}
-          className="btn btn-sm btn-secondary"
-          disabled={scale >= 5}
-          title="Aumentar zoom"
-        >
+        <Button onClick={handleZoomIn} size="sm" variant="secondary" disabled={scale >= 5} title="Aumentar zoom">
           ➕
-        </button>
-        <button onClick={handleResetZoom} className="btn btn-sm btn-secondary" title="Resetar zoom">
+        </Button>
+        <Button onClick={handleResetZoom} size="sm" variant="secondary" title="Resetar zoom">
           🔄
-        </button>
+        </Button>
       </div>
 
       {/* Área de visualização da imagem */}
