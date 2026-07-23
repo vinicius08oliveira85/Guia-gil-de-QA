@@ -5813,6 +5813,71 @@
     transform: translateY(-2px);
   }
 
+  /** Entrada staggered + rail de accent nos cards modernos */
+  .dashboard-neu-scope .dashboard-insight-bento-card--modern {
+    animation: dashboard-insight-card-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes dashboard-insight-card-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dashboard-neu-scope .dashboard-insight-bento-card--modern {
+      animation: none;
+    }
+  }
+
+  .dashboard-neu-scope .dashboard-insight-bento-card--modern:hover {
+    border-color: color-mix(in srgb, var(--insight-card-accent, var(--project-dashboard-insight-accent)) 40%, transparent);
+    box-shadow:
+      var(--neu-flat-hover),
+      0 0 0 1px color-mix(in srgb, var(--insight-card-accent, var(--project-dashboard-insight-accent)) 16%, transparent),
+      0 12px 28px color-mix(in srgb, var(--insight-card-accent, var(--project-dashboard-insight-accent)) 10%, transparent);
+  }
+
+  .dashboard-neu-scope .dashboard-insight-icon-plate {
+    transition: transform 220ms ease, box-shadow 220ms ease;
+  }
+
+  .dashboard-neu-scope .dashboard-insight-bento-card--modern:hover .dashboard-insight-icon-plate {
+    transform: scale(1.06);
+  }
+
+  .dashboard-neu-scope .dashboard-insight-bar-knob {
+    position: absolute;
+    right: -5px;
+    top: 50%;
+    height: 11px;
+    width: 11px;
+    translate: 0 -50%;
+    border-radius: 9999px;
+    background: var(--project-dashboard-insight-bg);
+    box-shadow:
+      0 0 0 2px var(--project-dashboard-insight-accent),
+      0 2px 6px color-mix(in srgb, var(--project-dashboard-insight-accent) 35%, transparent);
+  }
+
+  .dashboard-neu-scope .dashboard-insight-module-row {
+    transition: background-color 160ms ease, box-shadow 160ms ease;
+  }
+
+  .dashboard-neu-scope .dashboard-insight-module-row:hover {
+    background: color-mix(in srgb, var(--project-dashboard-insight-accent) 6%, transparent);
+    box-shadow: var(--app-neu-inset);
+  }
+
+  .dashboard-neu-scope .dashboard-pass-rate-ring {
+    filter: drop-shadow(0 6px 16px color-mix(in srgb, var(--radial-accent, var(--project-dashboard-insight-accent)) 22%, transparent));
+  }
+
   .dashboard-neu-scope .dashboard-insight-bento-card--pass-rate {
     display: flex;
     flex-direction: column;
@@ -5821,7 +5886,7 @@
 
   @media (min-width: 1024px) {
     .dashboard-neu-scope .dashboard-insight-bento-card--pass-rate {
-      min-height: 14rem;
+      min-height: 16rem;
     }
   }
 

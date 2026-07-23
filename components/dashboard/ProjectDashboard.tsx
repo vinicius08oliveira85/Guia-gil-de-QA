@@ -1,20 +1,29 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
+import {
+  Activity,
+  AlertTriangle,
+  Bot,
+  CheckCircle2,
+  Clock3,
+  Layers,
+  PieChart,
+  ShieldCheck,
+  Target,
+  UserRound,
+} from 'lucide-react';
 import { Project } from '../../types';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { Tooltip } from '../common/Tooltip';
+import { RadialProgress } from '../common/RadialProgress';
 import { cn } from '../../utils/cn';
 import {
   projectDashboardInsightAccentClass,
-  projectDashboardInsightCardClass,
   projectDashboardInsightChipClass,
   projectDashboardInsightCodeClass,
   projectDashboardInsightCountBadgeClass,
-  projectDashboardInsightHeaderClass,
   projectDashboardInsightMetricBadgeClass,
   projectDashboardInsightMutedClass,
-  projectDashboardInsightSubtitleClass,
   projectDashboardInsightTextClass,
-  projectDashboardInsightTitleClass,
   projectDashboardInsightTrackClass,
   projectDashboardInsightTrackFillClass,
 } from '../common/projectCardUi';
@@ -25,252 +34,64 @@ import {
   countBugsWithReopenLinks,
   defectCreatedPerWeekSeries,
 } from './projectDashboardHelpers';
-import { dashboardDonutWellClass, dashboardInsightWellClass, dashboardInsightsBentoGridClass, dashboardInsightCardFeaturedGridClass } from './dashboardNeuUi';
+import {
+  dashboardDonutWellClass,
+  dashboardInsightCardFeaturedGridClass,
+  dashboardInsightsBentoGridClass,
+} from './dashboardNeuUi';
+import { InsightMetricCard } from './insights/InsightMetricCard';
+import { ExecutionStatusDonut } from './insights/ExecutionStatusDonut';
+import { DefectTrendChart } from './insights/DefectTrendChart';
+import { INSIGHT_COLORS } from './insights/insightTokens';
 
 const LABEL_CLASS = projectDashboardInsightMutedClass;
 const VALUE_STRONG_CLASS = projectDashboardInsightTextClass;
 const VALUE_ACCENT_CLASS = projectDashboardInsightAccentClass;
 
-const PIE_PASSED = 'var(--project-dashboard-insight-accent)';
-const PIE_FAILED = '#e54b4f';
-const PIE_BLOCKED =
-  'color-mix(in srgb, var(--project-dashboard-insight-text-muted) 50%, var(--project-dashboard-insight-text))';
-const PIE_PENDING = 'color-mix(in srgb, var(--project-dashboard-insight-text) 35%, transparent)';
-
-function sectorPath(cx: number, cy: number, r: number, a0: number, a1: number): string {
-  const x0 = cx + r * Math.cos(a0);
-  const y0 = cy + r * Math.sin(a0);
-  const x1 = cx + r * Math.cos(a1);
-  const y1 = cy + r * Math.sin(a1);
-  const largeArc = a1 - a0 > Math.PI ? 1 : 0;
-  return `M ${cx} ${cy} L ${x0} ${y0} A ${r} ${r} 0 ${largeArc} 1 ${x1} ${y1} Z`;
-}
-
-const ExecutionPieSvg = React.memo(function ExecutionPieSvg(props: {
-  passed: number;
-  failed: number;
-  blocked: number;
-  pending: number;
-}) {
-  const { passed, failed, blocked, pending } = props;
-  const [hoverLabel, setHoverLabel] = useState<string | null>(null);
-  const total = passed + failed + blocked + pending;
-  const cx = 52;
-  const cy = 52;
-  const r = 40;
-  if (total === 0) {
-    return (
-      <p className={cn('text-sm', LABEL_CLASS)}>Sem casos de teste para exibir.</p>
-    );
-  }
-  const slices: { value: number; fill: string; label: string }[] = [
-    { value: passed, fill: PIE_PASSED, label: 'Passou' },
-    { value: failed, fill: PIE_FAILED, label: 'Falhou' },
-    { value: blocked, fill: PIE_BLOCKED, label: 'Bloqueado' },
-    { value: pending, fill: PIE_PENDING, label: 'Pendente' },
-  ];
-  let angle = -Math.PI / 2;
-  const paths: React.ReactNode[] = [];
-  for (const s of slices) {
-    if (s.value <= 0) continue;
-    const sweep = (s.value / total) * 2 * Math.PI;
-    const d = sectorPath(cx, cy, r, angle, angle + sweep);
-    const pct = Math.round((s.value / total) * 100);
-    const dimmed = hoverLabel !== null && hoverLabel !== s.label;
-    paths.push(
-      <path
-        key={s.label}
-        d={d}
-        fill={s.fill}
-        className="cursor-pointer stroke-[color-mix(in_srgb,var(--project-dashboard-insight-text)_12%,transparent)]"
-        strokeWidth={hoverLabel === s.label ? 1.2 : 0.5}
-        style={{
-          opacity: dimmed ? 0.42 : 1,
-          filter: hoverLabel === s.label ? 'brightness(1.08)' : undefined,
-          transition: 'opacity 0.15s ease, stroke-width 0.15s ease, filter 0.15s ease',
-        }}
-        onMouseEnter={() => setHoverLabel(s.label)}
-        onMouseLeave={() => setHoverLabel(null)}
-      >
-        <title>
-          {s.label}: {s.value} casos ({pct}% do total)
-        </title>
-      </path>
-    );
-    angle += sweep;
-  }
-  return (
-    <div className="flex flex-col items-center gap-4 sm:flex-row">
-      <svg
-        width={112}
-        height={112}
-        viewBox="0 0 104 104"
-        className="shrink-0"
-        role="img"
-        aria-label="Distribuição da execução de testes"
-      >
-        <desc>Passe o mouse nas fatias para ver totais e percentuais.</desc>
-        {paths}
-      </svg>
-      <ul className={cn('flex w-full flex-wrap gap-x-4 gap-y-2 text-xs sm:w-auto', LABEL_CLASS)}>
-        {slices.map(s => (
-          <li
-            key={s.label}
-            className={cn(
-              'flex cursor-default items-center gap-1.5 rounded-md px-1 py-0.5 transition-colors',
-              hoverLabel === s.label && projectDashboardInsightChipClass
-            )}
-            onMouseEnter={() => s.value > 0 && setHoverLabel(s.label)}
-            onMouseLeave={() => setHoverLabel(null)}
-          >
-            <span
-              className="h-2.5 w-2.5 shrink-0 rounded-sm"
-              style={{ background: s.fill }}
-              aria-hidden
-            />
-            <span>
-              {s.label}: <strong className={VALUE_STRONG_CLASS}>{s.value}</strong>
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-});
-
-const MiniSparkline = React.memo(function MiniSparkline({ values }: { values: number[] }) {
-  const w = 140;
-  const h = 44;
-  const pad = 6;
-  const max = Math.max(...values, 1);
-  const n = values.length;
-  const pts = values.map((v, i) => {
-    const x = pad + (n <= 1 ? w / 2 - pad : (i / (n - 1)) * (w - pad * 2));
-    const y = pad + (1 - v / max) * (h - pad * 2);
-    return { x, y, v, i };
-  });
-  const points = pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
-  return (
-    <div className={cn(dashboardInsightWellClass, 'relative')}>
-      <svg
-        width={w}
-        height={h}
-        className="overflow-visible"
-        role="img"
-        aria-label="Tendência de bugs criados por semana"
-      >
-        <desc>Passe o mouse nos pontos ao longo da linha para ver bugs por semana.</desc>
-        <polyline
-          fill="none"
-          stroke="var(--project-dashboard-insight-accent)"
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          points={points}
-          className="pointer-events-none"
-        />
-        {pts.map(p => (
-          <circle
-            key={`hit-${p.i}`}
-            cx={p.x}
-            cy={p.y}
-            r={9}
-            fill="transparent"
-            className="cursor-help"
-          >
-            <title>
-              Semana {p.i + 1}: {p.v} bug{p.v === 1 ? '' : 's'} (esquerda = mais antiga)
-            </title>
-          </circle>
-        ))}
-        {pts.map(p => (
-          <circle
-            key={`dot-${p.i}`}
-            cx={p.x}
-            cy={p.y}
-            r={3}
-            fill="var(--project-dashboard-insight-accent)"
-            className="pointer-events-none opacity-80 transition-opacity duration-150 group-hover:opacity-100"
-          />
-        ))}
-      </svg>
-    </div>
-  );
-});
+const SEVERITY_META = {
+  Crítico: { color: INSIGHT_COLORS.critical, icon: AlertTriangle, pulse: true },
+  Alto: { color: INSIGHT_COLORS.high, icon: AlertTriangle, pulse: false },
+  Médio: { color: INSIGHT_COLORS.medium, icon: Layers, pulse: false },
+  Baixo: { color: INSIGHT_COLORS.low, icon: CheckCircle2, pulse: false },
+} as const;
 
 function PassRateRing(props: { percent: number; tooltip: React.ReactNode }) {
   const { percent, tooltip } = props;
-  const cx = 44;
-  const cy = 44;
-  const r = 36;
-  const strokeWidth = 7;
-  const c = 2 * Math.PI * r;
-  const offset = c * (1 - Math.min(100, Math.max(0, percent)) / 100);
+  const tone =
+    percent >= 90 ? INSIGHT_COLORS.passed : percent >= 70 ? INSIGHT_COLORS.medium : INSIGHT_COLORS.failed;
+
   const ring = (
     <div className={dashboardDonutWellClass}>
-      <div className="relative aspect-square w-full">
-        <svg viewBox="0 0 88 88" className="h-full w-full" aria-hidden>
-          <circle
-            cx={cx}
-            cy={cy}
-            r={r}
-            fill="none"
-            stroke="currentColor"
-            className="text-[color-mix(in_srgb,var(--project-dashboard-insight-text-muted)_35%,transparent)]"
-            strokeWidth={strokeWidth}
-          />
-          <circle
-            cx={cx}
-            cy={cy}
-            r={r}
-            fill="none"
-            stroke="var(--project-dashboard-insight-accent)"
-            strokeWidth={strokeWidth}
-            strokeLinecap="round"
-            strokeDasharray={c}
-            strokeDashoffset={offset}
-            transform={`rotate(-90 ${cx} ${cy})`}
-            className="transition-[stroke-dashoffset] duration-300"
-          />
-        </svg>
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-0.5">
-          <span className={cn('text-2xl leading-none sm:text-3xl', VALUE_ACCENT_CLASS)}>
-            {percent}%
-          </span>
-          <span className={cn('text-[11px] font-medium sm:text-xs', LABEL_CLASS)}>Pass rate</span>
-        </div>
+      <div className="relative mx-auto flex aspect-square w-full max-w-[13rem] items-center justify-center">
+        <RadialProgress
+          value={percent}
+          size={168}
+          strokeWidth={12}
+          ariaLabel="Taxa de aprovação"
+          style={
+            {
+              '--radial-accent': tone,
+              '--radial-track': INSIGHT_COLORS.track,
+            } as React.CSSProperties
+          }
+          className="dashboard-pass-rate-ring"
+        >
+          <div className="flex flex-col items-center justify-center gap-0.5">
+            <span className="text-3xl font-extrabold tabular-nums leading-none" style={{ color: tone }}>
+              {percent}%
+            </span>
+            <span className={cn('text-[11px] font-semibold uppercase tracking-wider', LABEL_CLASS)}>
+              Pass rate
+            </span>
+          </div>
+        </RadialProgress>
       </div>
     </div>
   );
+
   return (
     <Tooltip content={tooltip} delay={150} position="top">
       <div className="block w-full">{ring}</div>
-    </Tooltip>
-  );
-}
-
-type InsightCardProps = {
-  title: string;
-  subtitle?: string;
-  children: React.ReactNode;
-  className?: string;
-  hint?: React.ReactNode;
-};
-
-function InsightCard({ title, subtitle, children, className, hint }: InsightCardProps) {
-  const card = (
-    <article className={cn(projectDashboardInsightCardClass, 'dashboard-insight-bento-card', className)}>
-      <header className={projectDashboardInsightHeaderClass}>
-        <h3 className={projectDashboardInsightTitleClass}>{title}</h3>
-        {subtitle ? <p className={projectDashboardInsightSubtitleClass}>{subtitle}</p> : null}
-      </header>
-      {children}
-    </article>
-  );
-  if (!hint) return card;
-  return (
-    <Tooltip content={hint} delay={220} position="top" triggerClassName="block w-full min-w-0">
-      <div className="block h-full w-full cursor-default">{card}</div>
     </Tooltip>
   );
 }
@@ -294,6 +115,7 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
     const manualCases = Math.max(0, m.totalTestCases - m.automatedTestCases);
     const severityOrder = ['Crítico', 'Alto', 'Médio', 'Baixo'] as const;
     const maxModule = Math.max(...bugsByModule.map(b => b.count), 1);
+    const openBugsTotal = severityOrder.reduce((acc, sev) => acc + m.bugsBySeverity[sev], 0);
 
     if (isLoading) {
       return (
@@ -305,7 +127,10 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
           {Array.from({ length: 9 }).map((_, i) => (
             <div
               key={i}
-              className={cn(projectDashboardInsightCardClass, 'dashboard-insight-bento-card h-36 animate-pulse opacity-80')}
+              className={cn(
+                'dashboard-neu-insight-card dashboard-insight-bento-card h-40 animate-pulse opacity-80'
+              )}
+              style={{ animationDelay: `${i * 40}ms` }}
               aria-hidden
             />
           ))}
@@ -320,103 +145,135 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
 
     const passTooltip = (
       <span>
-        <strong>{m.passedTestCases}</strong> passaram de <strong>{m.executedTestCases}</strong>{' '}
-        casos já executados.
+        <strong>{m.passedTestCases}</strong> passaram de <strong>{m.executedTestCases}</strong> casos já
+        executados.
         <br />
         Falhas: {m.failedTestCases} · Bloqueados: {m.blockedTestCases}
       </span>
     );
+
+    const coverageTone = m.testCoverage >= 70 ? 'success' : m.testCoverage >= 40 ? 'warning' : 'danger';
 
     return (
       <section
         className={dashboardInsightsBentoGridClass}
         aria-label="Indicadores de qualidade e execução"
       >
-        <InsightCard
+        <InsightMetricCard
           title="Cobertura de testes"
-          subtitle="Tarefas com ao menos um caso de teste vinculado"
+          subtitle="Tarefas com ao menos um caso vinculado"
           className="dashboard-insight-bento-card--coverage"
+          icon={Target}
+          tone={coverageTone}
+          index={0}
           hint={
             <span>
-              {m.tasksWithTestCases} de {m.totalTasks} tarefas tipo &quot;Tarefa&quot; têm casos de
-              teste. Cobertura: <strong>{m.testCoverage}%</strong>.
+              {m.tasksWithTestCases} de {m.totalTasks} tarefas tipo &quot;Tarefa&quot; têm casos de teste.
+              Cobertura: <strong>{m.testCoverage}%</strong>.
             </span>
           }
         >
-          <div className="flex items-end justify-between gap-2">
-            <p className={cn('text-2xl font-semibold tabular-nums', VALUE_ACCENT_CLASS)}>
-              {m.tasksWithTestCases}{' '}
-              <span className={cn('text-base font-normal', LABEL_CLASS)}>de {m.totalTasks}</span>
+          <div className="flex items-end justify-between gap-3">
+            <p className={cn('text-3xl font-extrabold tabular-nums tracking-tight', VALUE_ACCENT_CLASS)}>
+              {m.tasksWithTestCases}
+              <span className={cn('ml-1.5 text-base font-medium', LABEL_CLASS)}>de {m.totalTasks}</span>
             </p>
             <span className={projectDashboardInsightMetricBadgeClass}>{m.testCoverage}%</span>
           </div>
           <Tooltip
             content={
               <span>
-                Barra = % de tarefas &quot;Tarefa&quot; com ao menos um caso vinculado (
-                {m.testCoverage}%).
+                Barra = % de tarefas &quot;Tarefa&quot; com ao menos um caso vinculado ({m.testCoverage}%).
               </span>
             }
             delay={120}
           >
-            <div className={cn(projectDashboardInsightTrackClass, 'mt-3 h-2.5 w-full')}>
+            <div className={cn(projectDashboardInsightTrackClass, 'mt-4 h-3 w-full')}>
               <div
-                className={cn(projectDashboardInsightTrackFillClass, 'transition-all duration-500')}
+                className={cn(projectDashboardInsightTrackFillClass, 'relative transition-all duration-700')}
                 style={{ width: `${m.testCoverage}%` }}
-              />
+              >
+                <span className="dashboard-insight-bar-knob" aria-hidden />
+              </div>
             </div>
           </Tooltip>
-          <p className={cn('mt-3 text-xs', LABEL_CLASS)}>Tarefas cobertas no escopo atual do dashboard</p>
-        </InsightCard>
+          <p className={cn('mt-3 text-xs', LABEL_CLASS)}>Escopo atual dos filtros do dashboard</p>
+        </InsightMetricCard>
 
-        <InsightCard
+        <InsightMetricCard
           title="Taxa de aprovação"
           subtitle="Estabilidade entre casos já executados"
           className={cn('dashboard-insight-bento-card--pass-rate', dashboardInsightCardFeaturedGridClass)}
+          icon={ShieldCheck}
+          tone={m.testPassRate >= 90 ? 'success' : m.testPassRate >= 70 ? 'warning' : 'danger'}
+          index={1}
         >
-          <div className="flex w-full items-center justify-center">
+          <div className="flex w-full flex-1 items-center justify-center py-2">
             <PassRateRing percent={m.testPassRate} tooltip={passTooltip} />
           </div>
-        </InsightCard>
+          <dl className="mt-2 grid grid-cols-3 gap-2 text-center text-[11px]">
+            <div className={cn('rounded-lg px-1.5 py-2', projectDashboardInsightChipClass)}>
+              <dt className={LABEL_CLASS}>Passou</dt>
+              <dd className={cn('mt-0.5 font-bold tabular-nums', VALUE_STRONG_CLASS)}>
+                {m.passedTestCases}
+              </dd>
+            </div>
+            <div className={cn('rounded-lg px-1.5 py-2', projectDashboardInsightChipClass)}>
+              <dt className={LABEL_CLASS}>Falhou</dt>
+              <dd className="mt-0.5 font-bold tabular-nums" style={{ color: INSIGHT_COLORS.failed }}>
+                {m.failedTestCases}
+              </dd>
+            </div>
+            <div className={cn('rounded-lg px-1.5 py-2', projectDashboardInsightChipClass)}>
+              <dt className={LABEL_CLASS}>Bloq.</dt>
+              <dd className="mt-0.5 font-bold tabular-nums" style={{ color: INSIGHT_COLORS.blocked }}>
+                {m.blockedTestCases}
+              </dd>
+            </div>
+          </dl>
+        </InsightMetricCard>
 
-        <InsightCard
+        <InsightMetricCard
           title="Bugs por severidade"
           subtitle="Apenas bugs em aberto"
+          icon={AlertTriangle}
+          tone={m.bugsBySeverity.Crítico > 0 ? 'danger' : openBugsTotal > 0 ? 'warning' : 'success'}
+          index={2}
           hint="Passe o mouse em cada severidade para ver a contagem. Crítico pulsa quando há bugs."
         >
+          <div className="mb-3 flex items-baseline justify-between gap-2">
+            <span className={cn('text-xs font-medium', LABEL_CLASS)}>Abertos agora</span>
+            <span className={cn('text-2xl font-extrabold tabular-nums', VALUE_STRONG_CLASS)}>
+              {openBugsTotal}
+            </span>
+          </div>
           <ul className="space-y-2.5">
             {severityOrder.map(sev => {
               const count = m.bugsBySeverity[sev];
               const maxSev = Math.max(...severityOrder.map(s => m.bugsBySeverity[s]), 1);
               const barPct = (count / maxSev) * 100;
-              const barColor =
-                sev === 'Crítico'
-                  ? 'bg-[#e54b4f]'
-                  : sev === 'Alto'
-                    ? 'bg-[var(--project-dashboard-insight-accent)]'
-                    : sev === 'Médio'
-                      ? 'bg-[color-mix(in_srgb,var(--project-dashboard-insight-title)_55%,var(--project-dashboard-insight-accent))]'
-                      : 'bg-[color-mix(in_srgb,var(--project-dashboard-insight-text)_28%,transparent)]';
-              const icon =
-                sev === 'Crítico' ? '🚨' : sev === 'Alto' ? '⚠️' : sev === 'Médio' ? '◆' : '○';
+              const meta = SEVERITY_META[sev];
+              const SevIcon = meta.icon;
               return (
                 <li key={sev} className="space-y-1">
                   <div className="flex items-center justify-between gap-2 text-xs">
-                    <span
-                      className={cn(
-                        'inline-flex items-center gap-1.5 font-medium',
-                        projectDashboardInsightTextClass
-                      )}
-                    >
-                      <span aria-hidden>{icon}</span>
+                    <span className={cn('inline-flex items-center gap-1.5 font-semibold', VALUE_STRONG_CLASS)}>
+                      <SevIcon
+                        className={cn('h-3.5 w-3.5', meta.pulse && count > 0 && 'animate-pulse')}
+                        style={{ color: meta.color }}
+                        aria-hidden
+                      />
                       {sev}
                     </span>
-                    <span className={cn('tabular-nums font-semibold', VALUE_STRONG_CLASS)}>{count}</span>
+                    <span className={cn('tabular-nums font-bold', VALUE_STRONG_CLASS)}>{count}</span>
                   </div>
                   <div className={cn(projectDashboardInsightTrackClass, 'h-1.5 w-full')}>
                     <div
-                      className={cn('h-full rounded-full transition-all', barColor)}
-                      style={{ width: `${barPct}%` }}
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{
+                        width: `${barPct}%`,
+                        background: `linear-gradient(90deg, color-mix(in srgb, ${meta.color} 70%, white), ${meta.color})`,
+                      }}
                     />
                   </div>
                 </li>
@@ -425,71 +282,67 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
           </ul>
           <div
             className={cn(
-              'mt-3 flex items-center justify-between gap-2 px-2.5 py-2',
+              'mt-3 flex items-center justify-between gap-2 rounded-xl px-3 py-2.5',
               projectDashboardInsightChipClass
             )}
           >
-            <span className={cn('text-[11px] font-medium', LABEL_CLASS)}>Bugs reabertos</span>
+            <span className={cn('text-[11px] font-semibold', LABEL_CLASS)}>Bugs reabertos</span>
             <span className={projectDashboardInsightCountBadgeClass}>{reopenCount}</span>
           </div>
-          <p className={cn('mt-1.5 text-[10px] leading-snug', LABEL_CLASS)}>
-            Vínculos Jira que sugerem reabertura, quando sincronizados.
-          </p>
-        </InsightCard>
+        </InsightMetricCard>
 
-        <InsightCard
+        <InsightMetricCard
           title="Status da execução"
-          subtitle="Casos de teste no projeto — fatias interativas"
-          hint="Total de casos de teste nas tarefas. Dica nativa ao pairar nas fatias da pizza (canto da janela)."
+          subtitle="Casos de teste — fatias interativas"
+          icon={PieChart}
+          tone="info"
+          index={3}
+          hint="Total de casos de teste nas tarefas. Pairar nas fatias revela totais e percentuais."
         >
-          <ExecutionPieSvg
+          <ExecutionStatusDonut
             passed={m.passedTestCases}
             failed={m.failedTestCases}
             blocked={m.blockedTestCases}
             pending={m.notRunTestCases}
           />
-        </InsightCard>
+        </InsightMetricCard>
 
-        <InsightCard
+        <InsightMetricCard
           title="Bugs por módulo"
           subtitle='Tag, componente ou "Sem módulo"'
+          icon={Layers}
+          tone="warning"
+          index={4}
           hint="Volume de bugs abertos agrupados pela primeira tag ou componente Jira."
         >
           {bugsByModule.length === 0 ? (
             <p className={cn('text-sm', LABEL_CLASS)}>Nenhum bug aberto com tag ou componente.</p>
           ) : (
-            <ul className="space-y-2">
+            <ul className="space-y-2.5">
               {bugsByModule.map(row => {
                 const pctBar = Math.round((row.count / maxModule) * 100);
                 return (
-                  <li key={row.label} className="space-y-1">
+                  <li key={row.label}>
                     <Tooltip
                       content={
                         <span>
-                          <strong>{row.label}</strong>: {row.count} bug{row.count === 1 ? '' : 's'}{' '}
-                          abertos
+                          <strong>{row.label}</strong>: {row.count} bug{row.count === 1 ? '' : 's'} abertos
                           <br />
                           Proporção relativa ao maior módulo: {pctBar}%
                         </span>
                       }
                       delay={100}
                     >
-                      <div
-                        className={cn(
-                          'cursor-default rounded-md py-0.5 transition-[box-shadow] duration-200',
-                          'hover:shadow-[var(--workspace-panel-neu-inset)]'
-                        )}
-                      >
-                        <div className="flex justify-between gap-2 text-xs">
-                          <span className={cn('truncate', LABEL_CLASS)}>{row.label}</span>
-                          <span className={cn('shrink-0 tabular-nums', VALUE_STRONG_CLASS)}>{row.count}</span>
+                      <div className="dashboard-insight-module-row cursor-default rounded-lg px-1 py-1">
+                        <div className="mb-1 flex justify-between gap-2 text-xs">
+                          <span className={cn('truncate font-medium', LABEL_CLASS)}>{row.label}</span>
+                          <span className={cn('shrink-0 tabular-nums font-bold', VALUE_STRONG_CLASS)}>
+                            {row.count}
+                          </span>
                         </div>
-                        <div className={cn(projectDashboardInsightTrackClass, 'h-1.5 w-full')}>
+                        <div className={cn(projectDashboardInsightTrackClass, 'h-2 w-full')}>
                           <div
-                            className={cn(
-                              projectDashboardInsightTrackFillClass,
-                              'transition-[filter] duration-150 hover:brightness-110'
-                            )}
+                            className={cn(projectDashboardInsightTrackFillClass, 'transition-all duration-500')}
                             style={{ width: `${(row.count / maxModule) * 100}%` }}
                           />
                         </div>
@@ -500,70 +353,87 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
               })}
             </ul>
           )}
-        </InsightCard>
+        </InsightMetricCard>
 
-        <InsightCard
+        <InsightMetricCard
           title="Automação vs. manuais"
           subtitle="Distribuição dos casos de teste"
+          icon={Bot}
+          tone="brand"
+          index={5}
           hint={
             <span>
-              Total {m.totalTestCases} casos · Automação: {m.automationRatio}% (
-              {m.automatedTestCases}) · Manual: {manualCases}
+              Total {m.totalTestCases} casos · Automação: {m.automationRatio}% ({m.automatedTestCases}) ·
+              Manual: {manualCases}
             </span>
           }
         >
-          <div className="flex items-start justify-between gap-3 text-sm">
-            <div className="flex items-center gap-2">
-              <span className="text-lg" aria-hidden>
-                🤖
-              </span>
-              <div>
-                <p className={cn('font-medium tabular-nums', VALUE_ACCENT_CLASS)}>{m.automatedTestCases}</p>
-                <p className={cn('text-xs', LABEL_CLASS)}>Automação ({m.automationRatio}%)</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className={cn('rounded-xl px-3 py-3', projectDashboardInsightChipClass)}>
+              <div className="mb-1.5 flex items-center gap-1.5">
+                <Bot className="h-3.5 w-3.5" style={{ color: INSIGHT_COLORS.automation }} aria-hidden />
+                <span className={cn('text-[11px] font-semibold', LABEL_CLASS)}>Automação</span>
               </div>
+              <p className={cn('text-xl font-extrabold tabular-nums', VALUE_ACCENT_CLASS)}>
+                {m.automatedTestCases}
+              </p>
+              <p className={cn('text-[11px]', LABEL_CLASS)}>{m.automationRatio}%</p>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-lg" aria-hidden>
-                👤
-              </span>
-              <div className="text-right">
-                <p className={cn('font-medium tabular-nums', VALUE_STRONG_CLASS)}>{manualCases}</p>
-                <p className={cn('text-xs', LABEL_CLASS)}>Manual</p>
+            <div className={cn('rounded-xl px-3 py-3', projectDashboardInsightChipClass)}>
+              <div className="mb-1.5 flex items-center gap-1.5">
+                <UserRound className="h-3.5 w-3.5 opacity-70" aria-hidden />
+                <span className={cn('text-[11px] font-semibold', LABEL_CLASS)}>Manual</span>
               </div>
+              <p className={cn('text-xl font-extrabold tabular-nums', VALUE_STRONG_CLASS)}>{manualCases}</p>
+              <p className={cn('text-[11px]', LABEL_CLASS)}>
+                {Math.max(0, 100 - m.automationRatio)}%
+              </p>
             </div>
           </div>
-          <div className={cn(projectDashboardInsightTrackClass, 'mt-3 flex h-3 w-full')}>
+          <div className={cn(projectDashboardInsightTrackClass, 'mt-3 flex h-3.5 w-full overflow-hidden')}>
             <div
-              className={cn(projectDashboardInsightTrackFillClass, 'shrink-0')}
-              style={{ width: `${m.automationRatio}%` }}
+              className="h-full shrink-0 rounded-l-full transition-all duration-500"
+              style={{
+                width: `${m.automationRatio}%`,
+                background: `linear-gradient(90deg, ${INSIGHT_COLORS.brandSoft}, ${INSIGHT_COLORS.automation})`,
+              }}
               title={`Automação: ${m.automatedTestCases} casos (${m.automationRatio}%)`}
             />
             <div
-              className="h-full shrink-0 bg-[color-mix(in_srgb,var(--project-dashboard-insight-title)_22%,transparent)]"
-              style={{ width: `${Math.max(0, 100 - m.automationRatio)}%` }}
-              title={`Manual / não automatizado: ${manualCases} casos`}
+              className="h-full shrink-0 rounded-r-full transition-all duration-500"
+              style={{
+                width: `${Math.max(0, 100 - m.automationRatio)}%`,
+                background: INSIGHT_COLORS.manual,
+              }}
+              title={`Manual: ${manualCases} casos`}
             />
           </div>
-        </InsightCard>
+        </InsightMetricCard>
 
-        <InsightCard
+        <InsightMetricCard
           title="Tendência de defeitos"
           subtitle="Bugs criados por semana (10 semanas)"
-          hint="Passe o mouse nos pontos ao longo da linha — dica nativa do sistema mostra a semana e a contagem."
+          icon={Activity}
+          tone="brand"
+          index={6}
+          hint="Passe o mouse nos pontos — a dica mostra a semana e a contagem."
         >
-          <div className="group">
-            <MiniSparkline values={defectSeries} />
-          </div>
-          <p className={cn('mt-1 text-xs', LABEL_CLASS)}>Série temporal derivada das datas de criação dos bugs.</p>
-        </InsightCard>
+          <DefectTrendChart values={defectSeries} />
+          <p className={cn('mt-2 text-xs', LABEL_CLASS)}>
+            Série temporal derivada das datas de criação dos bugs.
+          </p>
+        </InsightMetricCard>
 
-        <InsightCard
+        <InsightMetricCard
           title="Status das User Stories"
-          subtitle="Agrupamento por categoria de status Jira"
+          subtitle="Categoria de status Jira"
+          icon={CheckCircle2}
+          tone="success"
+          index={7}
           hint={
             <span>
-              Histórias no escopo: {storyWf.total}. To Do / In Progress / Done conforme
-              categorização do status Jira.
+              Histórias no escopo: {storyWf.total}. To Do / In Progress / Done conforme categorização do
+              status Jira.
             </span>
           }
         >
@@ -574,59 +444,65 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
               <div
                 className={cn(
                   projectDashboardInsightTrackClass,
-                  'flex h-3 w-full cursor-default transition-shadow duration-200',
-                  'hover:ring-2 hover:ring-[color-mix(in_srgb,var(--project-dashboard-insight-accent)_18%,transparent)]'
+                  'flex h-3.5 w-full overflow-hidden rounded-full'
                 )}
               >
                 <div
-                  className="h-full bg-[color-mix(in_srgb,var(--project-dashboard-insight-title)_28%,transparent)] transition-[filter] duration-150 hover:brightness-110"
-                  style={{ width: `${todoPct}%` }}
+                  className="h-full transition-[filter] duration-150 hover:brightness-110"
+                  style={{ width: `${todoPct}%`, background: INSIGHT_COLORS.todo }}
                   title={`To Do: ${storyWf.todo} (${Math.round(todoPct)}%)`}
                 />
                 <div
-                  className="h-full bg-[color-mix(in_srgb,var(--project-dashboard-insight-accent)_45%,transparent)] transition-[filter] duration-150 hover:brightness-110"
-                  style={{ width: `${progPct}%` }}
+                  className="h-full transition-[filter] duration-150 hover:brightness-110"
+                  style={{ width: `${progPct}%`, background: INSIGHT_COLORS.inProgress }}
                   title={`In Progress: ${storyWf.inProgress} (${Math.round(progPct)}%)`}
                 />
                 <div
-                  className="h-full bg-[var(--project-dashboard-insight-accent)] transition-[filter] duration-150 hover:brightness-110"
-                  style={{ width: `${donePct}%` }}
+                  className="h-full transition-[filter] duration-150 hover:brightness-110"
+                  style={{ width: `${donePct}%`, background: INSIGHT_COLORS.done }}
                   title={`Done: ${storyWf.done} (${Math.round(donePct)}%)`}
                 />
               </div>
               <dl className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
-                <div>
-                  <dt className={LABEL_CLASS}>To Do</dt>
-                  <dd>
-                    <span className={projectDashboardInsightMetricBadgeClass}>{storyWf.todo}</span>
-                  </dd>
-                </div>
-                <div>
-                  <dt className={LABEL_CLASS}>In Progress</dt>
-                  <dd>
-                    <span className={projectDashboardInsightMetricBadgeClass}>{storyWf.inProgress}</span>
-                  </dd>
-                </div>
-                <div>
-                  <dt className={LABEL_CLASS}>Done</dt>
-                  <dd>
-                    <span className={projectDashboardInsightCountBadgeClass}>{storyWf.done}</span>
-                  </dd>
-                </div>
+                {(
+                  [
+                    { label: 'To Do', value: storyWf.todo, color: INSIGHT_COLORS.todo },
+                    { label: 'In Progress', value: storyWf.inProgress, color: INSIGHT_COLORS.inProgress },
+                    { label: 'Done', value: storyWf.done, color: INSIGHT_COLORS.done },
+                  ] as const
+                ).map(item => (
+                  <div
+                    key={item.label}
+                    className={cn('rounded-xl px-1.5 py-2.5', projectDashboardInsightChipClass)}
+                  >
+                    <dt className={cn('mb-1.5 flex items-center justify-center gap-1', LABEL_CLASS)}>
+                      <span
+                        className="h-1.5 w-1.5 rounded-full"
+                        style={{ background: item.color }}
+                        aria-hidden
+                      />
+                      {item.label}
+                    </dt>
+                    <dd>
+                      <span className={projectDashboardInsightCountBadgeClass}>{item.value}</span>
+                    </dd>
+                  </div>
+                ))}
               </dl>
             </>
           )}
-        </InsightCard>
+        </InsightMetricCard>
 
-        <InsightCard
+        <InsightMetricCard
           title="Lead time de bugs"
-          subtitle="Tempo médio do bug fechado (criação → conclusão)"
+          subtitle="Média criação → conclusão (fechados)"
+          icon={Clock3}
+          tone="info"
+          index={8}
           hint={
             <span>
-              Média em dias entre{' '}
-              <code className={projectDashboardInsightCodeClass}>createdAt</code> e{' '}
-              <code className={projectDashboardInsightCodeClass}>completedAt</code>{' '}
-              nos bugs já fechados.
+              Média em dias entre <code className={projectDashboardInsightCodeClass}>createdAt</code> e{' '}
+              <code className={projectDashboardInsightCodeClass}>completedAt</code> nos bugs já fechados.
             </span>
           }
         >
@@ -637,8 +513,8 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
               ) : (
                 <span>
                   Média de{' '}
-                  <strong>{leadDays < 1 ? leadDays.toFixed(1) : Math.round(leadDays)}</strong> dias
-                  por bug fechado.
+                  <strong>{leadDays < 1 ? leadDays.toFixed(1) : Math.round(leadDays)}</strong> dias por bug
+                  fechado.
                 </span>
               )
             }
@@ -646,28 +522,29 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
           >
             <div
               className={cn(
-                'inline-flex cursor-default items-baseline gap-2 px-4 py-3',
-                projectDashboardInsightChipClass,
-                'border-[color-mix(in_srgb,var(--project-dashboard-insight-accent)_28%,transparent)]'
+                'inline-flex cursor-default items-baseline gap-2 rounded-2xl px-5 py-4',
+                projectDashboardInsightChipClass
               )}
+              style={{
+                boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${INSIGHT_COLORS.brand} 28%, transparent)`,
+              }}
             >
-              <span className={cn('text-2xl tabular-nums', VALUE_ACCENT_CLASS)}>
+              <span className={cn('text-4xl font-extrabold tabular-nums tracking-tight', VALUE_ACCENT_CLASS)}>
                 {leadDays == null
                   ? '—'
                   : `${leadDays < 1 ? leadDays.toFixed(1) : Math.round(leadDays)}`}
               </span>
               {leadDays != null && (
-                <span className={cn('text-sm font-medium', LABEL_CLASS)}>dias</span>
+                <span className={cn('text-sm font-semibold', LABEL_CLASS)}>dias</span>
               )}
             </div>
           </Tooltip>
-          <p className={cn('mt-3 text-xs', LABEL_CLASS)}>
-            Média sobre bugs com{' '}
+          <p className={cn('mt-3 text-xs leading-relaxed', LABEL_CLASS)}>
+            Calculado sobre bugs com{' '}
             <code className={projectDashboardInsightCodeClass}>createdAt</code> e{' '}
-            <code className={projectDashboardInsightCodeClass}>completedAt</code>
-            .
+            <code className={projectDashboardInsightCodeClass}>completedAt</code>.
           </p>
-        </InsightCard>
+        </InsightMetricCard>
       </section>
     );
   }

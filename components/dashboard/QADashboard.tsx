@@ -238,10 +238,17 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
       </div>
 
       <div className={dashboardInsightsSectionHeaderClass}>
-        <h2 className={dashboardInsightsSectionLabelClass}>Qualidade e execução</h2>
-        <p className={dashboardInsightsSectionDescClass}>
-          Cobertura, bugs, automação e tendências — respeitam os filtros do dashboard.
-        </p>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="min-w-0 space-y-1">
+            <h2 className={dashboardInsightsSectionLabelClass}>Qualidade e execução</h2>
+            <p className={dashboardInsightsSectionDescClass}>
+              Cobertura, bugs, automação e tendências — respeitam os filtros do dashboard.
+            </p>
+          </div>
+          <p className="hidden max-w-xs text-right text-[11px] leading-snug text-[color-mix(in_srgb,var(--brand-text-strong)_62%,transparent)] sm:block">
+            Pairar sobre severidades e fatias revela contagens. Crítico pulsa quando há bugs abertos.
+          </p>
+        </div>
       </div>
 
       <ProjectDashboard
