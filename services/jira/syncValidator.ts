@@ -133,8 +133,8 @@ function arrayEqual<T>(a: T[], b: T[]): boolean {
   if (a.length === 0) return true;
   const sorted = (arr: T[]) =>
     [...arr].sort((x, y) => {
-      const sx = typeof x === 'object' && x !== null ? JSON.stringify(x, Object.keys(x as object).sort()) : String(x);
-      const sy = typeof y === 'object' && y !== null ? JSON.stringify(y, Object.keys(y as object).sort()) : String(y);
+      const sx = typeof x === 'object' && x !== null ? JSON.stringify(x, Object.keys(x as object).sort()) : x == null ? '' : String(x);
+      const sy = typeof y === 'object' && y !== null ? JSON.stringify(y, Object.keys(y as object).sort()) : y == null ? '' : String(y);
       return sx < sy ? -1 : sx > sy ? 1 : 0;
     });
   const sa = sorted(a);

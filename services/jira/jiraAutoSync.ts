@@ -10,12 +10,20 @@ let pendingSync: Promise<JiraAutoSyncSummary | null> | null = null;
 
 /** Retorna o timestamp ISO da última sync automática (global). */
 export function getLastAutoSyncTimestamp(): string | null {
-  return localStorage.getItem(LAST_AUTO_SYNC_KEY);
+  try {
+    return localStorage.getItem(LAST_AUTO_SYNC_KEY);
+  } catch {
+    return null;
+  }
 }
 
 /** Atualiza o timestamp da última sync automática. */
 function setLastAutoSyncTimestamp(): void {
-  localStorage.setItem(LAST_AUTO_SYNC_KEY, new Date().toISOString());
+  try {
+    localStorage.setItem(LAST_AUTO_SYNC_KEY, new Date().toISOString());
+  } catch {
+    /* localStorage indisponível ou quota excedida */
+  }
 }
 
 /** Resolve a chave Jira de um projeto (settings ou prefixo da primeira issue). */
@@ -44,24 +52,20 @@ export async function syncAllJiraProjects(options?: {
   if (!config) return 0;
 
   const { projects, updateProject } = useProjectsStore.getState();
-  let syncedCount = 0;
 
-  for (const project of projects) {
-    const jiraProjectKey = resolveJiraProjectKey(project);
-    if (!jiraProjectKey) continue;
+  const syncs = projects
+    .map(project => {
+      const jiraProjectKey = resolveJiraProjectKey(project);
+      if (!jiraProjectKey) return null;
 
-    try {
-      await jiraSyncQueue.enqueue(
+      return jiraSyncQueue.enqueue<boolean>(
         `sync-${project.id}`,
         async () => {
           const latestProject =
             useProjectsStore.getState().projects.find(item => item.id === project.id) ?? project;
-          const syncResult = await syncJiraProject(
-            config,
-            latestProject,
-            jiraProjectKey,
-            { updatedAfter: options?.updatedAfter }
-          );
+          const syncResult = await syncJiraProject(config, latestProject, jiraProjectKey, {
+            updatedAfter: options?.updatedAfter,
+          });
           if (syncResult.totalErrors > 0) {
             logger.warn(
               `Auto-sync de ${jiraProjectKey} concluída com ${syncResult.totalErrors} erro(s)`,
@@ -69,25 +73,28 @@ export async function syncAllJiraProjects(options?: {
             );
           }
           await updateProject(syncResult.data, { silent: options?.silent ?? true });
-          syncedCount += 1;
+          return true;
         },
         { group: project.id, priority: 'low' }
-      );
-    } catch (error) {
-      if (error instanceof Error && error.message.includes('Substituído por nova solicitação')) {
-        logger.debug('Sync automática substituída por nova solicitação', 'jiraAutoSync', {
+      ).catch(error => {
+        if (error instanceof Error && error.message.includes('Substituído por nova solicitação')) {
+          logger.debug('Sync automática substituída por nova solicitação', 'jiraAutoSync', {
+            projectId: project.id,
+          });
+          return false;
+        }
+        logger.warn('Falha ao sincronizar projeto com Jira', 'jiraAutoSync', {
           projectId: project.id,
+          jiraProjectKey,
+          error: error instanceof Error ? error.message : String(error),
         });
-        continue;
-      }
-      logger.warn('Falha ao sincronizar projeto com Jira', 'jiraAutoSync', {
-        projectId: project.id,
-        jiraProjectKey,
-        error: error instanceof Error ? error.message : String(error),
+        return false;
       });
-    }
-  }
+    })
+    .filter(Boolean) as Promise<boolean>[];
 
+  const results = await Promise.allSettled(syncs);
+  const syncedCount = results.filter(r => r.status === 'fulfilled' && r.value).length;
   return syncedCount;
 }
 

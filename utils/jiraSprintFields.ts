@@ -22,7 +22,9 @@ function mapJiraSprintState(raw: string | undefined): JiraSprint['state'] {
 
 function optionalIsoDate(value: unknown): string | undefined {
   if (typeof value !== 'string' || !value.trim()) return undefined;
-  return value.trim();
+  const trimmed = value.trim();
+  if (isNaN(Date.parse(trimmed))) return undefined;
+  return trimmed;
 }
 
 function sprintFromCatalog(

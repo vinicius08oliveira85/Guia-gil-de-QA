@@ -40,10 +40,13 @@ import {
 export const BACKUP_EXPORT_FORMAT_VERSION = 3;
 
 let db: IDBDatabase | undefined;
+let dbPromise: Promise<IDBDatabase> | null = null;
 
 const openDB = (): Promise<IDBDatabase> => {
-  return new Promise((resolve, reject) => {
+  if (dbPromise) return dbPromise;
+  dbPromise = new Promise((resolve, reject) => {
     if (db) {
+      dbPromise = null;
       return resolve(db);
     }
 
@@ -56,9 +59,12 @@ const openDB = (): Promise<IDBDatabase> => {
       );
     };
 
+    const onFinally = () => { dbPromise = null; };
+
     request.onerror = () => {
       const error = request.error || new Error('Erro desconhecido ao abrir banco de dados');
       logger.error('Erro ao abrir banco de dados IndexedDB', 'dbService', error);
+      onFinally();
       reject(error);
     };
 
@@ -71,8 +77,10 @@ const openDB = (): Promise<IDBDatabase> => {
         );
         opened.close();
         db = undefined;
+        dbPromise = null;
       };
       db = opened;
+      onFinally();
       resolve(db);
     };
 

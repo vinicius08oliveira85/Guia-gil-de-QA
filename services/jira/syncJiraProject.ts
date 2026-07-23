@@ -31,7 +31,7 @@ export const syncJiraProject = async (
   getLatestProject?: () => Project | undefined,
   options?: SyncJiraProjectOptions
 ): Promise<SyncJiraProjectResult> => {
-  const cursor = !options?.fullSync ? loadSyncCursor(jiraProjectKey) : null;
+  const cursor = !options?.fullSync && !options?.updatedAfter ? loadSyncCursor(jiraProjectKey) : null;
   const startAt = cursor ? cursor.startAt + 1 : 0;
 
   const sprintCtx = await buildJiraSprintSyncContext(config, jiraProjectKey);

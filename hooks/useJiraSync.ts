@@ -146,7 +146,7 @@ export function useJiraSync(project: Project | null, onUpdateProject: OnUpdatePr
             oldTask.jiraStatus !== t.jiraStatus ||
             oldTask.priority !== t.priority ||
             oldTask.severity !== t.severity ||
-            JSON.stringify(oldTask.tags || []) !== JSON.stringify(t.tags || []) ||
+            (oldTask.tags ?? []).sort().join(',') !== (t.tags ?? []).sort().join(',') ||
             oldTask.completedAt !== t.completedAt ||
             oldTask.dueDate !== t.dueDate ||
             oldTask.parentId !== t.parentId ||

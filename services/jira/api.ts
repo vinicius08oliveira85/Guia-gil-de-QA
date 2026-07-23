@@ -201,6 +201,7 @@ async function jiraRequest<T>(
         });
       } catch (proxyError) {
         // Fallback: proxy offline → tentar chamada direta (CORS permitting)
+        controller.abort();
         clearTimeout(timeoutId);
         logger.warn('Proxy Jira indisponível, tentando chamada direta', 'jiraApi', proxyError);
 

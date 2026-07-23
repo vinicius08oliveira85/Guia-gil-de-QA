@@ -55,10 +55,21 @@ export const getJiraConfig = (): JiraConfig | null => {
   return null;
 };
 
+/** Promise pendente para evitar disparos duplicados enquanto a descriptografia roda. */
+let pendingDecryptPromise: Promise<JiraConfig | null> | null = null;
+
 /** Carrega config criptografada do storage e popula o cache. */
 async function loadDecryptedConfigAsync(): Promise<JiraConfig | null> {
-  const { loadDecryptedConfig } = await import('../../utils/jiraConfigCrypto');
-  return loadDecryptedConfig();
+  if (pendingDecryptPromise) return pendingDecryptPromise;
+  pendingDecryptPromise = (async () => {
+    const { loadDecryptedConfig } = await import('../../utils/jiraConfigCrypto');
+    return loadDecryptedConfig();
+  })();
+  try {
+    return await pendingDecryptPromise;
+  } finally {
+    pendingDecryptPromise = null;
+  }
 }
 
 export const getJiraLastUrl = (): string => {

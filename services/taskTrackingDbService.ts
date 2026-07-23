@@ -11,17 +11,30 @@ import { logger } from '../utils/logger';
 const TT_TASKS_ID = 'filas-tasks';
 
 let db: IDBDatabase | undefined;
+let dbPromise: Promise<IDBDatabase> | null = null;
 async function openTTDb(): Promise<IDBDatabase> {
-  if (db) return db;
-  return new Promise((resolve, reject) => {
+  if (dbPromise) return dbPromise;
+  dbPromise = new Promise((resolve, reject) => {
+    const onFinally = () => { dbPromise = null; };
+
+    if (db) {
+      onFinally();
+      return resolve(db);
+    }
+
     const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onerror = () => reject(request.error);
+    request.onerror = () => {
+      onFinally();
+      reject(request.error);
+    };
     request.onsuccess = () => {
       db = request.result;
       db.onversionchange = () => {
         db?.close();
         db = undefined;
+        dbPromise = null;
       };
+      onFinally();
       resolve(db);
     };
     request.onupgradeneeded = event => {
