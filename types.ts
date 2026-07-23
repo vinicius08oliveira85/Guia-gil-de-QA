@@ -281,7 +281,7 @@ export interface JiraTaskSla {
   /** Nome do SLA no Jira (ex.: "Time to resolution"). */
   name: string;
   /** Ciclo em andamento ou último ciclo concluído. */
-  phase: 'ongoing' | 'completed' | 'none';
+  phase: 'ongoing' | 'completed' | 'paused' | 'none';
   /** Se o ciclo atual/último estourou o objetivo. */
   breached: boolean;
   /** Prazo limite do SLA (ISO), quando disponível. */

@@ -542,9 +542,9 @@ export function parseJiraDescriptionHTML(
     } else if (description.type) {
       html = sanitizeHTML(adfNodeToHTML(description, jiraUrl, jiraAttachments));
     } else if (description.content) {
-      return parseJiraDescriptionHTML(description.content, jiraUrl, jiraAttachments, depth + 1);
+      html = parseJiraDescriptionHTML(description.content, jiraUrl, jiraAttachments, depth + 1);
     } else if (description.html) {
-      return parseJiraDescriptionHTML(description.html, jiraUrl, jiraAttachments, depth + 1);
+      html = parseJiraDescriptionHTML(description.html, jiraUrl, jiraAttachments, depth + 1);
     } else if (description.text) {
       html = plainTextToHtml(description.text);
     }

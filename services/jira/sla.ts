@@ -53,7 +53,7 @@ export function normalizeJiraSlaApiItem(item: JiraSlaApiItem): JiraTaskSla {
   if (ongoing) {
     return {
       name: item.name,
-      phase: ongoing.paused ? 'ongoing' : 'ongoing',
+      phase: ongoing.paused ? 'paused' : 'ongoing',
       breached: ongoing.breached === true,
       deadlineAt: parseDeadline(ongoing),
       goalFriendly: formatGoalFriendly(ongoing.goalDuration?.friendly),

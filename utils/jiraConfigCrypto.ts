@@ -3,7 +3,7 @@ import type { JiraConfig } from '../services/jira/types';
 const ENC_PREFIX = 'aes:';
 const STORAGE_KEY = 'jira-config-encrypted';
 const LEGACY_PREFIX = 'enc:';
-const APP_PASSPHRASE = import.meta.env.VITE_CRYPTO_PASSPHRASE || 'qa-agile-guide-v1';
+const APP_PASSPHRASE = import.meta.env.VITE_CRYPTO_PASSPHRASE;
 
 let cachedConfig: JiraConfig | null = null;
 
@@ -11,6 +11,11 @@ let cachedConfig: JiraConfig | null = null;
  * Deriva uma chave AES-GCM a partir de uma senha e salt usando PBKDF2.
  */
 async function deriveKey(salt: Uint8Array): Promise<CryptoKey> {
+  if (!APP_PASSPHRASE) {
+    throw new Error(
+      'VITE_CRYPTO_PASSPHRASE não configurado. Defina a variável de ambiente para criptografar dados Jira.'
+    );
+  }
   const encoder = new TextEncoder();
   const keyMaterial = await crypto.subtle.importKey(
     'raw',
@@ -124,7 +129,7 @@ export async function decryptConfig(
  */
 export async function saveEncryptedConfig(config: JiraConfig): Promise<void> {
   const encrypted = await encryptConfig(config);
-  cachedConfig = config;
+  cachedConfig = { ...config };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(encrypted));
 }
 

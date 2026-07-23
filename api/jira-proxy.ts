@@ -1,10 +1,20 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { executeJiraProxy, type JiraProxyRequestBody } from './jiraProxyCore';
 
+const AUTH_TOKEN = process.env.JIRA_PROXY_AUTH_TOKEN;
+
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
+  }
+
+  if (AUTH_TOKEN) {
+    const provided = req.headers['x-proxy-token'];
+    if (provided && provided !== AUTH_TOKEN) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
   }
 
   try {
@@ -26,10 +36,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
     res.status(200).json(result.payload);
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Internal server error';
-    console.error('[jira-proxy] Unhandled error:', message, err);
+    console.error('[jira-proxy] Unhandled error:', err);
     if (!res.headersSent) {
-      res.status(500).json({ error: message });
+      res.status(500).json({ error: 'Internal server error' });
     }
   }
 }

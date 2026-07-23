@@ -230,7 +230,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
     try {
       const isValid = await testJiraConnection(config);
       if (isValid) {
-        saveJiraConfig(config);
+        await saveJiraConfig(config);
         setIsConnected(true);
         setShowConfigModal(false);
         onDirtyChange?.(false);

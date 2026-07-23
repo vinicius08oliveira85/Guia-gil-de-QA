@@ -90,10 +90,15 @@ export async function executeJiraProxy(body: JiraProxyRequestBody): Promise<Jira
 
     if (!response.ok) {
       const errorText = await response.text();
+      const sanitized = errorText
+        .replace(/https?:\/\/[^\s"']+/g, '[URL ocultada]')
+        .replace(/password[=:]\s*\S+/gi, 'password=[redacted]')
+        .replace(/token[=:]\s*\S+/gi, 'token=[redacted]')
+        .slice(0, 500);
       return {
         ok: false,
         status: response.status,
-        error: `Jira API Error (${response.status}): ${errorText}`,
+        error: `Jira API Error (${response.status}): ${sanitized}`,
       };
     }
 
@@ -131,7 +136,9 @@ export async function executeJiraProxy(body: JiraProxyRequestBody): Promise<Jira
     return {
       ok: false,
       status: 500,
-      error: error instanceof Error ? error.message : 'Internal server error',
+      error: error instanceof Error
+        ? error.message.replace(/https?:\/\/[^\s"']+/g, '[URL ocultada]').slice(0, 500)
+        : 'Internal server error',
     };
   }
 }

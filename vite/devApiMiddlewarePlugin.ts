@@ -4,6 +4,8 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { Plugin } from 'vite';
 import { executeJiraProxy, type JiraProxyRequestBody } from '../api/jiraProxyCore';
 
+const AUTH_TOKEN = process.env.VITE_PROXY_AUTH_TOKEN;
+
 async function readJsonBody(req: IncomingMessage): Promise<unknown> {
   const chunks: Buffer[] = [];
   for await (const chunk of req) {
@@ -66,6 +68,14 @@ export function devApiMiddlewarePlugin(projectRoot: string): Plugin {
           if (req.method !== 'POST') {
             sendJson(res, 405, { error: 'Method not allowed' });
             return;
+          }
+
+          if (AUTH_TOKEN) {
+            const provided = req.headers['x-proxy-token'];
+            if (provided && provided !== AUTH_TOKEN) {
+              sendJson(res, 401, { error: 'Unauthorized' });
+              return;
+            }
           }
 
           void (async () => {

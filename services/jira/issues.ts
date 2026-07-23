@@ -61,8 +61,11 @@ export const getJiraIssues = async (
 
   // Filtro incremental: buscar apenas issues atualizadas após uma data
   if (options?.updatedAfter) {
-    // Escapar double quotes para evitar injeção JQL
-    const escapedDate = options.updatedAfter.replace(/"/g, '\\"');
+    const date = new Date(options.updatedAfter);
+    if (Number.isNaN(date.getTime())) {
+      throw new Error(`updatedAfter inválido: "${options.updatedAfter}". Use formato ISO 8601 (ex.: "2025-01-01T00:00:00.000Z").`);
+    }
+    const escapedDate = date.toISOString();
     const updatedFilter = `updated >= "${escapedDate}"`;
     baseJql = baseJql.includes('ORDER BY')
       ? baseJql.replace(/(ORDER BY[\s\S]*)/i, `${updatedFilter} $1`)

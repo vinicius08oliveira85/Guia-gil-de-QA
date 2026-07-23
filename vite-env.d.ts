@@ -25,6 +25,8 @@ interface ImportMetaEnv {
   readonly VITE_GEMINI_MODEL?: string;
   /** Chave de criptografia para dados sensíveis no localStorage (client-side). */
   readonly VITE_CRYPTO_PASSPHRASE?: string;
+  /** Token de autenticação para o proxy Jira (client → serverless). */
+  readonly VITE_PROXY_AUTH_TOKEN?: string;
 }
 
 interface ImportMeta {

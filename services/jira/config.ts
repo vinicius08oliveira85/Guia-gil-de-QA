@@ -15,10 +15,13 @@ function syncFolderBackupAfterConfigChange(): void {
   });
 }
 
-export const saveJiraConfig = (config: JiraConfig): void => {
-  saveEncryptedConfig(config).catch(err => {
+export const saveJiraConfig = async (config: JiraConfig): Promise<void> => {
+  try {
+    await saveEncryptedConfig(config);
+  } catch (err) {
     logger.error('Falha ao criptografar config Jira. Token NÃO foi salvo.', 'jiraConfig', err);
-  });
+    throw new Error('Falha ao criptografar configuração Jira. Verifique se VITE_CRYPTO_PASSPHRASE está configurado.');
+  }
   if (config.url?.trim()) {
     localStorage.setItem(JIRA_LAST_URL_KEY, config.url.trim());
   }

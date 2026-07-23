@@ -7,6 +7,7 @@ import {
 import { getJiraConfig } from '../services/jiraService';
 import { logger } from '../utils/logger';
 import { imageCacheService } from '../services/imageCacheService';
+import { getJiraProxyHeaders } from '../utils/jiraProxyHeaders';
 
 /**
  * Estado do carregamento de mídia
@@ -115,7 +116,7 @@ export const useJiraMedia = (
             .replace(/^\//, '');
           const response = await fetch('/api/jira-proxy', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getJiraProxyHeaders(),
             body: JSON.stringify({
               url: jiraConfig.url,
               email: jiraConfig.email,
@@ -220,7 +221,7 @@ export const useJiraMedia = (
 
           const response = await fetch('/api/jira-proxy', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getJiraProxyHeaders(),
             body: JSON.stringify({
               url: jiraConfig.url,
               email: jiraConfig.email,

@@ -1,4 +1,5 @@
 import { getJiraConfig } from '../services/jiraService';
+import { getJiraProxyHeaders } from './jiraProxyHeaders';
 
 export interface JiraAttachmentInput {
   id: string;
@@ -20,7 +21,7 @@ export async function fetchJiraAttachmentAsDataUrl(
   const endpoint = `/secure/attachment/${attachment.id}/${encodeURIComponent(attachment.filename)}`;
   const response = await fetch('/api/jira-proxy', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getJiraProxyHeaders(),
     body: JSON.stringify({
       url: jiraConfig.url,
       email: jiraConfig.email,

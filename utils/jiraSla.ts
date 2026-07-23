@@ -58,6 +58,7 @@ export function classifyJiraSlaDisplay(
     return sla.breached ? 'breached' : 'met';
   }
   if (sla.phase === 'none') return 'none';
+  if (sla.phase === 'paused') return 'paused';
   if (sla.breached) return 'breached';
 
   const deadline = sla.deadlineAt ? new Date(sla.deadlineAt).getTime() : NaN;
@@ -149,7 +150,7 @@ export function classifyTaskSlaFromJiraSlas(
 ): SlaBucket | null {
   if (slas.length === 0) return null;
 
-  const ongoing = slas.filter(s => s.phase === 'ongoing');
+  const ongoing = slas.filter(s => s.phase === 'ongoing' || s.phase === 'paused');
   const relevant = ongoing.length > 0 ? ongoing : slas;
 
   let worst: SlaBucket = 'onTrack';
@@ -179,7 +180,7 @@ export function sortJiraSlasForDisplay(
 ): JiraTaskSla[] {
   const priority = (sla: JiraTaskSla) => {
     const status = classifyJiraSlaDisplay(sla, now, riskWindowHours);
-    const phaseBoost = sla.phase === 'ongoing' ? 0 : 1;
+    const phaseBoost = sla.phase === 'ongoing' || sla.phase === 'paused' ? 0 : 1;
     const statusRank: Record<JiraSlaDisplayStatus, number> = {
       breached: 0,
       atRisk: 1,

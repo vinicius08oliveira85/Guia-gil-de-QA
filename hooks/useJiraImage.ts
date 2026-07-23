@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { getJiraConfig } from '../services/jiraService';
+import { getJiraProxyHeaders } from '../utils/jiraProxyHeaders';
 
 // Cache de blob URLs para evitar recarregar mesma imagem
 const imageCache = new Map<string, string>();
@@ -74,9 +75,7 @@ export const useJiraImage = (url: string, mimeType?: string) => {
           // Usar proxy do Jira para autenticação
           response = await fetch('/api/jira-proxy', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: getJiraProxyHeaders(),
             body: JSON.stringify({
               url: jiraConfig.url,
               email: jiraConfig.email,

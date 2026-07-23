@@ -356,7 +356,7 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
 
       if (isValid) {
 
-        saveJiraConfig(config);
+        await saveJiraConfig(config);
 
         setIsConnected(true);
 

@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { getJiraConfig } from '../services/jiraService';
 import { detectFileType } from '../services/fileViewerService';
+import { getJiraProxyHeaders } from '../utils/jiraProxyHeaders';
 
 export type JiraAttachmentView = {
   id: string;
@@ -35,7 +36,7 @@ export function useJiraAttachmentViewer() {
         const endpoint = `/secure/attachment/${attachment.id}/${encodeURIComponent(attachment.filename)}`;
         const response = await fetch('/api/jira-proxy', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getJiraProxyHeaders(),
           body: JSON.stringify({
             url: jiraConfig.url,
             email: jiraConfig.email,
