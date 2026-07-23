@@ -100,6 +100,7 @@ const openDB = (): Promise<IDBDatabase> => {
       }
     };
   });
+  return dbPromise;
 };
 
 export type SaveResult = { savedToSupabase: boolean };
@@ -116,6 +117,11 @@ const defaultPhasesForImport = (): Phase[] =>
  */
 export const loadProjectsFromIndexedDB = async (): Promise<Project[]> => {
   const db = await openDB();
+  if (!db) {
+    throw new Error(
+      'IndexedDB não disponível. Verifique se o armazenamento local do navegador está habilitado e tente recarregar a página.'
+    );
+  }
   const indexedDBProjects = await new Promise<Project[]>((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readonly');
     const store = transaction.objectStore(STORE_NAME);

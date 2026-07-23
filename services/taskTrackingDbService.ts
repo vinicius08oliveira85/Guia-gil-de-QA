@@ -44,6 +44,7 @@ async function openTTDb(): Promise<IDBDatabase> {
       }
     };
   });
+  return dbPromise;
 }
 
 export async function writeTasksToIndexedDB(
